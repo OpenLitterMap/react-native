@@ -1,16 +1,15 @@
-// Constant Keys
-// DEV
-// export const CLIENT_SECRET = 'rnMHOS4OICXatHuNMbXeAucBP9Q3CkXkkjl9sdp8';
-// export const CLIENT_ID = 2;
-
-// PRODUCTION
+// You need to import keys here that your app can interact with
+// See https://laravel.com/docs/8.x/passport#the-passportclient-command
+// We will set up a staging server later that will give others access to a shared online server
 import { SECRET_CLIENT } from "@env";
 import { ID_CLIENT } from "@env";
+import { OLM_ENDPOINT } from "@env"; // http://olm.test
+
+console.log({ OLM_ENDPOINT });
 
 export const CLIENT_SECRET = SECRET_CLIENT;
-export const URL = 'https://openlittermap.com';
+export const URL = OLM_ENDPOINT;
 export const CLIENT_ID = ID_CLIENT;
-export const URL_DEV = 'http://olm.test';
 
 export const TOGGLE_ACTIVITY_INDICATOR = 'TOGGLE_ACTIVITY_INDICATOR';
 
