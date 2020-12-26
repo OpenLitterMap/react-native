@@ -73,7 +73,7 @@ class LitterPicker extends PureComponent {
     async componentDidMount ()
     {
         // this is necessary to allow the user to click on text input because of a bug with keyboardAvoidingView on Android
-        if (Platform.OS == "android") await this.setState({ height: SCREEN_HEIGHT * 0.1 });
+        if (Platform.OS === "android") await this.setState({ height: SCREEN_HEIGHT * 0.1 });
 
         if (this.state.loading) await this.props.checkForWebUpload(this.props.token);
 
@@ -99,7 +99,7 @@ class LitterPicker extends PureComponent {
         let height = 0;
         let bottomHeight = 0;
 
-        if (Platform.OS == 'android')
+        if (Platform.OS === 'android')
         {
             height = 0;
             bottomHeight = 0;
@@ -141,7 +141,7 @@ class LitterPicker extends PureComponent {
         let height = 0;
 
         // this is necessary to allow the user to click on text input because of a bug with keyboardAvoidingView on Android
-        if (Platform.OS == "android") height = SCREEN_HEIGHT * 0.1;
+        if (Platform.OS === "android") height = SCREEN_HEIGHT * 0.1;
 
         this.setState({
             keyboardOpen: false,
@@ -296,10 +296,10 @@ class LitterPicker extends PureComponent {
     _checkForPhotos ()
     {
         return this.props.gallery.length === 0
-        && this.props.photos.length === 0
-        && this.props.webImages.length === 0
-            ? true
-            : false;
+            && this.props.photos.length === 0
+            && this.props.webImages.length === 0
+                ? true
+                : false;
     }
 
     /**
@@ -309,7 +309,7 @@ class LitterPicker extends PureComponent {
     // {
     //   return styles.bottomContainer
     //
-    //   // if (Platform.OS == 'android') return styles.biggerBottomContainer;
+    //   // if (Platform.OS === 'android') return styles.biggerBottomContainer;
     //   //
     //   // // if "iPhone 10+", return 17% card height
     //   // let x = DeviceInfo.getModel().split(' ')[1];
@@ -330,7 +330,7 @@ class LitterPicker extends PureComponent {
     {
         if (this.state.keyboardOpen) return styles.hide;
 
-        if (Platform.OS == 'android') return styles.pickerWheelsContainer;
+        if (Platform.OS === 'android') return styles.pickerWheelsContainer;
 
         // if "iPhone 10+", return 17% card height
         let x = DeviceInfo.getModel().split(' ')[1];
@@ -351,7 +351,7 @@ class LitterPicker extends PureComponent {
      */
     _computeTagsContainer ()
     {
-        if (Platform.OS == 'android')
+        if (Platform.OS === 'android')
         {
             return this.state.keyboardOpen ? styles.aTagsContainerOpen : styles.androidTagsContainer;
         }
@@ -377,7 +377,7 @@ class LitterPicker extends PureComponent {
     {
         if (this.state.keyboardOpen) return styles.hide;
 
-        if (Platform.OS == 'android') return styles.buttonsContainer;
+        if (Platform.OS === 'android') return styles.buttonsContainer;
 
         // if iPhone 10+, return 17% card height
         let x = DeviceInfo.getModel().split(' ')[1];
@@ -421,11 +421,11 @@ class LitterPicker extends PureComponent {
     _confirmData = async () =>
     {
         // The user can only confirm if tags exist
-        if (Object.keys(this.props.tags).length == 0) return;
+        if (Object.keys(this.props.tags).length === 0) return;
 
         let tags = cloneDeep(this.props.tags);
 
-        if (this.props.photoSelected.type == 'web')
+        if (this.props.photoSelected.type === 'web')
         {
             // Turn on spinner
             await this.setState({ webLoading: true });
@@ -471,7 +471,7 @@ class LitterPicker extends PureComponent {
             await this.setState({ webLoading: false });
         }
 
-        else if (this.props.photoSelected.type == 'gallery')
+        else if (this.props.photoSelected.type === 'gallery')
         {
             // gallery_actions, gallery_reducer
             await this.props.confirmGalleryItem({

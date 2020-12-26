@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import React, { Component } from 'react';
 import {
     ActivityIndicator,
@@ -15,8 +14,6 @@ import * as actions from '../../actions';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
-
-import { SOME_KEY } from 'react-native-dotenv';
 
 const SLIDE_DATA = [
     {
@@ -69,7 +66,6 @@ class WelcomeScreen extends Component {
     {
         return (
             <View style={{ flex: 1 }}>
-
                 <LinearGradient
                     colors={['#2ecc71','#8e44ad', '#c5d119']}
                     start={{ x: 0, y: 0 }}

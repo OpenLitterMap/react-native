@@ -39,7 +39,7 @@ class LitterBottomSearch extends PureComponent {
      */
     UNSAFE_componentWillReceiveProps (props)
     {
-        if (props['keyboardOpen'] == false) this.setState({ text: '' });
+        if (props['keyboardOpen'] === false) this.setState({ text: '' });
     }
 
     /**
@@ -86,7 +86,7 @@ class LitterBottomSearch extends PureComponent {
         }
 
         // keyboard closed
-        if (Platform.OS == 'android')
+        if (Platform.OS === 'android')
         {
             return styles.closedBottomContainer;
         }
@@ -105,7 +105,14 @@ class LitterBottomSearch extends PureComponent {
      */
     filterStyle ()
     {
-        return this.props.keyboardOpen ? styles.filterOpen : styles.filter;
+        if (Platform.os === 'android')
+        {
+            // return this.props.keyboardOpen ? styles.filterOpen : styles.filter;
+            return this.props.keyboardOpen ? styles.textInputOpen : styles.androidTextFilterClosed;
+        }
+
+        // return this.props.keyboardOpen ? styles.filterOpen : styles.filter;
+        return this.props.keyboardOpen ? styles.textInputOpen : styles.iOSTextFilterClosed;
     }
 
     /**
@@ -217,7 +224,16 @@ class LitterBottomSearch extends PureComponent {
 }
 
 const styles = {
-
+    androidTextFilterClosed: {
+        alignItems: 'center',
+        borderRadius: 50,
+        borderColor: 'gray',
+        borderWidth: 1,
+        padding: SCREEN_WIDTH * 0.001, // works better on android
+        // height: SCREEN_HEIGHT * 0.045, // works better on iOS
+        textAlign: 'center',
+        width: '50%',
+    },
     category: {
         marginBottom: SCREEN_HEIGHT * 0.01
     },
@@ -264,31 +280,6 @@ const styles = {
         borderRadius: 6,
         height: SCREEN_HEIGHT * 0.2,
     },
-    filter: {
-        alignItems: 'center',
-        borderRadius: 50,
-        borderColor: 'gray',
-        borderWidth: 1,
-        padding: SCREEN_WIDTH * 0.001, // works better on android
-        // height: SCREEN_HEIGHT * 0.045, // works better on iOS
-        textAlign: 'center',
-        width: '50%',
-    },
-    filterOpen: {
-        borderRadius: 50,
-        borderColor: 'gray',
-        borderWidth: 1,
-        backgroundColor: 'white',
-        height: SCREEN_HEIGHT * 0.045,
-        paddingTop: 0, // android
-        paddingBottom: 0, // android
-        paddingLeft: SCREEN_WIDTH * 0.05,
-        marginTop: SCREEN_HEIGHT * 0.01,
-        marginLeft: SCREEN_WIDTH * 0.25,
-        marginRight: SCREEN_WIDTH * 0.25,
-        marginBottom: SCREEN_HEIGHT * 0.01,
-        width: '50%',
-    },
     hide: {
         display: 'none'
     },
@@ -296,6 +287,16 @@ const styles = {
         alignItems: 'center',
         justifyContent: 'center',
         width: SCREEN_WIDTH * 0.25,
+    },
+    iOSTextFilterClosed: {
+        alignItems: 'center',
+        borderRadius: 50,
+        borderColor: 'gray',
+        borderWidth: 1,
+        // padding: SCREEN_WIDTH * 0.001, // works better on android
+        height: SCREEN_HEIGHT * 0.045, // works better on iOS
+        textAlign: 'center',
+        width: '50%',
     },
     item: {
         fontSize: SCREEN_HEIGHT * 0.02
@@ -317,6 +318,21 @@ const styles = {
     },
     tagsInnerContainer: {
         flexDirection: 'row'
+    },
+    textInputOpen: {
+        borderRadius: 50,
+        borderColor: 'gray',
+        borderWidth: 1,
+        backgroundColor: 'white',
+        height: SCREEN_HEIGHT * 0.045,
+        paddingTop: 0, // android
+        paddingBottom: 0, // android
+        paddingLeft: SCREEN_WIDTH * 0.05,
+        marginTop: SCREEN_HEIGHT * 0.01,
+        marginLeft: SCREEN_WIDTH * 0.25,
+        marginRight: SCREEN_WIDTH * 0.25,
+        marginBottom: SCREEN_HEIGHT * 0.01,
+        width: '50%',
     }
 }
 

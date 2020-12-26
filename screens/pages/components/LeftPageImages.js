@@ -236,8 +236,7 @@ class LeftPageImages extends PureComponent {
      */
     _webTextStyle ()
     {
-
-        if (Platform.OS == 'android') return styles.webTextSmall;
+        if (Platform.OS === 'android') return styles.webTextSmall;
 
         // if "iPhone 10+", return 17% card height
         let x = DeviceInfo.getModel().split(' ')[1];
@@ -245,8 +244,6 @@ class LeftPageImages extends PureComponent {
         if (x.includes('X') || parseInt(x) >= 10) return styles.webText;
 
         return styles.webTextSmall;
-
-
     }
 
     render ()
