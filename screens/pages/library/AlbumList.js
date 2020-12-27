@@ -2,6 +2,7 @@ import React, { PureComponent } from 'react';
 import {
     ActivityIndicator,
     Dimensions,
+    SafeAreaView,
     Text,
     View
 } from 'react-native';
@@ -9,7 +10,6 @@ import {
 import { request, PERMISSIONS } from 'react-native-permissions';
 import { Header } from 'react-native-elements';
 import GalleryMediaPicker from '../components/albums';
-const { width } = Dimensions.get('window');
 import { connect } from 'react-redux';
 import * as actions from '../../../actions';
 import moment from 'moment';
@@ -22,8 +22,6 @@ class AlbumList extends PureComponent {
     constructor(props)
     {
         super(props);
-        console.log('AlbumList constructor');
-        // console.log(this.props.swiper);
 
         this.state = {
             loading: true,
@@ -33,9 +31,13 @@ class AlbumList extends PureComponent {
         };
     }
 
+    componentDidMount ()
+    {
+        this.requestCameraPermission();
+    }
+
     async requestCameraPermission ()
     {
-        let status = '';
         let p =
             Platform.OS === 'android'
                 ? PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE
@@ -46,11 +48,6 @@ class AlbumList extends PureComponent {
                 this.setState({ hasPermission: true, loading: false });
             }
         });
-    }
-
-    componentDidMount ()
-    {
-        this.requestCameraPermission();
     }
 
     getSelectedFiles (files, current)
@@ -72,7 +69,7 @@ class AlbumList extends PureComponent {
         // check if every photo has a geotag, otherwise return.
         // todo - allow the users to give nongeotagged images a location
         this.state.selected.some((img, i) => {
-            if ( !img.location || Object.keys(img.location) == 0)
+            if ( ! img.location || Object.keys(img.location).length === 0)
             {
                 alert(
                     'Your ' +
@@ -101,7 +98,7 @@ class AlbumList extends PureComponent {
     render ()
     {
         return (
-            <View style={styles.container}>
+            <SafeAreaView style={styles.container}>
                 <Header
                     backgroundColor="white"
                     outerContainerStyles={{ height: SCREEN_HEIGHT * 0.1 }}
@@ -146,7 +143,7 @@ class AlbumList extends PureComponent {
                         callback={this.getSelectedFiles.bind(this)}
                     />
                 )}
-            </View>
+            </SafeAreaView>
         );
     }
 }

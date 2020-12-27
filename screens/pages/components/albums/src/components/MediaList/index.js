@@ -10,8 +10,10 @@ import * as actions from '../../../../../../../actions'
 
 const arrow = require('../../assets/images/next-arrow.png');
 
-class MediaList extends Component {
-    constructor (props) {
+class MediaList extends Component
+{
+    constructor (props)
+    {
         super(props);
 
         this.state = {
@@ -22,7 +24,8 @@ class MediaList extends Component {
         };
     }
 
-    componentDidMount () {
+    componentDidMount ()
+    {
         this.setState({
             rows: this.splitIntoRows(this.props.images, this.props.itemsPerRow)
         });
@@ -34,11 +37,13 @@ class MediaList extends Component {
      * @param itemsPerRow
      * @return {Array}
      */
-    splitIntoRows (images, itemsPerRow) {
+    splitIntoRows (images, itemsPerRow)
+    {
         let result = {};
         let temp = {};
 
-        for ( let i = 0; i < images.length; ++ i ) {
+        for (let i = 0; i < images.length; ++ i)
+        {
             const timestampOfImage = images[i].timestamp * 1000;
             const placeInTimeOfImage = placeInTime(timestampOfImage);
 
@@ -132,10 +137,12 @@ class MediaList extends Component {
         callback(selected, item);
     }
 
-    backToAlbums () {
+    backToAlbums ()
+    {
         this.setState({
             selected: []
         });
+
         this.props.callback([], null);
         this.props.onBackPress();
     }
@@ -145,7 +152,8 @@ class MediaList extends Component {
      * @param item
      * @return {XML}
      */
-    renderMediaItem( item, index ) {
+    renderMediaItem (item, index)
+    {
         let {
             selected,
             imageMargin,
@@ -173,7 +181,8 @@ class MediaList extends Component {
         );
     }
 
-    renderRowHeader (rowData) {
+    renderRowHeader (rowData)
+    {
         let headerTitle = placeInTime(rowData[0].timestamp * 1000);
 
         if (this.state.rowsSorted[headerTitle].indexOf(rowData) > 0) {
@@ -216,11 +225,11 @@ class MediaList extends Component {
      * @param rowData
      * @return {XML}
      */
-    renderRow (rowData, index) {
+    renderRow (rowData, index)
+    {
         let items = rowData.map((item) => {
-            if (item === null) {
-                return null;
-            }
+            if (item === null) return null;
+
             return this.renderMediaItem(item, index);
         });
 
@@ -238,10 +247,13 @@ class MediaList extends Component {
      * @description Render footer loader when more files are fetching
      * @return {*}
      */
-    renderFooterLoader() {
-        if (!this.state.finishedLoading) {
+    renderFooterLoader ()
+    {
+        if (! this.state.finishedLoading)
+        {
             return <ActivityIndicator color={this.props.activityIndicatorColor}/>;
         }
+
         return null;
     }
 
