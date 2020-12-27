@@ -211,15 +211,17 @@ class LitterPicker extends PureComponent {
                      * position: absolute
                      * Note, when this.props.positions updates, scrollTo that tag updates { key: xcoordinate }
                      */}
-                    <View style={this._computeTagsContainer()}
-                          key={Object.keys(this.props.positions).length}
-                          onLayout={event => {
-                              this.scrollview_ref.scrollTo({
-                                  x: this.props.positions[this.props.item],
-                                  y: 0,
-                                  animated: true,
-                              });
-                          }}>
+                    <View
+                        style={this._computeTagsContainer()}
+                        key={Object.keys(this.props.positions).length}
+                        onLayout={event => {
+                            this.scrollview_ref.scrollTo({
+                                x: this.props.positions[this.props.item],
+                                y: 0,
+                                animated: true,
+                            });
+                        }}
+                    >
                         <ScrollView
                             bounces={false}
                             horizontal={true}
@@ -291,15 +293,11 @@ class LitterPicker extends PureComponent {
     }
 
     /**
-     *
+     * Return True or False
      */
     _checkForPhotos ()
     {
-        return this.props.gallery.length === 0
-            && this.props.photos.length === 0
-            && this.props.webImages.length === 0
-                ? true
-                : false;
+        return (this.props.gallery.length === 0 && this.props.photos.length === 0 && this.props.webImages.length === 0);
     }
 
     /**
@@ -357,11 +355,11 @@ class LitterPicker extends PureComponent {
         }
 
         // if iPhone 10+, return 17% card height
-        let x = DeviceInfo.getModel().split(' ')[1];
-        if (x.includes('X') || parseInt(x) >= 10)
-        {
-            return this.state.keyboardOpen ? styles.iTagsContainerOpen : styles.iTagsContainer;
-        }
+        // let x = DeviceInfo.getModel().split(' ')[1];
+        // if (x.includes('X') || parseInt(x) >= 10)
+        // {
+        //     return this.state.keyboardOpen ? styles.iTagsContainerOpen : styles.iTagsContainer;
+        // }
 
         return this.state.keyboardOpen ? styles.tagsContainerOpen : styles.tagsContainer;
     }
@@ -388,10 +386,12 @@ class LitterPicker extends PureComponent {
 
     /**
      * Check length of tags object
+     *
+     * Return True or False
      */
     _checkCollectionLength ()
     {
-        return Object.keys(this.props.tags).length === 0 ? true : false;
+        return Object.keys(this.props.tags).length === 0;
     }
 
     _renderModalContents = () =>
@@ -673,13 +673,13 @@ const styles = {
 
     buttonsContainer: {
         flexDirection: 'row',
-        width: SCREEN_WIDTH * 1,
+        width: SCREEN_WIDTH,
         height: SCREEN_HEIGHT * 0.08,
         marginTop: SCREEN_HEIGHT * 0.05,
     },
     iButtonsContainer: {
         flexDirection: 'row',
-        width: SCREEN_WIDTH * 1,
+        width: SCREEN_WIDTH,
         height: SCREEN_HEIGHT * 0.07,
         marginTop: SCREEN_HEIGHT * 0.08,
     },
@@ -704,7 +704,8 @@ const styles = {
         flexDirection: 'row',
         height: SCREEN_HEIGHT * 0.15,
         position: 'absolute',
-        top: SCREEN_HEIGHT * .6
+        top: SCREEN_HEIGHT * .595, // small margin bottom iPhone 12. Was .6
+        left: SCREEN_WIDTH * 0.01
     },
     tagsContainerOpen: {
         alignItems: 'center',

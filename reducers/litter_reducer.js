@@ -266,8 +266,6 @@ export default function (state = INITIAL_STATE, action)
          * ++ Increment the quantity if button pressed repeatedly
          */
         case TAG_LITTER:
-            // console.log('TAG_LITTER', action.payload);
-
             let newTags = Object.assign({}, state.tags);
 
             let quantity = 1;
