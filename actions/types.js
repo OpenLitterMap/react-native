@@ -5,8 +5,6 @@ import { SECRET_CLIENT } from "@env";
 import { ID_CLIENT } from "@env";
 import { OLM_ENDPOINT } from "@env"; // http://olm.test
 
-console.log({ OLM_ENDPOINT });
-
 export const CLIENT_SECRET = SECRET_CLIENT;
 export const URL = OLM_ENDPOINT;
 export const CLIENT_ID = ID_CLIENT;

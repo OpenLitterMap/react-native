@@ -1,15 +1,15 @@
 import React, { PureComponent } from 'react';
-import { Dimensions } from 'react-native';
+import {Dimensions, View} from 'react-native';
 import {
     Text,
-    TouchableHighlight,
-    View
+    TouchableHighlight
 } from 'react-native';
-import { Button, Card, Icon } from 'react-native-elements';
+import { Card } from 'react-native-elements';
 import { connect } from 'react-redux';
 import * as actions from '../../../actions';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
+const SCREEN_WIDTH = Dimensions.get('window').height;
 
 class LitterTags extends PureComponent {
 
@@ -27,7 +27,7 @@ class LitterTags extends PureComponent {
      */
     render ()
     {
-        return Object.keys(this.props.tags).map((category, i) => {
+        return Object.keys(this.props.tags).map(category => {
             return Object.keys(this.props.tags[category]).map(item => {
 
                 const value = this.props.tags[category][item];
@@ -44,13 +44,11 @@ class LitterTags extends PureComponent {
                             this.props.updateTagXPosition({ x: layout.x, item });
                         }}
                     >
-                        <Card
-                            containerStyle={{ borderRadius: 6 }}
-                            wrapperStyle={{ alignItems: 'center', flexDirection: 'row', flex: 1 }}
-                        >
-                            <Text style={styles.title}>{item}</Text>
+                        <View style={styles.card}>
+                            <Text style={styles.category}>{ category }</Text>
+                            <Text style={styles.item}>{item}</Text>
                             <Text style={styles.val}>&nbsp; ({value})</Text>
-                        </Card>
+                        </View>
                     </TouchableHighlight>
                 );
             });
@@ -59,8 +57,24 @@ class LitterTags extends PureComponent {
 }
 
 const styles = {
-    title: {
-        fontSize: SCREEN_HEIGHT * 0.02
+    card: {
+        backgroundColor: "white",
+        padding: SCREEN_WIDTH * 0.02,
+        borderRadius: 6,
+        alignItems: 'center',
+        flexDirection: 'row',
+        flex: 1,
+        position: 'relative',
+        paddingTop: SCREEN_HEIGHT * 0.025
+    },
+    category: {
+        position: 'absolute',
+        left: 5,
+        top: 5,
+        color: '#636360'
+    },
+    item: {
+        fontSize: SCREEN_HEIGHT * 0.02,
     },
     val: {
         fontSize: SCREEN_HEIGHT * 0.02

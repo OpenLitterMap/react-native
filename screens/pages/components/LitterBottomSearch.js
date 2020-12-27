@@ -259,7 +259,7 @@ const styles = {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        width: SCREEN_WIDTH * 1,
+        width: SCREEN_WIDTH,
     },
     openContainerAndroid: {
         position: 'absolute',

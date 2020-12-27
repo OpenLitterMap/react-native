@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react'
 import { Provider } from 'react-redux'
+import { Text } from 'react-native'
 import SplashScreen from 'react-native-splash-screen'
 import { PersistGate } from 'redux-persist/es/integration/react'
 import configureStore from './store'
@@ -7,6 +8,7 @@ import configureStore from './store'
 // import Icon from 'react-native-vector-icons/MaterialIcons';
 // Icon.loadFont();
 
+import './i18n'
 import RootContainer from './screens/RootContainer'
 
 const App: () => React$Node = () => {
