@@ -123,7 +123,9 @@ class GalleryMediaPicker extends Component
     }
 
     /**
-     * @description Extracts images from array
+     * Extract images from array
+     *
+     * Filter out images that do not have geotags
      */
     extract (items)
     {
@@ -136,7 +138,7 @@ class GalleryMediaPicker extends Component
             {
                 if (Object.keys(item.node.location).length > 0)
                 {
-                    this.sort(res);
+                    // this.sort(res);
 
                     return res.push(item.node);
                 }
@@ -147,32 +149,38 @@ class GalleryMediaPicker extends Component
                 // android
                 if (item.node.hasOwnProperty('location'))
                 {
-                    this.sort(res);
+                    // this.sort(res);
 
                     return res.push(item.node);
                 }
             }
         });
-    }
 
-    /**
-     * @description Sorts images based on album
-     */
-    sort (items)
-    {
         let albums = [];
 
-        let grouped = Object.values(
-            _.groupBy(items, item => {
-                item.group_name;
-            })
-        );
-
-        // grouped.map(list => albums.push({albumName: list[0].group_name, images: list}));
-        albums.push({ albumName: 'Geotagged', images: items });
+        albums.push({ albumName: 'Geotagged', images: res });
 
         this.setState({ albums });
     }
+
+    // /**
+    //  * @description Sorts images based on album
+    //  */
+    // sort (items)
+    // {
+    //     let albums = [];
+    //
+    //     let grouped = Object.values(
+    //         _.groupBy(items, item => {
+    //             item.group_name;
+    //         })
+    //     );
+    //
+    //     // grouped.map(list => albums.push({albumName: list[0].group_name, images: list}));
+    //     albums.push({ albumName: 'Geotagged', images: items });
+    //
+    //     this.setState({ albums });
+    // }
 
     selectAlbum (albumName)
     {
