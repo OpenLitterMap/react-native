@@ -20,11 +20,8 @@ import { Icon } from 'react-native-elements'
 const SCREEN_HEIGHT = Dimensions.get('window').height
 const SCREEN_WIDTH = Dimensions.get('window').width
 
-class LitterBottomSearch extends PureComponent {
-
-    /**
-     * Constructor
-     */
+class LitterBottomSearch extends PureComponent
+{
     constructor (props)
     {
         super (props);
@@ -152,6 +149,7 @@ class LitterBottomSearch extends PureComponent {
     updateText (text)
     {
         this.setState({ text });
+
         this.props.suggestTags(text);
     }
 
@@ -161,6 +159,8 @@ class LitterBottomSearch extends PureComponent {
      * 0 height on iOS
      * was 33% height on Android
      * now 0 height on Android
+     *
+     * KeyboardAvoidingView has extra padding somewhere
      */
     render ()
     {
@@ -168,15 +168,18 @@ class LitterBottomSearch extends PureComponent {
             <KeyboardAvoidingView
                 style={{
                     position: 'absolute',
-                    bottom: 0, // was this.props.bottomHeight
+                    bottom: this.props.bottomHeight, // bottom: 0 for android
                     left: 0,
                     right: 0,
                     height: this.props.height,
+                    backgroundColor: 'red',
+                    flexDirection: 'row',
+                    justifyContent: 'center',
+                    alignItems: 'center'
                 }}
                 behavior={'padding'}
             >
                 <View style={this._container()}>
-
                     <TouchableHighlight
                         onPress={this.closeLitterPicker.bind(this)}
                         style={this.props.keyboardOpen ? styles.hide : styles.icon}
@@ -247,7 +250,7 @@ const styles = {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        width: SCREEN_WIDTH * 1
+        width: SCREEN_WIDTH
     },
     closedBottomContainer: {
         position: 'absolute',
@@ -314,7 +317,7 @@ const styles = {
     tagsOuterContainer: {
         marginLeft: SCREEN_WIDTH * 0.02,
         marginRight: SCREEN_WIDTH * 0.02,
-        paddingBottom: SCREEN_HEIGHT * 0.02,
+        paddingBottom: SCREEN_HEIGHT * 0.02
     },
     tagsInnerContainer: {
         flexDirection: 'row'

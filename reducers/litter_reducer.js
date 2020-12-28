@@ -243,12 +243,8 @@ export default function (state = INITIAL_STATE, action)
                     if (item.toLowerCase().includes(action.payload.toLowerCase()))
                     {
                         x.push({ cat: cat.title, item });
-
-                        return x.length == 6;
                     }
                 });
-
-                return x.length == 6;
             });
 
             return {

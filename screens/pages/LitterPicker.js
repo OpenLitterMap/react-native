@@ -32,11 +32,8 @@ const SCREEN_HEIGHT = Dimensions.get('window').height
 import DeviceInfo from 'react-native-device-info'
 const cloneDeep = require('clone-deep')
 
-class LitterPicker extends PureComponent {
-
-    /**
-     *
-     */
+class LitterPicker extends PureComponent
+{
     constructor (props)
     {
         super(props);
@@ -113,16 +110,19 @@ class LitterPicker extends PureComponent {
             if (x.includes('X') || parseInt(x) >= 10)
             {
                 height = 0.2;
-                bottomHeight = 0.35;
+                bottomHeight = 0.3; // was 0.35
             }
 
             // iPhone 5,6,7,8
             else
             {
-                height = 0.2425;
-                bottomHeight = 0.35;
+                height = 0; // 0.2425;
+                bottomHeight = 0.32;
             }
         }
+
+        console.log({ height });
+        console.log({ bottomHeight });
 
         this.setState({
             keyboardOpen: true,
@@ -206,37 +206,14 @@ class LitterPicker extends PureComponent {
                         photoSelected={this.props.photoSelected}
                     />
 
-                    {/**
-                     * Third - Tags.
-                     * position: absolute
-                     * Note, when this.props.positions updates, scrollTo that tag updates { key: xcoordinate }
-                     */}
-                    <View
-                        style={this._computeTagsContainer()}
-                        key={Object.keys(this.props.positions).length}
-                        onLayout={event => {
-                            this.scrollview_ref.scrollTo({
-                                x: this.props.positions[this.props.item],
-                                y: 0,
-                                animated: true,
-                            });
-                        }}
-                    >
-                        <ScrollView
-                            bounces={false}
-                            horizontal={true}
-                            style={styles.innerTagsContainer}
-                            keyboardShouldPersistTaps="handled"
-                            ref={ref => {
-                                this.scrollview_ref = ref;
-                            }}
-                        >
-                            <LitterTags
-                                tags={this.props.tags}
-                                previousTags={this.props.previousTags}
-                            />
-                        </ScrollView>
-                    </View>
+                    {/* Third - Tags. position: absolute */}
+                    <LitterTags
+                        tags={this.props.tags}
+                        previousTags={this.props.previousTags}
+                        positions={this.props.positions}
+                        item={this.props.item}
+                        keyboardOpen={this.state.keyboardOpen}
+                    />
 
                     {/* Fourth - bottomContainer 20% height */}
                     <View style={styles.bottomContainer}>
@@ -336,32 +313,6 @@ class LitterPicker extends PureComponent {
         if (x.includes('X') || parseInt(x) >= 10) return styles.iPickerWheelsContainer;
 
         return styles.pickerWheelsContainer;
-    }
-
-    /**
-     * Return position of tags element
-     * @iPhone top: 65%
-     * @iPhoneX top: 63%;
-     * @android top: 65%;
-     *
-     * aTagsContainer = Android
-     * iTagsContainer = iPhone
-     */
-    _computeTagsContainer ()
-    {
-        if (Platform.OS === 'android')
-        {
-            return this.state.keyboardOpen ? styles.aTagsContainerOpen : styles.androidTagsContainer;
-        }
-
-        // if iPhone 10+, return 17% card height
-        // let x = DeviceInfo.getModel().split(' ')[1];
-        // if (x.includes('X') || parseInt(x) >= 10)
-        // {
-        //     return this.state.keyboardOpen ? styles.iTagsContainerOpen : styles.iTagsContainer;
-        // }
-
-        return this.state.keyboardOpen ? styles.tagsContainerOpen : styles.tagsContainer;
     }
 
     /**
@@ -625,16 +576,6 @@ class LitterPicker extends PureComponent {
 }
 
 const styles = {
-    aTagsContainerOpen: {
-        alignItems: 'center',
-        flexDirection: 'row',
-        height: SCREEN_HEIGHT * 0.1,
-        position: 'absolute',
-        // top: SCREEN_HEIGHT * .175,
-        bottom: SCREEN_HEIGHT * 0.25,
-        zIndex: 5,
-        // backgroundColor: 'yellow',
-    },
     container: {
         flex: 1,
         // paddingTop: SCREEN_HEIGHT * 0.05,
@@ -665,10 +606,10 @@ const styles = {
     //   height: SCREEN_HEIGHT * 0.2
     // },
     bottomContainer: {
-        // backgroundColor: 'yellow',
+        backgroundColor: 'yellow',
         position: 'absolute',
         bottom: 0,
-        height: SCREEN_HEIGHT * 0.2
+        height: SCREEN_HEIGHT * 0.2,
     },
 
     buttonsContainer: {
@@ -691,28 +632,6 @@ const styles = {
     },
     hide: {
         display: 'none'
-    },
-    androidTagsContainer: {
-        alignItems: 'center',
-        flexDirection: 'row',
-        height: SCREEN_HEIGHT * 0.2,
-        position: 'absolute',
-        bottom: SCREEN_HEIGHT * 0.2
-    },
-    tagsContainer: {
-        alignItems: 'center',
-        flexDirection: 'row',
-        height: SCREEN_HEIGHT * 0.15,
-        position: 'absolute',
-        top: SCREEN_HEIGHT * .595, // small margin bottom iPhone 12. Was .6
-        left: SCREEN_WIDTH * 0.01
-    },
-    tagsContainerOpen: {
-        alignItems: 'center',
-        flexDirection: 'row',
-        height: SCREEN_HEIGHT * 0.15,
-        position: 'absolute',
-        top: SCREEN_HEIGHT * .31
     },
     iTagsContainer: {
         alignItems: 'center',
