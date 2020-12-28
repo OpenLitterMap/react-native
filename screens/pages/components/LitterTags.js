@@ -37,7 +37,6 @@ class LitterTags extends PureComponent {
 
             if (x[1] === "11" && x[2] === 'Pro')
             {
-                console.log('11 pro');
                 return this.props.keyboardOpen
                     ? styles.iPhone11ProTagsContainerKeyboardOpen
                     : styles.iPhone11ProTagsContainerKeyboardClosed;

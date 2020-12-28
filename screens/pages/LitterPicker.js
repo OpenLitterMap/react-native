@@ -107,8 +107,6 @@ class LitterPicker extends PureComponent
             // if "iPhone 10+"
             let x = DeviceInfo.getModel().split(' ')[1];
 
-            console.log({ x });
-
             if (x.includes('X') || parseInt(x) >= 10)
             {
                 height = 0.2;
@@ -124,8 +122,8 @@ class LitterPicker extends PureComponent
             }
         }
 
-        console.log({ height });
-        console.log({ bottomHeight });
+        // console.log({ height });
+        // console.log({ bottomHeight });
 
         this.setState({
             keyboardOpen: true,
