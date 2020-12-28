@@ -43,22 +43,28 @@ class LitterTags extends PureComponent {
             }
 
             // iPhone 12 mini
-            if (x[1] === "12" && x[2] === "mini")
+            else if (x[1] === "12" && x[2] === "mini")
             {
                 return this.props.keyboardOpen
                     ? styles.iPhone11ProTagsContainerKeyboardOpen
                     : styles.iPhone11ProTagsContainerKeyboardClosed;
             }
 
-            // iPhone 12
-            if (x[1] === "12" && x.length === 2)
+            // iPhone 12 x
+            else if (x[1] === "12" && x.length === 2)
             {
                 return this.props.keyboardOpen
                     ? styles.iPhone11ProTagsContainerKeyboardOpen
                     : styles.iPhone11ProTagsContainerKeyboardClosed;
             }
 
-
+            // iPhone 12 Pro
+            else if (x[1] === "12" && x[2] === 'Pro')
+            {
+                return this.props.keyboardOpen
+                    ? styles.iPhone11ProTagsContainerKeyboardOpen
+                    : styles.iPhone11ProTagsContainerKeyboardClosed;
+            }
 
             // iPhone 11
             return this.props.keyboardOpen
