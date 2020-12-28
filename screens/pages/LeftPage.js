@@ -187,7 +187,7 @@ class LeftPage extends PureComponent {
      */
     deleteSelectedImages = () => {
 
-        for (var i = this.props.photos.length - 1; i >= 0; --i)
+        for (let i = this.props.photos.length - 1; i >= 0; --i)
         {
             if (this.props.photos[i]['selected'])
             {
@@ -195,7 +195,7 @@ class LeftPage extends PureComponent {
             }
         }
 
-        for (var i = this.props.gallery.length - 1; i >= 0; --i)
+        for (let i = this.props.gallery.length - 1; i >= 0; --i)
         {
             if (this.props.gallery[i]['selected'])
             {
@@ -214,11 +214,9 @@ class LeftPage extends PureComponent {
     loadGallery = async () => {
         this.props.setImagesLoading(true);
 
-        let status = '';
         let p = Platform.OS === 'android' ? PERMISSIONS.ANDROID : PERMISSIONS.IOS;
 
         request(p.CAMERA).then(result => {
-            // console.log('photo library', result);
             if (result === 'granted')
             {
                 this.props.toggleImageBrowser(true);

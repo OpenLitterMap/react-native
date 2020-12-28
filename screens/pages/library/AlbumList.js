@@ -98,7 +98,7 @@ class AlbumList extends PureComponent {
     render ()
     {
         return (
-            <SafeAreaView style={styles.container}>
+            <View style={styles.container}>
                 <Header
                     backgroundColor="white"
                     outerContainerStyles={{ height: SCREEN_HEIGHT * 0.1 }}
@@ -143,14 +143,15 @@ class AlbumList extends PureComponent {
                         callback={this.getSelectedFiles.bind(this)}
                     />
                 )}
-            </SafeAreaView>
+            </View>
         );
     }
 }
 
 const styles = {
     container: {
-        flex: 1
+        flex: 1,
+        marginTop: SCREEN_HEIGHT * 0.01
     }
 };
 
