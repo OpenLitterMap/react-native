@@ -34,6 +34,7 @@ class LitterTags extends PureComponent {
 
         if (x.includes('X') || parseInt(x[1]) >= 10)
         {
+            // iPhone 11 Pro
             if (x[1] === "11" && x[2] === 'Pro')
             {
                 return this.props.keyboardOpen
@@ -41,12 +42,23 @@ class LitterTags extends PureComponent {
                     : styles.iPhone11ProTagsContainerKeyboardClosed;
             }
 
+            // iPhone 12 mini
             if (x[1] === "12" && x[2] === "mini")
             {
                 return this.props.keyboardOpen
                     ? styles.iPhone11ProTagsContainerKeyboardOpen
                     : styles.iPhone11ProTagsContainerKeyboardClosed;
             }
+
+            // iPhone 12
+            if (x[1] === "12" && x.length === 2)
+            {
+                return this.props.keyboardOpen
+                    ? styles.iPhone11ProTagsContainerKeyboardOpen
+                    : styles.iPhone11ProTagsContainerKeyboardClosed;
+            }
+
+
 
             // iPhone 11
             return this.props.keyboardOpen
