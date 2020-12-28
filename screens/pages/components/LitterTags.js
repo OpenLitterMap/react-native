@@ -29,13 +29,27 @@ class LitterTags extends PureComponent {
             return this.props.keyboardOpen ? styles.aTagsContainerOpen : styles.androidTagsContainer;
         }
 
-        // // if iPhone 10+, return 17% card height
-        let x = DeviceInfo.getModel().split(' ')[1];
-        if (x.includes('X') || parseInt(x) >= 10)
+        // if iPhone 10+, return 17% card height
+        const x = DeviceInfo.getModel().split(' ');
+
+        if (x.includes('X') || parseInt(x[1]) >= 10)
         {
-            return this.props.keyboardOpen ? styles.iTagsContainerOpen : styles.iTagsContainer;
+
+            if (x[1] === "11" && x[2] === 'Pro')
+            {
+                console.log('11 pro');
+                return this.props.keyboardOpen
+                    ? styles.iPhone11ProTagsContainerKeyboardOpen
+                    : styles.iPhone11ProTagsContainerKeyboardClosed;
+            }
+
+            // iPhone 11
+            return this.props.keyboardOpen
+                ? styles.iTagsContainerOpen
+                : styles.iTagsContainer;
         }
 
+        // iPhone 8, iPhone 8 Plus
         return (this.props.keyboardOpen && Object.keys(this.props.tags).length > 0)
             ? styles.tagsContainerOpen
             : styles.tagsContainer;
@@ -154,6 +168,44 @@ const styles = {
     item: {
         fontSize: SCREEN_HEIGHT * 0.02,
     },
+
+    // iPhone 11
+    iTagsContainer: {
+        alignItems: 'center',
+        flexDirection: 'row',
+        height: SCREEN_HEIGHT * 0.08,
+        position: 'absolute',
+        top: SCREEN_HEIGHT * .635,
+        marginLeft: SCREEN_WIDTH * 0.01
+    },
+    iTagsContainerOpen: {
+        alignItems: 'center',
+        flexDirection: 'row',
+        height: SCREEN_HEIGHT * 0.08,
+        position: 'absolute',
+        top: SCREEN_HEIGHT * .33,
+        marginLeft: SCREEN_WIDTH * 0.01
+    },
+
+    // iPhone 11 Pro
+    iPhone11ProTagsContainerKeyboardOpen: {
+        alignItems: 'center',
+        flexDirection: 'row',
+        height: SCREEN_HEIGHT * 0.08,
+        position: 'absolute',
+        top: SCREEN_HEIGHT * .325,
+        marginLeft: SCREEN_WIDTH * 0.01
+    },
+    iPhone11ProTagsContainerKeyboardClosed: {
+        alignItems: 'center',
+        flexDirection: 'row',
+        height: SCREEN_HEIGHT * 0.08,
+        position: 'absolute',
+        top: SCREEN_HEIGHT * .63,
+        marginLeft: SCREEN_WIDTH * 0.01
+    },
+
+    // iPhone 8, iPhone 8 Plus
     tagsContainer: {
         alignItems: 'center',
         flexDirection: 'row',

@@ -590,7 +590,7 @@ const styles = {
         // paddingLeft: SCREEN_WIDTH * 0.05,
         // marginRight: SCREEN_WIDTH * 0.05,
         // marginBottom: - SCREEN_HEIGHT * 0.02,
-        width: SCREEN_WIDTH * 1,
+        width: SCREEN_WIDTH,
     },
     biggerContainer: {
         alignItems: 'center',
@@ -609,7 +609,6 @@ const styles = {
     //   height: SCREEN_HEIGHT * 0.2
     // },
     bottomContainer: {
-        backgroundColor: 'yellow',
         position: 'absolute',
         bottom: 0,
         height: SCREEN_HEIGHT * 0.2,
@@ -635,20 +634,6 @@ const styles = {
     },
     hide: {
         display: 'none'
-    },
-    iTagsContainer: {
-        alignItems: 'center',
-        flexDirection: 'row',
-        height: SCREEN_HEIGHT * 0.15,
-        position: 'absolute',
-        top: SCREEN_HEIGHT * .63
-    },
-    iTagsContainerOpen: {
-        alignItems: 'center',
-        flexDirection: 'row',
-        height: SCREEN_HEIGHT * 0.15,
-        position: 'absolute',
-        top: SCREEN_HEIGHT * .33
     },
     modalOuter: {
         justifyContent: 'center',
