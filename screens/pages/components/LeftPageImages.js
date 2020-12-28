@@ -240,7 +240,7 @@ class LeftPageImages extends PureComponent {
         // if "iPhone 10+", return 17% card height
         let x = DeviceInfo.getModel().split(' ')[1];
 
-        console.log('webTextStyle', x);
+        // console.log('webTextStyle', x);
 
         if (x.includes('X') || parseInt(x) >= 10) return styles.webText;
 
