@@ -54,19 +54,18 @@ class LeftPageImages extends PureComponent {
      * photos selected from the users device
      */
     renderGalleryItem = item => {
-        // console.log('render gallery item');
-        //
-        // if (item.hasOwnProperty('litter')) {
-        //   console.log('item.litter', item.litter);
-        // }
 
         let width = null;
         let mgn = 0;
 
-        if (item.index % 3 == 1) {
+        if (item.index % 3 === 1)
+        {
             width = SCREEN_WIDTH / 3.1;
             mgn = 2;
-        } else {
+        }
+
+        else
+        {
             width = SCREEN_WIDTH / 3;
         }
 
@@ -243,6 +242,11 @@ class LeftPageImages extends PureComponent {
 
         if (x.includes('X') || parseInt(x) >= 10) return styles.webText;
 
+        if (x === "8")
+        {
+            return styles.webTextiPhone8;
+        }
+
         return styles.webTextSmall;
     }
 
@@ -361,6 +365,13 @@ const styles = {
         // fontSize: SCREEN_HEIGHT * 0.02,
         bottom: SCREEN_HEIGHT * 0.024,
         // bottom: SCREEN_HEIGHT * 0.0325,
+        alignSelf: 'center'
+    },
+    webTextiPhone8: {
+        fontWeight: '500',
+        left: 0,
+        fontSize: SCREEN_HEIGHT * 0.02,
+        bottom: SCREEN_HEIGHT * 0.0265,
         alignSelf: 'center'
     },
     webTextSmall: {

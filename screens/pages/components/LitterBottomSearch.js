@@ -161,6 +161,7 @@ class LitterBottomSearch extends PureComponent
      * now 0 height on Android
      *
      * KeyboardAvoidingView has extra padding somewhere
+     * it disappears after typing and selecting a tag
      */
     render ()
     {
@@ -171,11 +172,7 @@ class LitterBottomSearch extends PureComponent
                     bottom: this.props.bottomHeight, // bottom: 0 for android
                     left: 0,
                     right: 0,
-                    height: this.props.height,
-                    backgroundColor: 'red',
-                    flexDirection: 'row',
-                    justifyContent: 'center',
-                    alignItems: 'center'
+                    height: this.props.height
                 }}
                 behavior={'padding'}
             >
