@@ -14,13 +14,11 @@ const SCREEN_WIDTH = Dimensions.get('window').width;
 class LitterTags extends PureComponent {
 
     /**
-     * Return position of tags element
-     * @iPhone top: 65%
-     * @iPhoneX top: 63%;
-     * @android top: 65%;
+     * The tags container is positioned absolutely from the top
      *
-     * aTagsContainer = Android
-     * iTagsContainer = iPhone
+     * Some devices need slightly different settings
+     *
+     * Todo - extract common css and update comment block with styles per device
      */
     _computeTagsContainer ()
     {
@@ -32,10 +30,18 @@ class LitterTags extends PureComponent {
         // if iPhone 10+, return 17% card height
         const x = DeviceInfo.getModel().split(' ');
 
+        console.log('tagsContainer', x);
+
         if (x.includes('X') || parseInt(x[1]) >= 10)
         {
-
             if (x[1] === "11" && x[2] === 'Pro')
+            {
+                return this.props.keyboardOpen
+                    ? styles.iPhone11ProTagsContainerKeyboardOpen
+                    : styles.iPhone11ProTagsContainerKeyboardClosed;
+            }
+
+            if (x[1] === "12" && x[2] === "mini")
             {
                 return this.props.keyboardOpen
                     ? styles.iPhone11ProTagsContainerKeyboardOpen
@@ -153,10 +159,10 @@ const styles = {
         borderRadius: 6,
         alignItems: 'center',
         flexDirection: 'row',
-        // flex: 1,
         paddingTop: SCREEN_HEIGHT * 0.025,
         height: '100%',
-        marginRight: SCREEN_WIDTH * 0.01
+        marginRight: SCREEN_WIDTH * 0.01,
+        zIndex: 9999
     },
     category: {
         position: 'absolute',
@@ -193,7 +199,8 @@ const styles = {
         height: SCREEN_HEIGHT * 0.08,
         position: 'absolute',
         top: SCREEN_HEIGHT * .325,
-        marginLeft: SCREEN_WIDTH * 0.01
+        marginLeft: SCREEN_WIDTH * 0.01,
+        zIndex: 1
     },
     iPhone11ProTagsContainerKeyboardClosed: {
         alignItems: 'center',
