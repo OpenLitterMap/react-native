@@ -94,7 +94,7 @@ class LitterPicker extends PureComponent
     _keyboardDidShow (e)
     {
         let height = 0;
-        let bottomHeight = 0;
+        let bottomHeight = 0; // Height on the "suggested tags" container
 
         if (Platform.OS === 'android')
         {
@@ -107,6 +107,8 @@ class LitterPicker extends PureComponent
             // if "iPhone 10+"
             let x = DeviceInfo.getModel().split(' ')[1];
 
+            console.log({ x });
+
             if (x.includes('X') || parseInt(x) >= 10)
             {
                 height = 0.2;
@@ -116,8 +118,9 @@ class LitterPicker extends PureComponent
             // iPhone 5,6,7,8
             else
             {
+                // TD - if (parseInt(x) === 8)...
                 height = 0; // 0.2425;
-                bottomHeight = 0.32;
+                bottomHeight = 0.35;
             }
         }
 
