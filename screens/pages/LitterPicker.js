@@ -122,9 +122,6 @@ class LitterPicker extends PureComponent
             }
         }
 
-        // console.log({ height });
-        // console.log({ bottomHeight });
-
         this.setState({
             keyboardOpen: true,
             bottomHeight: SCREEN_HEIGHT * bottomHeight,
@@ -136,6 +133,9 @@ class LitterPicker extends PureComponent
      * Set params when keyboard has been closed to hide bottom nav panel
      *
      * Bug with android that we can fix by setting height of keyboardAvoidingView to 10% screen height when closed *shrugs*
+     *
+     * When a tag is set from the keyboard, the tag.title changes (eg "Facemask") but the category does not change.
+     * onKeyboardClose, we need to reset tag.title to the first item from the currently selected category
      */
     _keyboardDidHide ()
     {
@@ -143,6 +143,10 @@ class LitterPicker extends PureComponent
 
         // this is necessary to allow the user to click on text input because of a bug with keyboardAvoidingView on Android
         if (Platform.OS === "android") height = SCREEN_HEIGHT * 0.1;
+
+        const first = CATEGORIES.find(cat => cat.title === this.props.category)['items'][0];
+
+        this.props.changeItem(first);
 
         this.setState({
             keyboardOpen: false,
