@@ -2,12 +2,14 @@ import React, { Component } from 'react';
 import {
     ActivityIndicator,
     Dimensions,
-    Image,
+    Image, SafeAreaView,
     ScrollView,
     Text,
     View
 } from 'react-native';
 import PageControl from 'react-native-page-control';
+
+import { TransText } from "react-native-translation";
 
 import Swiper from 'react-native-swiper';
 
@@ -43,10 +45,10 @@ class Slides extends Component {
                     <View style={styles.textContainer}>
                         <View
                             style={{ flex: 1, flexDirection: 'row', alignSelf: 'center' }}>
-                            <Text style={styles.slideTitle1}>{slide.title1}</Text>
-                            <Text style={styles.slideTitle2}>{slide.title2}</Text>
+                            <TransText style={styles.slideTitle1} dictionary={slide.title1} />
+                            <TransText style={styles.slideTitle2} dictionary={slide.title2} />
                         </View>
-                        <Text style={styles.slideText}>{slide.text}</Text>
+                        <TransText style={styles.slideText} dictionary={slide.text} />
                     </View>
                     <PageControl
                         style={styles.pageControl}

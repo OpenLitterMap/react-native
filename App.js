@@ -7,12 +7,12 @@ import configureStore from './store'
 // import Icon from 'react-native-vector-icons/MaterialIcons';
 // Icon.loadFont();
 
-import RootContainer from './screens/RootContainer'
+import { LanguageProvider } from 'react-native-translation'
 
-// the hoc
-// import i18n from './i18n'
-// import { I18nextProvider } from 'react-i18next';
-// import { withTranslation } from 'react-i18next';
+// todo - load the language we need
+import { en } from './assets/langs/en';
+
+import RootContainer from './screens/RootContainer'
 
 const App: () => React$Node = () => {
 
@@ -26,7 +26,9 @@ const App: () => React$Node = () => {
     return (
         <Provider store={store}>
             <PersistGate persistor={persistor}>
-                <RootContainer />
+                <LanguageProvider language={"en"} defaultLanguage={"en"} translations={en}>
+                    <RootContainer />
+                </LanguageProvider>
             </PersistGate>
         </Provider>
     );
