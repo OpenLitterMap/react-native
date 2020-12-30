@@ -19,23 +19,23 @@ const SLIDE_DATA = [
     {
         id: 1,
         image: require('../../assets/easy.png'),
-        title1: "It's ",
-        title2: "EASY!",
-        text: "Just tag litter and upload it"
+        title1: "welcome.its",
+        title2: "welcome.easy",
+        text: "welcome.just-tag-and-upload"
     },
     {
         id: 2,
         image: require('../../assets/rank.png'),
-        title1: "It's ",
-        title2: "FUN!",
-        text: "Climb the leaderboards at the #LitterWorldCup"
+        title1: "welcome.its",
+        title2: "welcome.fun",
+        text: "welcome.climb-leaderboards"
     },
     {
         id: 3,
         image: require('../../assets/dove_colour.png'),
-        title1: "It's ",
-        title2: "OPEN!",
-        text: "Open data has unlimited potential"
+        title1: "welcome.its",
+        title2: "welcome.open",
+        text: "welcome.unlimited-potential"
     }
 ];
 

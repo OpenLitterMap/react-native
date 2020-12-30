@@ -11,6 +11,8 @@ import {
     View
 } from 'react-native'
 
+import { TransText } from 'react-native-translation'
+
 import { request, PERMISSIONS } from 'react-native-permissions'
 
 import { Button, Header, Icon, SearchBar } from 'react-native-elements'
@@ -165,6 +167,8 @@ class LeftPage extends PureComponent {
                         centerComponent={this.renderCenterTitle()}
                         rightComponent={this.renderDeleteButton()}
                     />
+
+                    {/*<TransText dictionary={"welcome.easy"} />*/}
 
                     <LeftPageImages
                         gallery={this.props.gallery}
