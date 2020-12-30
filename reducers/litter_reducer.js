@@ -280,7 +280,7 @@ export default function (state = INITIAL_STATE, action)
                 {
                     quantity = newTags[action.payload.category][action.payload.title];
 
-                    if (newTags[action.payload.category][action.payload.title] == quantity) quantity++;
+                    if (newTags[action.payload.category][action.payload.title] === quantity) quantity++;
                 }
             }
 

@@ -30,12 +30,20 @@ class LitterTags extends PureComponent {
         // if iPhone 10+, return 17% card height
         const x = DeviceInfo.getModel().split(' ');
 
-        console.log('tagsContainer', x);
+        // console.log('tagsContainer', x);
 
         if (x.includes('X') || parseInt(x[1]) >= 10)
         {
             // iPhone 11 Pro
             if (x[1] === "11" && x[2] === 'Pro')
+            {
+                return this.props.keyboardOpen
+                    ? styles.iPhone11ProTagsContainerKeyboardOpen
+                    : styles.iPhone11ProTagsContainerKeyboardClosed;
+            }
+
+            // iPhone 12
+            else if (x[1] === "12" && x.length === 2)
             {
                 return this.props.keyboardOpen
                     ? styles.iPhone11ProTagsContainerKeyboardOpen
@@ -50,23 +58,15 @@ class LitterTags extends PureComponent {
                     : styles.iPhone11ProTagsContainerKeyboardClosed;
             }
 
-            // iPhone 12 x
-            else if (x[1] === "12" && x.length === 2)
-            {
-                return this.props.keyboardOpen
-                    ? styles.iPhone11ProTagsContainerKeyboardOpen
-                    : styles.iPhone11ProTagsContainerKeyboardClosed;
-            }
-
             // iPhone 12 Pro
-            else if (x[1] === "12" && x[2] === 'Pro')
+            else if (x[1] === "12" && x[2] === 'Pro' && x[3] === 'undefined')
             {
                 return this.props.keyboardOpen
                     ? styles.iPhone11ProTagsContainerKeyboardOpen
                     : styles.iPhone11ProTagsContainerKeyboardClosed;
             }
 
-            // iPhone 11
+            // iPhone 11 & iPhone 12 Pro Max
             return this.props.keyboardOpen
                 ? styles.iTagsContainerOpen
                 : styles.iTagsContainer;
@@ -207,7 +207,8 @@ const styles = {
         height: SCREEN_HEIGHT * 0.08,
         position: 'absolute',
         top: SCREEN_HEIGHT * .33,
-        marginLeft: SCREEN_WIDTH * 0.01
+        marginLeft: SCREEN_WIDTH * 0.01,
+        zIndex: 1
     },
 
     // iPhone 11 Pro

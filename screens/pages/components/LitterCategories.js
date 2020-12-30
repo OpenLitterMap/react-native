@@ -35,7 +35,7 @@ class LitterCategories extends PureComponent {
      */
     computeStyle ()
     {
-        if (Platform.OS == 'android') return styles.container;
+        if (Platform.OS === 'android') return styles.container;
 
         // if "iPhone 10+", return 17% card height
         let x = DeviceInfo.getModel().split(' ')[1];
@@ -57,7 +57,7 @@ class LitterCategories extends PureComponent {
                 underlayColor='transparent'
             >
                 <Card
-                    containerStyle={[ styles.card, category.title == this.props.category ? styles.selectedCard : '' ]}
+                    containerStyle={[ styles.card, category.title === this.props.category ? styles.selectedCard : '' ]}
                     style={styles.category}
                     wrapperStyle={{ alignItems: 'center', justifyContent: 'center' }}
                 >
