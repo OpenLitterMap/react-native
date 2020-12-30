@@ -45,8 +45,8 @@ class Slides extends Component {
                     <View style={styles.textContainer}>
                         <View
                             style={{ flex: 1, flexDirection: 'row', alignSelf: 'center' }}>
-                            <TransText style={styles.slideTitle1} dictionary={slide.title1} />
-                            <TransText style={styles.slideTitle2} dictionary={slide.title2} />
+                            <TransText style={styles.slideTitle1} dictionary={'welcome.its'} />
+                            <TransText style={styles.slideTitle2} dictionary={slide.title} />
                         </View>
                         <TransText style={styles.slideText} dictionary={slide.text} />
                     </View>

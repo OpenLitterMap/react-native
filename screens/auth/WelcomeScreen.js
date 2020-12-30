@@ -1,12 +1,10 @@
 import React, { Component } from 'react';
 import {
-    ActivityIndicator,
     Dimensions,
-    Text,
     TouchableOpacity,
     View
 } from 'react-native';
-import AsyncStorage from '@react-native-community/async-storage';
+import { TransText } from "react-native-translation";
 import LinearGradient from 'react-native-linear-gradient';
 import Slides from './welcome/Slides';
 import { connect } from 'react-redux';
@@ -19,22 +17,19 @@ const SLIDE_DATA = [
     {
         id: 1,
         image: require('../../assets/easy.png'),
-        title1: "welcome.its",
-        title2: "welcome.easy",
+        title: "welcome.easy",
         text: "welcome.just-tag-and-upload"
     },
     {
         id: 2,
         image: require('../../assets/rank.png'),
-        title1: "welcome.its",
-        title2: "welcome.fun",
+        title: "welcome.fun",
         text: "welcome.climb-leaderboards"
     },
     {
         id: 3,
         image: require('../../assets/dove_colour.png'),
-        title1: "welcome.its",
-        title2: "welcome.open",
+        title: "welcome.open",
         text: "welcome.unlimited-potential"
     }
 ];
@@ -70,16 +65,19 @@ class WelcomeScreen extends Component {
                     colors={['#2ecc71','#8e44ad', '#c5d119']}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 1 }}
-                    style={{ flex: 1 }}>
-
+                    style={{ flex: 1 }}
+                >
                     <Slides data={SLIDE_DATA} />
 
                     <View style={styles.loginPosition}>
                         <TouchableOpacity onPress={this.goToAuth.bind(this, 'signup')} style={styles.loginButton}>
-                            <Text style={styles.signupText}>Continue</Text>
+                            <TransText style={styles.signupText} dictionary={'welcome.continue'} />
                         </TouchableOpacity>
-                        <Text onPress={this.goToAuth.bind(this, 'login')}
-                              style={styles.loginText}>Already have an account? Log in.</Text>
+                        <TransText
+                            onPress={this.goToAuth.bind(this, 'login')}
+                            style={styles.loginText}
+                            dictionary={'welcome.already-have-account'}
+                        />
                     </View>
                 </LinearGradient>
             </View>
