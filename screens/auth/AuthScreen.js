@@ -12,6 +12,7 @@ import {
     Image,
     View
 } from 'react-native'
+import { getTranslation, TransText } from "react-native-translation"
 import StyleSheet from 'react-native-extended-stylesheet'
 import { Icon } from 'react-native-elements'
 
@@ -313,19 +314,25 @@ class AuthScreen extends Component {
      * @returns {boolean}
      */
     validateEmail = email => {
-        if (this.isEmailValid(email)) {
+        if (this.isEmailValid(email))
+        {
             this.setState({
                 emailErrorMessage: null
             });
-        } else {
+        }
+
+        else
+        {
             this.setState({
                 emailErrorMessage:
                     email.trim() === ''
-                        ? 'Please enter your email address!'
-                        : 'This is not a valid email address!'
+                        ? 'auth.enter-email'
+                        : 'auth.email-not-valid'
             });
+
             return false;
         }
+
         return true;
     };
 
@@ -347,15 +354,15 @@ class AuthScreen extends Component {
             } else {
                 this.setState({
                     passwordErrorMessage: isEmpty
-                        ? 'Please enter a password!'
-                        : 'Must contain 1 uppercase, 1 digit, 6+ characters'
+                        ? 'auth.enter-password'
+                        : 'auth.must-contain'
                 });
 
                 return false;
             }
         } else {
             this.setState({
-                passwordErrorMessage: isEmpty ? 'Please enter a password!' : null
+                passwordErrorMessage: isEmpty ? 'auth.enter-password' : null
             });
 
             return !isEmpty;
@@ -375,8 +382,8 @@ class AuthScreen extends Component {
             this.setState({
                 usernameErrorMessage:
                     username.trim() === ''
-                        ? 'Please enter a username!'
-                        : 'Must be alphanumeric, 8-20 characters, no spaces'
+                        ? 'auth.enter-username'
+                        : 'auth.alphanumeric-username'
             });
             return false;
         }
@@ -421,7 +428,7 @@ class AuthScreen extends Component {
           $                         End anchor.
           source: https://stackoverflow.com/questions/336210/regular-expression-for-alphanumeric-and-underscores
          */
-        return username.length > 0 ? true : false;
+        return username.length > 0;
         // let regex = /^\w{4,20}$/;
         // return regex.test(username);
     };
@@ -518,29 +525,30 @@ class AuthScreen extends Component {
     getSubmitButtonText = () => {
         switch (this.state.formMode) {
             case formModes.CREATE_ACCOUNT:
-                return 'Create Account';
+                return 'auth.create-account';
             case formModes.LOGIN:
-                return 'Log In';
+                return 'auth.login';
             case formModes.FORGOT_PASSWORD:
-                return 'Reset Password';
+                return 'auth.forgot-password';
         }
     };
 
     getModeSwitchText = () => {
         switch (this.state.formMode) {
             case formModes.CREATE_ACCOUNT:
-                return 'Already have an account?';
+                return  'auth.already-have'; // 'Already have an account?';
             case formModes.LOGIN:
-                return 'Create Account';
+                return 'auth.create-account'; // 'Create Account';
             case formModes.FORGOT_PASSWORD:
-                return 'Back to Login';
+                return 'auth.back-to-login';
         }
     };
 
     /**
      * Render JSX
      */
-    render() {
+    render ()
+    {
         const { isSubmitting } = this.props;
 
         const {
@@ -558,6 +566,10 @@ class AuthScreen extends Component {
             serverStatusText,
             isLogoDisplayed
         } = this.state;
+
+        const emailTranslation          = getTranslation('auth.email-address');
+        const passwordTranslation       = getTranslation('auth.password');
+        const usernameTranslation       = getTranslation('auth.unique-username');
 
         return (
             <View style={styles.container}>
@@ -597,7 +609,7 @@ class AuthScreen extends Component {
                                         containerStyle={styles.formContainer}
                                         selectionColor={'#2c3e50'}
                                         onChangeText={this.updateEmail}
-                                        placeholder="Email Address"
+                                        placeholder={emailTranslation}
                                         placeholderTextColor="#ccc"
                                         style={styles.inputStyle}
                                         value={email}
@@ -605,9 +617,7 @@ class AuthScreen extends Component {
                                 </View>
                                 {emailErrorMessage !== null && emailErrorMessage !== undefined && (
                                     <View style={styles.errorWrap}>
-                                        <Text style={styles.error}>
-                                            {emailErrorMessage.toString()}
-                                        </Text>
+                                        <TransText style={styles.error} dictionary={emailErrorMessage} />
                                     </View>
                                 )}
 
@@ -629,7 +639,7 @@ class AuthScreen extends Component {
                                                 autoCapitalize={'none'}
                                                 containerStyle={styles.formContainer}
                                                 onChangeText={this.updatePassword}
-                                                placeholder="Password"
+                                                placeholder={passwordTranslation}
                                                 placeholderTextColor="#ccc"
                                                 selectionColor={'#2c3e50'}
                                                 secureTextEntry={!isShowingPassword}
@@ -650,21 +660,22 @@ class AuthScreen extends Component {
                                                 color={COLORS.iconGrey}
                                             />
                                         </View>
-                                        {passwordErrorMessage !== null &&
-                                        passwordErrorMessage !== undefined && (
-                                            <View style={styles.errorWrap}>
-                                                <Text style={styles.error}>
-                                                    {passwordErrorMessage.toString()}
-                                                </Text>
-                                            </View>
-                                        )}
+                                        {
+                                            passwordErrorMessage !== null && passwordErrorMessage !== undefined && (
+                                                <View style={styles.errorWrap}>
+                                                    <TransText style={styles.error} dictionary={passwordErrorMessage} />
+                                                </View>
+                                            )
+                                        }
                                     </>
                                 )}
 
                                 {formMode === formModes.LOGIN && (
-                                    <Text style={styles.forgotPw} onPress={this.forgotPassword}>
-                                        Forgot Password?
-                                    </Text>
+                                    <TransText
+                                        style={styles.forgotPw}
+                                        onPress={this.forgotPassword}
+                                        dictionary={'auth.forgot-password'}
+                                    />
                                 )}
 
                                 {formMode === formModes.CREATE_ACCOUNT && (
@@ -686,7 +697,7 @@ class AuthScreen extends Component {
                                                 autoCorrect={false}
                                                 autoCapitalize={'none'}
                                                 containerStyle={styles.formContainer}
-                                                placeholder="Unique Username"
+                                                placeholder={usernameTranslation}
                                                 placeholderTextColor="#ccc"
                                                 selectionColor={'#2c3e50'}
                                                 style={styles.inputStyle}
@@ -697,9 +708,7 @@ class AuthScreen extends Component {
                                         {usernameErrorMessage !== null &&
                                         usernameErrorMessage !== undefined && (
                                             <View style={styles.errorWrap}>
-                                                <Text style={styles.error}>
-                                                    {usernameErrorMessage}
-                                                </Text>
+                                                <TransText style={styles.error} dictionary={usernameErrorMessage} />
                                             </View>
                                         )}
                                     </>
@@ -734,14 +743,14 @@ class AuthScreen extends Component {
                                         {isSubmitting ? (
                                             <ActivityIndicator color={COLORS.whiteText} />
                                         ) : (
-                                            <Text
+                                            <TransText
                                                 style={[
                                                     styles.authButtonText,
                                                     formMode === formModes.FORGOT_PASSWORD &&
                                                     styles.resetText
-                                                ]}>
-                                                {this.getSubmitButtonText()}
-                                            </Text>
+                                                ]}
+                                                dictionary={this.getSubmitButtonText()}
+                                            />
                                         )}
                                     </TouchableOpacity>
 
@@ -754,7 +763,8 @@ class AuthScreen extends Component {
                                                 alignSelf: 'center'
                                             }}
                                         />
-                                        <Text style={styles.divider}>or</Text>
+                                        {/* ---- OR ---- */}
+                                        <TransText style={styles.divider} dictionary={'auth.or'} />
                                         <View
                                             style={{
                                                 backgroundColor: COLORS.whiteText,
@@ -765,9 +775,11 @@ class AuthScreen extends Component {
                                         />
                                     </View>
 
-                                    <Text style={styles.switch} onPress={this.toggleFormMode}>
-                                        {this.getModeSwitchText()}
-                                    </Text>
+                                    <TransText
+                                        style={styles.switch}
+                                        onPress={this.toggleFormMode}
+                                        dictionary={this.getModeSwitchText()}
+                                    />
                                 </View>
                             </View>
                         </View>

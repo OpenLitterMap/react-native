@@ -2,18 +2,12 @@ import React, { Component } from 'react';
 import {
     ActivityIndicator,
     Dimensions,
-    Image, SafeAreaView,
+    Image,
     ScrollView,
-    Text,
     View
 } from 'react-native';
 import PageControl from 'react-native-page-control';
-
 import { TransText } from "react-native-translation";
-
-import Swiper from 'react-native-swiper';
-
-// import * as Font from 'expo-font'
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -41,15 +35,17 @@ class Slides extends Component {
         return this.props.data.map((slide, i) => {
             return (
                 <View key={slide.id} style={styles.slide}>
+
                     <Image source={slide.image} style={styles.slideImage} />
+
                     <View style={styles.textContainer}>
-                        <View
-                            style={{ flex: 1, flexDirection: 'row', alignSelf: 'center' }}>
+                        <View style={{ flex: 1, flexDirection: 'row', alignSelf: 'center' }}>
                             <TransText style={styles.slideTitle1} dictionary={'welcome.its'} />
                             <TransText style={styles.slideTitle2} dictionary={slide.title} />
                         </View>
                         <TransText style={styles.slideText} dictionary={slide.text} />
                     </View>
+
                     <PageControl
                         style={styles.pageControl}
                         numberOfPages={this.props.data.length}
