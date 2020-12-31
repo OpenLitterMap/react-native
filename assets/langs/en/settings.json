@@ -1,0 +1,17 @@
+{
+    "settings": "Settings",
+    "my-account": "My Account",
+    "name": "Name",
+    "username": "Username",
+    "email": "Email",
+    "privacy": "Privacy",
+    "show-name-maps": "Show Name on Maps",
+    "show-username-maps": "Show Username on Maps",
+    "show-name-leaderboards": "Show Name on Leaderboards",
+    "show-username-leaderboards": "Show Username on Leaderboards",
+    "show-name-createdby": "Show Name on Created By",
+    "show-username-createdby": "Show Username on Created By",
+    "tags": "Tags",
+    "show-previous-tags": "Show Previous Tags",
+    "logout": "Logout"
+}
