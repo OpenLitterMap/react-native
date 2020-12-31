@@ -98,9 +98,10 @@ class LeftPage extends PureComponent {
                         {
                             this.props.uploadVisible && (
                                 <View style={styles.modal}>
-                                    <Text style={styles.uploadText}>
-                                        Please wait while your photos upload.
-                                    </Text>
+                                    <TransText
+                                        style={styles.uploadText}
+                                        dictionary={'leftpage.please-wait-uploading'}
+                                    />
                                     <ActivityIndicator style={{ marginBottom: 10 }} />
                                     <Text style={styles.uploadCount}>
                                         {this._getRemainingUploadCount()} /{' '}
@@ -131,20 +132,25 @@ class LeftPage extends PureComponent {
                             this.props.thankYouVisible && (
                                 <View style={styles.modal}>
                                     <View style={styles.thankYouModalInner}>
-                                        <Text
-                                            style={{ fontSize: SCREEN_HEIGHT * 0.02, marginBottom: 5 }}>
-                                            Thank you!!!
-                                        </Text>
-                                        <Text
-                                            style={{ fontSize: SCREEN_HEIGHT * 0.02, marginBottom: 5 }}>
-                                            You have uploaded {this.props.totalImagesToUpload} new photos!
-                                        </Text>
+                                        <TransText
+                                            style={{ fontSize: SCREEN_HEIGHT * 0.02, marginBottom: 5 }}
+                                            dictionary={'leftpage.thank-you'}
+                                        />
+
+                                        <TransText
+                                            style={{ fontSize: SCREEN_HEIGHT * 0.02, marginBottom: 5 }}
+                                            dictionary={'leftpage.you-have-uploaded'}
+                                            values={{ "count": this.props.totalImagesToUpload }}
+                                        />
 
                                         <View style={{ flexDirection: 'row' }}>
                                             <TouchableWithoutFeedback
                                                 onPress={this._toggleThankYou.bind(this)}>
                                                 <View style={styles.thankYouButton}>
-                                                       <Text style={{ color: 'white', fontSize: SCREEN_HEIGHT * 0.02 }}>Close</Text>
+                                                       <TransText
+                                                           style={styles.normalWhiteText}
+                                                           dictionary={'leftpage.close'}
+                                                       />
                                                 </View>
                                             </TouchableWithoutFeedback>
                                         </View>
@@ -252,13 +258,13 @@ class LeftPage extends PureComponent {
                                 size={SCREEN_HEIGHT * 0.04}
                                 color="#00aced"
                             />
-                            <Text style={{ fontSize: SCREEN_HEIGHT * 0.02 }}>Delete</Text>
+                            <TransText style={styles.normalText} dictionary={'leftpage.delete'} />
                         </TouchableOpacity>
                     </View>
                 );
             }
 
-            return <Text>Select the images you want to delete</Text>;
+            return <TransText dictionary={'leftpage.select-to-delete'} />;
         }
         return (
             <View style={styles.bottomBarContainer}>
@@ -270,9 +276,10 @@ class LeftPage extends PureComponent {
                             size={SCREEN_HEIGHT * 0.04}
                             color="#00aced"
                         />
-                        <Text style={{ fontSize: SCREEN_HEIGHT * 0.02 }}>Photos</Text>
+                        <TransText style={styles.normalText} dictionary={'leftpage.photos'} />
                     </View>
                 </TouchableWithoutFeedback>
+
                 {/* Icon 2 - Upload Photos & Data */}
                 {this.renderUploadButton()}
             </View>
@@ -301,7 +308,7 @@ class LeftPage extends PureComponent {
             <TouchableWithoutFeedback onPress={this.uploadPhotos}>
                 <View style={styles.iconPadding}>
                     <Icon name="backup" size={SCREEN_HEIGHT * 0.04} color="#00aced" />
-                    <Text style={{ fontSize: SCREEN_HEIGHT * 0.02 }}>Upload</Text>
+                    <TransText style={styles.normalText} dictionary={'leftpage.upload'} />
                 </View>
             </TouchableWithoutFeedback>
         );
@@ -315,22 +322,22 @@ class LeftPage extends PureComponent {
         if (this.props.isSelecting)
         {
             return (
-                <Text
-                    style={{ color: 'white', fontSize: SCREEN_HEIGHT * 0.02 }}
-                    onPress={this.toggleSelecting}>
-                    Cancel
-                </Text>
+                <TransText
+                    style={styles.normalWhiteText}
+                    onPress={this.toggleSelecting}
+                    dictionary={'leftpage.cancel'}
+                />
             );
         }
 
         if (this.props.photos.length > 0 || this.props.gallery.length > 0)
         {
             return (
-                <Text
-                    style={{ fontSize: SCREEN_HEIGHT * 0.02 }}
-                    onPress={this.toggleSelecting}>
-                    Delete
-                </Text>
+                <TransText
+                    style={styles.normalText}
+                    onPress={this.toggleSelecting}
+                    dictionary={'leftpage.delete'}
+                />
             );
         }
 
@@ -338,11 +345,13 @@ class LeftPage extends PureComponent {
     }
 
     /**
-     * Render My Account / x items counted Header Title
+     * Render Header Title
+     *
+     * My Account || x photos selected
      */
     renderCenterTitle ()
     {
-        if (this.props.isSelecting) return <Text>{this.props.selected} selected</Text>;
+        if (this.props.isSelecting) return <TransText dictionary={'leftpage.selected'} values={{ 'photos': this.props.selected }} />;
 
         if (this.props.gallery.length > 0 | this.props.photos.length > 0)
         {
@@ -350,7 +359,7 @@ class LeftPage extends PureComponent {
             {
                 if (this.props.gallery[i].hasOwnProperty('litter'))
                 {
-                    return <Text style={{ fontSize: SCREEN_HEIGHT * 0.02 }}>Press Upload</Text>;
+                    return <TransText style={styles.normalText} dictionary={'leftpage.press-upload'} />;
                 }
             }
 
@@ -358,12 +367,11 @@ class LeftPage extends PureComponent {
             {
                 if (this.props.photos[i].hasOwnProperty('litter'))
                 {
-                    return <Text style={{ fontSize: SCREEN_HEIGHT * 0.02 }}>Press Upload</Text>;
+                    return <TransText style={styles.normalText} dictionary={'leftpage.press-upload'} />;
                 }
             }
 
-
-            return <Text style={{ fontSize: SCREEN_HEIGHT * 0.02 }}>Select a photo</Text>;
+            return <TransText style={styles.normalText} dictionary={'leftpage.select-a-photo'} />;
         }
     }
 
@@ -586,6 +594,13 @@ const styles = {
         paddingBottom: 5,
         alignItems: 'center',
         justifyContent: 'center'
+    },
+    normalText: {
+        fontSize: SCREEN_HEIGHT * 0.02
+    },
+    normalWhiteText: {
+        color: 'white',
+        fontSize: SCREEN_HEIGHT * 0.02
     },
     modal: {
         backgroundColor: 'rgba(0,0,0,0.6)',

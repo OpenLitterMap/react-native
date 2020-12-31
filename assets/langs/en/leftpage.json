@@ -3,8 +3,14 @@
     "geotagged": "Geotagged",
     "cancel": "Cancel",
     "done": "Done",
-    "select": "Select a photo",
+    "upload": "Upload",
+    "select-a-photo": "Select a photo",
     "delete": "Delete",
-    "selected": "selected",
-    "select-to-delete": "Select the images you want to delete"
+    "selected": "{photos} selected",
+    "press-upload": "Press Upload",
+    "select-to-delete": "Select the images you want to delete",
+    "please-wait-uploading": "Please wait while your photos upload",
+    "thank-you": "Thank you!!!",
+    "you-have-uploaded": "You have uploaded {count} photos",
+    "close": "Close"
 }
