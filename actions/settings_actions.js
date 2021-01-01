@@ -118,16 +118,10 @@ export const saveSetting = (data, value, token) => {
 /**
  * Toggle the modal and turn one of these options for updating
  */
-export const toggleSettingsModal = (id) => {
-
-    var data = "";
-    if (id == 1) data = "Name";
-    if (id == 2) data = "Username";
-    if (id == 3) data = "Email";
-
+export const toggleSettingsModal = (id, title) => {
     return {
         type: TOGGLE_SETTINGS_MODAL,
-        payload: data
+        payload: { id, title }
     };
 }
 
@@ -136,14 +130,15 @@ export const toggleSettingsModal = (id) => {
  */
 export const toggleSettingsSwitch = (id, token) => {
 
-    var endUrl = "";
-    if (id == 4) endUrl = "maps/name";
-    if (id == 5) endUrl = "maps/username";
-    if (id == 6) endUrl = "leaderboard/name";
-    if (id == 7) endUrl = "leaderboard/username";
-    if (id == 8) endUrl = "createdby/name";
-    if (id == 9) endUrl = "createdby/username";
-    if (id == 10) endUrl = "toggle-previous-tags"
+    let endUrl = "";
+
+    if (id === 4) endUrl = "maps/name";
+    if (id === 5) endUrl = "maps/username";
+    if (id === 6) endUrl = "leaderboard/name";
+    if (id === 7) endUrl = "leaderboard/username";
+    if (id === 8) endUrl = "createdby/name";
+    if (id === 9) endUrl = "createdby/username";
+    if (id === 10) endUrl = "toggle-previous-tags"
 
     return dispatch => {
 
@@ -160,13 +155,13 @@ export const toggleSettingsSwitch = (id, token) => {
         })
         .then(async response => {
             // console.log('toggle_settings', response);
-            if (response.status == 200) {
-
+            if (response.status === 200)
+            {
                 const key = Object.keys(response.data)[0];
                 const value = Object.values(response.data)[0];
 
                 // console.log("Grabbing user from AsyncStorage...");
-                var user = await AsyncStorage.getItem("user");
+                let user = await AsyncStorage.getItem("user");
                 // console.log("User found");
                 // transform user json string into an object
                 user = JSON.parse(user);

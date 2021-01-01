@@ -3,18 +3,16 @@ import {
     ActivityIndicator,
     Alert,
     Dimensions,
-    Image,
     Modal,
     SafeAreaView,
     SectionList,
     Switch,
     Text,
-    TextInput,
     TouchableHighlight,
-    TouchableWithoutFeedback,
     View
 } from 'react-native';
-import { Button, FormInput, Header, Icon } from 'react-native-elements';
+import { getTranslation, TransText } from "react-native-translation";
+import { Header } from 'react-native-elements';
 import * as actions from '../actions';
 import { connect } from 'react-redux';
 
@@ -31,6 +29,9 @@ class SettingsScreen extends Component {
 
     render ()
     {
+        const settings = getTranslation('settings.settings');
+        const logout = getTranslation('settings.logout');
+
         return (
             <>
                 <SafeAreaView style={{ flex: 0, backgroundColor: '#2189dc' }} />
@@ -61,60 +62,65 @@ class SettingsScreen extends Component {
                             onPress: () => this.props.navigation.navigate('swipe'),
                             size: SCREEN_HEIGHT * 0.03,
                         }}
-                        centerComponent={{ text: 'Settings', style: { color: '#fff', fontSize: SCREEN_HEIGHT * 0.02 } }}
+                        centerComponent={{ text: settings, style: { color: '#fff', fontSize: SCREEN_HEIGHT * 0.02 } }}
+                        rightComponent={{
+                            text: logout,
+                            onPress: () => this.props.logout(),
+                            size: SCREEN_HEIGHT * 0.03
+                        }}
                     />
                     <View style={styles.container}>
 
                         <SectionList
                             stickySectionHeadersEnabled={false}
                             renderSectionHeader={({ section: { title }}) => (
-                                <Text style={styles.sectionHeaderTitle}>{title}</Text>
+                                <TransText style={styles.sectionHeaderTitle} dictionary={title} />
                             )}
                             // Todo, save these elsewhere and import them for readability.
                             sections={[
-                                { title: 'MY ACCOUNT', data: [
+                                { title: 'settings.my-account', data: [
                                         {
                                             id: 1,
-                                            title: 'Name'
+                                            title: 'settings.name'
                                         },
                                         {
                                             id: 2,
-                                            title: 'Username'
+                                            title: 'settings.username'
                                         },
                                         {
                                             id: 3,
-                                            title: 'Email'
+                                            title: 'settings.email'
                                         }]},
-                                { title: 'PRIVACY', data: [
+                                { title: 'settings.privacy', data: [
                                         {
                                             id: 4,
-                                            title: 'Show Name on Maps'
+                                            title: 'settings.show-name-maps'
                                         },
                                         {
                                             id: 5,
-                                            title: 'Show Username on Maps'
+                                            title: 'settings.show-username-maps'
                                         },
                                         {
                                             id: 6,
-                                            title: 'Show Name on Leaderboards'
+                                            title: 'settings.show-name-leaderboards'
                                         },
                                         {
                                             id: 7,
-                                            title: 'Show Username on Leaderboards'
+                                            title: 'settings.show-username-leaderboards'
                                         },
                                         {
                                             id: 8,
-                                            title: 'Show Name on CreatedBy'
+                                            title: 'settings.show-name-createdby'
                                         },
                                         {
                                             id: 9,
-                                            title: 'Show Username on CreatedBy'
+                                            title: 'settings.show-username-createdby'
                                         }
                                     ]},
-                                { title: 'TAGS', data: [
+                                { title: 'settings.tags', data: [
                                         {
                                             id: 10,
-                                            title: 'Show Previous Tags'
+                                            title: 'settings.show-previous-tags'
                                         }
                                     ]}
                             ]}
@@ -125,12 +131,6 @@ class SettingsScreen extends Component {
                             )}
                             keyExtractor={(item, index) => item + index}
                         />
-
-                        <View style={styles.logoutContainer}>
-                            <Icon name="power-settings-new" size={SCREEN_HEIGHT * 0.05} color='#00aced' onPress={this.props.logout} />
-                            <Text style={{ fontSize: SCREEN_HEIGHT * 0.02 }}>Logout</Text>
-                        </View>
-
                     </View>
                 </SafeAreaView>
                 <SafeAreaView style={{ flex: 0, backgroundColor: '#ccc' }} />
@@ -148,10 +148,10 @@ class SettingsScreen extends Component {
                 <TouchableHighlight
                     underlayColor={'#95a5a6'}
                     style={{ flex: 1, padding: 10 }}
-                    onPress={() => this._rowPressed(item.id)}
+                    onPress={() => this._rowPressed(item.id, item.title)}
                 >
                     <View style={{ flexDirection: 'row' }}>
-                        <Text style={{ flex: 1, fontSize: SCREEN_HEIGHT * 0.02 }}>{item.title}</Text>
+                        <TransText style={{ flex: 1, fontSize: SCREEN_HEIGHT * 0.02 }} dictionary={item.title} />
                         <Text style={{ fontSize: SCREEN_HEIGHT * 0.02}}>{ this._getRowData(item.id) }</Text>
                     </View>
                 </TouchableHighlight>
@@ -159,23 +159,37 @@ class SettingsScreen extends Component {
         } else {
             return (
                 <View style={styles.switchRow}>
-                    <Text style={{ flex: 1, fontSize: SCREEN_HEIGHT * 0.02 }}>{item.title}</Text>
+                    <TransText style={{ flex: 1, fontSize: SCREEN_HEIGHT * 0.02 }} dictionary={item.title} />
                     { this._getRowData(item.id) }
                 </View>
             );
         }
     }
 
+    /**
+     * Return the value for each row
+     */
     _getRowData (id)
     {
-        if (this.props.user) {
-            if (id == 1) {
-                return <Text>{this.props.user.name}</Text>;
-            } else if (id == 2) {
-                return <Text>{this.props.user.username}</Text>;
-            } else if (id == 3) {
-                return <Text>{this.props.user.email}</Text>;
-            } else {
+        if (this.props.user)
+        {
+            if (id === 1)
+            {
+                return this.props.user.name;
+            }
+
+            else if (id === 2)
+            {
+                return this.props.user.username;
+            }
+
+            else if (id === 3)
+            {
+                return this.props.user.email;
+            }
+
+            else
+            {
                 return (
                     <Switch
                         onValueChange={() => this._toggleSwitch(id)}
@@ -189,39 +203,48 @@ class SettingsScreen extends Component {
     /**
      * Toggle the Switch - Send post request to database
      */
-    _toggleSwitch (id) {
-        Alert.alert('Notice!', 'Do you really want to change this setting?',
+    _toggleSwitch (id)
+    {
+        const alert = getTranslation('settings.alert');
+        const info = getTranslation('settings.do-you-really-want-to-change');
+        const ok = getTranslation('settings.ok');
+        const cancel = getTranslation('settings.cancel');
+
+        Alert.alert(alert, info,
             [
-                { text: "OK", onPress: () => this.props.toggleSettingsSwitch(id, this.props.token) },
-                { text: "Cancel", onPress: () => console.log("cancel pressed")}
+                { text: ok, onPress: () => this.props.toggleSettingsSwitch(id, this.props.token) },
+                { text: cancel, onPress: () => console.log("cancel pressed")}
             ],
             { cancelable: true }
-        )}
+        )
+    }
 
     /**
      * A Row was pressed - open onTextChange
      */
-    _rowPressed (id) {
-        this.props.toggleSettingsModal(id);
+    _rowPressed (id, title)
+    {
+        this.props.toggleSettingsModal(id, title);
     }
 
     /**
      * Get the True or False value for a Switch
      */
-    _getSwitchValue(id) {
-        if (id == 4) {
+    _getSwitchValue (id)
+    {
+        if (id === 4) {
             return this.props.user.show_name_maps ? true : false;
-        } else if (id == 5) {
+        } else if (id === 5) {
             return this.props.user.show_username_maps ? true : false;
-        } else if (id == 6) {
+        } else if (id === 6) {
             return this.props.user.show_name ? true : false;
-        } else if (id == 7) {
+        } else if (id === 7) {
             return this.props.user.show_username ? true : false;
-        } else if (id == 8) {
+        } else if (id === 8) {
             return this.props.user.show_name_createdby ? true : false;
-        } else if (id == 9) {
+        } else if (id === 9) {
             return this.props.user.show_username_createdby ? true : false;
-        } else if (id == 10) {
+        } else if (id === 10) {
             return this.props.user.previous_tags ? true : false
         }
     }
@@ -236,7 +259,6 @@ const styles = {
     },
     container: {
         flex: 1,
-        // paddingBottom: 50,
         backgroundColor: '#ccc'
     },
     image: {

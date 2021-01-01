@@ -4,6 +4,7 @@ import {
     Platform,
     View
 } from 'react-native';
+import { getTranslation } from 'react-native-translation';
 import { Picker } from '@react-native-community/picker'; // removed from RN-core Apr 2020
 import { connect } from 'react-redux';
 
@@ -22,7 +23,7 @@ class LitterPickerWheels extends PureComponent {
      */
     _computeContainer ()
     {
-        if (Platform.OS == 'android') return styles.pickerViewAndroid;
+        if (Platform.OS === 'android') return styles.pickerViewAndroid;
 
         // if "iPhone 10+", return 17% card height
         let x = DeviceInfo.getModel().split(' ')[1];
@@ -37,7 +38,7 @@ class LitterPickerWheels extends PureComponent {
      */
     _computePickerWheel ()
     {
-        if (Platform.OS == 'android') return styles.pickerWheel;
+        if (Platform.OS === 'android') return styles.pickerWheel;
 
         // if "iPhone 10+", return 17% card height
         let x = DeviceInfo.getModel().split(' ')[1];
@@ -49,7 +50,6 @@ class LitterPickerWheels extends PureComponent {
 
     render ()
     {
-        console.log('LitterPickerWheels.render');
         return (
             <View style={this._computeContainer()}>
                 <Picker
@@ -58,9 +58,16 @@ class LitterPickerWheels extends PureComponent {
                     selectedValue={this.props.item}
                     onValueChange={item => this.props.changeItem(item)}
                 >
-                    {this.props.items.map((item, i) => (
-                        <Picker.Item label={item} value={item} key={i} />
-                    ))}
+                    {
+                        this.props.items.map((item, i) => {
+
+                            const x = getTranslation(`litter.${this.props.category.title}.${item.key}`);
+
+                            return (
+                                <Picker.Item label={x} value={item.key} key={i}/>
+                            );
+                        })
+                    }
                 </Picker>
                 <Picker
                     itemStyle={this._computePickerWheel()}
@@ -68,12 +75,21 @@ class LitterPickerWheels extends PureComponent {
                     selectedValue={this.props.q}
                     onValueChange={q => this.props.changeQ(q)}
                 >
-                    {QUANTITIES.map((q, i) => (
-                        <Picker.Item label={q} value={q} key={i} />
-                    ))}
+                    {
+                        QUANTITIES.map((q, i) => (
+                            <Picker.Item label={q} value={q} key={i} />
+                        ))
+                    }
                 </Picker>
             </View>
         );
+    }
+
+    getText (item)
+    {
+        console.log({ item });
+
+        return item;
     }
 }
 
