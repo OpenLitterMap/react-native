@@ -4,6 +4,7 @@ import {
     Text,
     TouchableHighlight
 } from 'react-native';
+import { TransText } from "react-native-translation";
 import { connect } from 'react-redux';
 import * as actions from '../../../actions';
 import DeviceInfo from 'react-native-device-info'
@@ -29,8 +30,6 @@ class LitterTags extends PureComponent {
 
         // if iPhone 10+, return 17% card height
         const x = DeviceInfo.getModel().split(' ');
-
-        // console.log('tagsContainer', x);
 
         if (x.includes('X') || parseInt(x[1]) >= 10)
         {
@@ -101,8 +100,8 @@ class LitterTags extends PureComponent {
                         }}
                     >
                         <View style={styles.card}>
-                            <Text style={styles.category}>{category}</Text>
-                            <Text style={styles.item}>{item}</Text>
+                            <TransText style={styles.category} dictionary={'litter.categories.' + category } />
+                            <TransText style={styles.item} dictionary={`litter.${category}.${item}`} />
                             <Text style={styles.val}>&nbsp; ({value})</Text>
                         </View>
                     </TouchableHighlight>

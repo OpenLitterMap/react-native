@@ -24,12 +24,13 @@ import {
 } from '../actions/types';
 
 import CATEGORIES from '../screens/pages/data/categories';
+import LITTERKEYS from "../screens/pages/data/litterkeys";
 
 const INITIAL_STATE = {
-    category: CATEGORIES[0].title,
-    items: CATEGORIES[0].items,
-    item: CATEGORIES[0].items[0],
-    q: "1",
+    category: CATEGORIES[0],
+    items: LITTERKEYS['smoking'],
+    item: 'butts',
+    q: 1,
     // collection: [],
     // collectionModalVisible: false,
     collectionLength: 0,
@@ -53,20 +54,21 @@ export default function (state = INITIAL_STATE, action)
     {
         /**
          * Change category
+         *
          * @return Smoking, Alcohol, Food..... and associated items
          */
         case CHANGE_CATEGORY:
-            // select from array by ID
-            const category   = CATEGORIES[action.payload]['title'];
-            const items      = CATEGORIES[action.payload]['items'];
-            const first      = CATEGORIES[action.payload]['items'][0];
+
+            const category = CATEGORIES.find(cat => cat.title === action.payload);
+            const items = LITTERKEYS[category.title];
+            const item = items[0].key;
 
             return {
                 ...state,
-                category: category,
-                items: items,
-                item: first,
-                q: "1"
+                category,
+                items,
+                item,
+                q: 1
             };
 
         /**
@@ -163,8 +165,8 @@ export default function (state = INITIAL_STATE, action)
         case RESET_LITTER_COLLECTION_OBJECT:
             return Object.assign({}, state, {
                 category: CATEGORIES[0].title,
-                items: CATEGORIES[0].items,
-                item: CATEGORIES[0].items[0],
+                // items: CATEGORIES[0].items,
+                // item: CATEGORIES[0].items[0],
                 q: "1",
                 // collection: [],
                 tags: {},
@@ -216,8 +218,8 @@ export default function (state = INITIAL_STATE, action)
 
             return Object.assign({}, state, {
                 category: CATEGORIES[0].title,
-                items: CATEGORIES[0].items,
-                item: CATEGORIES[0].items[0],
+                // items: CATEGORIES[0].items,
+                // item: CATEGORIES[0].items[0],
                 q: "1",
                 // collection: [],
                 tags: action.payload.tags,
@@ -238,14 +240,14 @@ export default function (state = INITIAL_STATE, action)
 
             let x = [];
 
-            CATEGORIES.some(cat => {
-                cat.items.some(item => {
-                    if (item.toLowerCase().includes(action.payload.toLowerCase()))
-                    {
-                        x.push({ cat: cat.title, item });
-                    }
-                });
-            });
+            // CATEGORIES.some(cat => {
+            //     cat.items.some(item => {
+            //         if (item.toLowerCase().includes(action.payload.toLowerCase()))
+            //         {
+            //             x.push({ cat: cat.title, item });
+            //         }
+            //     });
+            // });
 
             return {
                 ...state,

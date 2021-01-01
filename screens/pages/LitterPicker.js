@@ -229,6 +229,7 @@ class LitterPicker extends PureComponent
                                 item={this.props.item}
                                 items={this.props.items}
                                 model={this.props.model}
+                                category={this.props.category}
                                 q={this.props.q}
                             />
                         </View>

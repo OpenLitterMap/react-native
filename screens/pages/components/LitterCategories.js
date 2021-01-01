@@ -5,11 +5,11 @@ import {
     FlatList,
     Platform,
     SafeAreaView,
-    ScrollView,
     TouchableHighlight,
     Text,
     View
 } from 'react-native';
+import { TransText } from "react-native-translation";
 import { Card } from 'react-native-elements';
 import * as actions from '../../../actions';
 import { connect } from 'react-redux';
@@ -23,9 +23,10 @@ class LitterCategories extends PureComponent {
 
     /**
      * Change Category
-     * @props litter_actions, litter_reducer
+     *
+     * litter_actions, litter_reducer
      */
-    categoryPressed (id)
+    changeCategory (id)
     {
         this.props.changeCategory(id);
     }
@@ -38,7 +39,7 @@ class LitterCategories extends PureComponent {
         if (Platform.OS === 'android') return styles.container;
 
         // if "iPhone 10+", return 17% card height
-        let x = DeviceInfo.getModel().split(' ')[1];
+        const x = DeviceInfo.getModel().split(' ')[1];
 
         if (x.includes('X') || parseInt(x) >= 10) return styles.biggerContainer;
 
@@ -48,24 +49,25 @@ class LitterCategories extends PureComponent {
     /**
      * Each category to display
      */
-    renderCategory(category)
+    renderCategory (category)
     {
         return (
             <TouchableHighlight
-                onPress={this.categoryPressed.bind(this, category.id)}
+                onPress={this.changeCategory.bind(this, category.title)}
                 key={category.id}
                 underlayColor='transparent'
             >
                 <Card
-                    containerStyle={[ styles.card, category.title === this.props.category ? styles.selectedCard : '' ]}
+                    containerStyle={[ styles.card, category.title === this.props.category.title ? styles.selectedCard : '' ]}
                     style={styles.category}
                     wrapperStyle={{ alignItems: 'center', justifyContent: 'center' }}
                 >
                     <Image source={category.path} style={styles.image} />
-                    <Text
+                    <TransText
                         style={styles.text}
-                        key={category.id}>{category.title}
-                    </Text>
+                        key={category.id}
+                        dictionary={'litter.categories.' + category.title}
+                    />
                 </Card>
             </TouchableHighlight>
         );
@@ -85,7 +87,7 @@ class LitterCategories extends PureComponent {
                         renderItem={({ item }) => (
                             this.renderCategory(item)
                         )}
-                        keyExtractor={category => category.id.toString()}
+                        keyExtractor={category => category.title}
 
                         keyboardShouldPersistTaps="handled"
                     />
