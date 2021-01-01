@@ -1,20 +1,15 @@
 import React, { PureComponent } from 'react';
 import {
-    ActivityIndicator,
     Dimensions,
-    FlatList,
     Keyboard,
-    Modal,
     Platform,
     SafeAreaView,
-    ScrollView,
     StatusBar,
-    Text,
     TouchableHighlight,
     View
 } from 'react-native'
-
-import { Button, Icon } from 'react-native-elements'
+import { TransText } from "react-native-translation";
+import { Icon } from 'react-native-elements'
 import { connect } from 'react-redux'
 import * as actions from '../../actions'
 
@@ -244,7 +239,7 @@ class LitterPicker extends PureComponent
                             >
                                 <View style={styles.innerButtonContainer}>
                                     <Icon name="check" size={SCREEN_HEIGHT * 0.05} />
-                                    <Text style={styles.textIconStyle}>Confirm</Text>
+                                    <TransText style={styles.textIconStyle} dictionary={'tag.confirm'} />
                                 </View>
                             </TouchableHighlight>
 
@@ -256,7 +251,7 @@ class LitterPicker extends PureComponent
                             >
                                 <View style={styles.innerButtonContainer}>
                                     <Icon name="add" size={SCREEN_HEIGHT * 0.05} />
-                                    <Text style={styles.textIconStyle}>Add Tag</Text>
+                                    <TransText style={styles.textIconStyle} dictionary={'tag.add-tag'} />
                                 </View>
                             </TouchableHighlight>
                         </View>
@@ -572,7 +567,7 @@ class LitterPicker extends PureComponent
     addTag ()
     {
         const tags = {
-            category: this.props.category,
+            category: this.props.category.title,
             title: this.props.item,
             quantity: this.props.q
         };

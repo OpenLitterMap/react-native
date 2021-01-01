@@ -85,6 +85,9 @@ class LitterTags extends PureComponent {
         return Object.keys(this.props.tags).map(category => {
             return Object.keys(this.props.tags[category]).map(item => {
 
+                console.log({ category });
+                console.log({ item });
+
                 const value = this.props.tags[category][item];
 
                 return (
