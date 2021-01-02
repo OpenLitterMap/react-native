@@ -8,7 +8,7 @@ import {
     ITEM_SELECTED,
     REMOVE_PREVIOUS_TAG,
     REMOVE_TAG,
-    RESET_LITTER_COLLECTION_OBJECT,
+    RESET_LITTER_STATE,
     UPDATE_PREVIOUS_TAGS,
     SAVE_PREVIOUS_TAGS,
     SELECT_PHOTO,
@@ -34,7 +34,6 @@ const INITIAL_STATE = {
     item: 'butts',
     q: 1,
     collectionLength: 0,
-    currentTotalItems: false, // LitterPicker modal option 1
     displayAllTags: false,
     hasLitter: false,
     index: null,
@@ -55,7 +54,9 @@ export default function (state = INITIAL_STATE, action)
         /**
          * Change category
          *
-         * @return Smoking, Alcohol, Food..... and associated items
+         * @category = Object => title: 'smoking", 'path: '../filepath.png'
+         * @items = Array of objects [ { id, key }, { id, key } ]
+         * @item = First key from array 'butts'
          */
         case CHANGE_CATEGORY:
 
@@ -72,11 +73,12 @@ export default function (state = INITIAL_STATE, action)
             };
 
         /**
-         * Change item within a category
-         * @return cigarette butts, lighters, packaging....
+         * Change item key within a category
+         *
+         * @return 'butts', 'facemask', etc.
          */
         case CHANGE_ITEM:
-            // console.log("reducer, changeItem", action.payload);
+
             return {
                 ...state,
                 item: action.payload,
@@ -85,9 +87,11 @@ export default function (state = INITIAL_STATE, action)
 
         /**
          * Change quantity
+         *
          * @return 1,2,3...
          */
         case CHANGE_Q:
+
             return {
                 ...state,
                 q: action.payload
@@ -95,14 +99,15 @@ export default function (state = INITIAL_STATE, action)
 
         /**
          * The user has pressed the "confirm" button
+         *
          * @return this image can be uploaded
          */
         case CONFIRM_FOR_UPLOAD:
+
             // console.log("reducer, index", action.payload);
             return {
                 ...state
             };
-
 
         // case FILTER_TAGS:
         //     console.log('filter_tags.reducer', action.payload);
@@ -114,6 +119,7 @@ export default function (state = INITIAL_STATE, action)
          * An item has been selected
          */
         case ITEM_SELECTED:
+
             // Check if any litter already exists on this item / index?
             // console.log('litter_reducer.item_selected', action.payload);
 
@@ -134,12 +140,13 @@ export default function (state = INITIAL_STATE, action)
          * Remove a tag
          */
         case REMOVE_TAG:
+
             // console.log("removetag", action.payload);
             let tags2 = Object.assign({}, state.tags);
             delete tags2[action.payload.category][action.payload.item];
 
-            var total = 0;
-            var length = 0;
+            let total = 0;
+            let length = 0;
             Object.keys(tags2).map(category => {
                 if (Object.keys(tags2[category]).length > 0) {
                     Object.values(tags2[category]).map(values => {
@@ -162,13 +169,17 @@ export default function (state = INITIAL_STATE, action)
             };
 
         // Reset tags to null and close LitterPicker modal
-        case RESET_LITTER_COLLECTION_OBJECT:
+        case RESET_LITTER_STATE:
+
+            const category1 = CATEGORIES[0];
+            const items1 = LITTERKEYS[category1.title];
+            const item1 = items1[0].key;
+
             return Object.assign({}, state, {
-                category: CATEGORIES[0].title,
-                // items: CATEGORIES[0].items,
-                // item: CATEGORIES[0].items[0],
+                category: category1,
+                items: items1,
+                item: item1,
                 q: "1",
-                // collection: [],
                 tags: {},
                 switchValue: true,
                 totalLitterCount: 0,
@@ -185,6 +196,7 @@ export default function (state = INITIAL_STATE, action)
          * @return photo from camera roll
          */
         case SELECT_PHOTO:
+
             return Object.assign({}, state, {
                 photoSelected: action.payload
             });
@@ -193,6 +205,7 @@ export default function (state = INITIAL_STATE, action)
          * Content to show in the modal on LitterPicker
          */
         case SHOW_ALL_TAGS:
+
             return {
                 ...state,
                 displayAllTags: action.payload
@@ -203,6 +216,7 @@ export default function (state = INITIAL_STATE, action)
          * Need to set the content separately
          */
         case SHOW_INNER_MODAL:
+
             return Object.assign({}, state, {
                 tagsModalVisible: ! state.tagsModalVisible
             });
@@ -216,10 +230,16 @@ export default function (state = INITIAL_STATE, action)
         case SLIDE_IN_NEXT_GALLERY:
             // console.log("reducer - litter Slide In Next", action.payload);
 
+            console.log('slide_in_next_gallery');
+
+            const category2 = CATEGORIES.find(cat => cat.title === action.payload);
+            const items2 = LITTERKEYS[category2.title];
+            const item2 = items2[0].key;
+
             return Object.assign({}, state, {
-                category: CATEGORIES[0].title,
-                // items: CATEGORIES[0].items,
-                // item: CATEGORIES[0].items[0],
+                category: category2,
+                items: items2,
+                item: item2,
                 q: "1",
                 // collection: [],
                 tags: action.payload.tags,
@@ -280,6 +300,7 @@ export default function (state = INITIAL_STATE, action)
          * ++ Increment the quantity if button pressed repeatedly
          */
         case TAG_LITTER:
+
             let newTags = Object.assign({}, state.tags);
 
             let quantity = 1;
@@ -330,9 +351,10 @@ export default function (state = INITIAL_STATE, action)
             };
 
         /**
-         *
+         * This will toggle the value for the Switch, not the value for each individual image.
          */
         case TOGGLE_SWITCH:
+
             return Object.assign({}, state, {
                 presence: ! state.presence
             });
@@ -367,6 +389,7 @@ export default function (state = INITIAL_STATE, action)
          *
          */
         case UPDATE_QUANTITY:
+
             return {
                 ...state,
                 tags: {

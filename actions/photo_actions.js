@@ -30,7 +30,6 @@ import {
  * Add a photo from camera - current session
  */
 export const addPhoto = (photo) => {
-    // console.log("Photo actions, add session photo", photo);
     return {
         type: ADD_PHOTO,
         payload: photo
@@ -182,7 +181,8 @@ export const uploadTaggedSessionPhotos = (data, token, litterData) => {
         })
         .then(response => {
             console.log("SUCCESS - Image uploaded - now upload associated data");
-            if (response.status == 200) {
+            if (response.status === 200)
+            {
                 return axios(URL + '/api/photos/update', {
                     method:'POST',
                     headers: {

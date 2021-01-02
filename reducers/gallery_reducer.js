@@ -52,10 +52,14 @@ export default function (state = INITIAL_STATE, action) {
          * Add tags to the image at the index
          */
         case CONFIRM_GALLERY_ITEM:
-            // console.log("reducer - confirm gallery item", action.payload);
+
+            console.log("CONFIRM_GALLERY_ITEM", action.payload);
+
             const newGalleryArray = state.gallery.map((image,index) => {
+
                 // console.log('galleryItem', image);
-                if (index === action.payload.index) {
+                if (index === action.payload.index)
+                {
                     return {
                         ...image,
                         // litter: tags,
@@ -68,6 +72,8 @@ export default function (state = INITIAL_STATE, action) {
 
                 return {...image};
             });
+
+            console.log({ newGalleryArray });
 
             return {
                 ...state,

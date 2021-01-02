@@ -142,6 +142,8 @@ class LitterPicker extends PureComponent
         // this is necessary to allow the user to click on text input because of a bug with keyboardAvoidingView on Android
         if (Platform.OS === "android") height = SCREEN_HEIGHT * 0.1;
 
+        console.log('category', this.props.category);
+
         // we need to reset item for currently selected category
         if (this.props.category.hasOwnProperty('title'))
         {
@@ -360,7 +362,9 @@ class LitterPicker extends PureComponent
         const items = [];
 
         Object.keys(this.props.tags).map(category => {
+
             items.push(category + ":");
+
             Object.keys(this.props.tags[category]).map(item => {
                 items.push(
                     item + ':' + ' ' + this.props.tags[category][item]
@@ -374,9 +378,11 @@ class LitterPicker extends PureComponent
 
     /**
      * Confirm this data is ready for upload
+     *
      * @Gallery = Camera_Roll,
      * @Photos  = Taken with OLM Camera this session
      * @Web     = Uploaded via web-app
+     *
      * some users have settings.previous_tags true
      */
     _confirmData = async () =>
