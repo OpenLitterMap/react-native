@@ -29,7 +29,8 @@ class LitterBottomMenu extends PureComponent {
     closeLitterPicker ()
     {
         // litter_reducer
-        this.props.resetLitterObject();
+        this.props.resetLitterTags();
+
         // shared_reducer
         this.props.closeLitterModal();
     };
@@ -64,13 +65,11 @@ class LitterBottomMenu extends PureComponent {
     };
 
     /**
-     *
      * iOS X+ needs bigger space (not perfect and needs another look)
-     *
      */
     _computeBottomContainer ()
     {
-        if (Platform.OS == 'android') return styles.biggerContainer;
+        if (Platform.OS === 'android') return styles.biggerContainer;
 
         // if "iPhone 10+", return 17% card height
         let x = DeviceInfo.getModel().split(' ')[1];

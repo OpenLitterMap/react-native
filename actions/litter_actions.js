@@ -9,7 +9,7 @@ import {
     ITEM_SELECTED,
     REMOVE_PREVIOUS_TAG,
     REMOVE_TAG,
-    RESET_LITTER_COLLECTION_OBJECT,
+    RESET_LITTER_STATE,
     UPDATE_PREVIOUS_TAGS,
     SAVE_PREVIOUS_TAGS,
     SELECT_PHOTO,
@@ -95,11 +95,11 @@ export const removeTag = tags => {
 }
 
 /**
- * Reset the state, collectionObject and close the LitterPicker modal
+ * Reset the state
  */
-export const resetLitterObject = () => {
+export const resetLitterTags = () => {
     return {
-        type: RESET_LITTER_COLLECTION_OBJECT
+        type: RESET_LITTER_STATE
     };
 }
 

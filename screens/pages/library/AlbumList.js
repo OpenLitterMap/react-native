@@ -151,7 +151,7 @@ class AlbumList extends PureComponent {
 const styles = {
     container: {
         flex: 1,
-        marginTop: SCREEN_HEIGHT * 0.01
+        marginTop: SCREEN_HEIGHT * 0.025
     }
 };
 

@@ -11,7 +11,7 @@ import {
     TouchableHighlight,
     View
 } from 'react-native'
-import { TransText } from "react-native-translation";
+import { getTranslation, TransText } from "react-native-translation";
 import DeviceInfo from 'react-native-device-info'
 import { connect } from 'react-redux'
 import * as actions from '../../../actions'
@@ -25,6 +25,8 @@ class LitterBottomSearch extends PureComponent
     constructor (props)
     {
         super (props);
+
+        console.log('LitterBottomSearch.created', this.props.presence);
 
         this.state = {
             text: ''
@@ -67,7 +69,8 @@ class LitterBottomSearch extends PureComponent
     closeLitterPicker ()
     {
         // litter_reducer
-        this.props.resetLitterObject();
+        this.props.resetLitterTags();
+
         // shared_reducer
         this.props.closeLitterModal();
     };
@@ -113,23 +116,19 @@ class LitterBottomSearch extends PureComponent
     }
 
     /**
-     * Get text value for the switch
-     */
-    _getSwitchTextValue = () => {
-        return this.props.presence ? 'Removed' : 'Remaining';
-    };
-
-    /**
      * The switch has been pressed
+     *
+     *
      */
-    handleToggleSwitch = async () => {
+    handleToggleSwitch = async () =>
+    {
         await this.props.toggleSwitch();
 
-        const A = 'The Litter has been picked up!';
-        const B = 'The Litter is still there!';
+        const A = getTranslation('litter.presence.picked-up');
+        const B = getTranslation('litter.presence.still-there');
 
         return this.props.presence ? alert(A) : alert(B);
-    };
+    }
 
     /**
      * Render a suggested tag
@@ -197,26 +196,30 @@ class LitterBottomSearch extends PureComponent
 
                     <View style={this.props.keyboardOpen ? styles.hide : styles.icon}>
                         {/*disabled={this._checkForPhotos}*/}
-                        <Switch
-                            onValueChange={this.handleToggleSwitch}
-                            value={this.props.presence}
-                        />
+
+                        {/* Temp comment out the switch here */}
+                        {/* We should swap this for a button that loads a modal with more actions */}
+                        {/*<Switch*/}
+                        {/*    onValueChange={this.handleToggleSwitch}*/}
+                        {/*    value={this.props.presence}*/}
+                        {/*/>*/}
                     </View>
 
-                    { this.props.keyboardOpen &&
-                        <View style={styles.tagsOuterContainer}>
-                            <Text style={styles.suggest}>Suggested tags: {this.props.suggestedTags.length}</Text>
+                    {
+                        this.props.keyboardOpen &&
+                            <View style={styles.tagsOuterContainer}>
+                                <Text style={styles.suggest}>Suggested tags: {this.props.suggestedTags.length}</Text>
 
-                            <View style={styles.tagsInnerContainer}>
-                                <FlatList
-                                    data={this.props.suggestedTags}
-                                    horizontal={true}
-                                    renderItem={this.renderTag}
-                                    keyExtractor={( item, index) => item.key + index}
-                                    keyboardShouldPersistTaps="handled"
-                                />
+                                <View style={styles.tagsInnerContainer}>
+                                    <FlatList
+                                        data={this.props.suggestedTags}
+                                        horizontal={true}
+                                        renderItem={this.renderTag}
+                                        keyExtractor={( item, index) => item.key + index}
+                                        keyboardShouldPersistTaps="handled"
+                                    />
+                                </View>
                             </View>
-                        </View>
                     }
                 </View>
             </KeyboardAvoidingView>

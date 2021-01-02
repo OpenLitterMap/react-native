@@ -227,7 +227,7 @@ export const uploadTaggedGalleryPhoto = (data, token, tags) =>
         })
         .then(response => {
 
-            console.log('uploadTaggedGalleryPhoto', response);
+            // console.log('uploadTaggedGalleryPhoto', response);
 
             // console.log('SUCCESS - Image uploaded - now upload associated data');
             if (response.status === 200)

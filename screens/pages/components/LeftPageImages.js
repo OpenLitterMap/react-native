@@ -4,11 +4,11 @@ import {
     FlatList,
     Image,
     Platform,
-    ScrollView,
     Text,
     TouchableWithoutFeedback,
     View
 } from 'react-native';
+import { TransText } from "react-native-translation";
 
 import { Icon } from 'react-native-elements';
 import DeviceInfo from 'react-native-device-info';
@@ -35,13 +35,20 @@ class LeftPageImages extends PureComponent {
             {
                 this.props.sessionIndexRemoveForDelete(index);
                 this.props.decrementSelected();
-            } else {
+            }
+
+            else
+            {
                 this.props.sessionIndexSelectedForDelete(index);
                 this.props.incrementSelected();
             }
-        } else {
+        }
+
+        else
+        {
             // shared_reducer
             this.props.toggleLitter();
+
             // litter_reducer
             let item = this.props.photos[index];
             item.index = index;
@@ -54,6 +61,8 @@ class LeftPageImages extends PureComponent {
      * photos selected from the users device
      */
     renderGalleryItem = item => {
+
+        console.log({ item });
 
         let width = null;
         let mgn = 0;
@@ -82,16 +91,22 @@ class LeftPageImages extends PureComponent {
                         source={{ uri: item.item.image.uri }}
                         resizeMode="cover"
                     />
-                    {item.item.selected && (
-                        <View style={{ position: 'absolute', right: 5, bottom: 5 }}>
-                            <Icon name="check-circle" size={SCREEN_HEIGHT * 0.03} color="#00aced" />
-                        </View>
-                    )}
-                    {item.item.litter && (
-                        <View style={{ position: 'absolute', left: 5, bottom: 0 }}>
-                            <Icon name="attachment" size={SCREEN_HEIGHT * 0.04} color="#00aced" />
-                        </View>
-                    )}
+
+                    {
+                        item.item.selected && (
+                            <View style={{ position: 'absolute', right: 5, bottom: 5 }}>
+                                <Icon name="check-circle" size={SCREEN_HEIGHT * 0.03} color="#00aced" />
+                            </View>
+                        )
+                    }
+
+                    {
+                        item.item.litter && (
+                            <View style={{ position: 'absolute', left: 5, bottom: 0 }}>
+                                <Icon name="attachment" size={SCREEN_HEIGHT * 0.04} color="#00aced" />
+                            </View>
+                        )
+                    }
                 </View>
             </TouchableWithoutFeedback>
         );
@@ -102,11 +117,12 @@ class LeftPageImages extends PureComponent {
      */
     galleryItemPressed (item)
     {
-        // console.log('Gallery item pressed', item.item);
+        console.log('Gallery item pressed', item.presence);
 
-        if (item.item.hasOwnProperty('litter')) {
-            console.log(item.item.litter);
-        }
+
+        // if (item.item.hasOwnProperty('litter')) {
+        //     console.log(item.item.litter);
+        // }
 
         // If we are selecting (for delete), highlight / deselect the image
         if (this.props.isSelecting)
@@ -116,12 +132,18 @@ class LeftPageImages extends PureComponent {
                 // remove ['selected'] from the item
                 this.props.galleryIndexRemoveForDelete(item.index);
                 this.props.decrementSelected();
-            } else {
+            }
+
+            else
+            {
                 // add ['selected'] to the item
                 this.props.galleryIndexSelectedForDelete(item.index);
                 this.props.incrementSelected();
             }
-        } else {
+        }
+
+        else
+        {
             // Select the image for tagging
 
             // shared_reducer -> Open LitterPicker (modal)
@@ -168,10 +190,14 @@ class LeftPageImages extends PureComponent {
         let width = null;
         let mgn = 0;
 
-        if (item.index % 3 == 1) {
+        if (item.index % 3 === 1)
+        {
             width = SCREEN_WIDTH / 3.1;
             mgn = SCREEN_WIDTH * 0.005;
-        } else { // 0, 2
+        }
+
+        else // 0, 2
+        {
             width = SCREEN_WIDTH / 3;
         }
 
@@ -191,23 +217,29 @@ class LeftPageImages extends PureComponent {
                         source={{ uri: item.uri }}
                         resizeMode="cover"
                     />
-                    {item.selected && (
-                        <View style={{ position: 'absolute', right: 5, bottom: 5 }}>
-                            <Icon name="check-circle" size={SCREEN_HEIGHT * 0.03} color="#00aced" />
-                        </View>
-                    )}
-                    {item.litter && (
-                        <View style={{ position: 'absolute', left: 5, bottom: 0 }}>
-                            <Icon name="attachment" size={SCREEN_HEIGHT * 0.04} color="#00aced" />
-                        </View>
-                    )}
+                    {
+                        item.selected && (
+                            <View style={{ position: 'absolute', right: 5, bottom: 5 }}>
+                                <Icon name="check-circle" size={SCREEN_HEIGHT * 0.03} color="#00aced" />
+                            </View>
+                        )
+                    }
+                    {
+                        item.litter && (
+                            <View style={{ position: 'absolute', left: 5, bottom: 0 }}>
+                                <Icon name="attachment" size={SCREEN_HEIGHT * 0.04} color="#00aced" />
+                            </View>
+                        )
+                    }
                 </View>
             </TouchableWithoutFeedback>
         );
     };
 
-    _marginWhenPhotos () {
-        if (this.props.photos.length > 0) {
+    _marginWhenPhotos ()
+    {
+        if (this.props.photos.length > 0)
+        {
             return styles.smallTopMargin;
         }
     }
@@ -219,12 +251,15 @@ class LeftPageImages extends PureComponent {
     {
         console.log('_webImagePressed', this.props.webImages[0]);
 
-        if (! this.props.isSelecting) {
+        if (! this.props.isSelecting)
+        {
             this.props.toggleLitter();
             // litter_reducer
+
             let item = this.props.webImages[0];
             item.uri = this.props.webImages[0].filename;
             item.type = 'web';
+
             // shared_actions
             this.props.itemSelected(this.props.webImages[0]);
         }
@@ -239,8 +274,6 @@ class LeftPageImages extends PureComponent {
 
         // if "iPhone 10+", return 17% card height
         let x = DeviceInfo.getModel().split(' ')[1];
-
-        // console.log('webTextStyle', x);
 
         if (x.includes('X') || parseInt(x) >= 10) return styles.webText;
 
@@ -260,7 +293,7 @@ class LeftPageImages extends PureComponent {
         {
             return (
                 <View style={{ alignItems: 'center', justifyContent: 'center', flex: 0.75 }}>
-                    <Text style={{ fontSize: SCREEN_HEIGHT * 0.02 }}>Take or Select some photos to get started!</Text>
+                    <TransText style={{ fontSize: SCREEN_HEIGHT * 0.02 }} dictionary={'leftpage.get-started'} />
                 </View>
             );
         }
@@ -271,52 +304,54 @@ class LeftPageImages extends PureComponent {
         return (
             <View style={this._marginWhenPhotos()}>
 
-                {this.props.webImages.length > 0 && (
-                    <View style={styles.webImageContainer}>
-                        <TouchableWithoutFeedback
-                            onPress={this._webImagePressed.bind(this)}
-                        >
-                            <Image source={{
-                                uri: this.props.webImages[0].filename
-                            }}
-                                   style={styles.webImage}
-                            />
-                        </TouchableWithoutFeedback>
-                        <View style={styles.webTextContainer}>
-                            <View style={styles.webInnerContainer}>
-                                <Icon name="cloud" size={SCREEN_HEIGHT * 0.04} color="#00aced" />
-                                <Text style={this._webTextStyle()}>{this.props.webImages.length}</Text>
+                {
+                    this.props.webImages.length > 0 && (
+                        <View style={styles.webImageContainer}>
+
+                            <TouchableWithoutFeedback onPress={this._webImagePressed.bind(this)}>
+                                <Image source={{ uri: this.props.webImages[0].filename }} style={styles.webImage} />
+                            </TouchableWithoutFeedback>
+
+                            <View style={styles.webTextContainer}>
+                                <View style={styles.webInnerContainer}>
+                                    <Icon name="cloud" size={SCREEN_HEIGHT * 0.04} color="#00aced" />
+                                    <Text style={this._webTextStyle()}>{this.props.webImages.length}</Text>
+                                </View>
                             </View>
                         </View>
-                    </View>
-                )}
+                    )
+                }
 
-                {this.props.photos && (
-                    <FlatList
-                        data={this.props.photos}
-                        extraData={this.props.uniqueValue}
-                        keyExtractor={(item, index) => item + index}
-                        numColumns={3}
-                        renderItem={this.renderSessionItem}
-                        ItemSeparatorComponent={this.renderSeparator}
-                        keyboardShouldPersistTaps="handled"
-                    />
-                )}
+                {
+                    this.props.photos && (
+                        <FlatList
+                            data={this.props.photos}
+                            extraData={this.props.uniqueValue}
+                            keyExtractor={(item, index) => item + index}
+                            numColumns={3}
+                            renderItem={this.renderSessionItem}
+                            ItemSeparatorComponent={this.renderSeparator}
+                            keyboardShouldPersistTaps="handled"
+                        />
+                    )
+                }
 
                 { /* Empty space between session & gallery photos */}
                 <View style={{ height: SCREEN_HEIGHT * 0.003 }} />
 
-                {this.props.gallery && (
-                    <FlatList
-                        data={this.props.gallery}
-                        extraData={this.props.uniqueValue}
-                        keyExtractor={(item, index) => item + index}
-                        numColumns={3}
-                        renderItem={this.renderGalleryItem}
-                        ItemSeparatorComponent={this.renderSeparator}
-                        keyboardShouldPersistTaps="handled"
-                    />
-                )}
+                {
+                    this.props.gallery && (
+                        <FlatList
+                            data={this.props.gallery}
+                            extraData={this.props.uniqueValue}
+                            keyExtractor={(item, index) => item + index}
+                            numColumns={3}
+                            renderItem={this.renderGalleryItem}
+                            ItemSeparatorComponent={this.renderSeparator}
+                            keyboardShouldPersistTaps="handled"
+                        />
+                    )
+                }
             </View>
         );
     }
