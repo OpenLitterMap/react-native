@@ -25,6 +25,7 @@ const SCREEN_WIDTH = Dimensions.get('window').width
 const SCREEN_HEIGHT = Dimensions.get('window').height
 
 import DeviceInfo from 'react-native-device-info'
+import LITTERKEYS from "./data/litterkeys";
 const cloneDeep = require('clone-deep')
 
 class LitterPicker extends PureComponent
@@ -127,10 +128,12 @@ class LitterPicker extends PureComponent
     /**
      * Set params when keyboard has been closed to hide bottom nav panel
      *
-     * Bug with android that we can fix by setting height of keyboardAvoidingView to 10% screen height when closed *shrugs*
+     * 2 bugs here
      *
-     * When a tag is set from the keyboard, the tag.title changes (eg "Facemask") but the category does not change.
-     * onKeyboardClose, we need to reset tag.title to the first item from the currently selected category
+     * 1. On android, we need to set height of keyboardAvoidingView to 10% screen height when closed...not sure why
+     *
+     * 2. When a tag is set from the keyboard, the tag.key changes (eg "facemask") but the category does not change.
+     *    onKeyboardClose, we need to reset tag.key to the first item of the currently selected category
      */
     _keyboardDidHide ()
     {
@@ -139,9 +142,13 @@ class LitterPicker extends PureComponent
         // this is necessary to allow the user to click on text input because of a bug with keyboardAvoidingView on Android
         if (Platform.OS === "android") height = SCREEN_HEIGHT * 0.1;
 
-        const first = CATEGORIES.find(cat => cat.title === this.props.category)['items'][0];
+        // we need to reset item for currently selected category
+        if (this.props.category.hasOwnProperty('title'))
+        {
+            const first = LITTERKEYS[this.props.category.title][0];
 
-        this.props.changeItem(first);
+            this.props.changeItem(first);
+        }
 
         this.setState({
             keyboardOpen: false,
@@ -156,7 +163,9 @@ class LitterPicker extends PureComponent
     _closeModal ()
     {
         this.props.setLitterPickerModal(false);
+
         this.props.showAllTags(false);
+
         this.setState({
             webLoading: false
         });
@@ -381,6 +390,7 @@ class LitterPicker extends PureComponent
         {
             // Turn on spinner
             await this.setState({ webLoading: true });
+
             // Show the modal
             await this.props.setLitterPickerModal(true);
 

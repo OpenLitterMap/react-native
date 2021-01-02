@@ -11,7 +11,7 @@ import {
     TouchableHighlight,
     View
 } from 'react-native'
-
+import { TransText } from "react-native-translation";
 import DeviceInfo from 'react-native-device-info'
 import { connect } from 'react-redux'
 import * as actions from '../../../actions'
@@ -45,11 +45,11 @@ class LitterBottomSearch extends PureComponent
     addTag (tag)
     {
         // update selected tag to execute scrollTo
-        this.props.changeItem(tag.item);
+        this.props.changeItem(tag.key);
 
         this.props.tagLitter({
-            category: tag.cat,
-            title: tag.item
+            category: tag.category,
+            title: tag.key
         });
     }
 
@@ -137,8 +137,8 @@ class LitterBottomSearch extends PureComponent
     renderTag = ({ item }) => {
         return (
             <TouchableOpacity style={styles.tag} onPress={this.addTag.bind(this, item)}>
-                <Text style={styles.category}>{item.cat}</Text>
-                <Text style={styles.item}>{item.item}</Text>
+                <TransText style={styles.category} dictionary={`litter.categories.${item.category}`} />
+                <TransText style={styles.item} dictionary={`litter.${item.category}.${item.key}`} />
             </TouchableOpacity>
         );
     }
@@ -181,7 +181,8 @@ class LitterBottomSearch extends PureComponent
                         onPress={this.closeLitterPicker.bind(this)}
                         style={this.props.keyboardOpen ? styles.hide : styles.icon}
                         disabled={this._checkForPhotos}
-                    ><Icon color="red" name="close" size={SCREEN_HEIGHT * 0.05} />
+                    >
+                        <Icon color="red" name="close" size={SCREEN_HEIGHT * 0.05} />
                     </TouchableHighlight>
 
                     <TextInput
@@ -211,7 +212,7 @@ class LitterBottomSearch extends PureComponent
                                     data={this.props.suggestedTags}
                                     horizontal={true}
                                     renderItem={this.renderTag}
-                                    keyExtractor={( {item}, index) => item + index}
+                                    keyExtractor={( item, index) => item.key + index}
                                     keyboardShouldPersistTaps="handled"
                                 />
                             </View>

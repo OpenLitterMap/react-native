@@ -26,13 +26,13 @@ import {
 import CATEGORIES from '../screens/pages/data/categories';
 import LITTERKEYS from "../screens/pages/data/litterkeys";
 
+import { getTranslation } from 'react-native-translation';
+
 const INITIAL_STATE = {
     category: CATEGORIES[0],
     items: LITTERKEYS['smoking'],
     item: 'butts',
     q: 1,
-    // collection: [],
-    // collectionModalVisible: false,
     collectionLength: 0,
     currentTotalItems: false, // LitterPicker modal option 1
     displayAllTags: false,
@@ -248,6 +248,22 @@ export default function (state = INITIAL_STATE, action)
             //         }
             //     });
             // });
+
+            Object.entries(LITTERKEYS).some(tags => {
+
+                tags[1].some(tag => {
+
+                    const t = getTranslation(`litter.${tags[0]}.${tag.key}`);
+
+                    if (t.toLowerCase().includes(action.payload.toLowerCase()))
+                    {
+                        x.push({
+                            category: tags[0],
+                            key: tag.key
+                        });
+                    }
+                });
+            });
 
             return {
                 ...state,
