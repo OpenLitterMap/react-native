@@ -445,13 +445,11 @@ class LeftPage extends PureComponent {
         // this.props.totalTaggedGalleryCount > 0
         if (galleryCount > 0)
         {
-            // this method of looping is async
+            // async loop
             for (const item of this.props.gallery)
             {
                 if (item.litter)
                 {
-                    // console.log('Gallery - Litter found', item);
-
                     let data = new FormData();
 
                     data.append('photo', {
@@ -487,15 +485,16 @@ class LeftPage extends PureComponent {
                     // console.log("LeftPage - after: Image should be uploaded");
                     // console.log('Response - uploadTaggedGalleryPhotos');
                     // console.log(response);
-                    if (response.message) {
+                    if (response.message)
+                    {
                         // pass item.id to delete image from users screen
                         // todo - find a way to delete the image from the users saved photos without asking for permission every time
                         //
                         this.props.galleryPhotoUploadedSuccessfully(myIndex);
                     }
-                } // i.litter exists
-            } // end map
-        } // totalTaggedGalleryCount > 0
+                }
+            }
+        }
 
         if (this.props.totalTaggedSessionCount > 0)
         {

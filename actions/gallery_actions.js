@@ -199,8 +199,11 @@ export const updateSelectedGalleryCount = (count) => {
  * @data = name, type (gallery, session), uri, lat, lon, presence, model
  * @litterData = smoking: cigarettes: 3.....
  */
-export const uploadTaggedGalleryPhoto = (data, token, litterData) => {
-    console.log('Action - upload tagged Gallery photo', data);
+export const uploadTaggedGalleryPhoto = (data, token, tags) =>
+{
+    console.log('Action - uploadTaggedGalleryPhoto.data', data);
+    // console.log('Action - uploadTaggedGalleryPhoto.token', token);
+    console.log('Action - uploadTaggedGalleryPhoto.tags', tags);
 
     let progress = null;
     return async (dispatch) => {
@@ -222,64 +225,69 @@ export const uploadTaggedGalleryPhoto = (data, token, litterData) => {
             //    });
             //  }
         })
-            .then(response => {
-                // console.log('SUCCESS - Image uploaded - now upload associated data');
-                if (response.status == 200) {
-                    return axios(URL + '/api/photos/update', {
-                        method:'POST',
-                        headers: {
-                            'Authorization': 'Bearer ' + token
-                        },
-                        data: {
-                            litter: litterData,
-                            photo_id: response.data.photo_id
-                        } //,
-                        // need to debug this and make it smooooooth
-                        // onUploadProgress: (p) => {
-                        //    progress = p.loaded / p.total
-                        //    progress = Math.round(progress * 100);
-                        //    console.log('Prog 2', progress);
-                        //    // dispatch({
-                        //    //   type: CHANGE_UPLOAD_PROGRESS,
-                        //    //   payload: progress
-                        //    // });
-                        //  }
+        .then(response => {
+
+            console.log('uploadTaggedGalleryPhoto', response);
+
+            // console.log('SUCCESS - Image uploaded - now upload associated data');
+            if (response.status === 200)
+            {
+                return axios(URL + '/api/v2/add-tags', {
+                    method:'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + token
+                    },
+                    data: {
+                        litter: tags,
+                        photo_id: response.data.photo_id
+                    } //,
+                    // need to debug this and make it smooooooth
+                    // onUploadProgress: (p) => {
+                    //    progress = p.loaded / p.total
+                    //    progress = Math.round(progress * 100);
+                    //    console.log('Prog 2', progress);
+                    //    // dispatch({
+                    //    //   type: CHANGE_UPLOAD_PROGRESS,
+                    //    //   payload: progress
+                    //    // });
+                    //  }
+                })
+                    .then(resp => {
+                        // console.log('SUCCESS - Litter data for image updated');
+                        // console.log(resp.data);
+                        if (resp.status === 200)
+                        {
+                            // console.log('SUCCESS - final status 200');
+
+                            // todo - delete image from users device
+                            // try {
+                            //   console.log("Try - delete image from users device");
+                            //   let path = data["_parts"][0][1]['uri'];
+                            //   console.log("Image path to delete", path);
+                            //   let resp = FileSystem.deleteAsync(path);
+                            //
+                            //   console.log(resp);
+                            // } catch (e) {
+                            //   console.log("Error deleting", e);
+                            // }
+
+                            // dispatch({
+                            //   type: DELETE_GALLERY_UPLOAD_SUCCESS,
+                            //   payload: data
+                            // });
+
+                            return {
+                                message: 'success'
+                            };
+                        }
                     })
-                        .then(resp => {
-                            // console.log('SUCCESS - Litter data for image updated');
-                            // console.log(resp.data);
-                            if (resp.status == 200) {
-                                // console.log('SUCCESS - final status 200');
-
-                                // todo - delete image from users device
-                                // try {
-                                //   console.log("Try - delete image from users device");
-                                //   let path = data["_parts"][0][1]['uri'];
-                                //   console.log("Image path to delete", path);
-                                //   let resp = FileSystem.deleteAsync(path);
-                                //
-                                //   console.log(resp);
-                                // } catch (e) {
-                                //   console.log("Error deleting", e);
-                                // }
-
-                                // dispatch({
-                                //   type: DELETE_GALLERY_UPLOAD_SUCCESS,
-                                //   payload: data
-                                // });
-
-                                return {
-                                    message: 'success'
-                                };
-                            }
-                        })
-                        .catch(err => {
-                            console.log(err);
-                        });
-                }
-            })
-            .catch(error => {
-                console.log(error);
-            });
+                    .catch(err => {
+                        console.log(err);
+                    });
+            }
+        })
+        .catch(error => {
+            console.error('uploadTaggedGalleryPhoto', error);
+        });
     }
 }
