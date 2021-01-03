@@ -1,0 +1,17 @@
+{
+    "photos": "Foto's",
+    "geotagged": "Geotagged",
+    "cancel": "Cancel",
+    "done": "Klaar",
+    "upload": "Uploaden",
+    "select-a-photo": "Selecteer een foto",
+    "delete": "Verwijder",
+    "selected": "{photos} geselecteerd",
+    "press-upload": "Druk op Uploaden",
+    "select-to-delete": "Selecteer de afbeeldingen die je wilt verwijderen",
+    "please-wait-uploading": "Wacht even terwijl je foto's worden geupload",
+    "thank-you": "Dank je!!!",
+    "you-have-uploaded": "Je hebt {count} foto('s) geupload",
+    "close": "Sluiten",
+    "get-started": "Neem of Selecteer een aantal foto's om te starten!"
+}
