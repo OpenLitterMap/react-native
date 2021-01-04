@@ -10,6 +10,10 @@ import configureStore from './store'
 import { LanguageProvider } from 'react-native-translation'
 import { langs } from './assets/langs';
 
+import * as RNLocalize from "react-native-localize";
+let lang = RNLocalize.getLocales()['languageCode'];
+if (lang !== 'en' && lang !== 'nl') lang = 'en'
+
 import RootContainer from './screens/RootContainer'
 
 const App: () => React$Node = () => {
@@ -24,7 +28,7 @@ const App: () => React$Node = () => {
     return (
         <Provider store={store}>
             <PersistGate persistor={persistor}>
-                <LanguageProvider language={"en"} defaultLanguage={"en"} translations={langs['en']}>
+                <LanguageProvider language={lang} defaultLanguage={"en"} translations={langs[lang]}>
                     <RootContainer />
                 </LanguageProvider>
             </PersistGate>
