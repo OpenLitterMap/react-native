@@ -3,7 +3,7 @@ import React, { Component } from 'react'
 import Swiper from 'react-native-swiper'
 import CameraPage from './pages/CameraPage'
 import LeftPage from './pages/LeftPage'
-import RightPage from './pages/RightPage'
+// import RightPage from './pages/RightPage'
 
 class SwipeScreen extends React.Component {
 

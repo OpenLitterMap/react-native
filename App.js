@@ -8,9 +8,7 @@ import configureStore from './store'
 // Icon.loadFont();
 
 import { LanguageProvider } from 'react-native-translation'
-
-// todo - load the language we need
-import { en } from './assets/langs/en';
+import { langs } from './assets/langs';
 
 import RootContainer from './screens/RootContainer'
 
@@ -26,7 +24,7 @@ const App: () => React$Node = () => {
     return (
         <Provider store={store}>
             <PersistGate persistor={persistor}>
-                <LanguageProvider language={"en"} defaultLanguage={"en"} translations={en}>
+                <LanguageProvider language={"en"} defaultLanguage={"en"} translations={langs['en']}>
                     <RootContainer />
                 </LanguageProvider>
             </PersistGate>

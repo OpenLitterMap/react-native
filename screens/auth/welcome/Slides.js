@@ -7,7 +7,7 @@ import {
     View
 } from 'react-native';
 import PageControl from 'react-native-page-control';
-import { TransText } from "react-native-translation";
+import { getLanguage, TransText } from "react-native-translation";
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -30,6 +30,21 @@ class Slides extends Component {
         this.setState({ fontLoaded: true });
     }
 
+    /**
+     * For langs with longer text, we need to change flexDirection
+     */
+    getInnerTextContainer ()
+    {
+        let flexDirection = 'row';
+
+        if (getLanguage() === 'nl')
+        {
+            flexDirection = 'column';
+        }
+
+        return { flex: 1, flexDirection: flexDirection, alignSelf: 'center' };
+    }
+
     renderSlides ()
     {
         return this.props.data.map((slide, i) => {
@@ -39,7 +54,7 @@ class Slides extends Component {
                     <Image source={slide.image} style={styles.slideImage} />
 
                     <View style={styles.textContainer}>
-                        <View style={{ flex: 1, flexDirection: 'row', alignSelf: 'center' }}>
+                        <View style={this.getInnerTextContainer()}>
                             <TransText style={styles.slideTitle1} dictionary={'welcome.its'} />
                             <TransText style={styles.slideTitle2} dictionary={slide.title} />
                         </View>
