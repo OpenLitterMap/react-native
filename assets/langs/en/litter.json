@@ -135,7 +135,7 @@
         "chemical": "Chemical",
         "bricks": "Bricks",
         "tape": "Tape",
-        "industrial_other": "Other"
+        "industrial_other": "Industrial (other)"
     },
     "coastal": {
         "microplastics": "Microplastics",
