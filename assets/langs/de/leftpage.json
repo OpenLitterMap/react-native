@@ -1,0 +1,17 @@
+{
+    "photos": "Fotos",
+    "geotagged": "Geotagged",
+    "cancel": "Abbrechen",
+    "done": "Fertig",
+    "upload": "Hochladen",
+    "select-a-photo": "Ein Foto aussuchen",
+    "delete": "Löschen",
+    "selected": "{photos} Ausgesucht",
+    "press-upload": "Drücke hochladen",
+    "select-to-delete": "Suche Fotos aus, die du löschen möchtest",
+    "please-wait-uploading": "Bitte warten bis deine Fotos hochgeladen sind",
+    "thank-you": "Herzlichen Dank!!!",
+    "you-have-uploaded": "Du hast {count} Foto(s) hochgeladen",
+    "close": "Schlieβen",
+    "get-started": "Nehm ein Foto oder suche eins aus der Galerie um zu starten!"
+}
