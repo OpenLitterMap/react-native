@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import { Provider } from 'react-redux'
-import SplashScreen from 'react-native-splash-screen'
+// import SplashScreen from 'react-native-splash-screen'
 import { PersistGate } from 'redux-persist/es/integration/react'
 import configureStore from './store'
 
@@ -25,11 +25,13 @@ const App: () => React$Node = () => {
 
     const { persistor, store } = configureStore();
 
+    store.dispatch({ type: 'CHANGE_LANG', lang });
+
     return (
         <Provider store={store}>
             <PersistGate persistor={persistor}>
                 <LanguageProvider language={lang} defaultLanguage={"en"} translations={langs[lang]}>
-                    <RootContainer />
+                    <RootContainer key={lang} />
                 </LanguageProvider>
             </PersistGate>
         </Provider>

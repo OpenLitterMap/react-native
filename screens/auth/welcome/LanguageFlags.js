@@ -11,6 +11,9 @@ import { getLanguage } from 'react-native-translation';
 
 import * as Animatable from 'react-native-animatable';
 
+import { connect } from 'react-redux'
+import * as actions from '../../../actions'
+
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
@@ -23,15 +26,36 @@ const langs = [
 
 class LanguageFlags extends Component
 {
-
-    constructor() {
-        super();
+    /**
+     * We need to bind toggle to access state
+     */
+    constructor (props)
+    {
+        super(props);
 
         this.state = {
             show: false
-        }
+        };
+
+        this.change = this.change.bind(this);
+        this.toggle = this.toggle.bind(this);
     }
 
+    /**
+     *
+     */
+    change (lang)
+    {
+        console.log('change', lang);
+
+        this.props.changeLang(lang);
+
+        this.toggle();
+    }
+
+    /**
+     * Return the flag image path for the currently active language
+     */
     getCurrentFlag ()
     {
         const current = getLanguage(); // current lang
@@ -39,24 +63,57 @@ class LanguageFlags extends Component
         return langs.find(lng => lng.lang === current).flag;
     }
 
+    /**
+     * Show or hide available languages
+     */
     toggle ()
     {
-        console.log('toggle');
+        this.setState({ show: ! this.state.show });
     }
 
     render ()
     {
         return (
-            <TouchableOpacity
-                style={{ position: 'absolute', top: SCREEN_HEIGHT * 0.075, left: SCREEN_WIDTH * 0.075, zIndex: 1 }}
-                onPress={this.toggle.bind('this')}
-            >
-                <Image source={this.getCurrentFlag()}  />
-            </TouchableOpacity>
+            <View style={styles.top}>
+                {
+                    this.state.show ?
+                    (
+                        langs.map(lang => (
+                            <TouchableOpacity
+                                key={lang.lang}
+                                onPress={() => this.change(lang.lang)}
+                            >
+                                <Image
+                                    source={lang.flag}
+                                    style={{ marginBottom: 10 }}
+                                />
+                            </TouchableOpacity>
+                        ))
+                    )
+                    :
+                    (
+                        <TouchableOpacity onPress={this.toggle}>
+                            <Image source={this.getCurrentFlag()}  />
+                        </TouchableOpacity>
+                    )
+                }
+            </View>
         )
+    }
+}
+
+const styles = {
+    top: {
+        position: 'absolute',
+        top: SCREEN_HEIGHT * 0.075,
+        left: SCREEN_WIDTH * 0.075,
+        zIndex: 1
     }
 }
 
 LanguageFlags = Animatable.createAnimatableComponent(LanguageFlags);
 
-export default LanguageFlags;
+export default connect(
+    null,
+    actions
+)(LanguageFlags);
