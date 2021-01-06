@@ -4,6 +4,7 @@ import {
     URL,
     CLIENT_SECRET,
     CLIENT_ID,
+    CHANGE_LANG,
     SUBMIT_START,
     SERVER_STATUS,
     EMAIL_ERROR,
@@ -29,6 +30,13 @@ import {
     ON_SEEN_FEATURE_TOUR
 } from './types';
 import axios from 'axios';
+
+export const changeLang = lang => {
+    return {
+        type: CHANGE_LANG,
+        payload: lang
+    };
+}
 
 export const checkValidToken = token => {
     // console.log('CHECK_VALID_TOKEN', token);

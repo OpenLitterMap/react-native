@@ -1,6 +1,7 @@
 import {
     SUBMIT_START,
     ACCOUNT_CREATED,
+    CHANGE_LANG,
     EMAIL_CHANGED,
     EMAIL_ERROR,
     PASSWORD_ERROR,
@@ -30,6 +31,7 @@ import AsyncStorage from '@react-native-community/async-storage';
 
 // state.auth.email
 const INITIAL_STATE = {
+    lang: "en",
     appLoading: true,
     appVersion: '',
     buttonPressed: false,
@@ -50,10 +52,16 @@ const INITIAL_STATE = {
     serverStatus: ''
 };
 
-export default function(state = INITIAL_STATE, action) {
-    // console.log(action.type);
+export default function(state = INITIAL_STATE, action)
+{
     switch (action.type)
     {
+        case CHANGE_LANG:
+            return {
+                ...state,
+                lang: action.payload
+            };
+
         case STORE_CURRENT_APP_VERSION:
             return {
                 ...state,
