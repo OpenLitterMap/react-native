@@ -5,7 +5,7 @@ import settings from './settings.json'
 import tag from './tag.json'
 import welcome from './welcome.json'
 
-export const du = {
+export const de = {
     auth,
     leftpage,
     litter,

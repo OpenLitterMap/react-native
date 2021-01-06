@@ -6,6 +6,7 @@ import {
 } from 'react-native';
 import { TransText } from "react-native-translation";
 import LinearGradient from 'react-native-linear-gradient';
+import LanguageFlags from './welcome/LanguageFlags';
 import Slides from './welcome/Slides';
 import { connect } from 'react-redux';
 import * as actions from '../../actions';
@@ -60,7 +61,10 @@ class WelcomeScreen extends Component {
     render ()
     {
         return (
-            <View style={{ flex: 1 }}>
+            <View style={{ flex: 1, position: 'relative' }}>
+
+                <LanguageFlags />
+
                 <LinearGradient
                     colors={['#2ecc71','#8e44ad', '#c5d119']}
                     start={{ x: 0, y: 0 }}
