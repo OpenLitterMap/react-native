@@ -254,28 +254,23 @@ export default function (state = INITIAL_STATE, action)
             });
 
         /**
-         * Return 6 suggested tags based on text input
+         * Filter all translated tag values
+         *
+         * Return all results
+         *
+         * We are passing auth.lang as a prop which could be access from auth_reducer
          */
         case SUGGEST_TAGS:
 
             let x = [];
 
-            // CATEGORIES.some(cat => {
-            //     cat.items.some(item => {
-            //         if (item.toLowerCase().includes(action.payload.toLowerCase()))
-            //         {
-            //             x.push({ cat: cat.title, item });
-            //         }
-            //     });
-            // });
-
             Object.entries(LITTERKEYS).some(tags => {
 
                 tags[1].some(tag => {
 
-                    const t = getTranslation(`litter.${tags[0]}.${tag.key}`);
+                    const t = getTranslation(`${action.payload.lang}.litter.${tags[0]}.${tag.key}`);
 
-                    if (t.toLowerCase().includes(action.payload.toLowerCase()))
+                    if (t.toLowerCase().includes(action.payload.text.toLowerCase()))
                     {
                         x.push({
                             category: tags[0],

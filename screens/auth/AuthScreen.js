@@ -326,8 +326,8 @@ class AuthScreen extends Component {
             this.setState({
                 emailErrorMessage:
                     email.trim() === ''
-                        ? 'auth.enter-email'
-                        : 'auth.email-not-valid'
+                        ? `${this.props.lang}.auth.enter-email`
+                        : `${this.props.lang}.auth.email-not-valid`
             });
 
             return false;
@@ -354,15 +354,15 @@ class AuthScreen extends Component {
             } else {
                 this.setState({
                     passwordErrorMessage: isEmpty
-                        ? 'auth.enter-password'
-                        : 'auth.must-contain'
+                        ? `${this.props.lang}.auth.enter-password`
+                        : `${this.props.lang}.auth.must-contain`
                 });
 
                 return false;
             }
         } else {
             this.setState({
-                passwordErrorMessage: isEmpty ? 'auth.enter-password' : null
+                passwordErrorMessage: isEmpty ? `${this.props.lang}.auth.enter-password` : null
             });
 
             return !isEmpty;
@@ -382,8 +382,8 @@ class AuthScreen extends Component {
             this.setState({
                 usernameErrorMessage:
                     username.trim() === ''
-                        ? 'auth.enter-username'
-                        : 'auth.alphanumeric-username'
+                        ? `${this.props.lang}.auth.enter-username`
+                        : `${this.props.lang}.auth.alphanumeric-username`
             });
             return false;
         }
@@ -398,6 +398,7 @@ class AuthScreen extends Component {
           source: https://stackoverflow.com/questions/201323/how-to-validate-an-email-address-using-a-regular-expression
         */
         let regex = /^(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])$/;
+
         return regex.test(email);
     };
 
@@ -420,7 +421,8 @@ class AuthScreen extends Component {
     /**
      * Validate a Username
      */
-    isUsernameValid = username => {
+    isUsernameValid = username =>
+    {
         /*
           ^                         Start anchor
           \w+                       Alphanumeric including underscores and foreign language characters
@@ -436,7 +438,8 @@ class AuthScreen extends Component {
     /**
      * for confirming all validation issues have been fixed
      */
-    recheckFormValidity() {
+    recheckFormValidity ()
+    {
         const {
             emailErrorMessage,
             passwordErrorMessage,
@@ -464,7 +467,8 @@ class AuthScreen extends Component {
         }
     }
 
-    updateEmail = email => {
+    updateEmail = email =>
+    {
         email = email.trim().toLocaleLowerCase();
         this.setState({ email: email });
 
@@ -474,7 +478,8 @@ class AuthScreen extends Component {
         }
     };
 
-    updatePassword = password => {
+    updatePassword = password =>
+    {
         this.setState({ password: password });
 
         // only check for errors if the login/signup button has been pressed
@@ -483,7 +488,8 @@ class AuthScreen extends Component {
         }
     };
 
-    updateUsername = username => {
+    updateUsername = username =>
+    {
         username = username.trim();
         this.setState({ username: username });
 
@@ -493,7 +499,8 @@ class AuthScreen extends Component {
         }
     };
 
-    toggleFormMode = () => {
+    toggleFormMode = () =>
+    {
         this.props.loginOrSignupReset();
 
         let newMode;
@@ -510,37 +517,53 @@ class AuthScreen extends Component {
         });
     };
 
-    forgotPassword = () => {
+    forgotPassword = () =>
+    {
         this.setState({
             formMode: formModes.FORGOT_PASSWORD
         });
     };
 
-    onLayout = () => {
+    onLayout = () =>
+    {
         this.updateSizeVariables();
 
         this.forceUpdate();
     };
 
-    getSubmitButtonText = () => {
-        switch (this.state.formMode) {
+    getSubmitButtonText = () =>
+    {
+        switch (this.state.formMode)
+        {
             case formModes.CREATE_ACCOUNT:
-                return 'auth.create-account';
+
+                return `${this.props.lang}.auth.create-account`;
+
             case formModes.LOGIN:
-                return 'auth.login';
+
+                return `${this.props.lang}.auth.login`;
+
             case formModes.FORGOT_PASSWORD:
-                return 'auth.forgot-password';
+
+                return `${this.props.lang}.auth.forgot-password`;
         }
     };
 
-    getModeSwitchText = () => {
-        switch (this.state.formMode) {
+    getModeSwitchText = () =>
+    {
+        switch (this.state.formMode)
+        {
             case formModes.CREATE_ACCOUNT:
-                return  'auth.already-have'; // 'Already have an account?';
+
+                return  `${this.props.lang}.auth.already-have`; // 'Already have an account?';
+
             case formModes.LOGIN:
-                return 'auth.create-account'; // 'Create Account';
+
+                return `${this.props.lang}.auth.create-account`; // 'Create Account';
+
             case formModes.FORGOT_PASSWORD:
-                return 'auth.back-to-login';
+
+                return `${this.props.lang}.auth.back-to-login`;
         }
     };
 
@@ -567,21 +590,25 @@ class AuthScreen extends Component {
             isLogoDisplayed
         } = this.state;
 
-        const emailTranslation          = getTranslation('auth.email-address');
-        const passwordTranslation       = getTranslation('auth.password');
-        const usernameTranslation       = getTranslation('auth.unique-username');
+        const { lang } = this.props;
+
+        const emailTranslation          = getTranslation(`${lang}.auth.email-address`);
+        const passwordTranslation       = getTranslation(`${lang}.auth.password`);
+        const usernameTranslation       = getTranslation(`${lang}.auth.unique-username`);
 
         return (
             <View style={styles.container}>
                 <KeyboardAvoidingView
                     style={styles.outerContainer}
                     behaviour={Platform.select({ android: 'height', ios: 'height' })}
-                    onLayout={this.onLayout}>
+                    onLayout={this.onLayout}
+                >
                     <ScrollView
                         style={styles.scroll}
                         contentContainerStyle={styles.scrollContainer}
                         showsVerticalScrollIndicator={false}
-                        keyboardShouldPersistTaps={'handled'}>
+                        keyboardShouldPersistTaps={'handled'}
+                    >
                         <View style={styles.authContainer}>
                             {IS_PORTRAIT && isLogoDisplayed && (
                                 <Image
@@ -674,7 +701,7 @@ class AuthScreen extends Component {
                                     <TransText
                                         style={styles.forgotPw}
                                         onPress={this.forgotPassword}
-                                        dictionary={'auth.forgot-password'}
+                                        dictionary={`${lang}.auth.forgot-password`}
                                     />
                                 )}
 
@@ -764,7 +791,7 @@ class AuthScreen extends Component {
                                             }}
                                         />
                                         {/* ---- OR ---- */}
-                                        <TransText style={styles.divider} dictionary={'auth.or'} />
+                                        <TransText style={styles.divider} dictionary={`${lang}.auth.or`} />
                                         <View
                                             style={{
                                                 backgroundColor: COLORS.whiteText,
@@ -939,6 +966,7 @@ const styles = StyleSheet.create({
 
 const mapStateToProps = state => {
     return {
+        lang: state.auth.lang,
         serverStatus: state.auth.serverStatus,
         success: state.auth.success,
         user: state.auth.user,

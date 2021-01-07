@@ -1,5 +1,10 @@
 import React, { PureComponent } from 'react';
-import {Dimensions, Platform, ScrollView, View} from 'react-native';
+import {
+    Dimensions,
+    Platform,
+    ScrollView,
+    View
+} from 'react-native';
 import {
     Text,
     TouchableHighlight
@@ -100,8 +105,8 @@ class LitterTags extends PureComponent {
                         }}
                     >
                         <View style={styles.card}>
-                            <TransText style={styles.category} dictionary={'litter.categories.' + category } />
-                            <TransText style={styles.item} dictionary={`litter.${category}.${item}`} />
+                            <TransText style={styles.category} dictionary={`${this.props.lang}.litter.categories.${category}`} />
+                            <TransText style={styles.item} dictionary={`${this.props.lang}.litter.${category}.${item}`} />
                             <Text style={styles.val}>&nbsp; ({value})</Text>
                         </View>
                     </TouchableHighlight>

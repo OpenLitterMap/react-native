@@ -26,8 +26,6 @@ class LitterBottomSearch extends PureComponent
     {
         super (props);
 
-        console.log('LitterBottomSearch.created', this.props.presence);
-
         this.state = {
             text: ''
         };
@@ -38,7 +36,10 @@ class LitterBottomSearch extends PureComponent
      */
     UNSAFE_componentWillReceiveProps (props)
     {
-        if (props['keyboardOpen'] === false) this.setState({ text: '' });
+        if (props['keyboardOpen'] === false)
+        {
+            this.setState({ text: '' });
+        }
     }
 
     /**
@@ -118,14 +119,14 @@ class LitterBottomSearch extends PureComponent
     /**
      * The switch has been pressed
      *
-     *
+     * Temp removed until we can control data per image
      */
     handleToggleSwitch = async () =>
     {
         await this.props.toggleSwitch();
 
-        const A = getTranslation('litter.presence.picked-up');
-        const B = getTranslation('litter.presence.still-there');
+        const A = getTranslation(`${this.props.lang}.litter.presence.picked-up`);
+        const B = getTranslation(`${this.props.lang}.litter.presence.still-there`);
 
         return this.props.presence ? alert(A) : alert(B);
     }
@@ -136,8 +137,8 @@ class LitterBottomSearch extends PureComponent
     renderTag = ({ item }) => {
         return (
             <TouchableOpacity style={styles.tag} onPress={this.addTag.bind(this, item)}>
-                <TransText style={styles.category} dictionary={`litter.categories.${item.category}`} />
-                <TransText style={styles.item} dictionary={`litter.${item.category}.${item.key}`} />
+                <TransText style={styles.category} dictionary={`${this.props.lang}.litter.categories.${item.category}`} />
+                <TransText style={styles.item} dictionary={`${this.props.lang}.litter.${item.category}.${item.key}`} />
             </TouchableOpacity>
         );
     }
@@ -149,7 +150,10 @@ class LitterBottomSearch extends PureComponent
     {
         this.setState({ text });
 
-        this.props.suggestTags(text);
+        this.props.suggestTags({
+            text,
+            lang: this.props.lang
+        });
     }
 
     /**
@@ -164,6 +168,9 @@ class LitterBottomSearch extends PureComponent
      */
     render ()
     {
+        const lang = this.props.lang;
+        const suggest = getTranslation(`${lang}.litter.tags.type-to-suggest`);
+
         return (
             <KeyboardAvoidingView
                 style={{
@@ -186,7 +193,7 @@ class LitterBottomSearch extends PureComponent
 
                     <TextInput
                         style={this.filterStyle()}
-                        placeholder="Type to suggest tags"
+                        placeholder={suggest}
                         placeholderTextColor="#ccc"
                         onChangeText={(text) => this.updateText(text)}
                         selectionColor="black"
@@ -208,7 +215,11 @@ class LitterBottomSearch extends PureComponent
                     {
                         this.props.keyboardOpen &&
                             <View style={styles.tagsOuterContainer}>
-                                <Text style={styles.suggest}>Suggested tags: {this.props.suggestedTags.length}</Text>
+                                <TransText
+                                    style={styles.suggest}
+                                    dictionary={`${lang}.litter.tags.suggested`}
+                                    values={{ "count": this.props.suggestedTags.length }}
+                                />
 
                                 <View style={styles.tagsInnerContainer}>
                                     <FlatList

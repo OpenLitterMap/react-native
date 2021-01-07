@@ -26,10 +26,10 @@ import {
     ON_SEEN_FEATURE_TOUR,
     SERVER_STATUS
 } from '../actions/types';
-import AsyncStorage from '@react-native-community/async-storage';
+
+// import AsyncStorage from '@react-native-community/async-storage';
 // import { Map, List } from 'immutable';
 
-// state.auth.email
 const INITIAL_STATE = {
     lang: "en",
     appLoading: true,
@@ -52,7 +52,7 @@ const INITIAL_STATE = {
     serverStatus: ''
 };
 
-export default function(state = INITIAL_STATE, action)
+export default function (state = INITIAL_STATE, action)
 {
     switch (action.type)
     {
@@ -204,11 +204,15 @@ export default function(state = INITIAL_STATE, action)
             // console.log(typeof(action.payload));
             // console.log(action.payload);
             let user;
-            if (action.payload == 'string') {
+            if (action.payload === 'string')
+            {
                 // console.log('Payload is string');
                 // console.log(JSON.parse(action.payload));
                 user = JSON.parse(action.payload);
-            } else {
+            }
+
+            else
+            {
                 // console.log('Payload is not string');
                 // console.log(action.payload);
                 user = action.payload.userObj;

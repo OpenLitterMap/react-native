@@ -142,8 +142,6 @@ class LitterPicker extends PureComponent
         // this is necessary to allow the user to click on text input because of a bug with keyboardAvoidingView on Android
         if (Platform.OS === "android") height = SCREEN_HEIGHT * 0.1;
 
-        console.log('category', this.props.category);
-
         // we need to reset item for currently selected category
         if (this.props.category.hasOwnProperty('title'))
         {
@@ -187,6 +185,8 @@ class LitterPicker extends PureComponent
      */
     render ()
     {
+        const { lang } = this.props;
+
         return (
             <View style={{ flex: 1 }}>
                 <View style={styles.container}>
@@ -207,7 +207,11 @@ class LitterPicker extends PureComponent
                     {/*</Modal>*/}
 
                     {/* First - Top Bar position: 'absolute'  */}
-                    <LitterCategories categories={CATEGORIES} category={this.props.category} />
+                    <LitterCategories
+                        categories={CATEGORIES}
+                        category={this.props.category}
+                        lang={this.props.lang}
+                    />
 
                     {/* Second - Image. Height: 80% */}
                     <LitterImage
@@ -224,6 +228,7 @@ class LitterPicker extends PureComponent
                         positions={this.props.positions}
                         item={this.props.item}
                         keyboardOpen={this.state.keyboardOpen}
+                        lang={this.props.lang}
                     />
 
                     {/* Fourth - bottomContainer 20% height */}
@@ -237,6 +242,7 @@ class LitterPicker extends PureComponent
                                 model={this.props.model}
                                 category={this.props.category}
                                 q={this.props.q}
+                                lang={this.props.lang}
                             />
                         </View>
 
@@ -250,7 +256,7 @@ class LitterPicker extends PureComponent
                             >
                                 <View style={styles.innerButtonContainer}>
                                     <Icon name="check" size={SCREEN_HEIGHT * 0.05} />
-                                    <TransText style={styles.textIconStyle} dictionary={'tag.confirm'} />
+                                    <TransText style={styles.textIconStyle} dictionary={`${lang}.tag.confirm`} />
                                 </View>
                             </TouchableHighlight>
 
@@ -262,7 +268,7 @@ class LitterPicker extends PureComponent
                             >
                                 <View style={styles.innerButtonContainer}>
                                     <Icon name="add" size={SCREEN_HEIGHT * 0.05} />
-                                    <TransText style={styles.textIconStyle} dictionary={'tag.add-tag'} />
+                                    <TransText style={styles.textIconStyle} dictionary={`${lang}.tag.add-tag`} />
                                 </View>
                             </TouchableHighlight>
                         </View>
@@ -274,6 +280,7 @@ class LitterPicker extends PureComponent
                         height={this.state.height}
                         bottomHeight={this.state.bottomHeight}
                         presence={this.props.presence}
+                        lang={this.props.lang}
                     />
                 </View>
                 <SafeAreaView style={{ flex: 0 }} />
@@ -342,6 +349,7 @@ class LitterPicker extends PureComponent
 
         // if iPhone 10+, return 17% card height
         let x = DeviceInfo.getModel().split(' ')[1];
+
         if (x.includes('X') || parseInt(x) >= 10) return styles.iButtonsContainer;
 
         return styles.buttonsContainer;
@@ -366,10 +374,9 @@ class LitterPicker extends PureComponent
             items.push(category + ":");
 
             Object.keys(this.props.tags[category]).map(item => {
-                items.push(
-                    item + ':' + ' ' + this.props.tags[category][item]
-                );
+                items.push(item + ':' + ' ' + this.props.tags[category][item]);
             });
+
             items.push("\n");
         });
 
@@ -713,6 +720,7 @@ const mapStateToProps = state => {
         galleryTotalCount: state.gallery.galleryTotalCount,
         item: state.litter.item,
         items: state.litter.items,
+        lang: state.auth.lang,
         model: state.settings.model,
         photos: state.photos.photos,
         photoSelected: state.litter.photoSelected,
