@@ -28,6 +28,8 @@ class SettingsComponent extends Component {
 
     render ()
     {
+        const { lang } = this.props;
+
         return (
             <>
                 <SafeAreaView style={{ flex: 0, backgroundColor: '#2189dc' }} />
@@ -38,17 +40,18 @@ class SettingsComponent extends Component {
                         visible={this.props.secondSettingsModalVisible}
                     >
                         <View style={styles.modalContainer}>
-                            { this.props.updateSettingsSuccess &&
-                                <View style={styles.innerModalSuccess}>
-                                    <TransText style={styles.innerModalHeader} dictionary={'settings.success'} />
-                                    <TransText dictionary={'settings.value-updated'} />
-                                    <TouchableHighlight
-                                        style={styles.successButton}
-                                        onPress={() => this._goBack()}
-                                    >
-                                        <TransText style={styles.buttonText} dictionary={'settings.go-back'} />
-                                    </TouchableHighlight>
-                                </View>
+                            {
+                                this.props.updateSettingsSuccess &&
+                                    <View style={styles.innerModalSuccess}>
+                                        <TransText style={styles.innerModalHeader} dictionary={`${lang}.settings.success`} />
+                                        <TransText dictionary={`${lang}.settings.value-updated`} />
+                                        <TouchableHighlight
+                                            style={styles.successButton}
+                                            onPress={() => this._goBack()}
+                                        >
+                                            <TransText style={styles.buttonText} dictionary={`${lang}.settings.go-back`} />
+                                        </TouchableHighlight>
+                                    </View>
                             }
 
                             { this.props.updatingSettings && <ActivityIndicator /> }
@@ -72,14 +75,17 @@ class SettingsComponent extends Component {
                             <TouchableHighlight
                                 onPress={() => this._saveSettings() }
                             >
-                                <TransText style={{ color: '#fff', fontSize: SCREEN_HEIGHT * 0.02 }} dictionary={'settings.save'} />
+                                <TransText
+                                    style={{ color: '#fff', fontSize: SCREEN_HEIGHT * 0.02 }}
+                                    dictionary={`${lang}.settings.save`}
+                                />
                             </TouchableHighlight>
                         }
                     />
 
                     <View style={styles.container}>
                         <View style={styles.row}>
-                            <TransText style={styles.title} dictionary={this.props.dataToEdit.title} />
+                            <TransText style={styles.title} dictionary={`${lang}.${this.props.dataToEdit.title}`} />
                             <TextInput
                                 onChangeText={(text) => this.props.updateSettingsProp({text})}
                                 style={styles.content}
@@ -107,9 +113,9 @@ class SettingsComponent extends Component {
      */
     _getHeaderName ()
     {
-        const text = getTranslation(this.props.dataToEdit.title);
+        const text = getTranslation(`${this.props.lang}.${this.props.dataToEdit.title}`);
 
-        const edit = getTranslation('settings.edit');
+        const edit = getTranslation(`${this.props.lang}.settings.edit`);
 
         return edit + " " + text;
     }
@@ -207,6 +213,7 @@ const styles = {
 const mapStateToProps = state => {
     return {
         dataToEdit: state.settings.dataToEdit,
+        lang: state.auth.lang,
         secondSettingsModalVisible: state.settings.secondSettingsModalVisible,
         settingsEditProp: state.settings.settingsEditProp,
         token: state.auth.token,

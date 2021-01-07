@@ -178,11 +178,10 @@ class LeftPage extends PureComponent {
                         rightComponent={this.renderDeleteButton()}
                     />
 
-                    {/*<TransText dictionary={"welcome.easy"} />*/}
-
                     <LeftPageImages
                         gallery={this.props.gallery}
                         photos={this.props.photos}
+                        lang={this.props.lang}
                         uniqueValue={this.props.uniqueValue}
                         isSelecting={this.props.isSelecting}
                         webImages={this.props.webImages}
