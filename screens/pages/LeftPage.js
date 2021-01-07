@@ -81,8 +81,11 @@ class LeftPage extends PureComponent {
         if (this.props.imageBrowserOpen)
         {
             // todo- cancel all subscriptions and async tasks in componentWillUnmount
+            // todo - translate album list
             return <AlbumList navigation={this.props.navigation} />;
         }
+
+        const lang = this.props.lang;
 
         return (
             <>
@@ -100,7 +103,7 @@ class LeftPage extends PureComponent {
                                 <View style={styles.modal}>
                                     <TransText
                                         style={styles.uploadText}
-                                        dictionary={'leftpage.please-wait-uploading'}
+                                        dictionary={`${lang}.leftpage.please-wait-uploading`}
                                     />
                                     <ActivityIndicator style={{ marginBottom: 10 }} />
                                     <Text style={styles.uploadCount}>
@@ -113,6 +116,7 @@ class LeftPage extends PureComponent {
                                       size={100}
                                       style={{ marginBottom: 30 }}
                                     /> */}
+                                    {/* Todo - translate cancel */}
                                     <Button onPress={this._toggleUpload.bind(this)} title="Cancel" />
                                 </View>
                             )
@@ -134,12 +138,12 @@ class LeftPage extends PureComponent {
                                     <View style={styles.thankYouModalInner}>
                                         <TransText
                                             style={{ fontSize: SCREEN_HEIGHT * 0.02, marginBottom: 5 }}
-                                            dictionary={'leftpage.thank-you'}
+                                            dictionary={`${lang}.leftpage.thank-you`}
                                         />
 
                                         <TransText
                                             style={{ fontSize: SCREEN_HEIGHT * 0.02, marginBottom: 5 }}
-                                            dictionary={'leftpage.you-have-uploaded'}
+                                            dictionary={`${lang}.leftpage.you-have-uploaded`}
                                             values={{ "count": this.props.totalImagesToUpload }}
                                         />
 
@@ -149,7 +153,7 @@ class LeftPage extends PureComponent {
                                                 <View style={styles.thankYouButton}>
                                                        <TransText
                                                            style={styles.normalWhiteText}
-                                                           dictionary={'leftpage.close'}
+                                                           dictionary={`${lang}.leftpage.close`}
                                                        />
                                                 </View>
                                             </TouchableWithoutFeedback>
@@ -258,7 +262,7 @@ class LeftPage extends PureComponent {
                                 size={SCREEN_HEIGHT * 0.04}
                                 color="#00aced"
                             />
-                            <TransText style={styles.normalText} dictionary={'leftpage.delete'} />
+                            <TransText style={styles.normalText} dictionary={`${this.props.lang}.leftpage.delete`} />
                         </TouchableOpacity>
                     </View>
                 );
@@ -276,7 +280,7 @@ class LeftPage extends PureComponent {
                             size={SCREEN_HEIGHT * 0.04}
                             color="#00aced"
                         />
-                        <TransText style={styles.normalText} dictionary={'leftpage.photos'} />
+                        <TransText style={styles.normalText} dictionary={`${this.props.lang}.leftpage.photos`} />
                     </View>
                 </TouchableWithoutFeedback>
 
@@ -308,7 +312,7 @@ class LeftPage extends PureComponent {
             <TouchableWithoutFeedback onPress={this.uploadPhotos}>
                 <View style={styles.iconPadding}>
                     <Icon name="backup" size={SCREEN_HEIGHT * 0.04} color="#00aced" />
-                    <TransText style={styles.normalText} dictionary={'leftpage.upload'} />
+                    <TransText style={styles.normalText} dictionary={`${this.props.lang}.leftpage.upload`} />
                 </View>
             </TouchableWithoutFeedback>
         );
@@ -325,7 +329,7 @@ class LeftPage extends PureComponent {
                 <TransText
                     style={styles.normalWhiteText}
                     onPress={this.toggleSelecting}
-                    dictionary={'leftpage.cancel'}
+                    dictionary={`${this.props.lang}.leftpage.cancel`}
                 />
             );
         }
@@ -336,7 +340,7 @@ class LeftPage extends PureComponent {
                 <TransText
                     style={styles.normalText}
                     onPress={this.toggleSelecting}
-                    dictionary={'leftpage.delete'}
+                    dictionary={`${this.props.lang}.leftpage.delete`}
                 />
             );
         }
@@ -351,7 +355,15 @@ class LeftPage extends PureComponent {
      */
     renderCenterTitle ()
     {
-        if (this.props.isSelecting) return <TransText dictionary={'leftpage.selected'} values={{ 'photos': this.props.selected }} />;
+        if (this.props.isSelecting)
+        {
+            return (
+                <TransText
+                    dictionary={`${this.props.lang}.leftpage.selected`}
+                    values={{ 'photos': this.props.selected }}
+                />
+            );
+        }
 
         if (this.props.gallery.length > 0 | this.props.photos.length > 0)
         {
@@ -359,7 +371,7 @@ class LeftPage extends PureComponent {
             {
                 if (this.props.gallery[i].hasOwnProperty('litter'))
                 {
-                    return <TransText style={styles.normalText} dictionary={'leftpage.press-upload'} />;
+                    return <TransText style={styles.normalText} dictionary={`${this.props.lang}.leftpage.press-upload`} />;
                 }
             }
 
@@ -367,11 +379,11 @@ class LeftPage extends PureComponent {
             {
                 if (this.props.photos[i].hasOwnProperty('litter'))
                 {
-                    return <TransText style={styles.normalText} dictionary={'leftpage.press-upload'} />;
+                    return <TransText style={styles.normalText} dictionary={`${this.props.lang}.leftpage.press-upload`} />;
                 }
             }
 
-            return <TransText style={styles.normalText} dictionary={'leftpage.select-a-photo'} />;
+            return <TransText style={styles.normalText} dictionary={`${this.props.lang}.leftpage.select-a-photo`} />;
         }
     }
 
@@ -521,10 +533,10 @@ class LeftPage extends PureComponent {
 
                     // console.log('Data to upload', data);
 
-                    var myIndex = this.props.photos.indexOf(item);
+                    let myIndex = this.props.photos.indexOf(item);
 
                     // photo_actions, photos_reducer
-                    var response = await this.props.uploadTaggedSessionPhotos(
+                    let response = await this.props.uploadTaggedSessionPhotos(
                         data,
                         this.props.token,
                         item.litter
@@ -675,6 +687,7 @@ const mapStateToProps = state => {
         galleryUploadProgress: state.gallery.galleryUploadProgress,
         imageBrowserOpen: state.gallery.imageBrowserOpen,
         isSelecting: state.shared.isSelecting,
+        lang: state.auth.lang,
         selected: state.shared.selected,
         photos: state.photos.photos,
         progress: state.photos.progress,

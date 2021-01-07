@@ -50,9 +50,13 @@ export const checkValidToken = token => {
         })
             .then(response => {
                 // console.log('checkValidToken.response', response);
-                if (response.data.message == 'valid') {
+                if (response.data.message === 'valid')
+                {
                     return { valid: true };
-                } else {
+                }
+
+                else
+                {
                     return { valid: false };
                 }
             })

@@ -6,7 +6,6 @@ import {
     Platform,
     SafeAreaView,
     TouchableHighlight,
-    Text,
     View
 } from 'react-native';
 import { TransText } from "react-native-translation";
@@ -66,7 +65,7 @@ class LitterCategories extends PureComponent {
                     <TransText
                         style={styles.text}
                         key={category.id}
-                        dictionary={'litter.categories.' + category.title}
+                        dictionary={`${this.props.lang}.litter.categories.${category.title}`}
                     />
                 </Card>
             </TouchableHighlight>
@@ -88,7 +87,6 @@ class LitterCategories extends PureComponent {
                             this.renderCategory(item)
                         )}
                         keyExtractor={category => category.title}
-
                         keyboardShouldPersistTaps="handled"
                     />
                 </SafeAreaView>

@@ -47,6 +47,8 @@ class Slides extends Component {
 
     renderSlides ()
     {
+        const lang = this.props.lang;
+
         return this.props.data.map((slide, i) => {
             return (
                 <View key={slide.id} style={styles.slide}>
@@ -55,10 +57,10 @@ class Slides extends Component {
 
                     <View style={styles.textContainer}>
                         <View style={this.getInnerTextContainer()}>
-                            <TransText style={styles.slideTitle1} dictionary={'welcome.its'} />
-                            <TransText style={styles.slideTitle2} dictionary={slide.title} />
+                            <TransText style={styles.slideTitle1} dictionary={`${lang}.welcome.its`} />
+                            <TransText style={styles.slideTitle2} dictionary={`${lang}.${slide.title}`} />
                         </View>
-                        <TransText style={styles.slideText} dictionary={slide.text} />
+                        <TransText style={styles.slideText} dictionary={`${lang}.${slide.text}`} />
                     </View>
 
                     <PageControl

@@ -2,12 +2,12 @@ import React, { Component } from 'react';
 import {
     Dimensions,
     Image,
-    Text,
     TouchableOpacity,
     View
 } from 'react-native';
 
-import { getLanguage } from 'react-native-translation';
+// setLang not working
+// import { getLanguage, setLanguage } from 'react-native-translation';
 
 import * as Animatable from 'react-native-animatable';
 
@@ -46,8 +46,6 @@ class LanguageFlags extends Component
      */
     change (lang)
     {
-        console.log('change', lang);
-
         this.props.changeLang(lang);
 
         this.toggle();
@@ -58,9 +56,7 @@ class LanguageFlags extends Component
      */
     getCurrentFlag ()
     {
-        const current = getLanguage(); // current lang
-
-        return langs.find(lng => lng.lang === current).flag;
+        return langs.find(lng => lng.lang === this.props.lang).flag;
     }
 
     /**

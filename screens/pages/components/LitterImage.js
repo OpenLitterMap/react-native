@@ -1,10 +1,9 @@
 import React, { PureComponent } from 'react';
 import {
     ActivityIndicator,
-    Dimensions, FlatList,
+    Dimensions,
     Image,
     ScrollView,
-    Text,
     View
 } from 'react-native';
 import * as actions from '../../../actions';
@@ -23,7 +22,8 @@ class LitterImage extends PureComponent {
         zoomWidth: SCREEN_WIDTH
     };
 
-    constructor (props) {
+    constructor (props)
+    {
         super(props);
 
         this.state = {

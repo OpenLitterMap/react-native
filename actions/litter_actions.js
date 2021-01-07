@@ -57,10 +57,13 @@ export const changeQ = (q) => {
 /**
  * Text to suggest tags by
  */
-export const suggestTags = (text) => {
+export const suggestTags = (data) => {
     return {
         type: SUGGEST_TAGS,
-        payload: text
+        payload: {
+            text: data.text,
+            lang: data.lang
+        }
     };
 }
 

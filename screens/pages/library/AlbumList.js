@@ -127,22 +127,24 @@ class AlbumList extends PureComponent {
                     }}
                 />
 
-                {this.state.hasPermission && (
-                    <GalleryMediaPicker
-                        groupTypes="All"
-                        assetType="Photos"
-                        // markIcon={marker}
-                        // customSelectMarker={this.renderSelectMarker()}
-                        batchSize={1}
-                        emptyGalleryText={'There are no photos or video'}
-                        maximumSelectedFiles={100}
-                        selected={this.state.selected}
-                        itemsPerRow={3}
-                        imageMargin={3}
-                        customLoader={<ActivityIndicator />}
-                        callback={this.getSelectedFiles.bind(this)}
-                    />
-                )}
+                {
+                    this.state.hasPermission && (
+                        <GalleryMediaPicker
+                            groupTypes="All"
+                            assetType="Photos"
+                            // markIcon={marker}
+                            // customSelectMarker={this.renderSelectMarker()}
+                            batchSize={1}
+                            emptyGalleryText={'There are no photos or video'}
+                            maximumSelectedFiles={100}
+                            selected={this.state.selected}
+                            itemsPerRow={3}
+                            imageMargin={3}
+                            customLoader={<ActivityIndicator />}
+                            callback={this.getSelectedFiles.bind(this)}
+                        />
+                    )
+                }
             </View>
         );
     }

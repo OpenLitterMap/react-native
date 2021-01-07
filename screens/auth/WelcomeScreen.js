@@ -8,6 +8,7 @@ import { TransText } from "react-native-translation";
 import LinearGradient from 'react-native-linear-gradient';
 import LanguageFlags from './welcome/LanguageFlags';
 import Slides from './welcome/Slides';
+
 import { connect } from 'react-redux';
 import * as actions from '../../actions';
 
@@ -60,10 +61,12 @@ class WelcomeScreen extends Component {
      */
     render ()
     {
+        const lang = this.props.lang;
+
         return (
             <View style={{ flex: 1, position: 'relative' }}>
 
-                <LanguageFlags />
+                <LanguageFlags lang={lang} />
 
                 <LinearGradient
                     colors={['#2ecc71','#8e44ad', '#c5d119']}
@@ -71,16 +74,16 @@ class WelcomeScreen extends Component {
                     end={{ x: 1, y: 1 }}
                     style={{ flex: 1 }}
                 >
-                    <Slides data={SLIDE_DATA} />
+                    <Slides data={SLIDE_DATA} lang={lang} />
 
                     <View style={styles.loginPosition}>
                         <TouchableOpacity onPress={this.goToAuth.bind(this, 'signup')} style={styles.loginButton}>
-                            <TransText style={styles.signupText} dictionary={'welcome.continue'} />
+                            <TransText style={styles.signupText} dictionary={`${lang}.welcome.continue`} />
                         </TouchableOpacity>
                         <TransText
                             onPress={this.goToAuth.bind(this, 'login')}
                             style={styles.loginText}
-                            dictionary={'welcome.already-have-account'}
+                            dictionary={`${lang}.welcome.already-have-account`}
                         />
                     </View>
                 </LinearGradient>
@@ -125,6 +128,7 @@ const styles = {
 
 const mapStateToProps = state => {
     return {
+        lang: state.auth.lang,
         token: state.auth.token,
         appLoading: state.auth.appLoading
     };

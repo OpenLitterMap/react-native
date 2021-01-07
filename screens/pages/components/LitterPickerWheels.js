@@ -61,7 +61,7 @@ class LitterPickerWheels extends PureComponent {
                     {
                         this.props.items.map((item, i) => {
 
-                            const x = getTranslation(`litter.${this.props.category.title}.${item.key}`);
+                            const x = getTranslation(`${this.props.lang}.litter.${this.props.category.title}.${item.key}`);
 
                             return (
                                 <Picker.Item label={x} value={item.key} key={i}/>
@@ -87,8 +87,6 @@ class LitterPickerWheels extends PureComponent {
 
     getText (item)
     {
-        console.log({ item });
-
         return item;
     }
 }

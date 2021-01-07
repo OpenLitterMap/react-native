@@ -7,8 +7,6 @@ import shared from './shared_reducer'
 import settings from './settings_reducer'
 import web from './web_reducer'
 
-// Reducer cannot return undefined
 export default {
-  // auth: () => { return {} }
   auth, photos, camera, gallery, litter, shared, settings, web
 }

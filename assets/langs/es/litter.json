@@ -224,5 +224,9 @@
     "presence": {
         "picked-up": "¡La basura ha sido recogida!",
         "still-there": "¡La basura sigue ahí!"
+    },
+    "tags": {
+        "type-to-suggest": "Type to suggest tags",
+        "suggested": "Suggested tags {count}"
     }
 }

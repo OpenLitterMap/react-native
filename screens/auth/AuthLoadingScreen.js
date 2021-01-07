@@ -18,8 +18,8 @@ class AuthLoadingScreen extends Component {
         this._bootstrapAsync();
     }
 
-    _bootstrapAsync = async () => {
-        // console.log("checking if jwt exists...");
+    _bootstrapAsync = async () =>
+    {
         const userToken = await AsyncStorage.getItem('jwt');
 
         if (userToken)
