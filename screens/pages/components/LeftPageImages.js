@@ -62,8 +62,6 @@ class LeftPageImages extends PureComponent {
      */
     renderGalleryItem = item => {
 
-        console.log({ item });
-
         let width = null;
         let mgn = 0;
 
@@ -117,8 +115,7 @@ class LeftPageImages extends PureComponent {
      */
     galleryItemPressed (item)
     {
-        console.log('Gallery item pressed', item.presence);
-
+        // console.log('Gallery item pressed', item.presence);
 
         // if (item.item.hasOwnProperty('litter')) {
         //     console.log(item.item.litter);
@@ -184,7 +181,8 @@ class LeftPageImages extends PureComponent {
      * Render session item
      * photos taken by the camera this session
      */
-    renderSessionItem = ({item, index}) => {
+    renderSessionItem = ({item, index}) =>
+    {
         // console.log('Render session item', item, index);
 
         let width = null;
@@ -249,7 +247,7 @@ class LeftPageImages extends PureComponent {
      */
     _webImagePressed ()
     {
-        console.log('_webImagePressed', this.props.webImages[0]);
+        // console.log('_webImagePressed', this.props.webImages[0]);
 
         if (! this.props.isSelecting)
         {
@@ -293,7 +291,10 @@ class LeftPageImages extends PureComponent {
         {
             return (
                 <View style={{ alignItems: 'center', justifyContent: 'center', flex: 0.75 }}>
-                    <TransText style={{ fontSize: SCREEN_HEIGHT * 0.02 }} dictionary={'leftpage.get-started'} />
+                    <TransText
+                        style={{ fontSize: SCREEN_HEIGHT * 0.02 }}
+                        dictionary={`${this.props.lang}.leftpage.get-started`}
+                    />
                 </View>
             );
         }
@@ -303,7 +304,6 @@ class LeftPageImages extends PureComponent {
         // Gallery from albums
         return (
             <View style={this._marginWhenPhotos()}>
-
                 {
                     this.props.webImages.length > 0 && (
                         <View style={styles.webImageContainer}>

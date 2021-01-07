@@ -35,7 +35,7 @@ const formModes = {
 
 // TODO need to refactor screen sizing variables to global
 // TODO need to refactor validation regex functions to utils
-// TODO encapsulate form inputs into a seperate ValidatedInput Component
+// TODO encapsulate form inputs into a separate ValidatedInput Component
 class AuthScreen extends Component {
 
     constructor(props)
@@ -642,11 +642,13 @@ class AuthScreen extends Component {
                                         value={email}
                                     />
                                 </View>
-                                {emailErrorMessage !== null && emailErrorMessage !== undefined && (
-                                    <View style={styles.errorWrap}>
-                                        <TransText style={styles.error} dictionary={emailErrorMessage} />
-                                    </View>
-                                )}
+                                {
+                                    emailErrorMessage !== null && emailErrorMessage !== undefined && (
+                                        <View style={styles.errorWrap}>
+                                            <TransText style={styles.error} dictionary={emailErrorMessage} />
+                                        </View>
+                                    )
+                                }
 
                                 {formMode !== formModes.FORGOT_PASSWORD && (
                                     <>

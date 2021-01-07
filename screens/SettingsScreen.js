@@ -29,8 +29,9 @@ class SettingsScreen extends Component {
 
     render ()
     {
-        const settings = getTranslation('settings.settings');
-        const logout = getTranslation('settings.logout');
+        const lang = this.props.lang;
+        const settings = getTranslation(`${lang}.settings.settings`);
+        const logout = getTranslation(`${lang}.settings.logout`);
 
         return (
             <>
@@ -41,15 +42,17 @@ class SettingsScreen extends Component {
                         transparent={true}
                         visible={this.props.settingsModalVisible}
                     >
-                        { this.props.wait &&
-                        <View style={styles.waitModal}>
-                            <ActivityIndicator />
-                        </View>
-                        }
-                        { this.props.settingsEdit &&
-                        <View style={styles.modal}>
-                            <SettingsComponent />
-                        </View>
+                        {
+                            this.props.wait &&
+                                <View style={styles.waitModal}>
+                                    <ActivityIndicator />
+                                </View>
+                            }
+                        {
+                            this.props.settingsEdit &&
+                                <View style={styles.modal}>
+                                    <SettingsComponent />
+                                </View>
                         }
                     </Modal>
 
@@ -70,7 +73,6 @@ class SettingsScreen extends Component {
                         }}
                     />
                     <View style={styles.container}>
-
                         <SectionList
                             stickySectionHeadersEnabled={false}
                             renderSectionHeader={({ section: { title }}) => (
@@ -151,7 +153,10 @@ class SettingsScreen extends Component {
                     onPress={() => this._rowPressed(item.id, item.title)}
                 >
                     <View style={{ flexDirection: 'row' }}>
-                        <TransText style={{ flex: 1, fontSize: SCREEN_HEIGHT * 0.02 }} dictionary={item.title} />
+                        <TransText
+                            style={{ flex: 1, fontSize: SCREEN_HEIGHT * 0.02 }}
+                            dictionary={`${this.props.lang}.${item.title}`}
+                        />
                         <Text style={{ fontSize: SCREEN_HEIGHT * 0.02}}>{ this._getRowData(item.id) }</Text>
                     </View>
                 </TouchableHighlight>
@@ -159,7 +164,7 @@ class SettingsScreen extends Component {
         } else {
             return (
                 <View style={styles.switchRow}>
-                    <TransText style={{ flex: 1, fontSize: SCREEN_HEIGHT * 0.02 }} dictionary={item.title} />
+                    <TransText style={{ flex: 1, fontSize: SCREEN_HEIGHT * 0.02 }} dictionary={`${this.props.lang}.${item.title}`} />
                     { this._getRowData(item.id) }
                 </View>
             );
@@ -326,6 +331,7 @@ const styles = {
 
 const mapStateToProps = state => {
     return {
+        lang: state.auth.lang,
         settingsModalVisible: state.settings.settingsModalVisible,
         token: state.auth.token,
         user: state.auth.user,
