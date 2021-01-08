@@ -1,0 +1,17 @@
+{
+    "photos": "Photos",
+    "geotagged": "Géolocalisé",
+    "cancel": "Annuler",
+    "done": "Prêt",
+    "upload": "télécharger",
+    "select-a-photo": "sélectionnez une photo",
+    "delete": "Supprimer",
+    "selected": "{photos} sélectionnée",
+    "press-upload": "appuyez sur télécharger",
+    "select-to-delete": "Sélectionnez les images que vous souhaitez supprimer",
+    "please-wait-uploading": "Veuillez patienter pendant le téléchargement de vos photos",
+    "thank-you": "Merci!!!",
+    "you-have-uploaded": "Vous avez téléversé {count} photo(s)",
+    "close": "Fermer",
+    "get-started": "Prenez ou sélectionnez quelques photos pour commencer!"
+}
