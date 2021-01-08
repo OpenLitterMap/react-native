@@ -15,7 +15,6 @@ import * as RNLocalize from "react-native-localize";
 let lang = RNLocalize.getLocales()['languageCode'];
 if (lang !== 'de' && lang !== 'en' && lang !== 'nl' && lang !== 'es') lang = 'en'
 
-
 // was App: () => React$Node => { ... }
 const App = () => {
 
@@ -26,7 +25,7 @@ const App = () => {
 
     const { persistor, store } = configureStore();
 
-    store.dispatch({ type: 'CHANGE_LANG', payload: lang});
+    store.dispatch({ type: 'CHANGE_LANG', payload: lang });
 
     return (
         <Provider store={store}>
