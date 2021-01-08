@@ -85,18 +85,18 @@
         "softDrinkOther": "Refresco (otro)"
     },
     "sanitary": {
-        "gloves": "Gloves",
-        "facemask": "Facemask",
-        "condoms": "Condoms",
-        "nappies": "Nappies",
+        "gloves": "Guantes",
+        "facemask": "Mascarilla",
+        "condoms": "Condones",
+        "nappies": "Pañales",
         "menstral": "Menstral",
-        "deodorant": "Deodorant",
-        "ear_swabs": "Ear Swabs",
-        "tooth_pick": "Tooth Pick",
-        "tooth_brush": "Tooth Brush",
-        "wetwipes": "Wet Wipes",
-        "hand_sanitiser": "Hand Sanitiser",
-        "sanitaryOther": "Sanitary (other)"
+        "deodorant": "Desodorante",
+        "ear_swabs": "Hisopos de oído",
+        "tooth_pick": "Palillo de dientes",
+        "tooth_brush": "Cepillo de dientes",
+        "wetwipes": "Toallitas húmedas",
+        "hand_sanitiser": "Desinfectante de manos",
+        "sanitaryOther": "Sanitario (otro)"
     },
     "other": {
         "dogshit": "Popó de perro",
