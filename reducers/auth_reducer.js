@@ -30,6 +30,10 @@ import {
 // import AsyncStorage from '@react-native-community/async-storage';
 // import { Map, List } from 'immutable';
 
+import * as RNLocalize from "react-native-localize";
+let lang = RNLocalize.getLocales()['languageCode'];
+if (lang !== 'de' && lang !== 'en' && lang !== 'nl' && lang !== 'es') lang = 'en'
+
 const INITIAL_STATE = {
     lang: "en",
     appLoading: true,
@@ -126,9 +130,11 @@ export default function (state = INITIAL_STATE, action)
             };
 
         case LOGOUT:
-            // console.log('-- logout, reducer --');
+
+            // we need to init lang again
             return {
-                state: INITIAL_STATE
+                state: INITIAL_STATE,
+                lang: lang
             };
 
         case LOGIN_FAIL:

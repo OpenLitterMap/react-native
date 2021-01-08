@@ -76,7 +76,7 @@ class SettingsScreen extends Component {
                         <SectionList
                             stickySectionHeadersEnabled={false}
                             renderSectionHeader={({ section: { title }}) => (
-                                <TransText style={styles.sectionHeaderTitle} dictionary={title} />
+                                <TransText style={styles.sectionHeaderTitle} dictionary={`${lang}.${title}`} />
                             )}
                             // Todo, save these elsewhere and import them for readability.
                             sections={[

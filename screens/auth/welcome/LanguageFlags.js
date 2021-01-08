@@ -17,13 +17,6 @@ import * as actions from '../../../actions'
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
-const langs = [
-    { lang: 'es', flag: require('../../../assets/icons/flags/es.png') },
-    { lang: 'en', flag: require('../../../assets/icons/flags/gb.png') },
-    { lang: 'de', flag: require('../../../assets/icons/flags/de.png') },
-    { lang: 'nl', flag: require('../../../assets/icons/flags/nl.png') }
-];
-
 class LanguageFlags extends Component
 {
     /**
@@ -34,7 +27,14 @@ class LanguageFlags extends Component
         super(props);
 
         this.state = {
-            show: false
+            show: false,
+            langs: [
+                { lang: 'es', flag: require('../../../assets/icons/flags/es.png') },
+                { lang: 'en', flag: require('../../../assets/icons/flags/gb.png') },
+                { lang: 'de', flag: require('../../../assets/icons/flags/de.png') },
+                { lang: 'nl', flag: require('../../../assets/icons/flags/nl.png') },
+                // { lang: 'pt', flag: require('../../../assets/icons/flags/pt.png') }
+            ]
         };
 
         this.change = this.change.bind(this);
@@ -56,7 +56,7 @@ class LanguageFlags extends Component
      */
     getCurrentFlag ()
     {
-        return langs.find(lng => lng.lang === this.props.lang).flag;
+        return this.state.langs.find(lng => lng.lang === this.props.lang).flag;
     }
 
     /**
@@ -74,7 +74,7 @@ class LanguageFlags extends Component
                 {
                     this.state.show ?
                     (
-                        langs.map(lang => (
+                        this.state.langs.map(lang => (
                             <TouchableOpacity
                                 key={lang.lang}
                                 onPress={() => this.change(lang.lang)}
@@ -107,7 +107,7 @@ const styles = {
     }
 }
 
-LanguageFlags = Animatable.createAnimatableComponent(LanguageFlags);
+// LanguageFlags = Animatable.createAnimatableComponent(LanguageFlags);
 
 export default connect(
     null,
