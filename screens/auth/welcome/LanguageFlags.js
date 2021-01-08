@@ -21,6 +21,7 @@ const langs = [
     { lang: 'es', flag: require('../../../assets/icons/flags/es.png') },
     { lang: 'en', flag: require('../../../assets/icons/flags/gb.png') },
     { lang: 'de', flag: require('../../../assets/icons/flags/de.png') },
+    { lang: 'fr', flag: require('../../../assets/icons/flags/fr.png') },
     { lang: 'nl', flag: require('../../../assets/icons/flags/nl.png') }
 ];
 
