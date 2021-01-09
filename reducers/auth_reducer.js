@@ -32,7 +32,6 @@ import {
 
 import * as RNLocalize from "react-native-localize";
 let lang = RNLocalize.getLocales()['languageCode'];
-if (lang !== 'de' && lang !== 'en' && lang !== 'nl' && lang !== 'es') lang = 'en'
 
 const INITIAL_STATE = {
     lang: "en",

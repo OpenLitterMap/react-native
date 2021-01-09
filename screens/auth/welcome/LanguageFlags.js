@@ -8,8 +8,7 @@ import {
 
 // setLang not working
 // import { getLanguage, setLanguage } from 'react-native-translation';
-
-import * as Animatable from 'react-native-animatable';
+// import * as Animatable from 'react-native-animatable';
 
 import { connect } from 'react-redux'
 import * as actions from '../../../actions'
