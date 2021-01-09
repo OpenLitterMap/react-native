@@ -13,9 +13,8 @@ import { langs } from './assets/langs';
 
 import * as RNLocalize from "react-native-localize";
 let lang = RNLocalize.getLocales()['languageCode'];
-if (lang !== 'de' && lang !== 'en' && lang !== 'nl' && lang !== 'es') lang = 'en'
+if (! langs[lang]) lang = 'en';
 
-// was App: () => React$Node => { ... }
 const App = () => {
 
     // Splash screen
