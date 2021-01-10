@@ -28,6 +28,17 @@ class LitterCategories extends PureComponent {
     changeCategory (id)
     {
         this.props.changeCategory(id);
+
+        this.callback();
+    }
+
+    /**
+     * Send callback to the parent method to trigger that a category was clicked
+     *
+     * This is needed for Android devices to close the keyboard
+     */
+    callback = () => {
+        this.props.callback();
     }
 
     /**

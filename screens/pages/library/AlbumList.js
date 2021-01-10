@@ -50,6 +50,16 @@ class AlbumList extends PureComponent {
         });
     }
 
+    /**
+     * Determine outer container style
+     *
+     * This should probably be replaced with SafeAreaView
+     */
+    container ()
+    {
+        return Platform.OS === 'android' ? styles.androidContainer : styles.iOSContainer;
+    }
+
     getSelectedFiles (files, current)
     {
         this.setState({ totalFiles: files.length, selected: files });
@@ -98,7 +108,8 @@ class AlbumList extends PureComponent {
     render ()
     {
         return (
-            <View style={styles.container}>
+            /* This should probably be wrapped in SafeAreaView? */
+            <View style={this.container()}>
                 <Header
                     backgroundColor="white"
                     outerContainerStyles={{ height: SCREEN_HEIGHT * 0.1 }}
@@ -151,7 +162,11 @@ class AlbumList extends PureComponent {
 }
 
 const styles = {
-    container: {
+    androidContainer: {
+        flex: 1,
+        marginTop: 0
+    },
+    iOSContainer: {
         flex: 1,
         marginTop: SCREEN_HEIGHT * 0.025
     }

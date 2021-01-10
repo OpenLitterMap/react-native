@@ -166,14 +166,15 @@ const styles = {
         // top: SCREEN_HEIGHT * .175,
         bottom: SCREEN_HEIGHT * 0.25,
         zIndex: 5,
-        // backgroundColor: 'yellow',
+        //backgroundColor: 'yellow',
     },
     androidTagsContainer: {
         alignItems: 'center',
         flexDirection: 'row',
-        height: SCREEN_HEIGHT * 0.2,
+        height: SCREEN_HEIGHT * 0.1,
         position: 'absolute',
-        bottom: SCREEN_HEIGHT * 0.2
+        bottom: SCREEN_HEIGHT * 0.255,
+        left: SCREEN_WIDTH * 0.01
     },
     card: {
         backgroundColor: "white",
