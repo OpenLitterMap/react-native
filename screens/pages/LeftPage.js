@@ -81,7 +81,6 @@ class LeftPage extends PureComponent {
         if (this.props.imageBrowserOpen)
         {
             // todo- cancel all subscriptions and async tasks in componentWillUnmount
-            // todo - translate album list
             return <AlbumList navigation={this.props.navigation} />;
         }
 

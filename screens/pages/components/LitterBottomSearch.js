@@ -83,7 +83,7 @@ class LitterBottomSearch extends PureComponent
     {
         if (this.props.keyboardOpen)
         {
-            return Platform.os === 'ios' ? styles.openContaineriOS : styles.openContainerAndroid;
+            return Platform.OS === 'ios' ? styles.openContaineriOS : styles.openContainerAndroid;
         }
 
         // keyboard closed
@@ -106,13 +106,11 @@ class LitterBottomSearch extends PureComponent
      */
     filterStyle ()
     {
-        if (Platform.os === 'android')
+        if (Platform.OS === 'android')
         {
-            // return this.props.keyboardOpen ? styles.filterOpen : styles.filter;
             return this.props.keyboardOpen ? styles.textInputOpen : styles.androidTextFilterClosed;
         }
 
-        // return this.props.keyboardOpen ? styles.filterOpen : styles.filter;
         return this.props.keyboardOpen ? styles.textInputOpen : styles.iOSTextFilterClosed;
     }
 

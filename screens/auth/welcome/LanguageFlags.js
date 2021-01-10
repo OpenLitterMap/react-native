@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import {
     Dimensions,
     Image,
+    Platform,
     TouchableOpacity,
     View
 } from 'react-native';
@@ -101,8 +102,8 @@ class LanguageFlags extends Component
 const styles = {
     top: {
         position: 'absolute',
-        top: SCREEN_HEIGHT * 0.075,
-        left: SCREEN_WIDTH * 0.075,
+        top: 10,  // SCREEN_WIDTH * 0.075
+        left: 10, // SCREEN_WIDTH * 0.075,
         zIndex: 1
     }
 }

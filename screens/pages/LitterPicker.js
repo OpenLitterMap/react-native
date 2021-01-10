@@ -6,6 +6,7 @@ import {
     SafeAreaView,
     StatusBar,
     TouchableHighlight,
+    TouchableWithoutFeedback,
     View
 } from 'react-native'
 import { TransText } from "react-native-translation";
@@ -44,6 +45,7 @@ class LitterPicker extends PureComponent
         };
 
         this._checkForPhotos = this._checkForPhotos.bind(this);
+        this.closeKeyboardAndroid = this.closeKeyboardAndroid.bind(this);
     }
 
     /**
@@ -181,6 +183,32 @@ class LitterPicker extends PureComponent
     }
 
     /**
+     * If we are an Android, we need to close the keyboard programatically
+     *
+     * as onClickOutside is not working yet
+     */
+    closeKeyboardAndroid ()
+    {
+        if (Platform.OS === 'android')
+        {
+            this.setState({
+                keyboardOpen: false
+            });
+
+            Keyboard.dismiss();
+        }
+    }
+
+    /**
+     * A category card has been clicked
+     *
+     * This is a callback function from LitterCategories
+     */
+    categoryClicked = () => {
+        this.closeKeyboardAndroid();
+    }
+
+    /**
      * The LitterPicker component
      */
     render ()
@@ -211,6 +239,7 @@ class LitterPicker extends PureComponent
                         categories={CATEGORIES}
                         category={this.props.category}
                         lang={this.props.lang}
+                        callback={this.categoryClicked}
                     />
 
                     {/* Second - Image. Height: 80% */}
