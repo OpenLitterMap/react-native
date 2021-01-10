@@ -1,0 +1,17 @@
+{
+    "photos": "صور",
+    "geotagged": "موسومة جغرافيا",
+    "cancel": "إلغاء",
+    "done": "تم",
+    "upload": "رفع",
+    "select-a-photo": "اختر صورة",
+    "delete": "مسح",
+    "selected": "{photos} مختارة",
+    "press-upload": "اضغط رفع",
+    "select-to-delete": "اختر الصور التي تريد مسحها",
+    "please-wait-uploading": "الرجاء الانتظار حتى يتم رفع صورك",
+    "thank-you": "!!!شكرا",
+    "you-have-uploaded": "{count} عدد الصور التي قمت برفعها"
+    "close": "إغلاق",
+    "get-started": "!التقط أو اختر بعض الصور لتبدأ"
+}
