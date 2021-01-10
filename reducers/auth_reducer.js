@@ -131,6 +131,8 @@ export default function (state = INITIAL_STATE, action)
         case LOGOUT:
 
             // we need to init lang again
+            if (!lang) lang = 'en';
+
             return {
                 state: INITIAL_STATE,
                 lang: lang

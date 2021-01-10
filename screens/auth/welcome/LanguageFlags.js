@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import {
     Dimensions,
     Image,
-    Platform,
     TouchableOpacity,
     View
 } from 'react-native';
@@ -14,8 +13,8 @@ import {
 import { connect } from 'react-redux'
 import * as actions from '../../../actions'
 
-const SCREEN_HEIGHT = Dimensions.get('window').height;
-const SCREEN_WIDTH = Dimensions.get('window').width;
+// const SCREEN_HEIGHT = Dimensions.get('window').height;
+// const SCREEN_WIDTH = Dimensions.get('window').width;
 
 class LanguageFlags extends Component
 {
@@ -102,7 +101,7 @@ class LanguageFlags extends Component
 const styles = {
     top: {
         position: 'absolute',
-        top: 10,  // SCREEN_WIDTH * 0.075
+        top: 10,  // SCREEN_WIDTH * 0.075 on iOS?
         left: 10, // SCREEN_WIDTH * 0.075,
         zIndex: 1
     }

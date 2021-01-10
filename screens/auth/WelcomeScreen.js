@@ -64,7 +64,7 @@ class WelcomeScreen extends Component {
         const lang = this.props.lang;
 
         return (
-            <View style={{ flex: 1, position: 'relative', zIndex: 0 }}>
+            <View style={{ flex: 1, position: 'relative', zIndex: 1 }}>
 
                 <LanguageFlags lang={lang} />
 
