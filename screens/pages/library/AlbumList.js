@@ -4,7 +4,8 @@ import {
     Dimensions,
     SafeAreaView,
     Text,
-    View
+    View,
+    PermissionsAndroid
 } from 'react-native';
 
 import { request, PERMISSIONS } from 'react-native-permissions';
@@ -38,16 +39,33 @@ class AlbumList extends PureComponent {
 
     async requestCameraPermission ()
     {
-        let p =
-            Platform.OS === 'android'
-                ? PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE
-                : PERMISSIONS.IOS.PHOTO_LIBRARY;
+	if (Platform.OS === 'ios')
+	{
+            request(PERMISSIONS.IOS.PHOTO_LIBRARY).then(result => {
+                if (result === 'granted') {
+                    this.setState({ hasPermission: true, loading: false });
+                }
+            });
+	}
 
-        request(p).then(result => {
-            if (result === 'granted') {
-                this.setState({ hasPermission: true, loading: false });
-            }
-        });
+	if (Platform.OS === 'android')
+	{
+	    let hasPermissions = false;
+
+	    request(PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE).then(result => {
+                if (result === 'granted') {
+                    hasPermissions = true;
+                }
+
+		PermissionsAndroid.request("android.permission.ACCESS_MEDIA_LOCATION").then(result => {
+		    if (result === PermissionsAndroid.RESULTS.DENIED) {
+		        hasPermissions = false;
+		    }
+
+		    this.setState({ hasPermission: hasPermissions, loading: false });
+                });
+	    });
+	}
     }
 
     /**
