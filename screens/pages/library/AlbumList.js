@@ -39,33 +39,33 @@ class AlbumList extends PureComponent {
 
     async requestCameraPermission ()
     {
-	if (Platform.OS === 'ios')
-	{
+        if (Platform.OS === 'ios')
+        {
             request(PERMISSIONS.IOS.PHOTO_LIBRARY).then(result => {
                 if (result === 'granted') {
                     this.setState({ hasPermission: true, loading: false });
                 }
             });
-	}
+        }
 
-	if (Platform.OS === 'android')
-	{
-	    let hasPermissions = false;
+        if (Platform.OS === 'android')
+        {
+            let hasPermissions = false;
 
-	    request(PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE).then(result => {
+            request(PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE).then(result => {
                 if (result === 'granted') {
                     hasPermissions = true;
                 }
 
-		PermissionsAndroid.request("android.permission.ACCESS_MEDIA_LOCATION").then(result => {
-		    if (result === PermissionsAndroid.RESULTS.DENIED) {
-		        hasPermissions = false;
-		    }
+                PermissionsAndroid.request("android.permission.ACCESS_MEDIA_LOCATION").then(result => {
+                    if (result === PermissionsAndroid.RESULTS.DENIED) {
+                        hasPermissions = false;
+                    }
 
-		    this.setState({ hasPermission: hasPermissions, loading: false });
+                    this.setState({ hasPermission: hasPermissions, loading: false });
                 });
-	    });
-	}
+            });
+        }
     }
 
     /**
