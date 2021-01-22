@@ -172,11 +172,23 @@ export default function (state = INITIAL_STATE, action) {
          * Return the selected photos from the Camera Roll
          */
         case PHOTOS_FROM_GALLERY:
-            // console.log('PHOTOS_FROM_GALLERY', action.payload);
+            // Copy the current stored gallery:
+            let newGallery = state.gallery;
+
+            // Append each user selected photo (but only if it's not already in the stored gallery)
+            action.payload.forEach(
+                function(photo) {
+                    if(!newGallery.find( ({image}) => image.uri === photo.image.uri )) {
+                        newGallery.push(photo);
+                    }
+                }
+            );
+
+            // Store new version of gallery:
             return {
                 ...state,
-                gallery: action.payload,
-                galleryTotalCount: action.payload.length
+                gallery: newGallery,
+                galleryTotalCount: newGallery.length
             };
 
         /**
