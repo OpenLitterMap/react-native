@@ -6,7 +6,8 @@ import {
     SafeAreaView,
     Text,
     TouchableOpacity,
-    View
+    View,
+    Animated
 } from 'react-native';
 import StyleSheet from 'react-native-extended-stylesheet';
 
@@ -37,7 +38,8 @@ class CameraPage extends React.Component {
 
         this.state = {
             errorMessage: '',
-            token: null
+            token: null,
+            shutterOpacity: new Animated.Value(0)
             // Camera.Constants.Type.back,
         };
 
@@ -82,6 +84,22 @@ class CameraPage extends React.Component {
             this.props.navigation.navigate('Auth');
         }
     }
+
+    animateShutter()
+    {
+        Animated.sequence([
+            Animated.timing(this.state.shutterOpacity, {
+                toValue: 1,
+                duration: 150,
+                useNativeDriver: true
+            }),
+            Animated.timing(this.state.shutterOpacity, {
+                toValue: 0,
+                duration: 150,
+                useNativeDriver: true
+            })
+        ]).start();
+    };
 
     _getLocationAsync = async () => {
         RNLocation.requestPermission({
@@ -175,6 +193,9 @@ class CameraPage extends React.Component {
                             <Icon color="white" name="adjust" size={SCREEN_HEIGHT * 0.1} />
                         </TouchableOpacity>
 
+                        {/* Shutter Layer */}
+                        <Animated.View style={{width: SCREEN_WIDTH, height: SCREEN_HEIGHT, backgroundColor: 'black', opacity: this.state.shutterOpacity}}></Animated.View>
+
                         {/* Bottom Right
               <TouchableOpacity
                 onPress={this.changeView.bind(this, 1)}
@@ -217,7 +238,9 @@ class CameraPage extends React.Component {
     {
         if (this.camera)
         {
-            try {
+            try{
+                this.animateShutter();
+
                 this.camera
                     .takePictureAsync() // { exif: true }
                     .then(result => {
@@ -335,7 +358,8 @@ const styles = StyleSheet.create({
         left: SCREEN_WIDTH * 0.35,
         right: SCREEN_WIDTH * 0.35,
         justifyContent: 'center',
-        alignItems: 'center'
+        alignItems: 'center',
+        zIndex: 1
     },
     container: {
         flex: 1
