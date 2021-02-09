@@ -9,6 +9,7 @@ import {
     View
 } from 'react-native';
 import StyleSheet from 'react-native-extended-stylesheet';
+import AsyncStorage from '@react-native-community/async-storage';
 
 import { request, PERMISSIONS } from 'react-native-permissions';
 import RNLocation from 'react-native-location';
@@ -248,6 +249,9 @@ class CameraPage extends React.Component {
                             date
                         });
 
+                        // async-storage photos set
+                        AsyncStorage.setItem('openlittermap-photos', JSON.stringify(this.props.photos));
+                        
                         // console.log('-- Photo added --');
                     })
                     .catch(error => {
