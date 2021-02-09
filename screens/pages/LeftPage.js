@@ -10,6 +10,7 @@ import {
     TouchableWithoutFeedback,
     View
 } from 'react-native'
+import AsyncStorage from '@react-native-community/async-storage';
 
 import { TransText } from 'react-native-translation'
 
@@ -46,6 +47,23 @@ class LeftPage extends PureComponent {
         // this.renderDeleteButton = this.renderDeleteButton.bind(this);
         // this.renderGalleryItem = this.renderGalleryItem.bind(this);
         // this.galleryItemPressed = this.galleryItemPressed.bind(this);
+
+        // async-storage photos & gallery get
+        AsyncStorage.getItem('openlittermap-gallery').then((gallery) => {
+          if (gallery == null) {
+            this.props.photosFromGallery([]);
+          } else {
+            this.props.photosFromGallery(JSON.parse(gallery));
+          }
+        });
+
+        AsyncStorage.getItem('openlittermap-photos').then((photos) => {
+          if (photos == null) {
+            this.props.setPhotos([]);
+          } else {
+            this.props.setPhotos(JSON.parse(photos));
+          }
+        });
     }
 
     UNSAFE_componentWillReceiveProps (nextProps)
@@ -217,6 +235,14 @@ class LeftPage extends PureComponent {
 
         // when all this is done, async await...then
         this.props.toggleSelecting();
+
+        // async-storage photos & gallery set
+        setTimeout(() => {
+          console.log(this.props.photos);
+          console.log(this.props.gallery);
+          AsyncStorage.setItem('openlittermap-photos', JSON.stringify(this.props.photos));
+          AsyncStorage.setItem('openlittermap-gallery', JSON.stringify(this.props.gallery));
+        }, 1000);
     };
 
     /**

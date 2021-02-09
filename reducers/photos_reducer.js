@@ -1,5 +1,6 @@
 import {
     ADD_PHOTO,
+    SET_PHOTOS,
     CLOSE_LITTER_MODAL,
     CONFIRM_SESSION_ITEM,
     // DELETE_SELECTED_GALLERY,
@@ -72,7 +73,13 @@ export default function(state = INITIAL_STATE, action) {
                 ...state,
                 photos
             };
+        
+          case SET_PHOTOS:
 
+            return {
+                ...state,
+                photos: action.payload
+            };
         // case CLOSE_LITTER_MODAL:
         //   return {
         //     ...state,
