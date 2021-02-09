@@ -662,9 +662,9 @@ class LitterPicker extends PureComponent
     addTag ()
     {
         const tags = {
-            category: this.props.category.title,
-            title: this.props.item,
-            quantity: this.props.q
+            category: this.props.category.title.toString(),
+            title: this.props.item.toString(),
+            quantity: parseInt(this.props.q)
         };
 
         this.props.tagLitter(tags);
