@@ -266,7 +266,7 @@ class LeftPage extends PureComponent {
                 );
             }
 
-            return <TransText dictionary={'leftpage.select-to-delete'} />;
+            return <TransText dictionary={`${this.props.lang}.leftpage.select-to-delete`} />;
         }
         return (
             <View style={styles.bottomBarContainer}>
