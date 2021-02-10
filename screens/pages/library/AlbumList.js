@@ -6,6 +6,7 @@ import {
     Text,
     View
 } from 'react-native';
+import AsyncStorage from '@react-native-community/async-storage';
 
 import { request, PERMISSIONS } from 'react-native-permissions';
 import { Header } from 'react-native-elements';
@@ -93,6 +94,9 @@ class AlbumList extends PureComponent {
         try {
             this.props.photosFromGallery(this.state.selected);
             this.props.toggleImageBrowser();
+
+            // async-storage set gallery
+            AsyncStorage.setItem('openlittermap-gallery', JSON.stringify(this.state.selected));
         } catch (e) {
             console.log(e);
         }
