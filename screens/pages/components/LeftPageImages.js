@@ -199,6 +199,7 @@ class LeftPageImages extends PureComponent {
             width = SCREEN_WIDTH / 3;
         }
 
+        console.log(item.litter);
         return (
             <TouchableWithoutFeedback
                 onPress={this.sessionItemPressed.bind(this, index)}
