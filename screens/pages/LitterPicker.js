@@ -8,7 +8,8 @@ import {
     TouchableHighlight,
     TouchableWithoutFeedback,
     View
-} from 'react-native'
+} from 'react-native';
+import AsyncStorage from '@react-native-community/async-storage';
 import { TransText } from "react-native-translation";
 import { Icon } from 'react-native-elements'
 import Swiper from 'react-native-swiper'
@@ -265,6 +266,7 @@ class LitterPicker extends PureComponent
                         loop={false}
                         showsPagination={false}
                         keyboardShouldPersistTaps="handled"
+                        ref="imageSwiper"
                         onIndexChanged={(index) => this.swiperIndexChanged(index)}
                     >
                       {
@@ -303,7 +305,7 @@ class LitterPicker extends PureComponent
                             <TouchableHighlight
                                 onPress={this._confirmData.bind(this)}
                                 style={styles.tabBarButtonLeft}
-                                disabled={this._checkCollectionLength()}
+                                //disabled={this._checkCollectionLength()}
                             >
                                 <View style={styles.innerButtonContainer}>
                                     <Icon name="check" size={SCREEN_HEIGHT * 0.05} />
@@ -466,109 +468,140 @@ class LitterPicker extends PureComponent
      */
     _confirmData = async () =>
     {
+        console.log('_confirmData');
+
         // The user can only confirm if tags exist
-        if (Object.keys(this.props.tags).length === 0) return;
+        if (Object.keys(this.props.tags).length != 0) {
 
-        let tags = cloneDeep(this.props.tags);
+          let tags = cloneDeep(this.props.tags);
 
-        if (this.props.photoSelected.type === 'web')
-        {
-            // Turn on spinner
-            await this.setState({ webLoading: true });
+          if (this.props.photoSelected.type === 'web')
+          {
+              // Turn on spinner
+              await this.setState({ webLoading: true });
 
-            // Show the modal
-            await this.props.setLitterPickerModal(true);
+              // Show the modal
+              await this.props.setLitterPickerModal(true);
 
-            // Submit data to the server, web_actions.js
-            // this will load the next image
-            await this.props.confirmWebPhoto({
-                id: this.props.photoSelected.id,
-                tags,
-                presence: this.props.presence,
-                token: this.props.token
-            });
+              // Submit data to the server, web_actions.js
+              // this will load the next image
+              await this.props.confirmWebPhoto({
+                  id: this.props.photoSelected.id,
+                  tags,
+                  presence: this.props.presence,
+                  token: this.props.token
+              });
 
-            // Check if there is another image to load
-            if (this.props.webImages.length > 0)
-            {
-                let item = this.props.webImages[0];
-                item.uri = this.props.webImages[0].filename;
-                item.type = 'web';
-                item.litter = {};
+              // Check if there is another image to load
+              if (this.props.webImages.length > 0)
+              {
+                  let item = this.props.webImages[0];
+                  item.uri = this.props.webImages[0].filename;
+                  item.type = 'web';
+                  item.litter = {};
 
-                if (this.props.previous_tags)
-                {
-                    item.litter = cloneDeep(tags);
-                }
+                  if (this.props.previous_tags)
+                  {
+                      item.litter = cloneDeep(tags);
+                  }
 
-                // litter_actions
-                // Note, other actions are using slideInNext
-                this.props.itemSelected(item);
+                  // litter_actions
+                  // Note, other actions are using slideInNext
+                  this.props.itemSelected(item);
 
-                // Loading off web_actions
-                await this.setState({ webLoading: false });
+                  // Loading off web_actions
+                  await this.setState({ webLoading: false });
 
-                // close the waiting modal
-                await this.props.setLitterPickerModal(false);
+                  // close the waiting modal
+                  await this.props.setLitterPickerModal(false);
 
-                return;
-            }
+              } else {
+                  // Loading off
+                  await this.setState({ webLoading: false });
+              }
+          }
 
-            // Loading off
-            await this.setState({ webLoading: false });
+          else if (this.props.photoSelected.type === 'gallery')
+          {
+              // gallery_actions, gallery_reducer
+              await this.props.confirmGalleryItem({
+                  index: this.props.photoSelected.index,
+                  data: tags,
+                  presence: this.props.presence
+              });
+
+              // Problem - Some components re-render here
+              // Slide in next image, or return
+              // todo, slide animation
+              // todo swipe left & right between images
+              let gal = this._checkForNextGalleryPhoto(tags);
+
+              //if (gal) return;
+          }
+
+          else
+          {
+              // photo_actions, photos_reducer
+              await this.props.confirmSessionItem({
+                  index: this.props.photoSelected.index,
+                  data: this.props.tags,
+                  presence: this.props.presence
+              });
+
+              // litter_actions, litter_reducer
+              // await this.props.savePreviousTags(this.props.tags);
+
+              let val = this._checkForNextSessionPhoto(tags);
+              // console.log('After Session', val);
+              //if (val) return;
+          }
+
+          // console.log('After check Gallery + Session');
+
+          // todo - no need to map over Gallery or Session again/
+          //      - find a better way to map over Session if gallery completed, visa versa
+          // this._checkForNextGalleryPhoto();
+          // this._checkForNextSessionPhoto();
+
+          // If no Gallery or Session items are available, close the LitterPicker Modal.
+          // this.props.resetLitterObjectAndCloseModal();
+
+          // if it's a modal, close it
+          // but if its not a modal........ navigate to uploads?
+          // LitterPicker is not a modal on RightPage.js
+          
+          //this.props.toggleLitter();
+          
+          // this.props.closeLitterModal();
+          // this.props.acceptDataAndCloseModal();
         }
 
-        else if (this.props.photoSelected.type === 'gallery')
-        {
-            // gallery_actions, gallery_reducer
-            await this.props.confirmGalleryItem({
-                index: this.props.photoSelected.index,
-                data: tags,
-                presence: this.props.presence
-            });
+        // tamara/persist-image
+        // async-storage photos & gallery set
+        setTimeout(() => {
+          //console.log(this.props.photo);
+          //console.log(this.props.gallery);
 
-            // Problem - Some components re-render here
-            // Slide in next image, or return
-            // todo, slide animation
-            // todo swipe left & right between images
-            let gal = this._checkForNextGalleryPhoto(tags);
+          AsyncStorage.setItem('openlittermap-photos', JSON.stringify(this.props.photos));
+          AsyncStorage.setItem('openlittermap-gallery', JSON.stringify(this.props.gallery));
+        }, 1000);
 
-            if (gal) return;
+        // tamara/confirm-image
+        var imageCount = this.props.photos.length + this.props.gallery.length + this.props.webImages.length;
+        if (this.state.swiperIndex == imageCount - 1) {
+          console.log('_confirmData1');
+
+          // litter_reducer
+          this.props.resetLitterTags();
+  
+          // shared_reducer
+          this.props.closeLitterModal();
+        } else {
+          console.log('_confirmData2');
+
+          this.refs.imageSwiper.scrollBy(this.state.swiperIndex + 1, true);
+          this.setState({ swiperIndex: this.state.swiperIndex + 1});
         }
-
-        else
-        {
-            // photo_actions, photos_reducer
-            await this.props.confirmSessionItem({
-                index: this.props.photoSelected.index,
-                data: this.props.tags,
-                presence: this.props.presence
-            });
-
-            // litter_actions, litter_reducer
-            // await this.props.savePreviousTags(this.props.tags);
-
-            let val = this._checkForNextSessionPhoto(tags);
-            // console.log('After Session', val);
-            if (val) return;
-        }
-
-        // console.log('After check Gallery + Session');
-
-        // todo - no need to map over Gallery or Session again/
-        //      - find a better way to map over Session if gallery completed, visa versa
-        // this._checkForNextGalleryPhoto();
-        // this._checkForNextSessionPhoto();
-
-        // If no Gallery or Session items are available, close the LitterPicker Modal.
-        // this.props.resetLitterObjectAndCloseModal();
-
-        // if it's a modal, close it
-        // but if its not a modal........ navigate to uploads?
-        // LitterPicker is not a modal on RightPage.js
-        this.props.toggleLitter();
-        // this.props.closeLitterModal();
-        // this.props.acceptDataAndCloseModal();
     };
 
     /**
@@ -662,9 +695,9 @@ class LitterPicker extends PureComponent
     addTag ()
     {
         const tags = {
-            category: this.props.category.title,
-            title: this.props.item,
-            quantity: this.props.q
+            category: this.props.category.title.toString(),
+            title: this.props.item.toString(),
+            quantity: parseInt(this.props.q)
         };
 
         this.props.tagLitter(tags);
