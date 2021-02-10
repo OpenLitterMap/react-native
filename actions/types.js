@@ -42,6 +42,7 @@ export const USERNAME_ERROR = 'USERNAME_ERROR';
 
 // Photos - Gallery
 export const ADD_PHOTO = 'ADD_PHOTO';
+export const SET_PHOTOS = 'SET_PHOTOS';
 export const CLOSE_LITTER_MODAL = 'CLOSE_LITTER_MODAL';
 export const CONFIRM_SESSION_ITEM = 'CONFIRM_SESSION_ITEM';
 export const DELETE_SELECTED_PHOTO = 'DELETE_SELECTED_PHOTO'; // from current session

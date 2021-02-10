@@ -9,7 +9,8 @@ import {
     TextInput,
     TouchableOpacity,
     TouchableHighlight,
-    View
+    View,
+    Alert
 } from 'react-native'
 import { getTranslation, TransText } from "react-native-translation";
 import DeviceInfo from 'react-native-device-info'
@@ -75,6 +76,62 @@ class LitterBottomSearch extends PureComponent
         // shared_reducer
         this.props.closeLitterModal();
     };
+
+    // tamara/delete-image
+    deleteImage()
+    {
+      console.log('deleteImage');
+      
+      Alert.alert('Alert', 'Do you really want to delete the image?',
+        [
+          { 
+            text: 'OK', 
+            onPress: () => {
+              console.log(this.props.photoSelected);
+              if (this.props.photoSelected.type == 'gallery') {
+                var selectedIndex = 0;
+                this.props.gallery.forEach((photo, index) => {
+                  if (photo.filename == this.props.photoSelected.filename) {
+                    selectedIndex = index;
+                  }
+                });
+
+                if (selectedIndex == this.props.gallery.length - 1) {
+                  this.closeLitterPicker();
+                } else {
+                  this.props.photoSelected = this.props.gallery[selectedIndex + 1];
+                } 
+
+                this.props.deleteSelectedGallery(selectedIndex);
+                
+              } else {
+                var selectedIndex = 0;
+                this.props.photos.forEach((photo, index) => {
+                  if (photo.filename == this.props.photoSelected.filename) {
+                    selectedIndex = index;
+                  }
+                });
+                
+                if (selectedIndex == this.props.photos.length - 1) {
+                  this.closeLitterPicker();
+                } else {
+                  this.props.photoSelected = this.props.photos[selectedIndex + 1].image;
+                }
+
+                this.props.deleteSelectedPhoto(selectedIndex);
+              }
+            }
+          },
+          { 
+            text: 'Cancel', 
+            onPress: () => {
+              console.log('image delete cancelled');
+            }
+          }
+        ],
+        { cancelable: true }
+      )
+    }
 
     /**
      * iOS X+ needs bigger space (not perfect and needs another look)
@@ -199,7 +256,15 @@ class LitterBottomSearch extends PureComponent
                         value={this.state.text}
                     />
 
-                    <View style={this.props.keyboardOpen ? styles.hide : styles.icon}>
+                    <TouchableOpacity
+                        onPress={this.deleteImage.bind(this)}
+                        style={this.props.keyboardOpen ? styles.hide : styles.icon}
+                        disabled={this._checkForPhotos}
+                    >
+                        <Icon color="red" name="delete" size={SCREEN_HEIGHT * 0.05} />
+                    </TouchableOpacity>
+
+                    {/*<View style={this.props.keyboardOpen ? styles.hide : styles.icon}>*/}
                         {/*disabled={this._checkForPhotos}*/}
 
                         {/* Temp comment out the switch here */}
@@ -208,7 +273,7 @@ class LitterBottomSearch extends PureComponent
                         {/*    onValueChange={this.handleToggleSwitch}*/}
                         {/*    value={this.props.presence}*/}
                         {/*/>*/}
-                    </View>
+                    {/*</View>*/}
 
                     {
                         this.props.keyboardOpen &&
@@ -349,4 +414,36 @@ const styles = {
     }
 }
 
-export default connect(null, actions)(LitterBottomSearch);
+const mapStateToProps = state => {
+  return {
+      category: state.litter.category,
+      collectionLength: state.litter.collectionLength,
+      currentTotalItems: state.litter.currentTotalItems,
+      displayAllTags: state.litter.displayAllTags,
+      gallery: state.gallery.gallery,
+      galleryTaggedCount: state.gallery.galleryTaggedCount,
+      galleryTotalCount: state.gallery.galleryTotalCount,
+      item: state.litter.item,
+      items: state.litter.items,
+      lang: state.auth.lang,
+      model: state.settings.model,
+      photos: state.photos.photos,
+      photoSelected: state.litter.photoSelected,
+      positions: state.litter.positions,
+      presence: state.litter.presence,
+      previous_tags: state.auth.user.previous_tags,
+      previousTags: state.litter.previousTags,
+      suggestedTags: state.litter.suggestedTags,
+      totalLitterCount: state.litter.totalLitterCount,
+      tags: state.litter.tags,
+      tagsModalVisible: state.litter.tagsModalVisible,
+      token: state.auth.token,
+      totalTaggedGalleryCount: state.gallery.totalTaggedGalleryCount,
+      totalTaggedSessionCount: state.photos.totalTaggedSessionCount,
+      q: state.litter.q,
+      webImages: state.web.images,
+      webImageSuccess: state.web.webImageSuccess
+  };
+};
+
+export default connect(mapStateToProps, actions)(LitterBottomSearch);
