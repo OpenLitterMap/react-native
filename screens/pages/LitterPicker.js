@@ -1,4 +1,4 @@
-import React, { PureComponent } from 'react';
+import React, { PureComponent, useEffect } from 'react';
 import {
     Dimensions,
     Keyboard,
@@ -420,14 +420,22 @@ class LitterPicker extends PureComponent
 
     // tamara/swipe-images
     swiperIndexChanged = (index) => {
-      var photos = [].concat(this.props.photos, this.props.gallery, this.props.webImages);
-      this.props.photoSelected = photos[index];
+      console.log('swiperIndexChanged');
+      console.log(index);
+      this.setState({ swiperIndex: index});
+
+      setTimeout(() => {
+        var photos = [].concat(this.props.photos, this.props.gallery, this.props.webImages);
+        this.props.itemSelected(photos[index]);
+      }, 0);
+        //this.props.photoSelected = photos[index];
+      //});
     }
 
     // tamara/swipe-images
     _renderLitterImages = () => {
       console.log("_renderLitterImages");
-      console.log(this.props.photoSelected);
+      //console.log(this.props.photoSelected);
       var photos = [].concat(this.props.photos, this.props.gallery, this.props.webImages);
 
       return photos.map((photo, index) => {
@@ -469,6 +477,7 @@ class LitterPicker extends PureComponent
     _confirmData = async () =>
     {
         console.log('_confirmData');
+        console.log(this.state.swiperIndex);
 
         // The user can only confirm if tags exist
         if (Object.keys(this.props.tags).length != 0) {
@@ -598,9 +607,9 @@ class LitterPicker extends PureComponent
           this.props.closeLitterModal();
         } else {
           console.log('_confirmData2');
+          console.log(this.state.swiperIndex);
 
           this.refs.imageSwiper.scrollBy(this.state.swiperIndex + 1, true);
-          this.setState({ swiperIndex: this.state.swiperIndex + 1});
         }
     };
 
