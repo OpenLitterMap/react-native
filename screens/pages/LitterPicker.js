@@ -11,6 +11,7 @@ import {
 } from 'react-native'
 import { TransText } from "react-native-translation";
 import { Icon } from 'react-native-elements'
+import Swiper from 'react-native-swiper'
 import { connect } from 'react-redux'
 import * as actions from '../../actions'
 
@@ -41,7 +42,8 @@ class LitterPicker extends PureComponent
             keyboardOpen: false,
             bottomHeight: 0,
             topPadding: 0,
-            height: 0
+            height: 0,
+            swiperIndex: 0
         };
 
         this._checkForPhotos = this._checkForPhotos.bind(this);
@@ -74,6 +76,20 @@ class LitterPicker extends PureComponent
 
         this.keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', this._keyboardDidShow.bind(this));
         this.keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', this._keyboardDidHide.bind(this));
+
+        // tamara/swipe-images
+        var photos = [].concat(this.props.photos, this.props.gallery, this.props.webImages);
+        photos.forEach((photo, index) => {
+          if (photo.type == "image") {
+            if (photo.image.filename == this.props.photoSelected.filename) {
+              this.setState({ swiperIndex: index });
+            }
+          } else {
+            if (photo.filename == this.props.photoSelected.filename) {
+              this.setState({ swiperIndex: index });
+            }
+          }
+        });
     }
 
     /**
@@ -243,12 +259,18 @@ class LitterPicker extends PureComponent
                     />
 
                     {/* Second - Image. Height: 80% */}
-                    <LitterImage
-                        photos={this.props.photos}
-                        gallery={this.props.gallery}
-                        webImages={this.props.webImages}
-                        photoSelected={this.props.photoSelected}
-                    />
+                    {/* tamara/swipe-images */}
+                    <Swiper
+                        index={this.state.swiperIndex}
+                        loop={false}
+                        showsPagination={false}
+                        keyboardShouldPersistTaps="handled"
+                        onIndexChanged={(index) => this.swiperIndexChanged(index)}
+                    >
+                      {
+                        this._renderLitterImages()
+                      }
+                    </Swiper>
 
                     {/* Third - Tags. position: absolute */}
                     <LitterTags
@@ -392,6 +414,27 @@ class LitterPicker extends PureComponent
     _checkCollectionLength ()
     {
         return Object.keys(this.props.tags).length === 0;
+    }
+
+    // tamara/swipe-images
+    swiperIndexChanged = (index) => {
+      var photos = [].concat(this.props.photos, this.props.gallery, this.props.webImages);
+      this.props.photoSelected = photos[index];
+    }
+
+    // tamara/swipe-images
+    _renderLitterImages = () => {
+      console.log("_renderLitterImages");
+      console.log(this.props.photoSelected);
+      var photos = [].concat(this.props.photos, this.props.gallery, this.props.webImages);
+
+      return photos.map((photo, index) => {
+        if (photo.image == null) {
+          return <LitterImage key={index} photoSelected={photo} />;
+        } else {
+          return <LitterImage key={index} photoSelected={photo.image} />;
+        }
+      });
     }
 
     _renderModalContents = () =>
@@ -619,9 +662,9 @@ class LitterPicker extends PureComponent
     addTag ()
     {
         const tags = {
-            category: this.props.category.title,
-            title: this.props.item,
-            quantity: this.props.q
+            category: this.props.category.title.toString(),
+            title: this.props.item.toString(),
+            quantity: parseInt(this.props.q)
         };
 
         this.props.tagLitter(tags);

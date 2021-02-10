@@ -2,6 +2,7 @@ import React from 'react';
 import axios from 'axios';
 import {
     ADD_PHOTO,
+    SET_PHOTOS,
     CHANGE_UPLOAD_PROGRESS,
     CLOSE_LITTER_MODAL,
     CONFIRM_SESSION_ITEM,
@@ -36,6 +37,12 @@ export const addPhoto = (photo) => {
     };
 }
 
+export const setPhotos = (photos) => {
+  return {
+      type: SET_PHOTOS,
+      payload: photos
+  };
+}
 /**
  * Confirm Button Pressed on LitterPicker
  */

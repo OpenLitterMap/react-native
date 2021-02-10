@@ -224,8 +224,8 @@
     "presence": {
         "picked-up": "!تم التقاط القمامة",
         "still-there": "!القمامة مازالت موجودة"
-    }
-	    "tags": {
+    },
+	  "tags": {
         "type-to-suggest": "اكتب لاقتراح وسوم",
         "suggested": "{count} الوسوم المقترحة"
     }
