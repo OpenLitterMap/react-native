@@ -49,6 +49,8 @@ class LitterPicker extends PureComponent
 
         this._checkForPhotos = this._checkForPhotos.bind(this);
         this.closeKeyboardAndroid = this.closeKeyboardAndroid.bind(this);
+
+        console.log(this.props.photoSelected);
     }
 
     /**
@@ -426,7 +428,34 @@ class LitterPicker extends PureComponent
 
       setTimeout(() => {
         var photos = [].concat(this.props.photos, this.props.gallery, this.props.webImages);
-        this.props.itemSelected(photos[index]);
+
+        if (photos[index].type == 'image') {
+          let item = photos[index];
+          let litter = {};
+
+          var itemIndex;
+          this.props.gallery.forEach((galleryPhoto, index) => {
+            if (galleryPhoto.image.filename == item.image.filename) {
+              itemIndex = index;
+            }
+          })
+
+          if (item.litter) litter = Object.assign({}, item.litter);
+
+          // litter_reducer
+          this.props.itemSelected({
+              index: itemIndex,
+              lat: item.location.latitude,
+              lon: item.location.longitude,
+              uri: item.image.uri,
+              filename: item.image.filename,
+              timestamp: item.timestamp,
+              type: 'gallery',
+              litter // data if exists
+          });
+        } else {
+          this.props.itemSelected(photos[index]);
+        }
       }, 0);
         //this.props.photoSelected = photos[index];
       //});
@@ -434,7 +463,6 @@ class LitterPicker extends PureComponent
 
     // tamara/swipe-images
     _renderLitterImages = () => {
-      console.log("_renderLitterImages");
       //console.log(this.props.photoSelected);
       var photos = [].concat(this.props.photos, this.props.gallery, this.props.webImages);
 
@@ -477,11 +505,13 @@ class LitterPicker extends PureComponent
     _confirmData = async () =>
     {
         console.log('_confirmData');
-        console.log(this.state.swiperIndex);
+        console.log('swiperIndex: ' + this.state.swiperIndex);
+        console.log('tags: ' + JSON.stringify(this.props.tags));
 
         // The user can only confirm if tags exist
         if (Object.keys(this.props.tags).length != 0) {
-
+          console.log("fdfafasfdadfs");
+          console.log(this.props.photoSelected.type);
           let tags = cloneDeep(this.props.tags);
 
           if (this.props.photoSelected.type === 'web')
@@ -532,6 +562,7 @@ class LitterPicker extends PureComponent
 
           else if (this.props.photoSelected.type === 'gallery')
           {
+              console.log("reqrewqrqerqre");
               // gallery_actions, gallery_reducer
               await this.props.confirmGalleryItem({
                   index: this.props.photoSelected.index,
