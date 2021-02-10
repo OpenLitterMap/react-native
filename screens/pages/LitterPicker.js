@@ -462,13 +462,6 @@ class LitterPicker extends PureComponent
 
     // tamara/swipe-images
     _renderLitterImages = () => {
-      //console.log(this.props.photoSelected);
-      var photos = [].concat(this.props.photos, this.props.gallery, this.props.webImages);
-      this.props.photoSelected = photos[index];
-    }
-
-    // tamara/swipe-images
-    _renderLitterImages = () => {
       console.log("_renderLitterImages");
       console.log(this.props.photoSelected);
       var photos = [].concat(this.props.photos, this.props.gallery, this.props.webImages);
