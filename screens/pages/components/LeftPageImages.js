@@ -160,6 +160,8 @@ class LeftPageImages extends PureComponent {
                 type: 'gallery',
                 litter // data if exists
             });
+
+            console.log("galleryIndex: ", item.index);
         }
     }
 
@@ -199,6 +201,7 @@ class LeftPageImages extends PureComponent {
             width = SCREEN_WIDTH / 3;
         }
 
+        console.log(item.litter);
         return (
             <TouchableWithoutFeedback
                 onPress={this.sessionItemPressed.bind(this, index)}
