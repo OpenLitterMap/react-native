@@ -160,6 +160,8 @@ class LeftPageImages extends PureComponent {
                 type: 'gallery',
                 litter // data if exists
             });
+
+            console.log("galleryIndex: ", item.index);
         }
     }
 
