@@ -28,7 +28,7 @@ class LanguageFlags extends Component
         this.state = {
             show: false,
             langs: [
-                { lang: 'ar', flag: require('../../../assets/icons/flags/tr.png') },
+                { lang: 'ar', flag: require('../../../assets/icons/flags/sa.png') },
                 { lang: 'es', flag: require('../../../assets/icons/flags/es.png') },
                 { lang: 'en', flag: require('../../../assets/icons/flags/gb.png') },
                 { lang: 'fr', flag: require('../../../assets/icons/flags/fr.png') },
