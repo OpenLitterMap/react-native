@@ -210,10 +210,12 @@ class SettingsScreen extends Component {
      */
     _toggleSwitch (id)
     {
-        const alert = getTranslation('settings.alert');
-        const info = getTranslation('settings.do-you-really-want-to-change');
-        const ok = getTranslation('settings.ok');
-        const cancel = getTranslation('settings.cancel');
+        const lang = this.props.lang;
+
+        const alert = getTranslation(`${lang}.settings.alert`);
+        const info = getTranslation(`${lang}.settings.do-you-really-want-to-change`);
+        const ok = getTranslation(`${lang}.settings.ok`);
+        const cancel = getTranslation(`${lang}.settings.cancel`);
 
         Alert.alert(alert, info,
             [
