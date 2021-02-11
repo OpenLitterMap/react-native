@@ -640,7 +640,7 @@ class LitterPicker extends PureComponent
           console.log('_confirmData2');
           console.log(this.state.swiperIndex);
 
-          this.refs.imageSwiper.scrollBy(this.state.swiperIndex + 1, true);
+          this.refs.imageSwiper.scrollTo(this.state.swiperIndex + 1, true);
         }
     };
 
