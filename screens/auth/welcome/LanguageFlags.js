@@ -28,12 +28,13 @@ class LanguageFlags extends Component
         this.state = {
             show: false,
             langs: [
+                { lang: 'ar', flag: require('../../../assets/icons/flags/tr.png') },
                 { lang: 'es', flag: require('../../../assets/icons/flags/es.png') },
                 { lang: 'en', flag: require('../../../assets/icons/flags/gb.png') },
                 { lang: 'fr', flag: require('../../../assets/icons/flags/fr.png') },
                 { lang: 'de', flag: require('../../../assets/icons/flags/de.png') },
                 { lang: 'nl', flag: require('../../../assets/icons/flags/nl.png') },
-                // { lang: 'pt', flag: require('../../../assets/icons/flags/pt.png') }
+                { lang: 'pt', flag: require('../../../assets/icons/flags/pt.png') }
             ]
         };
 
