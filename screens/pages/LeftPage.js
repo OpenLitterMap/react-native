@@ -449,8 +449,12 @@ class LeftPage extends PureComponent {
      */
     uploadPhotos = async () => {
 
+        console.log('uploadPhotos1');
+
         this.props.resetGalleryToUpload(); // gallery
         this.props.resetPhotosToUpload(); // photo
+
+        console.log('uploadPhotos2');
 
         let galleryCount = 0;
         let sessionCount = 0;
@@ -466,6 +470,8 @@ class LeftPage extends PureComponent {
             if (item.litter) sessionCount++;
         });
 
+        console.log('uploadPhotos3');
+
         const totalCount = galleryCount + sessionCount;
         // console.log(({ totalCount }));
 
@@ -476,6 +482,7 @@ class LeftPage extends PureComponent {
         // 2. Open Upload Modal
         this.props.toggleUpload();
 
+        console.log('uploadPhotos4');
         // 3. Upload Photos
         // Photo Gallery - On Device
         // this.props.totalTaggedGalleryCount > 0
@@ -502,11 +509,13 @@ class LeftPage extends PureComponent {
                     data.append('date', date);
                     data.append('presence', item.presence);
                     data.append('model', model);
+                    console.log(data);
 
                     // console.log('Data to upload', data);
 
                     // need to get index dynamically because gallery.length -1 with upload
                     let myIndex = this.props.gallery.indexOf(item);
+                    console.log(item);
 
                     // gallery_actions
                     // this makes 2 requests
@@ -532,6 +541,8 @@ class LeftPage extends PureComponent {
             }
         }
 
+        console.log('uploadPhotos5');
+
         if (this.props.totalTaggedSessionCount > 0)
         {
             // upload session photos
@@ -554,7 +565,7 @@ class LeftPage extends PureComponent {
                     data.append('date', item.date);
                     data.append('presence', item.presence);
                     data.append('model', model);
-
+                    console.log(data);
                     // console.log('Data to upload', data);
 
                     let myIndex = this.props.photos.indexOf(item);
@@ -576,6 +587,8 @@ class LeftPage extends PureComponent {
             }
         }
 
+
+        console.log('uploadPhotos6');
         //  Last step - if all photos have been deleted, close modal
         if (this._getRemainingUploadCount() === this.props.totalImagesToUpload)
         {
@@ -592,6 +605,7 @@ class LeftPage extends PureComponent {
           AsyncStorage.setItem('openlittermap-photos', JSON.stringify(this.props.photos));
           AsyncStorage.setItem('openlittermap-gallery', JSON.stringify(this.props.gallery));
         }, 1000);
+        console.log('uploadPhotos7');
     };
 
     /**
