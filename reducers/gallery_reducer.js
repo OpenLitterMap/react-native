@@ -55,7 +55,7 @@ export default function (state = INITIAL_STATE, action) {
 
             console.log("CONFIRM_GALLERY_ITEM", action.payload);
 
-            const newGalleryArray = state.gallery.map((image,index) => {
+            const newGalleryArray = state.gallery.map((image, index) => {
 
                 // console.log('galleryItem', image);
                 if (index === action.payload.index)
@@ -172,7 +172,25 @@ export default function (state = INITIAL_STATE, action) {
          * Return the selected photos from the Camera Roll
          */
         case PHOTOS_FROM_GALLERY:
-            // console.log('PHOTOS_FROM_GALLERY', action.payload);
+            console.log('PHOTOS_FROM_GALLERY', action.payload);
+
+            /*
+            let litter = {};
+            if (item.item.litter) litter = Object.assign({}, item.item.litter);
+
+            // litter_reducer
+            this.props.itemSelected({
+                index: item.index,
+                lat: item.item.location.latitude,
+                lon: item.item.location.longitude,
+                uri: item.item.image.uri,
+                filename: item.item.image.filename,
+                timestamp: item.item.timestamp,
+                type: 'gallery',
+                litter // data if exists
+            });
+            */
+
             return {
                 ...state,
                 gallery: action.payload,

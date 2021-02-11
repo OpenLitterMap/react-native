@@ -451,12 +451,12 @@
 				TargetAttributes = {
 					00E356ED1AD99517003FC87E = {
 						CreatedOnToolsVersion = 6.2;
-						DevelopmentTeam = PMA4F7NCM9;
+						DevelopmentTeam = QWDQLVZP87;
 						LastSwiftMigration = 1160;
 						TestTargetID = 13B07F861A680F5B00A75B9A;
 					};
 					13B07F861A680F5B00A75B9A = {
-						DevelopmentTeam = PMA4F7NCM9;
+						DevelopmentTeam = QWDQLVZP87;
 						LastSwiftMigration = 1160;
 						ProvisioningStyle = Automatic;
 					};
@@ -893,7 +893,7 @@
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CLANG_ENABLE_MODULES = YES;
-				DEVELOPMENT_TEAM = PMA4F7NCM9;
+				DEVELOPMENT_TEAM = QWDQLVZP87;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					"$(inherited)",
@@ -922,7 +922,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CLANG_ENABLE_MODULES = YES;
 				COPY_PHASE_STRIP = NO;
-				DEVELOPMENT_TEAM = PMA4F7NCM9;
+				DEVELOPMENT_TEAM = QWDQLVZP87;
 				INFOPLIST_FILE = openlittermapTests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 12.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
@@ -949,7 +949,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 14;
 				DEAD_CODE_STRIPPING = NO;
-				DEVELOPMENT_TEAM = PMA4F7NCM9;
+				DEVELOPMENT_TEAM = QWDQLVZP87;
 				INFOPLIST_FILE = openlittermap/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				MARKETING_VERSION = 2.1.2;
@@ -977,7 +977,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 14;
-				DEVELOPMENT_TEAM = PMA4F7NCM9;
+				DEVELOPMENT_TEAM = QWDQLVZP87;
 				INFOPLIST_FILE = openlittermap/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				MARKETING_VERSION = 2.1.2;
