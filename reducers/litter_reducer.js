@@ -6,6 +6,7 @@ import {
     CONFIRM_FOR_UPLOAD,
     // FILTER_TAGS,
     ITEM_SELECTED,
+    LITTER_SELECTED,
     REMOVE_PREVIOUS_TAG,
     REMOVE_TAG,
     RESET_LITTER_STATE,
@@ -122,9 +123,8 @@ export default function (state = INITIAL_STATE, action)
 
             // Check if any litter already exists on this item / index?
             // console.log('litter_reducer.item_selected', action.payload);
-
-            let newTags1 = Object.assign({}, action.payload.litter);
-
+            
+            let newTags1 = newTags1 = Object.assign({}, action.payload.litter);
             let newImage = Object.assign({}, action.payload);
 
             return {
@@ -135,10 +135,24 @@ export default function (state = INITIAL_STATE, action)
                 tags: newTags1,
                 q: "1"
             };
+        
+        case LITTER_SELECTED:
 
-        /**
-         * Remove a tag
-         */
+          // Check if any litter already exists on this item / index?
+          // console.log('litter_reducer.item_selected', action.payload);
+
+          let newTags2 = Object.assign({}, action.payload.litter);
+
+          return {
+              ...state,
+              // modalVisible: true,
+              litterVisible: true,
+              tags: newTags2,
+              q: "1"
+          };
+          /**
+           * Remove a tag
+           */
         case REMOVE_TAG:
 
             // console.log("removetag", action.payload);
