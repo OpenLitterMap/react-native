@@ -243,7 +243,7 @@ class LitterBottomSearch extends PureComponent
                         style={this.props.keyboardOpen ? styles.hide : styles.icon}
                         disabled={this._checkForPhotos}
                     >
-                        <Icon color="red" name="close" size={SCREEN_HEIGHT * 0.05} />
+                        <Icon color="grey" name="replay" size={SCREEN_HEIGHT * 0.05} />
                     </TouchableHighlight>
 
                     <TextInput
@@ -261,7 +261,7 @@ class LitterBottomSearch extends PureComponent
                         style={this.props.keyboardOpen ? styles.hide : styles.icon}
                         disabled={this._checkForPhotos}
                     >
-                        <Icon color="red" name="delete" size={SCREEN_HEIGHT * 0.05} />
+                        <Icon color="red" name="close" size={SCREEN_HEIGHT * 0.05} />
                     </TouchableOpacity>
 
                     {/*<View style={this.props.keyboardOpen ? styles.hide : styles.icon}>*/}
