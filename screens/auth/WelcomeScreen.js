@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import {
     Dimensions,
+    SafeAreaView,
     TouchableOpacity,
     View
 } from 'react-native';
