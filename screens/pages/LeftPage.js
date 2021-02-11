@@ -587,6 +587,11 @@ class LeftPage extends PureComponent {
             // gallery_actions
             this.props.resetGalleryCount();
         }
+
+        setTimeout(() => {
+          AsyncStorage.setItem('openlittermap-photos', JSON.stringify(this.props.photos));
+          AsyncStorage.setItem('openlittermap-gallery', JSON.stringify(this.props.gallery));
+        }, 1000);
     };
 
     /**
