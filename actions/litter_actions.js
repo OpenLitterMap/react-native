@@ -7,6 +7,7 @@ import {
     CHANGE_Q,
     // CONFIRM_FOR_UPLOAD,
     ITEM_SELECTED,
+    LITTER_SELECTED,
     REMOVE_PREVIOUS_TAG,
     REMOVE_TAG,
     RESET_LITTER_STATE,
@@ -85,6 +86,13 @@ export const itemSelected = item => {
         type: ITEM_SELECTED,
         payload: item
     };
+}
+
+export const litterSelected = item => {
+  return {
+      type: LITTER_SELECTED,
+      payload: item
+  };
 }
 
 /**

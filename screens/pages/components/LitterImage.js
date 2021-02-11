@@ -58,7 +58,6 @@ class LitterImage extends PureComponent {
 
     render ()
     {
-        console.log('LitterImage.render');
         return (
             <View>
                 <ScrollView
