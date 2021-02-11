@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import {
     Dimensions,
-    Image,
+    Image, SafeAreaView,
     TouchableOpacity,
     View
 } from 'react-native';
@@ -71,7 +71,7 @@ class LanguageFlags extends Component
     render ()
     {
         return (
-            <View style={styles.top}>
+            <SafeAreaView style={styles.top}>
                 {
                     this.state.show ?
                     (
@@ -94,7 +94,7 @@ class LanguageFlags extends Component
                         </TouchableOpacity>
                     )
                 }
-            </View>
+            </SafeAreaView>
         )
     }
 }
