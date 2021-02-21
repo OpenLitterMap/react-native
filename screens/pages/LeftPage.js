@@ -37,8 +37,8 @@ import LitterPicker from './LitterPicker'
 import moment from 'moment'
 
 // Select + Upload Page
-class LeftPage extends PureComponent {
-
+class LeftPage extends PureComponent
+{
     constructor (props)
     {
         super (props);
