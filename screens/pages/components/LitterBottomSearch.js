@@ -77,60 +77,75 @@ class LitterBottomSearch extends PureComponent
         this.props.closeLitterModal();
     };
 
-    // tamara/delete-image
+    /**
+     * Show alert to delete an image that is being tagged
+     *
+     * Todo - translate
+     */
     deleteImage()
     {
-      console.log('deleteImage');
-      
-      Alert.alert('Alert', 'Do you really want to delete the image?',
-        [
-          { 
-            text: 'OK', 
-            onPress: () => {
-              console.log(this.props.photoSelected);
-              if (this.props.photoSelected.type == 'gallery') {
-                var selectedIndex = 0;
-                this.props.gallery.forEach((photo, index) => {
-                  if (photo.filename == this.props.photoSelected.filename) {
-                    selectedIndex = index;
-                  }
-                });
+        Alert.alert('Alert', 'Do you really want to delete the image?',
+            [
+                {
+                    text: 'OK',
+                    onPress: () => {
 
-                if (selectedIndex == this.props.gallery.length - 1) {
-                  this.closeLitterPicker();
-                } else {
-                  this.props.photoSelected = this.props.gallery[selectedIndex + 1];
-                } 
+                        if (this.props.photoSelected.type === 'gallery')
+                        {
+                            let selectedIndex = 0;
 
-                this.props.deleteSelectedGallery(selectedIndex);
-                
-              } else {
-                var selectedIndex = 0;
-                this.props.photos.forEach((photo, index) => {
-                  if (photo.filename == this.props.photoSelected.filename) {
-                    selectedIndex = index;
-                  }
-                });
-                
-                if (selectedIndex == this.props.photos.length - 1) {
-                  this.closeLitterPicker();
-                } else {
-                  this.props.photoSelected = this.props.photos[selectedIndex + 1].image;
+                            this.props.gallery.forEach((photo, index) => {
+                                if (photo.filename === this.props.photoSelected.filename) {
+                                    selectedIndex = index;
+                                }
+                            });
+
+                            if (selectedIndex === this.props.gallery.length - 1)
+                            {
+                                this.closeLitterPicker();
+                            }
+                            else
+                            {
+                                this.props.photoSelected = this.props.gallery[selectedIndex + 1];
+                            }
+
+                            this.props.deleteSelectedGallery(selectedIndex);
+
+                        }
+                        else
+                        {
+                            let selectedIndex = 0;
+
+                            this.props.photos.forEach((photo, index) => {
+
+                                if (photo.filename === this.props.photoSelected.filename)
+                                {
+                                    selectedIndex = index;
+                                }
+                            });
+
+                            if (selectedIndex === this.props.photos.length - 1)
+                            {
+                                this.closeLitterPicker();
+                            }
+                            else
+                            {
+                                this.props.photoSelected = this.props.photos[selectedIndex + 1].image;
+                            }
+
+                            this.props.deleteSelectedPhoto(selectedIndex);
+                        }
+                    }
+                },
+                {
+                    text: 'Cancel',
+                    onPress: () => {
+                        console.log('image delete cancelled');
+                    }
                 }
-
-                this.props.deleteSelectedPhoto(selectedIndex);
-              }
-            }
-          },
-          { 
-            text: 'Cancel', 
-            onPress: () => {
-              console.log('image delete cancelled');
-            }
-          }
-        ],
-        { cancelable: true }
-      )
+            ],
+            { cancelable: true }
+        )
     }
 
     /**
@@ -176,8 +191,7 @@ class LitterBottomSearch extends PureComponent
      *
      * Temp removed until we can control data per image
      */
-    handleToggleSwitch = async () =>
-    {
+    handleToggleSwitch = async () => {
         await this.props.toggleSwitch();
 
         const A = getTranslation(`${this.props.lang}.litter.presence.picked-up`);
@@ -233,7 +247,8 @@ class LitterBottomSearch extends PureComponent
                     bottom: this.props.bottomHeight, // bottom: 0 for android
                     left: 0,
                     right: 0,
-                    height: this.props.height
+                    height: this.props.height,
+                    backgroundColor: 'white' // doesn't work properly without setting this
                 }}
                 behavior={'padding'}
             >
@@ -416,33 +431,10 @@ const styles = {
 
 const mapStateToProps = state => {
   return {
-      category: state.litter.category,
-      collectionLength: state.litter.collectionLength,
-      currentTotalItems: state.litter.currentTotalItems,
-      displayAllTags: state.litter.displayAllTags,
       gallery: state.gallery.gallery,
-      galleryTaggedCount: state.gallery.galleryTaggedCount,
       galleryTotalCount: state.gallery.galleryTotalCount,
-      item: state.litter.item,
-      items: state.litter.items,
-      lang: state.auth.lang,
-      model: state.settings.model,
       photos: state.photos.photos,
       photoSelected: state.litter.photoSelected,
-      positions: state.litter.positions,
-      presence: state.litter.presence,
-      previous_tags: state.auth.user.previous_tags,
-      previousTags: state.litter.previousTags,
-      suggestedTags: state.litter.suggestedTags,
-      totalLitterCount: state.litter.totalLitterCount,
-      tags: state.litter.tags,
-      tagsModalVisible: state.litter.tagsModalVisible,
-      token: state.auth.token,
-      totalTaggedGalleryCount: state.gallery.totalTaggedGalleryCount,
-      totalTaggedSessionCount: state.photos.totalTaggedSessionCount,
-      q: state.litter.q,
-      webImages: state.web.images,
-      webImageSuccess: state.web.webImageSuccess
   };
 };
 
