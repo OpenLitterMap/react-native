@@ -49,8 +49,6 @@ class LitterPicker extends PureComponent
 
         this._checkForPhotos = this._checkForPhotos.bind(this);
         this.closeKeyboardAndroid = this.closeKeyboardAndroid.bind(this);
-
-        console.log(this.props.photoSelected);
     }
 
     /**
@@ -132,7 +130,7 @@ class LitterPicker extends PureComponent
             if (x.includes('X') || parseInt(x) >= 10)
             {
                 height = 0.2;
-                bottomHeight = 0.3; // was 0.35
+                bottomHeight = 0.2025; // was 0.35 and 0.3
             }
 
             // iPhone 5,6,7,8
@@ -143,6 +141,9 @@ class LitterPicker extends PureComponent
                 bottomHeight = 0.35;
             }
         }
+
+        // console.log({ height });
+        // console.log({ bottomHeight });
 
         this.setState({
             keyboardOpen: true,
