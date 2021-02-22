@@ -21,6 +21,8 @@ import { Icon } from 'react-native-elements'
 const SCREEN_HEIGHT = Dimensions.get('window').height
 const SCREEN_WIDTH = Dimensions.get('window').width
 
+import KeyboardSpacer from 'react-native-keyboard-spacer';
+
 class LitterBottomSearch extends PureComponent
 {
     constructor (props)
@@ -240,6 +242,8 @@ class LitterBottomSearch extends PureComponent
         const lang = this.props.lang;
         const suggest = getTranslation(`${lang}.litter.tags.type-to-suggest`);
 
+        console.log('keyboard-view', this.props.keyboardOpen);
+
         return (
             <KeyboardAvoidingView
                 style={{
@@ -247,8 +251,7 @@ class LitterBottomSearch extends PureComponent
                     bottom: this.props.bottomHeight, // bottom: 0 for android
                     left: 0,
                     right: 0,
-                    height: this.props.height,
-                    backgroundColor: 'white' // doesn't work properly without setting this
+                    height: this.props.height
                 }}
                 behavior={'padding'}
             >
