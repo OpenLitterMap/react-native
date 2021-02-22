@@ -131,23 +131,23 @@ class LitterPicker extends PureComponent
 
             if (x.includes('X') || parseInt(x) >= 10)
             {
-                height = 0.2;
+                height = 0.345;
             }
 
             // iPhone 5,6,7,8
             else
             {
-                height = 0.2; // 0.2425;
+                height = 0.39; // 0.2425;
             }
         }
 
-        console.log({ height });
-        console.log({ bottomHeight });
+        height = height * SCREEN_HEIGHT;
+        bottomHeight = bottomHeight * SCREEN_HEIGHT;
 
         this.setState({
             keyboardOpen: true,
-            bottomHeight: SCREEN_HEIGHT * bottomHeight,
-            height: SCREEN_HEIGHT * height
+            bottomHeight: bottomHeight,
+            height: height
         });
     }
 
@@ -230,6 +230,8 @@ class LitterPicker extends PureComponent
      */
     categoryClicked = () => {
         this.closeKeyboardAndroid();
+
+        console.log('category clicked');
     }
 
     /**

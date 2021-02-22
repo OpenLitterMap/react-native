@@ -39,6 +39,7 @@
     "react-native-image-crop-picker": "^0.26.2",
     "react-native-infinite-looping-scroll": "0.0.4",
     "react-native-keyboard-aware-scroll-view": "^0.9.1",
+    "react-native-keyboard-spacer": "^0.4.1",
     "react-native-linear-gradient": "^2.5.6",
     "react-native-localize": "^2.0.1",
     "react-native-location": "^2.5.0",

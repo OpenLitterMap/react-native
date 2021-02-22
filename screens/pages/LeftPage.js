@@ -122,11 +122,14 @@ class LeftPage extends PureComponent
                                         style={styles.uploadText}
                                         dictionary={`${lang}.leftpage.please-wait-uploading`}
                                     />
+
                                     <ActivityIndicator style={{ marginBottom: 10 }} />
+
                                     <Text style={styles.uploadCount}>
                                         {this._getRemainingUploadCount()} /{' '}
                                         {this.props.totalImagesToUpload}
                                     </Text>
+
                                     {/* <Progress.Circle
                                       progress={this.props.galleryUploadProgress}
                                       showsText={true}
@@ -134,6 +137,7 @@ class LeftPage extends PureComponent
                                       style={{ marginBottom: 30 }}
                                     /> */}
                                     {/* Todo - translate cancel */}
+
                                     <Button onPress={this._toggleUpload.bind(this)} title="Cancel" />
                                 </View>
                             )
@@ -166,12 +170,13 @@ class LeftPage extends PureComponent
 
                                         <View style={{ flexDirection: 'row' }}>
                                             <TouchableWithoutFeedback
-                                                onPress={this._toggleThankYou.bind(this)}>
+                                                onPress={this._toggleThankYou.bind(this)}
+                                            >
                                                 <View style={styles.thankYouButton}>
-                                                       <TransText
-                                                           style={styles.normalWhiteText}
-                                                           dictionary={`${lang}.leftpage.close`}
-                                                       />
+                                                   <TransText
+                                                       style={styles.normalWhiteText}
+                                                       dictionary={`${lang}.leftpage.close`}
+                                                   />
                                                 </View>
                                             </TouchableWithoutFeedback>
                                         </View>
@@ -203,6 +208,7 @@ class LeftPage extends PureComponent
                         isSelecting={this.props.isSelecting}
                         webImages={this.props.webImages}
                     />
+
                     <View style={styles.bottomContainer}>{this.renderBottomTabBar()}</View>
                 </SafeAreaView>
                 <SafeAreaView style={{ flex: 0, backgroundColor: 'white' }} />
@@ -238,8 +244,6 @@ class LeftPage extends PureComponent
 
         // async-storage photos & gallery set
         setTimeout(() => {
-          console.log(this.props.photos);
-          console.log(this.props.gallery);
           AsyncStorage.setItem('openlittermap-photos', JSON.stringify(this.props.photos));
           AsyncStorage.setItem('openlittermap-gallery', JSON.stringify(this.props.gallery));
         }, 1000);
@@ -449,12 +453,8 @@ class LeftPage extends PureComponent
      */
     uploadPhotos = async () => {
 
-        console.log('uploadPhotos1');
-
         this.props.resetGalleryToUpload(); // gallery
         this.props.resetPhotosToUpload(); // photo
-
-        console.log('uploadPhotos2');
 
         let galleryCount = 0;
         let sessionCount = 0;
@@ -470,8 +470,6 @@ class LeftPage extends PureComponent
             if (item.litter) sessionCount++;
         });
 
-        console.log('uploadPhotos3');
-
         const totalCount = galleryCount + sessionCount;
         // console.log(({ totalCount }));
 
@@ -482,7 +480,6 @@ class LeftPage extends PureComponent
         // 2. Open Upload Modal
         this.props.toggleUpload();
 
-        console.log('uploadPhotos4');
         // 3. Upload Photos
         // Photo Gallery - On Device
         // this.props.totalTaggedGalleryCount > 0
@@ -541,8 +538,6 @@ class LeftPage extends PureComponent
             }
         }
 
-        console.log('uploadPhotos5');
-
         if (this.props.totalTaggedSessionCount > 0)
         {
             // upload session photos
@@ -587,8 +582,6 @@ class LeftPage extends PureComponent
             }
         }
 
-
-        console.log('uploadPhotos6');
         //  Last step - if all photos have been deleted, close modal
         if (this._getRemainingUploadCount() === this.props.totalImagesToUpload)
         {
@@ -605,7 +598,6 @@ class LeftPage extends PureComponent
           AsyncStorage.setItem('openlittermap-photos', JSON.stringify(this.props.photos));
           AsyncStorage.setItem('openlittermap-gallery', JSON.stringify(this.props.gallery));
         }, 1000);
-        console.log('uploadPhotos7');
     };
 
     /**
