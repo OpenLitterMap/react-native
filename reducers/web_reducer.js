@@ -5,7 +5,8 @@ import {
 
 // state.auth.email
 const INITIAL_STATE = {
-    images: [],
+    count: 0,
+    nextImage: null
 };
 
 export default function(state = INITIAL_STATE, action) {
@@ -33,7 +34,8 @@ export default function(state = INITIAL_STATE, action) {
         case WEB_IMAGES:
             return {
                 ...state,
-                images: action.payload
+                count: action.payload.count,
+                nextImage: action.payload.photo
             };
 
         default:

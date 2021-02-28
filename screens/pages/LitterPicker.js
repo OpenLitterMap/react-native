@@ -79,7 +79,7 @@ class LitterPicker extends PureComponent
         this.keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', this._keyboardDidHide.bind(this));
 
         // tamara/swipe-images
-        const photos = [].concat(this.props.photos, this.props.gallery, this.props.webImages);
+        const photos = [].concat(this.props.photos, this.props.gallery, this.props.webNextImage);
 
         photos.forEach((photo, index) => {
             if (photo.type === "image")
@@ -91,7 +91,8 @@ class LitterPicker extends PureComponent
 
             else
             {
-                if (photo.filename === this.props.photoSelected.filename) {
+                if (photo.filename === this.props.photoSelected.filename)
+                {
                     this.setState({ swiperIndex: index });
                 }
             }
@@ -137,7 +138,7 @@ class LitterPicker extends PureComponent
             // iPhone 5,6,7,8
             else
             {
-                height = 0.39; // 0.2425;
+                height = 0.39;
             }
         }
 
@@ -230,8 +231,6 @@ class LitterPicker extends PureComponent
      */
     categoryClicked = () => {
         this.closeKeyboardAndroid();
-
-        console.log('category clicked');
     }
 
     /**
@@ -350,7 +349,7 @@ class LitterPicker extends PureComponent
      */
     _checkForPhotos ()
     {
-        return (this.props.gallery.length === 0 && this.props.photos.length === 0 && this.props.webImages.length === 0);
+        return (this.props.gallery.length === 0 && this.props.photos.length === 0 && this.props.webImagesCount === 0);
     }
 
     /**
@@ -425,14 +424,14 @@ class LitterPicker extends PureComponent
     // tamara/swipe-images
     swiperIndexChanged = (index) => {
 
-        const photos = [].concat(this.props.photos, this.props.gallery, this.props.webImages);
+        const photos = [].concat(this.props.photos, this.props.gallery, this.props.webNextImage);
 
         this.props.photoSelected = photos[index];
 
         this.setState({ swiperIndex: index});
 
         setTimeout(() => {
-            const photos = [].concat(this.props.photos, this.props.gallery, this.props.webImages);
+            const photos = [].concat(this.props.photos, this.props.gallery, this.props.webNextImage);
 
             if (photos[index].type === 'image')
             {
@@ -473,7 +472,7 @@ class LitterPicker extends PureComponent
     // tamara/swipe-images
     _renderLitterImages = () =>
     {
-        const photos = [].concat(this.props.photos, this.props.gallery, this.props.webImages);
+        const photos = [].concat(this.props.photos, this.props.gallery, this.props.webNextImage);
 
         return photos.map((photo, index) => {
             if (photo.image == null) {
@@ -538,11 +537,10 @@ class LitterPicker extends PureComponent
                 });
 
                 // Check if there is another image to load
-                if (this.props.webImages.length > 0)
+                if (this.props.webImagesCount > 0)
                 {
-                    let item = this.props.webImages[0];
-                    item.uri = this.props.webImages[0].filename;
-                    item.type = 'web';
+                    let item = this.props.webNextImage;
+                    item.uri = this.props.webNextImage.filename;
                     item.litter = {};
 
                     if (this.props.previous_tags)
@@ -631,7 +629,7 @@ class LitterPicker extends PureComponent
         }, 1000);
 
         // tamara/confirm-image
-        let imageCount = this.props.photos.length + this.props.gallery.length + this.props.webImages.length;
+        let imageCount = this.props.photos.length + this.props.gallery.length + this.props.webImagesCount;
 
         if (this.state.swiperIndex === imageCount - 1)
         {
@@ -890,7 +888,9 @@ const mapStateToProps = state => {
         totalTaggedGalleryCount: state.gallery.totalTaggedGalleryCount,
         totalTaggedSessionCount: state.photos.totalTaggedSessionCount,
         q: state.litter.q,
-        webImages: state.web.images,
+        // webImages: state.web.images,
+        webNextImage: state.web.nextImage,
+        webImagesCount: state.web.count,
         webImageSuccess: state.web.webImageSuccess
     };
 };
