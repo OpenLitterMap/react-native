@@ -201,7 +201,6 @@ class LeftPageImages extends PureComponent {
             width = SCREEN_WIDTH / 3;
         }
 
-        console.log(item.litter);
         return (
             <TouchableWithoutFeedback
                 onPress={this.sessionItemPressed.bind(this, index)}
@@ -246,23 +245,20 @@ class LeftPageImages extends PureComponent {
     }
 
     /**
-     * One of the images uploaded to web-app has been clicked
+     * Load the next image due to tag from Web
+     *
+     * Web uploads were uploaded from the web-app and need to be tagged here
      */
     _webImagePressed ()
     {
-        // console.log('_webImagePressed', this.props.webImages[0]);
-
+        console.log('webImagePressed');
         if (! this.props.isSelecting)
         {
-            this.props.toggleLitter();
             // litter_reducer
-
-            let item = this.props.webImages[0];
-            item.uri = this.props.webImages[0].filename;
-            item.type = 'web';
+            this.props.toggleLitter();
 
             // shared_actions
-            this.props.itemSelected(this.props.webImages[0]);
+            this.props.itemSelected(this.props.webNextImage);
         }
     }
 
@@ -286,11 +282,23 @@ class LeftPageImages extends PureComponent {
         return styles.webTextSmall;
     }
 
+    /**
+     * Render the Images that appear on the LeftPage
+     *
+     * Top: Web
+     * - Web images were uploaded to openlittermap.com./upload and can be tagged from the app
+     *
+     * Middle: Gallery
+     * - Gallery are selected from the geotagged photos album here on the app
+     *
+     * Bottom: Session
+     * - Session photos are taken with the camera app on the app
+     *
+     * @returns {JSX.Element}
+     */
     render ()
     {
-        // console.log("LeftPageImages rendered (session) (gallery)", this.props.photos.length, this.props.gallery.length);
-
-        if (this.props.photos.length === 0 && this.props.gallery.length === 0 && this.props.webImages.length === 0)
+        if (this.props.photos.length === 0 && this.props.gallery.length === 0 && this.props.webImagesCount === 0)
         {
             return (
                 <View style={{ alignItems: 'center', justifyContent: 'center', flex: 0.75 }}>
@@ -308,17 +316,18 @@ class LeftPageImages extends PureComponent {
         return (
             <View style={this._marginWhenPhotos()}>
                 {
-                    this.props.webImages.length > 0 && (
+                    this.props.webImagesCount > 0 &&
+                    (
                         <View style={styles.webImageContainer}>
 
                             <TouchableWithoutFeedback onPress={this._webImagePressed.bind(this)}>
-                                <Image source={{ uri: this.props.webImages[0].filename }} style={styles.webImage} />
+                                <Image source={{ uri: this.props.webNextImage.filename }} style={styles.webImage} />
                             </TouchableWithoutFeedback>
 
                             <View style={styles.webTextContainer}>
                                 <View style={styles.webInnerContainer}>
                                     <Icon name="cloud" size={SCREEN_HEIGHT * 0.04} color="#00aced" />
-                                    <Text style={this._webTextStyle()}>{this.props.webImages.length}</Text>
+                                    <Text style={this._webTextStyle()}>{this.props.webImagesCount}</Text>
                                 </View>
                             </View>
                         </View>

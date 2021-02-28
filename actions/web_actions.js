@@ -17,16 +17,19 @@ import axios from 'axios';
 export const checkForImagesOnWeb = token => {
     return dispatch => {
         return axios({
-            url: URL + '/api/check-web-photos',
+            url: URL + '/api/v2/photos/web/index',
             method: 'GET',
             headers: {
                 Authorization: 'Bearer ' + token
             }
         })
         .then(resp => {
-            console.log('images_from_web', resp.data.photos);
+            console.log('images_from_web', resp.data);
 
-            dispatch({ type: WEB_IMAGES, payload: resp.data.photos });
+            dispatch({ type: WEB_IMAGES, payload: {
+                count: resp.data.count,
+                photo: resp.data.photo
+            }});
         })
         .catch(err => {
             console.log('web', err);
