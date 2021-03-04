@@ -5,12 +5,14 @@ import {
     CHANGE_CATEGORY,
     CHANGE_ITEM,
     CHANGE_Q,
+    CHANGE_SWIPER_INDEX,
     // CONFIRM_FOR_UPLOAD,
     ITEM_SELECTED,
     LITTER_SELECTED,
     REMOVE_PREVIOUS_TAG,
     REMOVE_TAG,
     RESET_LITTER_STATE,
+    RESET_TAGS,
     UPDATE_PREVIOUS_TAGS,
     SAVE_PREVIOUS_TAGS,
     SELECT_PHOTO,
@@ -22,7 +24,7 @@ import {
     TOGGLE_SWITCH,
     UPDATE_TAGS,
     UPDATE_TAGS_X_POS,
-    UPDATE_QUANTITY
+    UPDATE_QUANTITY,
 } from './types';
 
 /**
@@ -52,6 +54,20 @@ export const changeQ = (q) => {
     return {
         type: CHANGE_Q,
         payload: q
+    };
+}
+
+/**
+ * Change the index of the swiper
+ *
+ * Needs to be extracted to Redux as the number of web-photos changes when 1 is submitted
+ */
+export const swiperIndexChanged = index => {
+
+    console.log('action.swiperIndex', index);
+    return {
+        type: CHANGE_SWIPER_INDEX,
+        payload: index
     };
 }
 
@@ -102,6 +118,17 @@ export const removeTag = tags => {
     return {
         type: REMOVE_TAG,
         payload: tags
+    };
+}
+
+/**
+ * Reset the tags only
+ *
+ * Used when web-image is submitted with tags
+ */
+export const resetTags = () => {
+    return {
+        type: RESET_TAGS
     };
 }
 

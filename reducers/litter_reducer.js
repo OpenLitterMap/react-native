@@ -4,11 +4,13 @@ import {
     CHANGE_ITEM,
     CHANGE_Q,
     CONFIRM_FOR_UPLOAD,
+    CHANGE_SWIPER_INDEX,
     // FILTER_TAGS,
     ITEM_SELECTED,
     LITTER_SELECTED,
     REMOVE_PREVIOUS_TAG,
     REMOVE_TAG,
+    RESET_TAGS,
     RESET_LITTER_STATE,
     UPDATE_PREVIOUS_TAGS,
     SAVE_PREVIOUS_TAGS,
@@ -42,6 +44,7 @@ const INITIAL_STATE = {
     presence: true,
     positions: {}, // coordinates of each tag for animation
     suggestedTags: [],
+    swiperIndex: 0,
     tags: {},
     tagsModalVisible: false,
     totalImagesToUpload: 0,
@@ -99,6 +102,26 @@ export default function (state = INITIAL_STATE, action)
             };
 
         /**
+         * Change the index of the Swiper on LitterPicker.Swiper.LitterImage
+         */
+        case CHANGE_SWIPER_INDEX:
+
+            return {
+                ...state,
+                swiperIndex: action.payload
+            };
+
+        /**
+         * When a web-image is submitted, we need to reset the tags
+         */
+        case RESET_TAGS:
+
+            return {
+                ...state,
+                tags: {}
+            };
+
+        /**
          * The user has pressed the "confirm" button
          *
          * @return this image can be uploaded
@@ -122,9 +145,9 @@ export default function (state = INITIAL_STATE, action)
         case ITEM_SELECTED:
 
             // Check if any litter already exists on this item / index?
-            // console.log('litter_reducer.item_selected', action.payload);
-            
-            let newTags1 = newTags1 = Object.assign({}, action.payload.litter);
+            console.log('item_selected', action.payload);
+
+            let newTags1 = Object.assign({}, action.payload.litter);
             let newImage = Object.assign({}, action.payload);
 
             return {
@@ -150,9 +173,10 @@ export default function (state = INITIAL_STATE, action)
               tags: newTags2,
               q: "1"
           };
-          /**
-           * Remove a tag
-           */
+
+        /**
+         * Remove a tag
+         */
         case REMOVE_TAG:
 
             // console.log("removetag", action.payload);

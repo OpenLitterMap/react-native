@@ -96,6 +96,7 @@ class LeftPage extends PureComponent
 
     render ()
     {
+        console.log('LeftPage.render');
         if (this.props.imageBrowserOpen)
         {
             // todo- cancel all subscriptions and async tasks in componentWillUnmount
@@ -206,8 +207,9 @@ class LeftPage extends PureComponent
                         lang={this.props.lang}
                         uniqueValue={this.props.uniqueValue}
                         isSelecting={this.props.isSelecting}
-                        webNextImage={this.props.webNextImage}
+                        //webNextImage={this.props.webNextImage}
                         webImagesCount={this.props.webImagesCount}
+                        webPhotos={this.props.webPhotos}
                     />
 
                     <View style={styles.bottomContainer}>{this.renderBottomTabBar()}</View>
@@ -742,7 +744,8 @@ const mapStateToProps = state => {
         uniqueValue: state.shared.uniqueValue,
         user: state.auth.user,
         webImagesCount: state.web.count,
-        webNextImage: state.web.nextImage
+        //webNextImage: state.web.nextImage
+        webPhotos: state.web.photos
     };
 };
 
