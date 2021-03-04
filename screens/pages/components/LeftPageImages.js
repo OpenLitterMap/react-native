@@ -19,8 +19,8 @@ import * as actions from '../../../actions';
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 
-class LeftPageImages extends PureComponent {
-
+class LeftPageImages extends PureComponent
+{
     /**
      * Toggle selected for each image
      * Note, session has nested item
@@ -251,14 +251,19 @@ class LeftPageImages extends PureComponent {
      */
     _webImagePressed ()
     {
-        console.log('webImagePressed');
         if (! this.props.isSelecting)
         {
-            // litter_reducer
+            // shared.js
             this.props.toggleLitter();
 
-            // shared_actions
-            this.props.itemSelected(this.props.webNextImage);
+            // litter.js
+            let image = this.props.webPhotos[0];
+            // todo - load this litter object by default
+            // todo - change this name to tags
+            image.litter = {};
+
+            this.props.itemSelected(image);
+
         }
     }
 
@@ -298,6 +303,8 @@ class LeftPageImages extends PureComponent {
      */
     render ()
     {
+        console.log('LeftPageImages.render');
+
         if (this.props.photos.length === 0 && this.props.gallery.length === 0 && this.props.webImagesCount === 0)
         {
             return (
@@ -321,7 +328,7 @@ class LeftPageImages extends PureComponent {
                         <View style={styles.webImageContainer}>
 
                             <TouchableWithoutFeedback onPress={this._webImagePressed.bind(this)}>
-                                <Image source={{ uri: this.props.webNextImage.filename }} style={styles.webImage} />
+                                <Image source={{ uri: this.props.webPhotos[0].filename }} style={styles.webImage} />
                             </TouchableWithoutFeedback>
 
                             <View style={styles.webTextContainer}>

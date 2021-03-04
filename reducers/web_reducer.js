@@ -1,4 +1,5 @@
 import {
+    REMOVE_WEB_IMAGE,
     WEB_CONFIRM,
     WEB_IMAGES
 } from '../actions/types';
@@ -6,7 +7,7 @@ import {
 // state.auth.email
 const INITIAL_STATE = {
     count: 0,
-    nextImage: null
+    photos: []
 };
 
 export default function(state = INITIAL_STATE, action) {
@@ -14,18 +15,32 @@ export default function(state = INITIAL_STATE, action) {
     switch (action.type) {
 
         /**
+         *
+         */
+        case REMOVE_WEB_IMAGE:
+
+            const filtered = state.photos.filter(photo => photo.id !== action.payload);
+
+            console.log({ filtered });
+
+            return {
+                ...state,
+                photos: filtered
+            };
+
+        /**
          * Toggle webImageSuccess to show modal content on LitterPicker
          */
         case WEB_CONFIRM:
 
-            let images = state.images = [
-                ...state.images.slice(0, 0),
-                ...state.images.slice(0 + 1)
+            const photos = state.photos = [
+                ...state.photos.slice(0, 0),
+                ...state.photos.slice(1)
             ];
 
             return {
                 ...state,
-                images
+                photos
             };
 
         /**
@@ -35,7 +50,7 @@ export default function(state = INITIAL_STATE, action) {
             return {
                 ...state,
                 count: action.payload.count,
-                nextImage: action.payload.photo
+                photos: action.payload.photos
             };
 
         default:

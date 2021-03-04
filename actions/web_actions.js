@@ -4,6 +4,7 @@ import {
     URL,
     CLIENT_SECRET,
     CLIENT_ID,
+    REMOVE_WEB_IMAGE,
     WEB_CONFIRM,
     WEB_IMAGES,
     WEB_UPLOAD
@@ -28,7 +29,7 @@ export const checkForImagesOnWeb = token => {
 
             dispatch({ type: WEB_IMAGES, payload: {
                 count: resp.data.count,
-                photo: resp.data.photo
+                photos: resp.data.photos
             }});
         })
         .catch(err => {
@@ -57,9 +58,6 @@ export const confirmWebPhoto = data => {
         .then(resp => {
             console.log('confirmWebPhoto', resp.data);
 
-            // load next photoSelected
-            dispatch({ type: WEB_CONFIRM });
-
             return true;
         })
         .catch(err => {
@@ -67,6 +65,14 @@ export const confirmWebPhoto = data => {
         });
     }
 }
+
+export const removeWebImage = id => {
+    console.log('removeWebImage', id);
+    return {
+        type: REMOVE_WEB_IMAGE,
+        payload: id
+    };
+};
 
 export const toggleWebImageSuccess = bool => {
     return {
