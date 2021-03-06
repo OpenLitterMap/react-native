@@ -429,7 +429,8 @@ class LitterPicker extends PureComponent
 
         console.log({ index });
 
-        console.log('webImages.length', this.props.webPhotos.length);
+        console.log('photoSelected.type', this.props.photoSelected.type);
+        console.log('webImages.length', this.props.webPhotos.length + 1);
 
         // If we are browsing web photos
         // At the end of the search, we need to check to see if we need to load more images
@@ -448,7 +449,7 @@ class LitterPicker extends PureComponent
 
         console.log({ photo });
 
-        this.props.photoSelected = photo;
+        // this.props.photoSelected = photo;
 
         setTimeout(() => {
 
@@ -511,13 +512,21 @@ class LitterPicker extends PureComponent
 
         console.log({ photos });
 
-        return photos.map(photo => {
+        return photos.map((photo, index) => {
 
-            console.log({ photo });
+            // Only render the one image we want
+            if (index === this.props.swiperIndex)
+            {
+                return photo.type === "image"
+                    ? <LitterImage key={photos.length} photoSelected={photo.image} />
+                    : <LitterImage key={photos.length} photoSelected={photo} />;
+            }
 
-            return photo.type === "image"
-                ? <LitterImage key={photos.length} photoSelected={photo.image} />
-                : <LitterImage key={photos.length} photoSelected={photo} />;
+            // Otherwise, just return an empty view
+            return (
+                <View key={photos.length} />
+            );
+
         });
     }
 
