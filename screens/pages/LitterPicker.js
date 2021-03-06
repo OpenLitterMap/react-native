@@ -85,9 +85,6 @@ class LitterPicker extends PureComponent
             if (photo.type === "image")
             {
                 if (photo.image.filename === this.props.photoSelected.filename) {
-                    // this.setState({ swiperIndex: index });
-
-                    console.log('filename 1', index);
                     this.props.swiperIndexChanged(index);
                 }
             }
@@ -96,10 +93,6 @@ class LitterPicker extends PureComponent
             {
                 if (photo.filename === this.props.photoSelected.filename)
                 {
-
-                    console.log('filename 2', index);
-
-                    // this.setState({ swiperIndex: index });
                     this.props.swiperIndexChanged(index);
                 }
             }
@@ -436,16 +429,30 @@ class LitterPicker extends PureComponent
 
         console.log({ index });
 
+        console.log('webImages.length', this.props.webPhotos.length);
+
+        // If we are browsing web photos
+        // At the end of the search, we need to check to see if we need to load more images
+        // Currently we are loading 10 images at a time
+        if (this.props.photoSelected.type === 'web')
+        {
+            if (this.props.webPhotos.length === index + 1)
+            {
+                this.props.checkForImagesOnWeb(this.props.token);
+            }
+        }
+
         const photos = [].concat(this.props.photos, this.props.gallery, this.props.webPhotos);
 
         let photo = photos[index];
 
-        this.props.photoSelected = photo;
+        console.log({ photo });
 
-        // this.setState({ swiperIndex: index});
+        this.props.photoSelected = photo;
 
         setTimeout(() => {
 
+            // Necessary to put this here to avoid error
             this.props.swiperIndexChanged(index);
 
             const photos = [].concat(this.props.photos, this.props.gallery, this.props.webPhotos);
@@ -502,8 +509,15 @@ class LitterPicker extends PureComponent
 
         const photos = [].concat(this.props.photos, this.props.gallery, this.props.webPhotos);
 
+        console.log({ photos });
+
         return photos.map(photo => {
-            return <LitterImage key={photos.length} photoSelected={photo} />;
+
+            console.log({ photo });
+
+            return photo.type === "image"
+                ? <LitterImage key={photos.length} photoSelected={photo.image} />
+                : <LitterImage key={photos.length} photoSelected={photo} />;
         });
     }
 

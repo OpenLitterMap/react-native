@@ -112,14 +112,16 @@ class LeftPageImages extends PureComponent
 
     /**
      * A Gallery Item has been pressed
+     *
+     * Note that gallery has item.type === "image" by default
+     *
+     * But when passed to this.props.photoSelected in the itemSelected function here,
+     *
+     * it gets the type of "gallery"
      */
     galleryItemPressed (item)
     {
-        // console.log('Gallery item pressed', item.presence);
-
-        // if (item.item.hasOwnProperty('litter')) {
-        //     console.log(item.item.litter);
-        // }
+        console.log('Gallery item pressed', item);
 
         // If we are selecting (for delete), highlight / deselect the image
         if (this.props.isSelecting)

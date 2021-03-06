@@ -25,7 +25,7 @@ export const checkForImagesOnWeb = token => {
             }
         })
         .then(resp => {
-            console.log('images_from_web', resp.data);
+            console.log('images_from_web', resp);
 
             dispatch({ type: WEB_IMAGES, payload: {
                 count: resp.data.count,
