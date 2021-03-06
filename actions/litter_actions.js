@@ -63,7 +63,6 @@ export const changeQ = (q) => {
  * Needs to be extracted to Redux as the number of web-photos changes when 1 is submitted
  */
 export const swiperIndexChanged = index => {
-
     console.log('action.swiperIndex', index);
     return {
         type: CHANGE_SWIPER_INDEX,

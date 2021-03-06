@@ -10,10 +10,10 @@ const INITIAL_STATE = {
     photos: []
 };
 
-export default function(state = INITIAL_STATE, action) {
-
-    switch (action.type) {
-
+export default function(state = INITIAL_STATE, action)
+{
+    switch (action.type)
+    {
         /**
          *
          */

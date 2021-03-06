@@ -145,10 +145,12 @@ export default function (state = INITIAL_STATE, action)
         case ITEM_SELECTED:
 
             // Check if any litter already exists on this item / index?
-            console.log('item_selected', action.payload);
+            console.log('reducer.item_selected', action.payload);
 
             let newTags1 = Object.assign({}, action.payload.litter);
             let newImage = Object.assign({}, action.payload);
+
+            console.log({ newImage });
 
             return {
                 ...state,
