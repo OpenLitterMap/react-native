@@ -429,35 +429,16 @@ class LitterPicker extends PureComponent
 
         console.log({ index });
 
-        console.log('photoSelected.type', this.props.photoSelected.type);
-        console.log('webImages.length', this.props.webPhotos.length + 1);
-
-        // If we are browsing web photos
-        // At the end of the search, we need to check to see if we need to load more images
-        // Currently we are loading 10 images at a time
-        if (this.props.photoSelected.type === 'web')
-        {
-            if (this.props.webPhotos.length === index + 1)
-            {
-                this.props.checkForImagesOnWeb(this.props.token);
-            }
-        }
-
         const photos = [].concat(this.props.photos, this.props.gallery, this.props.webPhotos);
 
         let photo = photos[index];
-
-        console.log({ photo });
-
-        // this.props.photoSelected = photo;
 
         setTimeout(() => {
 
             // Necessary to put this here to avoid error
             this.props.swiperIndexChanged(index);
 
-            const photos = [].concat(this.props.photos, this.props.gallery, this.props.webPhotos);
-
+            // Gallery
             if (photo.type === 'image')
             {
                 let item = photos[index];
@@ -484,19 +465,32 @@ class LitterPicker extends PureComponent
                     litter // data if exists
                 });
             }
-            else if (photo.type === 'web')
-            {
-                photo.litter = {};
-
-                console.log('web', photo);
-
-                this.props.itemSelected(photo);
-            }
+            // Session, Web
             else
             {
                 this.props.itemSelected(photo);
             }
         }, 0);
+
+        console.log('webImages', this.props.webPhotos);
+        console.log('photoSelected', this.props.photoSelected);
+        console.log('webImages.length', this.props.webPhotos.length);
+        console.log('lastWeb', this.props.webPhotos[this.props.webPhotos.length -1].id);
+        console.log('test', this.props.photoSelected.id, this.props.webPhotos[this.props.webPhotos.length -1].id);
+        console.log('test2', this.props.photoSelected.id, this.props.webPhotos[this.props.webPhotos.length -1].id);
+
+        // If we are browsing web photos
+        // At the end of the search, we need to check to see if we need to load more images
+        // Currently we are loading 10 images at a time
+        if (this.props.photoSelected.type === 'web')
+        {
+            // If this is the last webPhoto, load more
+            if (this.props.photoSelected.id === this.props.webPhotos[this.props.webPhotos.length -1].id)
+            {
+                console.log("LOAD MORE WEB");
+                this.props.checkForImagesOnWeb(this.props.token);
+            }
+        }
     }
 
     /**
