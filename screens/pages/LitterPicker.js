@@ -44,7 +44,7 @@ class LitterPicker extends PureComponent
             bottomHeight: 0,
             topPadding: 0,
             height: 0,
-            swiperIndex: 0
+            // swiperIndex: 0
         };
 
         this._checkForPhotos = this._checkForPhotos.bind(this);
@@ -79,20 +79,21 @@ class LitterPicker extends PureComponent
         this.keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', this._keyboardDidHide.bind(this));
 
         // tamara/swipe-images
-        const photos = [].concat(this.props.photos, this.props.gallery, this.props.webImages);
+        const photos = [].concat(this.props.photos, this.props.gallery, this.props.webPhotos);
 
         photos.forEach((photo, index) => {
             if (photo.type === "image")
             {
                 if (photo.image.filename === this.props.photoSelected.filename) {
-                    this.setState({ swiperIndex: index });
+                    this.props.swiperIndexChanged(index);
                 }
             }
 
             else
             {
-                if (photo.filename === this.props.photoSelected.filename) {
-                    this.setState({ swiperIndex: index });
+                if (photo.filename === this.props.photoSelected.filename)
+                {
+                    this.props.swiperIndexChanged(index);
                 }
             }
         });
@@ -137,7 +138,7 @@ class LitterPicker extends PureComponent
             // iPhone 5,6,7,8
             else
             {
-                height = 0.39; // 0.2425;
+                height = 0.39;
             }
         }
 
@@ -230,8 +231,6 @@ class LitterPicker extends PureComponent
      */
     categoryClicked = () => {
         this.closeKeyboardAndroid();
-
-        console.log('category clicked');
     }
 
     /**
@@ -239,6 +238,7 @@ class LitterPicker extends PureComponent
      */
     render ()
     {
+        console.log('LitterPicker.render');
         const { lang } = this.props;
 
         return (
@@ -270,13 +270,13 @@ class LitterPicker extends PureComponent
 
                     {/* Second - Image. Height: 80% */}
                     <Swiper
-                        index={this.state.swiperIndex}
+                        index={this.props.swiperIndex}
                         loop={false}
                         showsPagination={false}
                         keyboardShouldPersistTaps="handled"
                         ref="imageSwiper"
                         onIndexChanged={(index) => this.swiperIndexChanged(index)}
-                    >{ this._renderLitterImages() }</Swiper>
+                    >{ this._renderLitterImage() }</Swiper>
 
                     {/* Third - Tags. position: absolute */}
                     <LitterTags
@@ -350,7 +350,7 @@ class LitterPicker extends PureComponent
      */
     _checkForPhotos ()
     {
-        return (this.props.gallery.length === 0 && this.props.photos.length === 0 && this.props.webImages.length === 0);
+        return (this.props.gallery.length === 0 && this.props.photos.length === 0 && this.props.webImagesCount === 0);
     }
 
     /**
@@ -422,19 +422,24 @@ class LitterPicker extends PureComponent
         return Object.keys(this.props.tags).length === 0;
     }
 
-    // tamara/swipe-images
+    /**
+     * Event when the image was swiped Left or Right
+     */
     swiperIndexChanged = (index) => {
 
-        const photos = [].concat(this.props.photos, this.props.gallery, this.props.webImages);
+        console.log({ index });
 
-        this.props.photoSelected = photos[index];
+        const photos = [].concat(this.props.photos, this.props.gallery, this.props.webPhotos);
 
-        this.setState({ swiperIndex: index});
+        let photo = photos[index];
 
         setTimeout(() => {
-            const photos = [].concat(this.props.photos, this.props.gallery, this.props.webImages);
 
-            if (photos[index].type === 'image')
+            // Necessary to put this here to avoid error
+            this.props.swiperIndexChanged(index);
+
+            // Gallery
+            if (photo.type === 'image')
             {
                 let item = photos[index];
                 let litter = {};
@@ -460,27 +465,57 @@ class LitterPicker extends PureComponent
                     litter // data if exists
                 });
             }
+            // Session, Web
             else
             {
-                this.props.itemSelected(photos[index]);
+                this.props.itemSelected(photo);
             }
-        }, 0);
 
-        //this.props.photoSelected = photos[index];
-        // });
+            // If we are browsing web photos
+            // At the end of the search, we need to check to see if we need to load more images
+            // Currently we are loading 10 images at a time
+            if (this.props.photoSelected.type === 'web')
+            {
+                // If this is the last webPhoto, load more
+                if (this.props.photoSelected.id === this.props.webPhotos[this.props.webPhotos.length -1].id)
+                {
+                    // show loading more images from web
+
+                    this.props.loadMoreWebImages(this.props.token, this.props.photoSelected.id);
+                }
+            }
+
+        }, 0);
     }
 
-    // tamara/swipe-images
-    _renderLitterImages = () =>
+    /**
+     * Images to swipe through
+     *
+     * This will render every image. Is this necessary?
+     */
+    _renderLitterImage = () =>
     {
-        const photos = [].concat(this.props.photos, this.props.gallery, this.props.webImages);
+        console.log('renderLitterImage.index', this.props.swiperIndex);
+
+        const photos = [].concat(this.props.photos, this.props.gallery, this.props.webPhotos);
+
+        console.log({ photos });
 
         return photos.map((photo, index) => {
-            if (photo.image == null) {
-                return <LitterImage key={index} photoSelected={photo} />;
-            } else {
-                return <LitterImage key={index} photoSelected={photo.image} />;
+
+            // Only render the one image we want
+            if (index === this.props.swiperIndex)
+            {
+                return photo.type === "image"
+                    ? <LitterImage key={photos.length} photoSelected={photo.image} />
+                    : <LitterImage key={photos.length} photoSelected={photo} />;
             }
+
+            // Otherwise, just return an empty view
+            return (
+                <View key={photos.length} />
+            );
+
         });
     }
 
@@ -513,12 +548,12 @@ class LitterPicker extends PureComponent
      */
     _confirmData = async () =>
     {
-        console.log('_confirmData');
+        let deleteWebImageId = null;
 
         // The user can only confirm if tags exist
         if (Object.keys(this.props.tags).length !== 0)
         {
-            let tags = cloneDeep(this.props.tags);
+            const tags = cloneDeep(this.props.tags);
 
             if (this.props.photoSelected.type === 'web')
             {
@@ -537,35 +572,11 @@ class LitterPicker extends PureComponent
                     token: this.props.token
                 });
 
-                // Check if there is another image to load
-                if (this.props.webImages.length > 0)
-                {
-                    let item = this.props.webImages[0];
-                    item.uri = this.props.webImages[0].filename;
-                    item.type = 'web';
-                    item.litter = {};
+                this.props.resetTags();
 
-                    if (this.props.previous_tags)
-                    {
-                        item.litter = cloneDeep(tags);
-                    }
+                this.props.removeWebImage(this.props.photoSelected.id);
 
-                    // litter_actions
-                    // Note, other actions are using slideInNext
-                    this.props.itemSelected(item);
-
-                    // Loading off web_actions
-                    await this.setState({ webLoading: false });
-
-                    // close the waiting modal
-                    await this.props.setLitterPickerModal(false);
-
-                }
-                else
-                {
-                    // Loading off
-                    await this.setState({ webLoading: false });
-                }
+                return;
             }
 
             else if (this.props.photoSelected.type === 'gallery')
@@ -578,10 +589,7 @@ class LitterPicker extends PureComponent
                 });
 
                 // Problem - Some components re-render here
-                // Slide in next image, or return
-                // todo, slide animation
-                // todo swipe left & right between images
-                let gal = this._checkForNextGalleryPhoto(tags);
+                // let gal = this._checkForNextGalleryPhoto(tags);
 
                 //if (gal) return;
             }
@@ -598,29 +606,10 @@ class LitterPicker extends PureComponent
                 // litter_actions, litter_reducer
                 // await this.props.savePreviousTags(this.props.tags);
 
-                let val = this._checkForNextSessionPhoto(tags);
+                // let val = this._checkForNextSessionPhoto(tags);
                 // console.log('After Session', val);
                 //if (val) return;
             }
-
-            // console.log('After check Gallery + Session');
-
-            // todo - no need to map over Gallery or Session again/
-            //      - find a better way to map over Session if gallery completed, visa versa
-            // this._checkForNextGalleryPhoto();
-            // this._checkForNextSessionPhoto();
-
-            // If no Gallery or Session items are available, close the LitterPicker Modal.
-            // this.props.resetLitterObjectAndCloseModal();
-
-            // if it's a modal, close it
-            // but if its not a modal........ navigate to uploads?
-            // LitterPicker is not a modal on RightPage.js
-
-            //this.props.toggleLitter();
-
-            // this.props.closeLitterModal();
-            // this.props.acceptDataAndCloseModal();
         }
 
         // tamara/persist-image
@@ -631,9 +620,11 @@ class LitterPicker extends PureComponent
         }, 1000);
 
         // tamara/confirm-image
-        let imageCount = this.props.photos.length + this.props.gallery.length + this.props.webImages.length;
+        const imageCount = this.props.photos.length + this.props.gallery.length + this.props.webPhotos.length;
 
-        if (this.state.swiperIndex === imageCount - 1)
+        console.log({ imageCount });
+
+        if (this.props.swiperIndex === imageCount - 1)
         {
             console.log('_confirmData1');
 
@@ -646,9 +637,9 @@ class LitterPicker extends PureComponent
         else
         {
             console.log('_confirmData2');
-            console.log(this.state.swiperIndex);
+            console.log(this.props.swiperIndex);
 
-            this.refs.imageSwiper.scrollTo(this.state.swiperIndex + 1, true);
+            this.refs.imageSwiper.scrollTo(this.props.swiperIndex + 1, true);
         }
     };
 
@@ -883,6 +874,7 @@ const mapStateToProps = state => {
         previous_tags: state.auth.user.previous_tags,
         previousTags: state.litter.previousTags,
         suggestedTags: state.litter.suggestedTags,
+        swiperIndex: state.litter.swiperIndex,
         totalLitterCount: state.litter.totalLitterCount,
         tags: state.litter.tags,
         tagsModalVisible: state.litter.tagsModalVisible,
@@ -890,7 +882,10 @@ const mapStateToProps = state => {
         totalTaggedGalleryCount: state.gallery.totalTaggedGalleryCount,
         totalTaggedSessionCount: state.photos.totalTaggedSessionCount,
         q: state.litter.q,
-        webImages: state.web.images,
+        // webImages: state.web.images,
+        // webNextImage: state.web.nextImage,
+        webImagesCount: state.web.count,
+        webPhotos: state.web.photos,
         webImageSuccess: state.web.webImageSuccess
     };
 };

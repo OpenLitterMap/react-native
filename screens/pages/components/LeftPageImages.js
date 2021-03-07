@@ -19,8 +19,8 @@ import * as actions from '../../../actions';
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 
-class LeftPageImages extends PureComponent {
-
+class LeftPageImages extends PureComponent
+{
     /**
      * Toggle selected for each image
      * Note, session has nested item
@@ -112,14 +112,16 @@ class LeftPageImages extends PureComponent {
 
     /**
      * A Gallery Item has been pressed
+     *
+     * Note that gallery has item.type === "image" by default
+     *
+     * But when passed to this.props.photoSelected in the itemSelected function here,
+     *
+     * it gets the type of "gallery"
      */
     galleryItemPressed (item)
     {
-        // console.log('Gallery item pressed', item.presence);
-
-        // if (item.item.hasOwnProperty('litter')) {
-        //     console.log(item.item.litter);
-        // }
+        // console.log('Gallery item pressed', item);
 
         // If we are selecting (for delete), highlight / deselect the image
         if (this.props.isSelecting)
@@ -201,7 +203,6 @@ class LeftPageImages extends PureComponent {
             width = SCREEN_WIDTH / 3;
         }
 
-        console.log(item.litter);
         return (
             <TouchableWithoutFeedback
                 onPress={this.sessionItemPressed.bind(this, index)}
@@ -246,23 +247,25 @@ class LeftPageImages extends PureComponent {
     }
 
     /**
-     * One of the images uploaded to web-app has been clicked
+     * Load the next image due to tag from Web
+     *
+     * Web uploads were uploaded from the web-app and need to be tagged here
      */
     _webImagePressed ()
     {
-        // console.log('_webImagePressed', this.props.webImages[0]);
-
         if (! this.props.isSelecting)
         {
+            // shared.js
             this.props.toggleLitter();
-            // litter_reducer
 
-            let item = this.props.webImages[0];
-            item.uri = this.props.webImages[0].filename;
-            item.type = 'web';
+            // litter.js
+            let image = this.props.webPhotos[0];
+            // todo - load this litter object by default
+            // todo - change this name to tags
+            image.litter = {};
 
-            // shared_actions
-            this.props.itemSelected(this.props.webImages[0]);
+            this.props.itemSelected(image);
+
         }
     }
 
@@ -286,11 +289,25 @@ class LeftPageImages extends PureComponent {
         return styles.webTextSmall;
     }
 
+    /**
+     * Render the Images that appear on the LeftPage
+     *
+     * Top: Web
+     * - Web images were uploaded to openlittermap.com./upload and can be tagged from the app
+     *
+     * Middle: Gallery
+     * - Gallery are selected from the geotagged photos album here on the app
+     *
+     * Bottom: Session
+     * - Session photos are taken with the camera app on the app
+     *
+     * @returns {JSX.Element}
+     */
     render ()
     {
-        // console.log("LeftPageImages rendered (session) (gallery)", this.props.photos.length, this.props.gallery.length);
+        // console.log('LeftPageImages.render');
 
-        if (this.props.photos.length === 0 && this.props.gallery.length === 0 && this.props.webImages.length === 0)
+        if (this.props.photos.length === 0 && this.props.gallery.length === 0 && this.props.webImagesCount === 0)
         {
             return (
                 <View style={{ alignItems: 'center', justifyContent: 'center', flex: 0.75 }}>
@@ -308,17 +325,18 @@ class LeftPageImages extends PureComponent {
         return (
             <View style={this._marginWhenPhotos()}>
                 {
-                    this.props.webImages.length > 0 && (
+                    this.props.webImagesCount > 0 &&
+                    (
                         <View style={styles.webImageContainer}>
 
                             <TouchableWithoutFeedback onPress={this._webImagePressed.bind(this)}>
-                                <Image source={{ uri: this.props.webImages[0].filename }} style={styles.webImage} />
+                                <Image source={{ uri: this.props.webPhotos[0].filename }} style={styles.webImage} />
                             </TouchableWithoutFeedback>
 
                             <View style={styles.webTextContainer}>
                                 <View style={styles.webInnerContainer}>
                                     <Icon name="cloud" size={SCREEN_HEIGHT * 0.04} color="#00aced" />
-                                    <Text style={this._webTextStyle()}>{this.props.webImages.length}</Text>
+                                    <Text style={this._webTextStyle()}>{this.props.webImagesCount}</Text>
                                 </View>
                             </View>
                         </View>

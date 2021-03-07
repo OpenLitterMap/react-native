@@ -1,13 +1,13 @@
 // You need to import keys here that your app can interact with
 // See https://laravel.com/docs/8.x/passport#the-passportclient-command
 // We will set up a staging server later that will give others access to a shared online server
-import { SECRET_CLIENT } from "@env";
-import { ID_CLIENT } from "@env";
-import { OLM_ENDPOINT } from "@env"; // http://olm.test
+// import { SECRET_CLIENT } from "@env";
+// import { ID_CLIENT } from "@env";
+// import { OLM_ENDPOINT } from "@env"; // http://olm.test
 
-// const SECRET_CLIENT = 'rnMHOS4OICXatHuNMbXeAucBP9Q3CkXkkjl9sdp8';
-// const ID_CLIENT = 2;
-// const OLM_ENDPOINT = 'http://olm.test';
+const SECRET_CLIENT = 'rnMHOS4OICXatHuNMbXeAucBP9Q3CkXkkjl9sdp8';
+const ID_CLIENT = 2;
+const OLM_ENDPOINT = 'http://olm.test';
 
 export const CLIENT_SECRET = SECRET_CLIENT;
 export const URL = OLM_ENDPOINT;
@@ -108,10 +108,12 @@ export const CHANGE_CATEGORY = 'CHANGE_CATEGORY';
 export const CHANGE_ITEM = 'CHANGE_ITEM';
 export const CHANGE_Q = 'CHANGE_Q';
 export const CONFIRM_FOR_UPLOAD = 'CONFIRM_FOR_UPLOAD';
+export const CHANGE_SWIPER_INDEX = 'CHANGE_SWIPER_INDEX';
 // export const FILTER_TAGS = 'FILTER_TAGS';
 export const REMOVE_PREVIOUS_TAG = 'REMOVE_PREVIOUS_TAG';
 export const REMOVE_TAG = 'REMOVE_TAG';
 export const RESET_LITTER_STATE = 'RESET_LITTER_STATE';
+export const RESET_TAGS = 'RESET_TAGS';
 export const SAVE_PREVIOUS_TAGS = 'SAVE_PREVIOUS_TAGS';
 export const SELECT_PHOTO = 'SELECT_PHOTO';
 export const SESSION_UPLOADED_SUCCESSFULLY = 'SESSION_UPLOADED_SUCCESSFULLY';
@@ -144,5 +146,7 @@ export const STORE_CURRENT_APP_VERSION = 'STORE_CURRENT_APP_VERSION';
 export const ON_SEEN_FEATURE_TOUR = 'ON_SEEN_FEATURE_TOUR';
 
 // Web data
+export const LOAD_MORE_WEB_IMAGES = 'LOAD_MORE_WEB_IMAGES';
+export const REMOVE_WEB_IMAGE = 'REMOVE_WEB_IMAGE';
 export const WEB_IMAGES = 'WEB_IMAGES';
 export const WEB_CONFIRM = 'WEB_CONFIRM';

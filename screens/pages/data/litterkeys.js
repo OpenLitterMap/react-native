@@ -178,6 +178,7 @@ const LITTERKEYS = {
         { id: 30, key: 'nescafe' },          // Nescafe
         { id: 31, key: 'nestle' },           // Nestle
         { id: 32, key: 'marlboro' },         // Marlboro
+        { id: 57, key: 'mars' },             // Mars
         { id: 33, key: 'mcdonalds' },        // McDonalds
         { id: 34, key: 'nike' },             // Nike
         { id: 35, key: 'obriens' },          // O-Briens
