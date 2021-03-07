@@ -4,6 +4,7 @@ import {
     URL,
     CLIENT_SECRET,
     CLIENT_ID,
+    LOAD_MORE_WEB_IMAGES,
     REMOVE_WEB_IMAGE,
     WEB_CONFIRM,
     WEB_IMAGES,
@@ -13,9 +14,16 @@ import axios from 'axios';
 
 /**
  * When LeftPage didMount, check web for any images
+ *
+ * if photo_id exists
+ *   Load the next 10 images from the photo_id
+ * else
+ *   Load the first 10 images
+ *
  * @return [id, filename]
  */
-export const checkForImagesOnWeb = token => {
+export const checkForImagesOnWeb = (token) => {
+
     return dispatch => {
         return axios({
             url: URL + '/api/v2/photos/web/index',
@@ -37,6 +45,40 @@ export const checkForImagesOnWeb = token => {
         });
     }
 }
+
+/**
+ * Load the next 10 images on the web
+ *
+ * Executed when the user swipes to their last image on web_photos
+ */
+export const loadMoreWebImages = (token, photo_id) => {
+    return dispatch => {
+        return axios({
+            url: URL + '/api/v2/photos/web/load-more',
+            method: 'GET',
+            headers: {
+                Authorization: 'Bearer ' + token
+            },
+            params: { photo_id }
+        })
+        .then(resp => {
+            console.log('load_more_web_images', resp);
+
+            if (resp.data)
+            {
+                dispatch({
+                    type: LOAD_MORE_WEB_IMAGES,
+                    payload: {
+                        photos: resp.data
+                    }
+                });
+            }
+        })
+        .catch(err => {
+            console.log('web', err);
+        });
+    }
+};
 
 /**
  * User has clicked Confirm on LitterPicker
