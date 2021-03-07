@@ -470,27 +470,22 @@ class LitterPicker extends PureComponent
             {
                 this.props.itemSelected(photo);
             }
-        }, 0);
 
-        console.log('webImages', this.props.webPhotos);
-        console.log('photoSelected', this.props.photoSelected);
-        console.log('webImages.length', this.props.webPhotos.length);
-        console.log('lastWeb', this.props.webPhotos[this.props.webPhotos.length -1].id);
-        console.log('test', this.props.photoSelected.id, this.props.webPhotos[this.props.webPhotos.length -1].id);
-        console.log('test2', this.props.photoSelected.id, this.props.webPhotos[this.props.webPhotos.length -1].id);
-
-        // If we are browsing web photos
-        // At the end of the search, we need to check to see if we need to load more images
-        // Currently we are loading 10 images at a time
-        if (this.props.photoSelected.type === 'web')
-        {
-            // If this is the last webPhoto, load more
-            if (this.props.photoSelected.id === this.props.webPhotos[this.props.webPhotos.length -1].id)
+            // If we are browsing web photos
+            // At the end of the search, we need to check to see if we need to load more images
+            // Currently we are loading 10 images at a time
+            if (this.props.photoSelected.type === 'web')
             {
-                console.log("LOAD MORE WEB");
-                this.props.checkForImagesOnWeb(this.props.token);
+                // If this is the last webPhoto, load more
+                if (this.props.photoSelected.id === this.props.webPhotos[this.props.webPhotos.length -1].id)
+                {
+                    // show loading more images from web
+
+                    this.props.loadMoreWebImages(this.props.token, this.props.photoSelected.id);
+                }
             }
-        }
+
+        }, 0);
     }
 
     /**

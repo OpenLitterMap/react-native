@@ -1,4 +1,5 @@
 import {
+    LOAD_MORE_WEB_IMAGES,
     REMOVE_WEB_IMAGE,
     WEB_CONFIRM,
     WEB_IMAGES
@@ -14,6 +15,22 @@ export default function(state = INITIAL_STATE, action)
 {
     switch (action.type)
     {
+        /**
+         * At the end of swiping web.photos, load more images
+         */
+        case LOAD_MORE_WEB_IMAGES:
+
+            let web_images = [...state.photos];
+
+            action.payload.photos.forEach(photo => {
+                web_images.push(photo);
+            });
+
+            return {
+                ...state,
+                photos: web_images
+            }
+
         /**
          *
          */
