@@ -50,19 +50,19 @@ class LeftPage extends PureComponent
 
         // async-storage photos & gallery get
         AsyncStorage.getItem('openlittermap-gallery').then((gallery) => {
-          if (gallery == null) {
-            this.props.photosFromGallery([]);
-          } else {
-            this.props.photosFromGallery(JSON.parse(gallery));
-          }
+            if (gallery == null) {
+                this.props.photosFromGallery([]);
+            } else {
+                this.props.photosFromGallery(JSON.parse(gallery));
+            }
         });
 
         AsyncStorage.getItem('openlittermap-photos').then((photos) => {
-          if (photos == null) {
-            this.props.setPhotos([]);
-          } else {
-            this.props.setPhotos(JSON.parse(photos));
-          }
+            if (photos == null) {
+                this.props.setPhotos([]);
+            } else {
+                this.props.setPhotos(JSON.parse(photos));
+            }
         });
     }
 
@@ -96,6 +96,7 @@ class LeftPage extends PureComponent
 
     render ()
     {
+        console.log('LeftPage.render');
         if (this.props.imageBrowserOpen)
         {
             // todo- cancel all subscriptions and async tasks in componentWillUnmount
@@ -206,7 +207,9 @@ class LeftPage extends PureComponent
                         lang={this.props.lang}
                         uniqueValue={this.props.uniqueValue}
                         isSelecting={this.props.isSelecting}
-                        webImages={this.props.webImages}
+                        //webNextImage={this.props.webNextImage}
+                        webImagesCount={this.props.webImagesCount}
+                        webPhotos={this.props.webPhotos}
                     />
 
                     <View style={styles.bottomContainer}>{this.renderBottomTabBar()}</View>
@@ -740,7 +743,9 @@ const mapStateToProps = state => {
         uploadVisible: state.shared.uploadVisible,
         uniqueValue: state.shared.uniqueValue,
         user: state.auth.user,
-        webImages: state.web.images
+        webImagesCount: state.web.count,
+        //webNextImage: state.web.nextImage
+        webPhotos: state.web.photos
     };
 };
 

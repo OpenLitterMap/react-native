@@ -11,8 +11,8 @@ import { connect } from 'react-redux';
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 
-class LitterImage extends PureComponent {
-
+class LitterImage extends PureComponent
+{
     // ScrollView Image Props
     static defaultProps = {
         doAnimateZoomReset: false,
@@ -51,13 +51,35 @@ class LitterImage extends PureComponent {
         }
     };
 
+    /**
+     * If web
+     *   return filename
+     *
+     * Else
+     *   return uri
+     */
+    _getFilenameOrUri ()
+    {
+        return this.props.photoSelected.type === 'web'
+            ? this.props.photoSelected.filename
+            : this.props.photoSelected.uri;
+    }
+
     _imageLoaded ()
     {
         this.setState({ imageLoaded: true });
     }
 
+    /**
+     * Render the Image inside LitterPicker.Swiper
+     *
+     * This renders twice. Once when Swiper is created (imageLoaded false)
+     *
+     * and again when imageLoaded is true
+     */
     render ()
     {
+        console.log('LitterImage', this.props.photoSelected, this.state.imageLoaded);
         return (
             <View>
                 <ScrollView
@@ -75,7 +97,7 @@ class LitterImage extends PureComponent {
                 >
                     <Image
                         resizeMode="cover"
-                        source={{ uri: this.props.photoSelected.uri }}
+                        source={{ uri: this._getFilenameOrUri() }}
                         style={{ width: SCREEN_WIDTH, height: SCREEN_HEIGHT * 0.8 }}
                         onLoad={this._imageLoaded.bind(this)}
                     />
