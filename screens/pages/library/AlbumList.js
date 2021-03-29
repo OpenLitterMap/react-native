@@ -42,28 +42,34 @@ class AlbumList extends PureComponent {
     {
         if (Platform.OS === 'ios')
         {
-            request(PERMISSIONS.IOS.PHOTO_LIBRARY).then(result => {
-                if (result === 'granted') {
-                    this.setState({ hasPermission: true, loading: false });
-                }
+            request(PERMISSIONS.IOS.PHOTO_LIBRARY)
+                .then(result => {
+                    if (result === 'granted')
+                    {
+                        this.setState({ hasPermission: true, loading: false });
+                    }
             });
         }
 
         if (Platform.OS === 'android')
         {
-            let hasPermissions = false;
+            let hasPermission = false;
 
-            request(PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE).then(result => {
-                if (result === 'granted') {
-                    hasPermissions = true;
-                }
-
-                PermissionsAndroid.request("android.permission.ACCESS_MEDIA_LOCATION").then(result => {
-                    if (result === PermissionsAndroid.RESULTS.DENIED) {
-                        hasPermissions = false;
+            request(PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE)
+                .then(result => {
+                    if (result === 'granted')
+                    {
+                        hasPermission = true;
                     }
 
-                    this.setState({ hasPermission: hasPermissions, loading: false });
+                PermissionsAndroid.request("android.permission.ACCESS_MEDIA_LOCATION")
+                    .then(result => {
+                        if (result === PermissionsAndroid.RESULTS.DENIED)
+                        {
+                            hasPermission = false;
+                        }
+
+                    this.setState({ hasPermission, loading: false });
                 });
             });
         }
@@ -96,8 +102,8 @@ class AlbumList extends PureComponent {
     _chooseImages ()
     {
         // check if every photo has a geotag, otherwise return.
-        // todo - allow the users to give nongeotagged images a location
         this.state.selected.some((img, i) => {
+
             if ( ! img.location || Object.keys(img.location).length === 0)
             {
                 alert(
@@ -105,18 +111,22 @@ class AlbumList extends PureComponent {
                     moment.localeData().ordinal(i + 1) +
                     ' image does not have a GPS tag associated with it. Only geotagged images can be uploaded.'
                 );
+
                 return true;
             }
         });
 
-        try {
+        try
+        {
             this.props.photosFromGallery(this.state.selected);
             this.props.toggleImageBrowser();
 
             // async-storage set gallery
             AsyncStorage.setItem('openlittermap-gallery', JSON.stringify(this.state.selected));
-        } catch (e) {
-            console.log(e);
+        }
+        catch (e)
+        {
+            console.log('img_no_gps', e);
         }
     }
 
