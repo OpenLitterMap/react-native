@@ -82,18 +82,25 @@ class LitterPicker extends PureComponent
         const photos = [].concat(this.props.photos, this.props.gallery, this.props.webPhotos);
 
         photos.forEach((photo, index) => {
-            if (photo.type === "image")
-            {
-                if (photo.image.filename === this.props.photoSelected.filename) {
-                    this.props.swiperIndexChanged(index);
-                }
-            }
 
-            else
+            // console.log({ photo });
+
+            // null is coming through here somewhere. Maybe from web?
+            if (photo)
             {
-                if (photo.filename === this.props.photoSelected.filename)
+                if (photo.type === "image")
                 {
-                    this.props.swiperIndexChanged(index);
+                    if (photo.image.filename === this.props.photoSelected.filename)
+                    {
+                        this.props.swiperIndexChanged(index);
+                    }
+                }
+                else
+                {
+                    if (photo.filename === this.props.photoSelected.filename)
+                    {
+                        this.props.swiperIndexChanged(index);
+                    }
                 }
             }
         });
@@ -490,25 +497,23 @@ class LitterPicker extends PureComponent
 
     /**
      * Images to swipe through
-     *
-     * This will render every image. Is this necessary?
      */
     _renderLitterImage = () =>
     {
-        console.log('renderLitterImage.index', this.props.swiperIndex);
+        // console.log('renderLitterImage.index', this.props.swiperIndex);
 
         const photos = [].concat(this.props.photos, this.props.gallery, this.props.webPhotos);
 
-        console.log({ photos });
+        // console.log({ photos });
 
         return photos.map((photo, index) => {
 
             // Only render the one image we want
             if (index === this.props.swiperIndex)
             {
-                return photo.type === "image"
-                    ? <LitterImage key={photos.length} photoSelected={photo.image} />
-                    : <LitterImage key={photos.length} photoSelected={photo} />;
+                return photo.type === "web" || photo.type === "session"
+                    ? <LitterImage key={photos.length} photoSelected={photo} />
+                    : <LitterImage key={photos.length} photoSelected={photo.image} />;
             }
 
             // Otherwise, just return an empty view
@@ -549,11 +554,14 @@ class LitterPicker extends PureComponent
     _confirmData = async () =>
     {
         let deleteWebImageId = null;
+        let tags = null;
+
+        console.log('CONFIRM_DATA', this.props.tags);
 
         // The user can only confirm if tags exist
         if (Object.keys(this.props.tags).length !== 0)
         {
-            const tags = cloneDeep(this.props.tags);
+            tags = cloneDeep(this.props.tags);
 
             if (this.props.photoSelected.type === 'web')
             {
@@ -587,11 +595,6 @@ class LitterPicker extends PureComponent
                     data: tags,
                     presence: this.props.presence
                 });
-
-                // Problem - Some components re-render here
-                // let gal = this._checkForNextGalleryPhoto(tags);
-
-                //if (gal) return;
             }
 
             else
@@ -602,13 +605,6 @@ class LitterPicker extends PureComponent
                     data: this.props.tags,
                     presence: this.props.presence
                 });
-
-                // litter_actions, litter_reducer
-                // await this.props.savePreviousTags(this.props.tags);
-
-                // let val = this._checkForNextSessionPhoto(tags);
-                // console.log('After Session', val);
-                //if (val) return;
             }
         }
 
@@ -623,11 +619,10 @@ class LitterPicker extends PureComponent
         const imageCount = this.props.photos.length + this.props.gallery.length + this.props.webPhotos.length;
 
         console.log({ imageCount });
+        console.log('swiperIndex', this.props.swiperIndex);
 
         if (this.props.swiperIndex === imageCount - 1)
         {
-            console.log('_confirmData1');
-
             // litter_reducer
             this.props.resetLitterTags();
   
@@ -636,97 +631,17 @@ class LitterPicker extends PureComponent
         }
         else
         {
-            console.log('_confirmData2');
-            console.log(this.props.swiperIndex);
-
             this.refs.imageSwiper.scrollTo(this.props.swiperIndex + 1, true);
         }
+
+        // probably a better way to do this...
+        if (this.props.previous_tags)
+        {
+            setTimeout(() => {
+                this.props.updateTags(tags);
+            }, 500);
+        }
     };
-
-    /**
-     * Look for a gallery photo that is not tagged
-     * todo -> slideIn animation
-     * todo -> find a more efficient way of finding the next item that doesn't have a litter object
-     *        eg maintain list of tagged and untagged images
-     */
-    _checkForNextGalleryPhoto (tags)
-    {
-        if (this.props.totalTaggedGalleryCount < this.props.galleryTotalCount)
-        {
-            for (let i = 0; i < this.props.gallery.length; i++)
-            {
-                if (! this.props.gallery[i].litter)
-                {
-                    let item = {
-                        index: i,
-                        lat: this.props.gallery[i].location.latitude,
-                        lon: this.props.gallery[i].location.longitude,
-                        uri: this.props.gallery[i].image.uri,
-                        filename: this.props.gallery[i].image.filename,
-                        timestamp: this.props.gallery[i].timestamp,
-                        type: 'gallery',
-                        litter: {}
-                    };
-
-                    // let tags = {...this.props.tags};
-                    if (this.props.previous_tags) {
-                        item.litter = cloneDeep(tags);
-                    }
-
-                    // litter_actions, litter_reducer
-                    // this.props.itemSelected(item); // todo -> animate
-                    // this.props.slideInNext(item);
-                    this.props.itemSelected({
-                        index: item.index,
-                        lat: item.lat,
-                        lon: item.lon,
-                        uri: item.uri,
-                        filename: item.filename,
-                        timestamp: item.timestamp,
-                        type: 'gallery',
-                        litter: item.litter // data if exists
-                    });
-
-                    return true;
-                }
-            }
-
-            // console.log('loop over gallery finished - all items have litter object.');
-            return false;
-        }
-
-        // console.log("totalTaggedGalleryCount ! < props.gallery.length");
-        return false;
-    }
-
-    /**
-     * Check for a session photo that is not tagged
-     */
-    _checkForNextSessionPhoto (tags)
-    {
-        // todo Slide in next image
-        for (let i = 0; i < this.props.photos.length; i++)
-        {
-            if (! this.props.photos[i].litter)
-            {
-                // litter_actions / reducer
-                let item = this.props.photos[i];
-                item.index = i;
-                item.litter = {};
-
-                // If user.previous_tags is true, load them on the next image
-                if (this.props.previous_tags) {
-                    item.litter = cloneDeep(tags);
-                }
-
-                // was slideInNext
-                this.props.itemSelected(item); // todo -> animate
-                return true;
-            }
-        }
-
-        return false;
-    }
 
     /**
      * Add Tag or Update the Collection
