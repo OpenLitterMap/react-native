@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { ActivityIndicator, Platform, View } from 'react-native';
 import CameraRoll from '@react-native-community/cameraroll';
-import _ from 'lodash';
+// import _ from 'lodash';
 import AlbumsList from '../src/components/AlbumsList';
 import MediaList from '../src/components/MediaList';
 import { connect } from 'react-redux';

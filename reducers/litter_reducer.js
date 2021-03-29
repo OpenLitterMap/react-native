@@ -395,13 +395,11 @@ export default function (state = INITIAL_STATE, action)
 
 
         /**
-         *
+         * When previous tags is true, we re-apply them to the next image here
          */
         case UPDATE_TAGS:
 
             let updateTags = Object.assign({}, action.payload);
-
-            console.log({ updateTags });
 
             return {
                 ...state,
