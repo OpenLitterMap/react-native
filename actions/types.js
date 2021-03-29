@@ -1,10 +1,13 @@
 // You need to import keys here that your app can interact with
 // See https://laravel.com/docs/8.x/passport#the-passportclient-command
 // We will set up a staging server later that will give others access to a shared online server
+
+// PRODUCTION KEYS
 // import { SECRET_CLIENT } from "@env";
 // import { ID_CLIENT } from "@env";
 // import { OLM_ENDPOINT } from "@env"; // http://olm.test
 
+// LOCAL DEVELOPMENT
 const SECRET_CLIENT = 'rnMHOS4OICXatHuNMbXeAucBP9Q3CkXkkjl9sdp8';
 const ID_CLIENT = 2;
 const OLM_ENDPOINT = 'http://olm.test';

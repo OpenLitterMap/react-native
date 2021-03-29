@@ -13,7 +13,6 @@ import {
     RESET_TAGS,
     RESET_LITTER_STATE,
     UPDATE_PREVIOUS_TAGS,
-    SAVE_PREVIOUS_TAGS,
     SELECT_PHOTO,
     SHOW_ALL_TAGS,
     SHOW_INNER_MODAL,
@@ -401,6 +400,8 @@ export default function (state = INITIAL_STATE, action)
         case UPDATE_TAGS:
 
             let updateTags = Object.assign({}, action.payload);
+
+            console.log({ updateTags });
 
             return {
                 ...state,

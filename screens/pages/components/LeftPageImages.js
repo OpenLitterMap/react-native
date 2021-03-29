@@ -121,7 +121,7 @@ class LeftPageImages extends PureComponent
      */
     galleryItemPressed (item)
     {
-        // console.log('Gallery item pressed', item);
+        console.log('Gallery item pressed', item);
 
         // If we are selecting (for delete), highlight / deselect the image
         if (this.props.isSelecting)

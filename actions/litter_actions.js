@@ -221,16 +221,6 @@ export const updatePreviousTags = tags => {
 }
 
 /**
- * Some users want to quickly select previous tags
- */
-export const savePreviousTags = tags => {
-    return {
-        type: SAVE_PREVIOUS_TAGS,
-        payload: tags
-    };
-}
-
-/**
  * Capture the X positions of the tags when they are added / change
  */
 export const updateTagXPosition = (data) => {
