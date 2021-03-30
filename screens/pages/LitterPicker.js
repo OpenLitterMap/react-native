@@ -44,7 +44,6 @@ class LitterPicker extends PureComponent
             bottomHeight: 0,
             topPadding: 0,
             height: 0,
-            // swiperIndex: 0
         };
 
         this._checkForPhotos = this._checkForPhotos.bind(this);
@@ -614,6 +613,8 @@ class LitterPicker extends PureComponent
             AsyncStorage.setItem('openlittermap-photos', JSON.stringify(this.props.photos));
             AsyncStorage.setItem('openlittermap-gallery', JSON.stringify(this.props.gallery));
         }, 1000);
+
+        console.log('webPhotos', this.props.webPhotos);
 
         // tamara/confirm-image
         const imageCount = this.props.photos.length + this.props.gallery.length + this.props.webPhotos.length;
