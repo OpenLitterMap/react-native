@@ -98,7 +98,7 @@ class LitterImage extends PureComponent
                     <Image
                         resizeMode="cover"
                         source={{ uri: this._getFilenameOrUri() }}
-                        style={{ width: SCREEN_WIDTH, height: SCREEN_HEIGHT * 0.8 }}
+                        style={styles.image}
                         onLoad={this._imageLoaded.bind(this)}
                     />
 
@@ -120,6 +120,15 @@ const styles = {
         top: 0,
         bottom: 0,
     },
+    box: {
+        width: SCREEN_WIDTH,
+        height: 500,
+        position: 'absolute',
+        zIndex: 99,
+        top: SCREEN_HEIGHT * 0.15,
+        color: 'black',
+        borderWidth: 10
+    },
     emptyContainer: {
         alignItems: 'center',
         backgroundColor: '#3498db',
@@ -127,6 +136,10 @@ const styles = {
         justifyContent: 'center',
         paddingLeft: SCREEN_WIDTH * 0.1,
         paddingRight: SCREEN_WIDTH * 0.1
+    },
+    image: {
+        width: SCREEN_WIDTH,
+        height: SCREEN_HEIGHT * 0.8
     }
 }
 

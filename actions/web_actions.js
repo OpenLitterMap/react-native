@@ -35,9 +35,10 @@ export const checkForImagesOnWeb = (token) => {
         .then(resp => {
             console.log('images_from_web', resp.data);
 
+            // if photos is null, pass empty array
             dispatch({ type: WEB_IMAGES, payload: {
                 count: resp.data.count,
-                photos: resp.data.photos
+                photos: resp.data.photos ? resp.data.photos : []
             }});
         })
         .catch(err => {

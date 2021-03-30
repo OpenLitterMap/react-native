@@ -59,10 +59,9 @@ class CameraPage extends React.Component {
         if (this.props.token)
         {
             // Submit request to check current token is valid
-            let resp = await this.props.checkValidToken(this.props.token);
+            const resp = await this.props.checkValidToken(this.props.token);
 
-            console.log('resp from check token');
-            console.log(resp);
+            console.log('resp from check token', resp);
 
             if (resp.valid) {
                 this.setState({ token: true });
