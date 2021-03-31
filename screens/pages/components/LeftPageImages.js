@@ -323,6 +323,7 @@ class LeftPageImages extends PureComponent
         // Photos are taken this session
         // Gallery from albums
         return (
+
             <View style={this._marginWhenPhotos()}>
                 {
                     this.props.webImagesCount > 0 &&

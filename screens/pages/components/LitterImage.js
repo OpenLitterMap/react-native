@@ -79,7 +79,7 @@ class LitterImage extends PureComponent
      */
     render ()
     {
-        console.log('LitterImage', this.props.photoSelected, this.state.imageLoaded);
+        console.log('LitterImage', this.props.photoSelected);
         return (
             <View>
                 <ScrollView

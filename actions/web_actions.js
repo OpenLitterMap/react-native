@@ -63,7 +63,7 @@ export const loadMoreWebImages = (token, photo_id) => {
             params: { photo_id }
         })
         .then(resp => {
-            console.log('load_more_web_images', resp);
+            console.log('load_more_web_images', resp.data);
 
             if (resp.data)
             {
@@ -100,8 +100,6 @@ export const confirmWebPhoto = data => {
         })
         .then(resp => {
             console.log('confirmWebPhoto', resp.data);
-
-            return true;
         })
         .catch(err => {
             console.log({ err });
