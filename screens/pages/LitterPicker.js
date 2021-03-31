@@ -433,7 +433,7 @@ class LitterPicker extends PureComponent
      */
     swiperIndexChanged = (index) => {
 
-        console.log({ index });
+        console.log('swiperIndexChanged', index);
 
         const photos = [].concat(this.props.photos, this.props.gallery, this.props.webPhotos);
 
@@ -562,6 +562,8 @@ class LitterPicker extends PureComponent
         {
             tags = cloneDeep(this.props.tags);
 
+            console.log({ tags });
+
             if (this.props.photoSelected.type === 'web')
             {
                 // Turn on spinner
@@ -579,11 +581,11 @@ class LitterPicker extends PureComponent
                     token: this.props.token
                 });
 
+                // litter.js
                 this.props.resetTags();
 
+                // web.js - filter out the current image by ID and decrement web.count
                 this.props.removeWebImage(this.props.photoSelected.id);
-
-                return;
             }
 
             else if (this.props.photoSelected.type === 'gallery')
@@ -614,15 +616,14 @@ class LitterPicker extends PureComponent
             AsyncStorage.setItem('openlittermap-gallery', JSON.stringify(this.props.gallery));
         }, 1000);
 
-        console.log('webPhotos', this.props.webPhotos);
+        // console.log('webPhotos', this.props.webPhotos);
 
         // tamara/confirm-image
         const imageCount = this.props.photos.length + this.props.gallery.length + this.props.webPhotos.length;
 
         console.log({ imageCount });
-        console.log('swiperIndex', this.props.swiperIndex);
 
-        if (this.props.swiperIndex === imageCount - 1)
+        if (imageCount === 0)
         {
             // litter_reducer
             this.props.resetLitterTags();
@@ -630,17 +631,24 @@ class LitterPicker extends PureComponent
             // shared_reducer
             this.props.closeLitterModal();
         }
+        // Last web image does not swipe in and trigger onSwiperChanged
+        else if (imageCount === 1 && this.props.webPhotos.length === 1)
+        {
+            const lastWebPhoto = this.props.webPhotos[0];
+
+            this.props.itemSelected(lastWebPhoto);
+        }
         else
         {
             this.refs.imageSwiper.scrollTo(this.props.swiperIndex + 1, true);
-        }
 
-        // probably a better way to do this...
-        if (this.props.previous_tags)
-        {
-            setTimeout(() => {
-                this.props.updateTags(tags);
-            }, 500);
+            // probably a better way to do this...
+            if (this.props.previous_tags)
+            {
+                setTimeout(() => {
+                    this.props.updateTags(tags);
+                }, 500);
+            }
         }
     };
 

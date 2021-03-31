@@ -7,8 +7,8 @@ import {
 
 // state.auth.email
 const INITIAL_STATE = {
-    count: 0,
-    photos: []
+    count: 0, // This is the count of all photos to tag
+    photos: [] // We load 10 images at a time here
 };
 
 export default function(state = INITIAL_STATE, action)
@@ -32,15 +32,24 @@ export default function(state = INITIAL_STATE, action)
             }
 
         /**
+         * After submitting an image + tags, we filter it from the photos array
          *
+         * and decrement the count
          */
         case REMOVE_WEB_IMAGE:
 
             const filtered = state.photos.filter(photo => photo.id !== action.payload);
 
+            console.log({ filtered });
+
+            const count = state.count - 1;
+
+            console.log({ count });
+
             return {
                 ...state,
-                photos: filtered
+                photos: filtered,
+                count
             };
 
         /**
