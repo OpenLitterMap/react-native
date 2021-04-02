@@ -98,8 +98,13 @@ export const confirmWebPhoto = data => {
                 litter: data.tags
             }
         })
-        .then(resp => {
-            console.log('confirmWebPhoto', resp.data);
+        .then(response => {
+            console.log('confirmWebPhoto', response.data);
+
+            if (response.data.success)
+            {
+
+            }
         })
         .catch(err => {
             console.log({ err });
