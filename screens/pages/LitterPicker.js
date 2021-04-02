@@ -573,7 +573,6 @@ class LitterPicker extends PureComponent
                 await this.props.setLitterPickerModal(true);
 
                 // Submit data to the server, web_actions.js
-                // this will load the next image
                 await this.props.confirmWebPhoto({
                     id: this.props.photoSelected.id,
                     tags,
@@ -581,11 +580,31 @@ class LitterPicker extends PureComponent
                     token: this.props.token
                 });
 
-                // litter.js
-                this.props.resetTags();
-
                 // web.js - filter out the current image by ID and decrement web.count
+                // this.props.photoSelected needs to be updated
                 this.props.removeWebImage(this.props.photoSelected.id);
+
+                // update this.props.photoSelected with the next image
+                if (this.props.webPhotos.length > 0)
+                {
+                    const nextWebPhoto = this.props.webPhotos[0];
+
+                    if (nextWebPhoto)
+                    {
+                        this.props.itemSelected(nextWebPhoto);
+
+                        if (this.props.previous_tags)
+                        {
+                            this.props.updateTags(tags);
+                        }
+                        else
+                        {
+                            this.props.resetTags();
+                        }
+
+                        return;
+                    }
+                }
             }
 
             else if (this.props.photoSelected.type === 'gallery')
@@ -609,16 +628,13 @@ class LitterPicker extends PureComponent
             }
         }
 
-        // tamara/persist-image
-        // async-storage photos & gallery set
+        // Store remaining images in-case app closes or crashes
         setTimeout(() => {
             AsyncStorage.setItem('openlittermap-photos', JSON.stringify(this.props.photos));
             AsyncStorage.setItem('openlittermap-gallery', JSON.stringify(this.props.gallery));
         }, 1000);
 
-        // console.log('webPhotos', this.props.webPhotos);
-
-        // tamara/confirm-image
+        // swipe in the next image
         const imageCount = this.props.photos.length + this.props.gallery.length + this.props.webPhotos.length;
 
         console.log({ imageCount });
@@ -627,20 +643,14 @@ class LitterPicker extends PureComponent
         {
             // litter_reducer
             this.props.resetLitterTags();
-  
+
             // shared_reducer
             this.props.closeLitterModal();
-        }
-        // Last web image does not swipe in and trigger onSwiperChanged
-        else if (imageCount === 1 && this.props.webPhotos.length === 1)
-        {
-            const lastWebPhoto = this.props.webPhotos[0];
-
-            this.props.itemSelected(lastWebPhoto);
         }
         else
         {
             this.refs.imageSwiper.scrollTo(this.props.swiperIndex + 1, true);
+            console.log('Scroll to ', this.props.swiperIndex + 1);
 
             // probably a better way to do this...
             if (this.props.previous_tags)
