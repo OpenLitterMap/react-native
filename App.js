@@ -4,8 +4,6 @@ import { Provider } from 'react-redux'
 import { PersistGate } from 'redux-persist/es/integration/react'
 import configureStore from './store'
 
-// import Icon from 'react-native-vector-icons/MaterialIcons';
-// Icon.loadFont();
 import RootContainer from './screens/RootContainer'
 
 import { LanguageProvider } from 'react-native-translation'
@@ -15,12 +13,19 @@ import * as RNLocalize from "react-native-localize";
 let lang = RNLocalize.getLocales()['languageCode'];
 if (! langs[lang]) lang = 'en';
 
+import * as Sentry from "@sentry/react-native";
+import { SENTRY_DSN } from "@env";
+
 const App = () => {
 
-    // Splash screen
+    // Todo - Splash screen
     // useEffect(() => {
     //   SplashScreen.hide();
     // }, []);
+
+    Sentry.init({
+        dsn: SENTRY_DSN,
+    });
 
     const { persistor, store } = configureStore();
 
