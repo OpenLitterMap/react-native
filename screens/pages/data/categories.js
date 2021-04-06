@@ -10,7 +10,7 @@ const CATEGORIES = [
     { title: 'dumping',    path: require('../../../assets/icons/dumping.png') },
     { title: 'industrial', path: require('../../../assets/icons/industrial.png') },
     { title: 'other',      path: require('../../../assets/icons/dice2.png') },
-    { title: 'art',        path: require('../../../assets/icons/art_icon.png') }
+    // { title: 'art',        path: require('../../../assets/icons/art_icon.png') }
 ];
 
 export default CATEGORIES;
