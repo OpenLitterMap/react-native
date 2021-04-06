@@ -254,8 +254,10 @@ class AuthScreen extends Component {
         // Client side validation..
         let isValidClientSide = this.validateFields();
 
-        if (isValidClientSide) {
-            switch (this.state.formMode) {
+        if (isValidClientSide)
+        {
+            switch (this.state.formMode)
+            {
                 case formModes.CREATE_ACCOUNT: {
                     this.props.createAccount({
                         email: this.state.email,
