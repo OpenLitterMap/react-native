@@ -228,5 +228,9 @@
     "tags": {
         "type-to-suggest": "Tapez pour suggérer des étiquette",
         "suggested": "Etiquettes suggérées {count}"
+    },
+    "dogshit": {
+        "poo": "Surprise!",
+        "poo_in_bag": "Surprise dans un sac!"
     }
 }

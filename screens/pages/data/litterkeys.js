@@ -85,30 +85,32 @@ const LITTERKEYS = {
         { id: 11, key: 'hand_sanitiser' }, // Hand Sanitiser
     ],
     other: [
-        { id: 0, key: 'dogshit' },          // Pet Surprise
-        { id: 1, key: 'pooinbag' },         // Surprise In Bag
-        { id: 2, key: 'automobile' },       // Automobile
-        { id: 3, key: 'clothing' },         // Clothing
-        { id: 4, key: 'traffic_cone' },     // Traffic cone
-        { id: 5, key: 'life_buoy' },        // Life Buoy
-        { id: 6, key: 'plastic' },          // Unidentified Plastic
-        { id: 7, key: 'dump' },             // Illegal Dumping
-        { id: 8, key: 'metal' },            // Metal Object
-        { id: 9, key: 'plastic_bags' },     // Plastic Bags
+        { id: 0, key: 'random_litter' },     // Random Litter
+        { id: 1, key: 'bags_litter' },       // Bags of Litter
+        { id: 2, key: 'overflowing_bins' },  // Overflowing Bins
+        { id: 3, key: 'plastic' },           // Unidentifiable Plastic
+        { id: 4, key: 'automobile' },        // Automobile
+        { id: 5, key: 'tyre' },              // Tyre
+        { id: 6, key: 'traffic_cone' },      // Traffic Cone
+        { id: 7, key: 'metal' },             // Metal Object
+        { id: 8, key: 'plastic_bags' },      // Plastic Bags
         { id: 10, key: 'election_posters' }, // Election Posters
         { id: 11, key: 'forsale_posters' },  // For Sale Posters
-        { id: 12, key: 'books' },            // Books
-        { id: 13, key: 'magazine' },         // Magazines
-        { id: 14, key: 'paper' },            // Paper
-        { id: 15, key: 'stationary' },       // Stationery
-        { id: 16, key: 'washing_up' },       // Washing-up Bottle
-        { id: 17, key: 'hair_tie' },         // Hair Tie
-        { id: 18, key: 'ear_plugs' },        // Ear Plugs (music)
-        { id: 19, key: 'batteries' },        // Batteries
-        { id: 20, key: 'elec_small' },       // Electric small
-        { id: 21, key: 'elec_large' },       // Electric large
-        { id: 22, key: 'other' },            // Other (other)
-        { id: 23, key: 'random_litter' },    // Random Litter
+        { id: 12, key: 'cable_tie' },        // Cable tie
+        { id: 13, key: 'books' },            // Books
+        { id: 14, key: 'magazine' },         // Magazines
+        { id: 15, key: 'paper' },            // Paper
+        { id: 16, key: 'stationary' },       // Stationery
+        { id: 17, key: 'washing_up' },       // Washing-up Bottle
+        { id: 18, key: 'clothing' },         // Clothing
+        { id: 19, key: 'hair_tie' },         // Hair Tie
+        { id: 20, key: 'ear_plugs' },        // Ear Plugs (music)
+        { id: 21, key: 'elec_small' },       // Electric small
+        { id: 22, key: 'elec_large' },       // Electric large
+        { id: 23, key: 'batteries' },        // Batteries
+        { id: 24, key: 'balloons' },         // Balloons
+        { id: 25, key: 'life_buoy' },         // Life Buoy
+        { id: 26, key: 'other' }            // Other (other)
     ],
     dumping: [
         { id: 0, key: 'small' },  // Small
@@ -208,6 +210,10 @@ const LITTERKEYS = {
         { id: 0, key: 'trashdog' }, // TrashDog
         { id: 1, key: 'littercat' }, // LitterCat
         { id: 2, key: 'duck' } // LitterDuc
+    ],
+    dogshit: [
+        { id: 1, key: 'poo' }, // Surprise!
+        { id: 2, key: 'poo_in_bag' }, // Surprise in a bag!
     ]
 };
 
