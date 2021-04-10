@@ -5,6 +5,7 @@
         "brands": "Brands",
         "coastal": "Coastal",
         "coffee": "Coffee",
+        "dogshit": "Pets",
         "dumping": "Dumping",
         "food": "Food",
         "industrial": "Industrial",
@@ -99,30 +100,32 @@
         "sanitaryOther": "Sanitary (other)"
     },
     "other": {
-        "dogshit": "Pet Surprise",
-        "pooinbag": "Surprise In Bag",
-        "automobile": "Automobile",
-        "clothing": "Clothing",
-        "traffic_cone": "Traffic cone",
-        "life_buoy": "Life Buoy",
+        "random_litter": "Random Litter",
+        "bags_litter": "Bags of Litter",
+        "overflowing_bins": "Overflowing Bins",
         "plastic": "Unidentified Plastic",
-        "dump": "Illegal Dumping",
+        "automobile": "Automobile",
+        "tyre": "Tyre",
+        "traffic_cone": "Traffic cone",
         "metal": "Metal Object",
         "plastic_bags": "Plastic Bags",
         "election_posters": "Election Posters",
         "forsale_posters": "For Sale Posters",
+        "cable_tie": "Cable Tie",
         "books": "Books",
         "magazine": "Magazines",
         "paper": "Paper",
         "stationary": "Stationery",
         "washing_up": "Washing-up Bottle",
+        "clothing": "Clothing",
         "hair_tie": "Hair Tie",
         "ear_plugs": "Ear Plugs (music)",
-        "batteries": "Batteries",
         "elec_small": "Electric small",
         "elec_large": "Electric large",
-        "other": "Other (other)",
-        "random_litter": "Random Litter"
+        "batteries": "Batteries",
+        "balloons": "Balloons",
+        "life_buoy": "Life Buoy",
+        "other": "Other (other)"
     },
     "dumping": {
         "small": "Small",
@@ -229,5 +232,9 @@
     "tags": {
         "type-to-suggest": "Type to suggest tags",
         "suggested": "Suggested tags {count}"
+    },
+    "dogshit": {
+        "poo": "Surprise!",
+        "poo_in_bag": "Surprise in a bag!"
     }
 }

@@ -1,6 +1,7 @@
 const CATEGORIES = [
     { title: 'smoking',    path: require('../../../assets/icons/smoking2.png') },
     { title: 'alcohol',    path: require('../../../assets/icons/beer.png') },
+    { title: 'dogshit',    path: require('../../../assets/icons/paw.png') },
     { title: 'coffee',     path: require('../../../assets/icons/coffee_icon.png') },
     { title: 'food',       path: require('../../../assets/icons/food_icon.png') },
     { title: 'softdrinks', path: require('../../../assets/icons/plastic-bottle.png') },

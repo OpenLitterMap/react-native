@@ -228,5 +228,9 @@
     "tags": {
         "type-to-suggest": "Type to suggest tags",
         "suggested": "Suggested tags {count}"
+    },
+    "dogshit": {
+        "poo": "¡Sorpresa!",
+        "poo_in_bag": "¡Sorpresa en una bolsa!"
     }
 }
