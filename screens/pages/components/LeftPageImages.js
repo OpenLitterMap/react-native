@@ -281,6 +281,8 @@ class LeftPageImages extends PureComponent
 
         if (x.includes('X') || parseInt(x) >= 10) return styles.webText;
 
+        console.log({ x });
+
         if (x === "8" || x === "SE")
         {
             return styles.webTextiPhone8;

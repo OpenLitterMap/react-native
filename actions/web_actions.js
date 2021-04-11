@@ -33,7 +33,7 @@ export const checkForImagesOnWeb = (token) => {
             }
         })
         .then(resp => {
-            console.log('images_from_web', resp.data);
+            // console.log('images_from_web', resp.data);
 
             // if photos is null, pass empty array
             dispatch({ type: WEB_IMAGES, payload: {
@@ -63,7 +63,7 @@ export const loadMoreWebImages = (token, photo_id) => {
             params: { photo_id }
         })
         .then(resp => {
-            console.log('load_more_web_images', resp.data);
+            // console.log('load_more_web_images', resp.data);
 
             if (resp.data)
             {
@@ -113,7 +113,6 @@ export const confirmWebPhoto = data => {
 }
 
 export const removeWebImage = id => {
-    console.log('removeWebImage', id);
     return {
         type: REMOVE_WEB_IMAGE,
         payload: id

@@ -5,7 +5,7 @@ import CameraPage from './pages/CameraPage'
 import LeftPage from './pages/LeftPage'
 // import RightPage from './pages/RightPage'
 
-class SwipeScreen extends React.Component {
+class SwipeScreen extends Component {
 
     static navigationOptions = {
         tabBarVisible: false

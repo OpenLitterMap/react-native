@@ -502,7 +502,7 @@ class LeftPage extends PureComponent
                         uri: item.image.uri
                     });
 
-                    let date = moment.unix(item.timestamp).format('YYYY:MM:DD HH:mm:ss');
+                    const date = moment.unix(item.timestamp).format('YYYY:MM:DD HH:mm:ss');
 
                     data.append('lat', item.location.latitude);
                     data.append('lon', item.location.longitude);
@@ -514,7 +514,7 @@ class LeftPage extends PureComponent
                     // console.log('Data to upload', data);
 
                     // need to get index dynamically because gallery.length -1 with upload
-                    let myIndex = this.props.gallery.indexOf(item);
+                    const myIndex = this.props.gallery.indexOf(item);
                     console.log(item);
 
                     // gallery_actions
@@ -522,7 +522,7 @@ class LeftPage extends PureComponent
                     // 1st to upload the IMAGE
                     // 2nd to upload the DATA
                     // when OLM recieves the data, it adds the processing to a queue so the user does not have to wait for a response here
-                    let response = await this.props.uploadTaggedGalleryPhoto(
+                    const response = await this.props.uploadTaggedGalleryPhoto(
                         data,
                         this.props.token,
                         item.litter
@@ -547,10 +547,11 @@ class LeftPage extends PureComponent
             // console.log("upload session photos");
             for (const item of this.props.photos)
             {
-                if (item.litter) {
+                if (item.litter)
+                {
                     // console.log("Session - litter found");
                     // console.log(item);
-                    var data = new FormData();
+                    let data = new FormData();
 
                     data.append('photo', {
                         name: item.filename,
@@ -563,13 +564,12 @@ class LeftPage extends PureComponent
                     data.append('date', item.date);
                     data.append('presence', item.presence);
                     data.append('model', model);
-                    console.log(data);
                     // console.log('Data to upload', data);
 
-                    let myIndex = this.props.photos.indexOf(item);
+                    const myIndex = this.props.photos.indexOf(item);
 
                     // photo_actions, photos_reducer
-                    let response = await this.props.uploadTaggedSessionPhotos(
+                    const response = await this.props.uploadTaggedSessionPhotos(
                         data,
                         this.props.token,
                         item.litter
