@@ -23,6 +23,7 @@ const App = () => {
     //   SplashScreen.hide();
     // }, []);
 
+    // you need to add a key in sentry.properties for iOS and Android
     Sentry.init({
         dsn: SENTRY_DSN,
     });

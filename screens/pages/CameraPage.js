@@ -61,9 +61,10 @@ class CameraPage extends React.Component {
             // Submit request to check current token is valid
             const resp = await this.props.checkValidToken(this.props.token);
 
-            console.log('resp from check token', resp);
+            console.log('CameragePage.checkValidToken,resp', resp);
 
-            if (resp.valid) {
+            if (resp.valid)
+            {
                 this.setState({ token: true });
 
                 let status = '';
@@ -77,14 +78,21 @@ class CameraPage extends React.Component {
                 });
 
                 this._getLocationAsync();
-            } else {
+            }
+            else
+            {
                 this.props.navigation.navigate('Auth');
             }
-        } else {
+        }
+        else
+        {
             this.props.navigation.navigate('Auth');
         }
     }
 
+    /**
+     * Flash a black screen when the user takes a photo
+     */
     animateShutter()
     {
         Animated.sequence([
@@ -101,6 +109,9 @@ class CameraPage extends React.Component {
         ]).start();
     };
 
+    /**
+     * Get the location of the device when the user takes a photo
+     */
     _getLocationAsync = async () => {
         RNLocation.requestPermission({
             ios: 'whenInUse',
@@ -122,6 +133,9 @@ class CameraPage extends React.Component {
         });
     };
 
+    /**
+     * Render the camera page
+     */
     render ()
     {
         if (! this.state.token) {
@@ -153,29 +167,29 @@ class CameraPage extends React.Component {
                 >
 
                     {/*Top Row
-            <View
-              style={{
-                alignItems: 'flex-start',
-                backgroundColor: 'transparent',
-                flex: 1,
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-                marginTop: 15,
-                marginLeft: 15
-              }}
-            >
-              <TouchableOpacity
-                onPress={this.goToAwards}
-              >
-                <Icon
-                  color="white"
-                  name="trophy"
-                  size={40}
-                  type="font-awesome"
-                />
-              </TouchableOpacity>
-            </View>
-            */}
+                        <View
+                          style={{
+                            alignItems: 'flex-start',
+                            backgroundColor: 'transparent',
+                            flex: 1,
+                            flexDirection: 'row',
+                            justifyContent: 'space-between',
+                            marginTop: 15,
+                            marginLeft: 15
+                          }}
+                        >
+                          <TouchableOpacity
+                            onPress={this.goToAwards}
+                          >
+                            <Icon
+                              color="white"
+                              name="trophy"
+                              size={40}
+                              type="font-awesome"
+                            />
+                          </TouchableOpacity>
+                        </View>
+                        */}
 
                     {/* Bottom Row */}
                     <View style={styles.bottomRow}>
@@ -193,28 +207,28 @@ class CameraPage extends React.Component {
                             <Icon color="white" name="adjust" size={SCREEN_HEIGHT * 0.1} />
                         </TouchableOpacity>
 
-                        {/* Shutter Layer */}
-                        <Animated.View style={{width: SCREEN_WIDTH, height: SCREEN_HEIGHT, backgroundColor: 'black', opacity: this.state.shutterOpacity}}></Animated.View>
+                        {/* Shutter Layer with props */}
+                        <Animated.View
+                            style={{
+                                width: SCREEN_WIDTH,
+                                height: SCREEN_HEIGHT,
+                                backgroundColor: 'black',
+                                opacity: this.state.shutterOpacity
+                            }}
+                        />
 
                         {/* Bottom Right
-              <TouchableOpacity
-                onPress={this.changeView.bind(this, 1)}
-                style={styles.bottomRightIcon}
-              ><Icon color="white" name="layers" size={SCREEN_HEIGHT * 0.05} />
-              </TouchableOpacity>
-              */}
+                          <TouchableOpacity
+                            onPress={this.changeView.bind(this, 1)}
+                            style={styles.bottomRightIcon}
+                          ><Icon color="white" name="layers" size={SCREEN_HEIGHT * 0.05} />
+                          </TouchableOpacity>
+                        */}
                     </View>
                     <SafeAreaView style={{ flex: 0 }} />
                 </RNCamera>
             </>
         );
-    }
-
-    /**
-     * Render Gallery
-     */
-    renderGallery () {
-        return <GalleryScreen onPress={this.toggleView.bind(this)} />;
     }
 
     /**
@@ -238,7 +252,8 @@ class CameraPage extends React.Component {
     {
         if (this.camera)
         {
-            try{
+            try
+            {
                 this.animateShutter();
 
                 this.camera
@@ -252,13 +267,10 @@ class CameraPage extends React.Component {
                         let now = moment();
                         let date = moment(now).format('YYYY:MM:DD HH:mm:ss');
 
-                        let filename = '';
                         // We need to generate a better filename for android
-                        if (Platform.OS == 'android') {
-                            filename = base64.encode(date) + '.jpg';
-                        } else {
-                            filename = result.uri.split('/').pop();
-                        }
+                        const filename = (Platform.OS === 'android')
+                            ? base64.encode(date) + '.jpg'
+                            : result.uri.split('/').pop();
 
                         // photo_action.js, photos_reducer
                         // attach current tracked GPS data to image
@@ -277,8 +289,7 @@ class CameraPage extends React.Component {
                         // console.log('-- Photo added --');
                     })
                     .catch(error => {
-                        // console.log('error');
-                        // console.log(error);
+                        console.error('camera.takePicture', error);
                     });
 
                 // later:
@@ -286,9 +297,10 @@ class CameraPage extends React.Component {
                 // can we create a new photo album for them?
                 // let saveResult = await CameraRoll.saveToCameraRoll(data, 'photo');
                 // this.setState({ cameraRollUri: saveResult });
-            } catch (e) {
-                // console.log(e);
-                // console.log('Error');
+            }
+            catch (e)
+            {
+                console.error('catch.camera.takePicture', e);
             }
 
             // console.log("Camera Page, image should be added. Todo - check and add to litter.photoSelected");
@@ -394,7 +406,6 @@ const mapStateToProps = state => {
         lon: state.camera.lon,
         permissionGranted: state.camera.permissionGranted,
         photos: state.photos.photos,
-        showGallery: state.camera.showGallery,
         token: state.auth.token,
         type: state.camera.type,
         user: state.auth.user,

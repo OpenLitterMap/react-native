@@ -18,7 +18,6 @@ const INITIAL_STATE = {
     permissionGranted: false,
     photoId: 1,
     photos: [],
-    showGallery: false,
     type: 'back',
     zoom: 0
 };
