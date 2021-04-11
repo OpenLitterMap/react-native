@@ -277,11 +277,11 @@ class LeftPageImages extends PureComponent
         if (Platform.OS === 'android') return styles.webTextSmall;
 
         // if "iPhone 10+", return 17% card height
-        let x = DeviceInfo.getModel().split(' ')[1];
-
-        if (x.includes('X') || parseInt(x) >= 10) return styles.webText;
+        const x = DeviceInfo.getModel().split(' ')[1];
 
         console.log({ x });
+
+        if (x.includes('X') || parseInt(x) >= 10) return styles.webText;
 
         if (x === "8" || x === "SE")
         {
@@ -439,7 +439,7 @@ const styles = {
         fontWeight: '500',
         left: 0,
         fontSize: SCREEN_HEIGHT * 0.02,
-        bottom: SCREEN_HEIGHT * 0.0325,
+        bottom: SCREEN_HEIGHT * 0.025,
         alignSelf: 'center'
     },
     webLogoContainer: {
