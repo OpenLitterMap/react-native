@@ -3,6 +3,10 @@
 .DS_Store
 .env
 
+# Sentry keys
+/ios/sentry.properties
+/android/sentry.properties
+
 # Xcode
 #
 build/
@@ -61,7 +65,3 @@ buck-out/
 
 # Android Build
 /android/app/build
-
-# Sentry keys
-/ios/sentry.properties
-/android/sentry.properties
