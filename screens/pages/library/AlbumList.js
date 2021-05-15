@@ -14,7 +14,6 @@ import { Header } from 'react-native-elements';
 import GalleryMediaPicker from '../components/albums';
 import { connect } from 'react-redux';
 import * as actions from '../../../actions';
-import moment from 'moment';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -101,33 +100,11 @@ class AlbumList extends PureComponent {
      */
     _chooseImages ()
     {
-        // check if every photo has a geotag, otherwise return.
-        this.state.selected.some((img, i) => {
+        this.props.photosFromGallery(this.state.selected);
+        this.props.toggleImageBrowser();
 
-            if ( ! img.location || Object.keys(img.location).length === 0)
-            {
-                alert(
-                    'Your ' +
-                    moment.localeData().ordinal(i + 1) +
-                    ' image does not have a GPS tag associated with it. Only geotagged images can be uploaded.'
-                );
-
-                return true;
-            }
-        });
-
-        try
-        {
-            this.props.photosFromGallery(this.state.selected);
-            this.props.toggleImageBrowser();
-
-            // async-storage set gallery
-            AsyncStorage.setItem('openlittermap-gallery', JSON.stringify(this.state.selected));
-        }
-        catch (e)
-        {
-            console.log('img_no_gps', e);
-        }
+        // async-storage set gallery
+        AsyncStorage.setItem('openlittermap-gallery', JSON.stringify(this.state.selected));
     }
 
     _getDoneText ()

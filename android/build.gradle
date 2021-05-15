@@ -16,10 +16,10 @@ def getPassword(String currentUser, String keyChain) {
 buildscript {
     ext {
         firebaseIidVersion = "19.0.1"
-        buildToolsVersion = "29.0.3" // was 28
+        buildToolsVersion = "29.0.3"
         minSdkVersion = 16
-        compileSdkVersion = 29 // was 28
-        targetSdkVersion = 29 // was 28
+        compileSdkVersion = 29
+        targetSdkVersion = 29
         supportLibVersion = '1.0.2'
     }
     repositories {

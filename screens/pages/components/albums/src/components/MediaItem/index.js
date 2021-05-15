@@ -40,7 +40,7 @@ class MediaItem extends Component {
   }
 
   generateThumbnail() {
-    let thumbnailPath = this.props.item.image.uri;
+    let thumbnailPath = this.props.item.uri;
 
     this.setState({
       thumbnailPath

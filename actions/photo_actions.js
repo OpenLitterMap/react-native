@@ -5,7 +5,7 @@ import {
     SET_PHOTOS,
     CHANGE_UPLOAD_PROGRESS,
     CLOSE_LITTER_MODAL,
-    CONFIRM_SESSION_ITEM,
+    CONFIRM_SESSION_TAGS,
     // DELETE_SELECTED_GALLERY, // camera roll
     DELETE_SELECTED_PHOTO, // current session
     PHOTOS_FROM_GALLERY,
@@ -14,11 +14,10 @@ import {
     REMOVE_ALL_SELECTED_PHOTOS,
     RESET_PHOTOS_TOTAL_TO_UPLOAD,
     RESET_SESSION_COUNT,
-    SESSION_REMOVED_FOR_DELETE,
-    SESSION_SELECTED_FOR_DELETE,
     SESSION_UPLOADED_SUCCESSFULLY,
     TOGGLE_IMAGE_BROWSER,
     TOGGLE_SELECTING,
+    TOGGLE_SELECTED_PHOTO,
     UPDATE_COUNT_REMAINING,
     UPDATE_PERCENT,
     UPLOAD_PHOTOS,
@@ -37,6 +36,16 @@ export const addPhoto = (photo) => {
     };
 }
 
+// /**
+//  * One of the photos taken from the camera was selected for tagging
+//  */
+// export const cameraPhotoSelected = (index) => {
+//     return {
+//         type: CAMERA_PHOTO_SELECTED,
+//         payload: index
+//     };
+// }
+
 export const setPhotos = (photos) => {
   return {
       type: SET_PHOTOS,
@@ -46,9 +55,9 @@ export const setPhotos = (photos) => {
 /**
  * Confirm Button Pressed on LitterPicker
  */
-export const confirmSessionItem = (data) => {
+export const confirmSessionTags = (data) => {
     return {
-        type: CONFIRM_SESSION_ITEM,
+        type: CONFIRM_SESSION_TAGS,
         payload: data
     };
 }
@@ -90,26 +99,21 @@ export const resetPhotosToUpload = () => {
     };
 }
 
-// todo - could probably merge these into toggle.
 /**
- * An index of gallery has been removed for delete
+ * An index of photos taken from the camera has been selected for delete
  */
-export const sessionIndexRemoveForDelete = (index) => {
+export const toggleSelectedPhoto = (index) => {
     return {
-        type: SESSION_REMOVED_FOR_DELETE,
+        type: TOGGLE_SELECTED_PHOTO,
         payload: index
     };
 }
-
-/**
- * An index of gallery has been selected for delete
- */
-export const sessionIndexSelectedForDelete = (index) => {
-    return {
-        type: SESSION_SELECTED_FOR_DELETE,
-        payload: index
-    };
-}
+// export const sessionIndexSelectedForDelete = (index) => {
+//     return {
+//         type: SESSION_SELECTED_FOR_DELETE,
+//         payload: index
+//     };
+// }
 
 /**
  * A Gallery Index has been uploaded successfully! - can be deleted.

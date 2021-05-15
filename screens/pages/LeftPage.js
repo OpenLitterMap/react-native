@@ -48,22 +48,27 @@ class LeftPage extends PureComponent
         // this.renderGalleryItem = this.renderGalleryItem.bind(this);
         // this.galleryItemPressed = this.galleryItemPressed.bind(this);
 
-        // async-storage photos & gallery get
-        AsyncStorage.getItem('openlittermap-gallery').then((gallery) => {
-            if (gallery == null) {
-                this.props.photosFromGallery([]);
-            } else {
-                this.props.photosFromGallery(JSON.parse(gallery));
+        // Photos selected from the Photos Album
+        AsyncStorage.getItem('openlittermap-gallery')
+            .then((gallery) => {
+                if (gallery === null) {
+                    this.props.photosFromGallery([]);
+                } else {
+                    this.props.photosFromGallery(JSON.parse(gallery));
+                }
             }
-        });
+        );
 
-        AsyncStorage.getItem('openlittermap-photos').then((photos) => {
-            if (photos == null) {
-                this.props.setPhotos([]);
-            } else {
-                this.props.setPhotos(JSON.parse(photos));
+        // Photos taken from the OLM Camera
+        AsyncStorage.getItem('openlittermap-photos')
+            .then((photos) => {
+                if (photos === null) {
+                    this.props.setPhotos([]);
+                } else {
+                    this.props.setPhotos(JSON.parse(photos));
+                }
             }
-        });
+        );
     }
 
     UNSAFE_componentWillReceiveProps (nextProps)
@@ -497,9 +502,9 @@ class LeftPage extends PureComponent
 
                     data.append('photo', {
                         // gallery
-                        name: item.image.filename,
+                        name: item.filename,
                         type: 'image/jpeg',
-                        uri: item.image.uri
+                        uri: item.uri
                     });
 
                     const date = moment.unix(item.timestamp).format('YYYY:MM:DD HH:mm:ss');

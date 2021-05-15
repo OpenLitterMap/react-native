@@ -26,7 +26,6 @@ export default function (state = INITIAL_STATE, action) {
 
     switch (action.type)
     {
-
         case CAMERA_GRANTED_PERMISSION:
             return {
                 ...state,

@@ -118,11 +118,11 @@ class CameraPage extends React.Component {
             android: {
                 detail: 'fine'
             }
-        }).then(granted => {
+        })
+        .then(granted => {
             if (granted) {
                 this.locationSubscription = RNLocation.subscribeToLocationUpdates(
                     locations => {
-                        // console.log('loc', locations);
                         this.props.setLocation(
                             locations[0].latitude,
                             locations[0].longitude
@@ -247,6 +247,8 @@ class CameraPage extends React.Component {
 
     /**
      * Take a Pic and save to custom photos folder
+     *
+     * We attach the users current GPS to the image
      */
     takePicture ()
     {
@@ -259,13 +261,18 @@ class CameraPage extends React.Component {
                 this.camera
                     .takePictureAsync() // { exif: true }
                     .then(result => {
-                        // console.log('-- Adding Photo --');
-                        // console.log(result); // height, uri, width
-                        // console.log('lat', this.props.lat);
-                        // console.log('lon', this.props.lon);
+                        console.log('takePicture', result); // height, uri, width
 
-                        let now = moment();
-                        let date = moment(now).format('YYYY:MM:DD HH:mm:ss');
+                        const lat = this.props.lat;
+                        const lon = this.props.lon;
+
+                        if (lat === null || lon === null)
+                        {
+                            alert('Your location services are not turn on. Please activate them to take geotagged photos.');
+                        }
+
+                        const now = moment();
+                        const date = moment(now).format('YYYY:MM:DD HH:mm:ss');
 
                         // We need to generate a better filename for android
                         const filename = (Platform.OS === 'android')
@@ -273,20 +280,16 @@ class CameraPage extends React.Component {
                             : result.uri.split('/').pop();
 
                         // photo_action.js, photos_reducer
-                        // attach current tracked GPS data to image
-
                         this.props.addPhoto({
                             result,
-                            lat: this.props.lat,
-                            lon: this.props.lon,
+                            lat,
+                            lon,
                             filename,
                             date
                         });
 
                         // async-storage photos set
                         AsyncStorage.setItem('openlittermap-photos', JSON.stringify(this.props.photos));
-                        
-                        // console.log('-- Photo added --');
                     })
                     .catch(error => {
                         console.error('camera.takePicture', error);

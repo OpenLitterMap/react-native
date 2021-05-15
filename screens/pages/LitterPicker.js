@@ -65,6 +65,7 @@ class LitterPicker extends PureComponent
 
     /**
      * Check if the user has any photos on web
+     *
      * @photo_actions.js
      */
     async componentDidMount ()
@@ -77,32 +78,32 @@ class LitterPicker extends PureComponent
         this.keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', this._keyboardDidShow.bind(this));
         this.keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', this._keyboardDidHide.bind(this));
 
-        // tamara/swipe-images
-        const photos = [].concat(this.props.photos, this.props.gallery, this.props.webPhotos);
-
-        photos.forEach((photo, index) => {
-
-            // console.log({ photo });
-
-            // null is coming through here somewhere. Maybe from web?
-            if (photo)
-            {
-                if (photo.type === "image")
-                {
-                    if (photo.image.filename === this.props.photoSelected.filename)
-                    {
-                        this.props.swiperIndexChanged(index);
-                    }
-                }
-                else
-                {
-                    if (photo.filename === this.props.photoSelected.filename)
-                    {
-                        this.props.swiperIndexChanged(index);
-                    }
-                }
-            }
-        });
+        // This is loading the last photo when a gallery photo is pressed
+        // const photos = [].concat(this.props.photos, this.props.gallery, this.props.webPhotos);
+        //
+        // photos.forEach((photo, index) => {
+        //
+        //     // console.log({ photo });
+        //
+        //     // null is coming through here somewhere. Maybe from web?
+        //     if (photo)
+        //     {
+        //         if (photo.type === "gallery")
+        //         {
+        //             if (photo.image.filename === this.props.photoSelected.filename)
+        //             {
+        //                 this.props.swiperIndexChanged(index);
+        //             }
+        //         }
+        //         else
+        //         {
+        //             if (photo.filename === this.props.photoSelected.filename)
+        //             {
+        //                 this.props.swiperIndexChanged(index);
+        //             }
+        //         }
+        //     }
+        // });
     }
 
     /**
@@ -128,7 +129,6 @@ class LitterPicker extends PureComponent
             height = 0;
             bottomHeight = 0;
         }
-
         else
         {
             // if "iPhone 10+"
@@ -140,7 +140,6 @@ class LitterPicker extends PureComponent
             {
                 height = 0.345;
             }
-
             // iPhone 5,6,7,8
             else
             {
@@ -430,6 +429,8 @@ class LitterPicker extends PureComponent
 
     /**
      * Event when the image was swiped Left or Right
+     *
+     * this.props.photos = from in-app camera
      */
     swiperIndexChanged = (index) => {
 
@@ -437,44 +438,43 @@ class LitterPicker extends PureComponent
 
         const photos = [].concat(this.props.photos, this.props.gallery, this.props.webPhotos);
 
-        let photo = photos[index];
+        const photo = photos[index];
 
         setTimeout(() => {
 
             // Necessary to put this here to avoid error
+            // litter.js swiperIndex
             this.props.swiperIndexChanged(index);
 
-            // Gallery
-            if (photo.type === 'image')
+            // Camera
+            if (photo.type === 'camera')
             {
-                let item = photos[index];
-                let litter = {};
-
-                let itemIndex;
-                this.props.gallery.forEach((galleryPhoto, index) => {
-                    if (galleryPhoto.image.filename === item.image.filename) {
-                        itemIndex = index;
-                    }
-                });
-
-                if (item.litter) litter = Object.assign({}, item.litter);
-
-                // litter_reducer
-                this.props.itemSelected({
-                    index: itemIndex,
-                    lat: item.location.latitude,
-                    lon: item.location.longitude,
-                    uri: item.image.uri,
-                    filename: item.image.filename,
-                    timestamp: item.timestamp,
-                    type: 'gallery',
-                    litter // data if exists
+                this.props.photoSelectedForTagging({
+                    swiperIndex: index,
+                    type: 'camera',
+                    image: this.props.photos[index]
                 });
             }
-            // Session, Web
+            // Gallery
+            else if (photo.type === 'gallery')
+            {
+                const galleryIndex = index - this.props.photos.length;
+                console.log({ galleryIndex });
+
+                const gall = this.props.gallery[galleryIndex];
+                console.log({ gall });
+
+                this.props.photoSelectedForTagging({
+                    swiperIndex: galleryIndex,
+                    type: 'gallery',
+                    image: this.props.gallery[index]
+                });
+            }
+            // Web
             else
             {
-                this.props.itemSelected(photo);
+                console.log('WEB CHANGE')
+                // this.props.itemSelected(photo);
             }
 
             // If we are browsing web photos
@@ -495,57 +495,43 @@ class LitterPicker extends PureComponent
     }
 
     /**
-     * Images to swipe through
+     * Array of images to swipe through
+     *
+     * this.props.swiperIndex is the current index
+     *
+     * this.props.photos are from the in-app camera
      */
     _renderLitterImage = () =>
     {
-        // console.log('renderLitterImage.index', this.props.swiperIndex);
-
+        // Put all the data we want to display into an array
         const photos = [].concat(this.props.photos, this.props.gallery, this.props.webPhotos);
 
-        // console.log({ photos });
+        console.log('swiperIndex.1', this.props.swiperIndex);
 
+        // Return an array of all photos
         return photos.map((photo, index) => {
 
-            // Only render the one image we want
+            // console.log({ photo });
+            // console.log({ index });
+
+            // Only render one image
             if (index === this.props.swiperIndex)
             {
-                return photo.type === "web" || photo.type === "session"
-                    ? <LitterImage key={photos.length} photoSelected={photo} />
-                    : <LitterImage key={photos.length} photoSelected={photo.image} />;
+                return <LitterImage key={photos.length} photoSelected={photo} />;
             }
 
             // Otherwise, just return an empty view
             return (
                 <View key={photos.length} />
             );
-
         });
     }
-
-    _renderModalContents = () =>
-    {
-        const items = [];
-
-        Object.keys(this.props.tags).map(category => {
-
-            items.push(category + ":");
-
-            Object.keys(this.props.tags[category]).map(item => {
-                items.push(item + ':' + ' ' + this.props.tags[category][item]);
-            });
-
-            items.push("\n");
-        });
-
-        return items;
-    };
 
     /**
      * Confirm this data is ready for upload
      *
      * @Gallery = Camera_Roll,
-     * @Photos  = Taken with OLM Camera this session
+     * @Photos  = Taken with OLM Camera
      * @Web     = Uploaded via web-app
      *
      * some users have settings.previous_tags true
@@ -620,9 +606,9 @@ class LitterPicker extends PureComponent
             else
             {
                 // photo_actions, photos_reducer
-                await this.props.confirmSessionItem({
-                    index: this.props.photoSelected.index,
-                    data: this.props.tags,
+                await this.props.confirmSessionTags({
+                    index: this.props.indexSelected,
+                    tags: this.props.tags,
                     presence: this.props.presence
                 });
             }
@@ -664,6 +650,7 @@ class LitterPicker extends PureComponent
 
     /**
      * Add Tag or Update the Collection
+     *
      * @litter_actions @litter_reducer
      */
     addTag ()
@@ -797,6 +784,7 @@ const mapStateToProps = state => {
         gallery: state.gallery.gallery,
         galleryTaggedCount: state.gallery.galleryTaggedCount,
         galleryTotalCount: state.gallery.galleryTotalCount,
+        indexSelected: state.litter.indexSelected, // index of photos, gallery, web
         item: state.litter.item,
         items: state.litter.items,
         lang: state.auth.lang,

@@ -4,8 +4,6 @@ import {
     DECREMENT_SELECTED,
     DELETE_GALLERY_UPLOAD_SUCCESS,
     DELETE_SELECTED_GALLERY,
-    GALLERY_REMOVED_FOR_DELETE,
-    GALLERY_SELECTED_FOR_DELETE,
     GALLERY_UPLOADED_SUCCESSFULLY,
     TOGGLE_IMAGES_LOADING,
     INCREMENT_SELECTED,
@@ -15,6 +13,7 @@ import {
     RESET_GALLERY_COUNT,
     RESET_GALLERY_TOTAL_TO_UPLOAD,
     TOGGLE_IMAGE_BROWSER,
+    TOGGLE_SELECTED_GALLERY,
     UPDATE_GALLERY_COUNT,
     UPLOAD_TAGGED_GALLERY
 } from '../actions/types';
@@ -111,35 +110,6 @@ export default function (state = INITIAL_STATE, action) {
             };
 
         /**
-         * Delete -> (obj) image['selected'] }
-         */
-        case GALLERY_REMOVED_FOR_DELETE:
-            return {
-                ...state,
-                gallery: state.gallery.map((image, index) => {
-                    if (index !== action.payload) return {...image};
-
-                    delete image.selected;
-                    return {...image};
-                })
-            };
-
-        /**
-         * Return image['selected'] = true;
-         */
-        case GALLERY_SELECTED_FOR_DELETE:
-            return {
-                ...state,
-                gallery: state.gallery.map((image, index) => {
-                    if (index !== action.payload) return {...image};
-                    return {
-                        ...image,
-                        selected: true
-                    };
-                })
-            };
-
-        /**
          * Gallery Photo + Data has been uploaded successfully
          - todo, give the user the ability to delete the image from their device
          - can be done with permission 1 at a time... can we get permission for multiple?
@@ -173,13 +143,15 @@ export default function (state = INITIAL_STATE, action) {
          */
         case PHOTOS_FROM_GALLERY:
 
+            console.log('photos_from_gallery', action.payload);
+
             // Copy the current stored gallery:
             let newGallery = state.gallery;
 
             // Append each user selected photo (but only if it's not already in the stored gallery)
             action.payload.forEach(
                 function(photo) {
-                    if(!newGallery.find( ({image}) => image.uri === photo.image.uri )) {
+                    if(!newGallery.find( ({image}) => image.uri === photo.uri )) {
                         newGallery.push(photo);
                     }
                 }
@@ -246,6 +218,22 @@ export default function (state = INITIAL_STATE, action) {
             return {
                 ...state,
                 imageBrowserOpen: ! state.imageBrowserOpen
+            };
+
+        /**
+         * Toggle the value of photo.selected
+         */
+        case TOGGLE_SELECTED_GALLERY:
+
+            let gallery = [...state.gallery];
+
+            let photo = gallery[action.payload];
+
+            photo.selected = ! photo.selected;
+
+            return {
+                ...state,
+                gallery
             };
 
         /**

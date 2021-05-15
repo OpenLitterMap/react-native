@@ -55,7 +55,7 @@ class GalleryMediaPicker extends Component
      */
     getFiles ()
     {
-        if (! this.state.loadingMore)
+        if (!this.state.loadingMore)
         {
             this.setState({ loadingMore: true }, () => {
                 this.getCameraRollFiles();
@@ -86,9 +86,11 @@ class GalleryMediaPicker extends Component
             fetchParams.after = this.state.lastCursor;
         }
 
-        CameraRoll.getPhotos(fetchParams).then(data => {
-            this.appendFiles(data), e => console.error(e);
-        });
+        CameraRoll.getPhotos(fetchParams)
+            .then(data => {
+                this.appendFiles(data), e => console.error(e);
+            }
+        );
     }
 
     /**
@@ -118,6 +120,7 @@ class GalleryMediaPicker extends Component
         }
 
         this.setState(newState);
+
         // gallery_actions, gallery_reducer
         this.props.setImagesLoading(false);
     }
@@ -126,39 +129,69 @@ class GalleryMediaPicker extends Component
      * Extract images from array
      *
      * Filter out images that do not have geotags
+     * Todo - Filter out images that have already been selected if the gallery has been opened a second time
      */
     extract (items)
     {
-        // let res = items.map(item => item.node);
-        let res = [];
+        const platform = Platform.OS;
 
-        items.map(item => {
-            // the location property exists then add it
-            if (Platform.OS === 'ios')
+        const galleryLength = this.props.gallery.length;
+
+        // 0, or +1 from the last id
+        let id = (galleryLength === 0)
+            ? 0
+            : this.props.gallery[galleryLength -1].id + 1;
+
+        const geotagged = items.map(item => {
+
+            id++;
+
+            if (platform === 'ios')
             {
                 if (Object.keys(item.node.location).length > 0)
                 {
-                    // this.sort(res);
-
-                    return res.push(item.node);
+                    return {
+                        id,
+                        filename: item.node.image.filename, // don't use this
+                        uri: item.node.image.uri,
+                        size: item.node.image.fileSize,
+                        height: item.node.image.height,
+                        width: item.node.image.width,
+                        lat: item.node.location.latitude,
+                        lon: item.node.location.longitude,
+                        timestamp: item.node.timestamp,
+                        selected: false,
+                        pickedup: false,
+                        tags: null,
+                        type: 'gallery'
+                    };
                 }
             }
-
             else
             {
                 // android
                 if (item.node.hasOwnProperty('location'))
                 {
-                    // this.sort(res);
-
-                    return res.push(item.node);
+                    return {
+                        id,
+                        filename: item.node.image.filename, // don't use this
+                        uri: item.node.image.uri,
+                        size: item.node.image.fileSize,
+                        height: item.node.image.height,
+                        width: item.node.image.width,
+                        lat: item.node.location.latitude,
+                        lon: item.node.location.longitude,
+                        timestamp: item.node.timestamp,
+                        selected: false,
+                        pickedup: false,
+                        tags: null,
+                        type: 'gallery'
+                    };
                 }
             }
         });
 
-        let albums = [];
-
-        albums.push({ albumName: 'Geotagged', images: res });
+        let albums = [{ albumName: 'Geotagged', images: geotagged }];
 
         this.setState({ albums });
     }
@@ -238,7 +271,7 @@ class GalleryMediaPicker extends Component
      */
     onEndReached ()
     {
-        if (! this.state.noMoreFiles)
+        if (!this.state.noMoreFiles)
         {
             this.getFiles();
         }
@@ -256,7 +289,7 @@ class GalleryMediaPicker extends Component
             );
         }
 
-        if (! this.state.albumSelected)
+        if (!this.state.albumSelected)
         {
             return (
                 <AlbumsList
@@ -291,13 +324,18 @@ class GalleryMediaPicker extends Component
 
     render ()
     {
-        return <View style={styles.base}>{this.renderMedia()}</View>;
+        return (
+            <View style={styles.base}>
+                { this.renderMedia() }
+            </View>
+        );
     }
 }
 
 const mapStateToProps = state => {
     return {
-        imagesLoading: state.gallery.imagesLoading
+        imagesLoading: state.gallery.imagesLoading,
+        gallery: state.gallery.gallery
     };
 };
 

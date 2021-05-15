@@ -2,7 +2,7 @@ import {
     ADD_PHOTO,
     SET_PHOTOS,
     CLOSE_LITTER_MODAL,
-    CONFIRM_SESSION_ITEM,
+    CONFIRM_SESSION_TAGS,
     // DELETE_SELECTED_GALLERY,
     DELETE_SELECTED_PHOTO,
     LOGOUT,
@@ -14,9 +14,8 @@ import {
     RESET_PHOTOS_TOTAL_TO_UPLOAD,
     REMOVE_ALL_SELECTED_PHOTOS,
     RESET_SESSION_COUNT,
-    SESSION_REMOVED_FOR_DELETE,
-    SESSION_SELECTED_FOR_DELETE,
     SESSION_UPLOADED_SUCCESSFULLY,
+    TOGGLE_SELECTED_PHOTO,
     // TOGGLE_MODAL,
     // TOGGLE_LITTER,
     // TOGGLE_UPLOAD,
@@ -59,27 +58,35 @@ export default function(state = INITIAL_STATE, action) {
          */
         case ADD_PHOTO:
 
-            let photos = [...state.photos];
-            photos.push({
+            let photos1 = [...state.photos];
+
+            let id = 0;
+            if (photos1.length > 0) id = photos1[photos1.length - 1].id + 1;
+
+            photos1.push({
+                id,
                 lat: action.payload.lat,
                 lon: action.payload.lon,
                 uri: action.payload.result.uri,
                 filename: action.payload.filename,
                 date: action.payload.date,
-                type: 'session' // Photos taken this session
+                type: 'camera', // Photos taken from the camera
+                selected: false,
+                tags: null
             });
 
             return {
                 ...state,
-                photos
+                photos: photos1
             };
-        
-          case SET_PHOTOS:
+
+        case SET_PHOTOS:
 
             return {
                 ...state,
                 photos: action.payload
             };
+
         // case CLOSE_LITTER_MODAL:
         //   return {
         //     ...state,
@@ -88,23 +95,23 @@ export default function(state = INITIAL_STATE, action) {
         //   };
 
         /**
-         * The Litter tagged on this image is correct.
-         * We also save the previous tags, so the user can easily select them on the next image
+         * Confirm the tags for a Photo taken from the Camera
          */
-        case CONFIRM_SESSION_ITEM:
+        case CONFIRM_SESSION_TAGS:
+
+            console.log('confirmSessionTags', action.payload);
+
+            let photos = [...state.photos];
+
+            let photo1 = photos[action.payload.index];
+
+            photo1.tags = action.payload.tags;
+            photo1.presence = action.payload.presence;
+
             return {
                 ...state,
-                totalTaggedSessionCount: state.totalTaggedSessionCount+1,
-                photos: state.photos.map((photo, index) => {
-                    if (index !== action.payload.index) return {...photo};
-                    return {
-                        ...photo,
-                        litter: {
-                            ...action.payload.data
-                        },
-                        presence: action.payload.presence
-                    };
-                })
+                totalTaggedSessionCount: state.totalTaggedSessionCount +1,
+                photos
             };
 
         case DELETE_SELECTED_PHOTO:
@@ -171,33 +178,22 @@ export default function(state = INITIAL_STATE, action) {
             };
 
         /**
-         * Delete image['selected'].
+         * Change the selected value of a photo
+         *
+         * @payload action.payload = index
+         * @param selected = bool
          */
-        case SESSION_REMOVED_FOR_DELETE:
+        case TOGGLE_SELECTED_PHOTO:
+
+            let photos2 = [...state.photos];
+
+            let photo = photos2[action.payload];
+
+            photo.selected = ! photo.selected;
+
             return {
                 ...state,
-                photos: state.photos.map((image, index) => {
-                    if (index !== action.payload) return {...image};
-
-                    delete image.selected;
-                    return {...image};
-                })
-            };
-
-        /**
-         * Return image['selected'] = true;
-         */
-        case SESSION_SELECTED_FOR_DELETE:
-            return {
-                ...state,
-                photos: state.photos.map((image, index) => {
-                    console.log('LOG', index);
-                    if (index !== action.payload) return {...image};
-                    return {
-                        ...image,
-                        selected: true
-                    };
-                })
+                photos: photos2
             };
 
         /**
