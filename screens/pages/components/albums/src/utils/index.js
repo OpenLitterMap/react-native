@@ -3,12 +3,11 @@ import moment from 'moment';
 /**
    * @param array
    * @param property
-   * @param nestedProperty
    * @param value
    */
-export const existsInArray = (array, property, nestedProperty, value) => {
+export const existsInArray = (array, property, value) => {
   return array.map( (object) => {
-    return object[property][nestedProperty];
+    return object[property];
   } ).indexOf(value);
 }
 

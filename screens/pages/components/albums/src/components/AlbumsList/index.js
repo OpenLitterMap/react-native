@@ -20,7 +20,7 @@ class AlbumsList extends Component {
                     <AlbumItem
                         key={index}
                         albumName={album.albumName}
-                        thumbnail={album.images && album.images[0].image.uri}
+                        thumbnail={album.images && album.images[0].uri}
                         counter={album.images ? album.images.length : 0}
                         index={index}
                         onAlbumPress={this.props.onAlbumPress}

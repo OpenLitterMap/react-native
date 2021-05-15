@@ -22,190 +22,132 @@ const SCREEN_HEIGHT = Dimensions.get('window').height;
 class LeftPageImages extends PureComponent
 {
     /**
-     * Toggle selected for each image
-     * Note, session has nested item
+     * Camera photo data
+     *
+     * - id
+     * - date
+     * - filename
+     * - lat
+     * - lon
+     * - presence
+     * - selected
+     * - tags
+     * - type
+     * - url
      */
-    sessionItemPressed (index)
+
+    /**
+     * Gallery photo data
+     *
+     * id
+     * filename
+     * height
+     * width
+     * uri
+     * lat
+     * lon
+     * pickedup
+     * selected
+     * tags
+     * timestamp
+     * type
+     */
+
+    /**
+     * A photo taken from the Camera was pressed
+     *
+     * if this.props.isSelected is true, we want to select photos to delete
+     *
+     * otherwise, select an image for tagging
+     */
+    cameraPhotoPressed (index)
     {
-        // console.log('Session item pressed', index);
-        // If Select Button is pressed, select images to delete
+        console.log('cameraPhotoPressed', index);
+
+        const image = this.props.photos[index];
+
         if (this.props.isSelecting)
         {
-            if (this.props.photos[index].selected)
-            {
-                this.props.sessionIndexRemoveForDelete(index);
-                this.props.decrementSelected();
-            }
+            (image.selected)
+                ? this.props.decrementSelected()
+                : this.props.incrementSelected();
 
-            else
-            {
-                this.props.sessionIndexSelectedForDelete(index);
-                this.props.incrementSelected();
-            }
+            this.props.toggleSelectedPhoto(index);
         }
-
         else
         {
-            // shared_reducer
+            // shared_reducer - Open LitterPicker modal
             this.props.toggleLitter();
 
             // litter_reducer
-            let item = this.props.photos[index];
-            item.index = index;
-            this.props.itemSelected(this.props.photos[index]);
+            this.props.photoSelectedForTagging({
+                swiperIndex: index,
+                type: 'camera',
+                image
+            });
         }
     }
-
-    /**
-     * Render gallery item
-     * photos selected from the users device
-     */
-    renderGalleryItem = item => {
-
-        let width = null;
-        let mgn = 0;
-
-        if (item.index % 3 === 1)
-        {
-            width = SCREEN_WIDTH / 3.1;
-            mgn = 2;
-        }
-
-        else
-        {
-            width = SCREEN_WIDTH / 3;
-        }
-
-        return (
-            <TouchableWithoutFeedback onPress={this.galleryItemPressed.bind(this, item)}>
-                <View>
-                    <Image
-                        style={{
-                            height: 135,
-                            width: width,
-                            marginLeft: mgn,
-                            marginRight: mgn
-                        }}
-                        source={{ uri: item.item.image.uri }}
-                        resizeMode="cover"
-                    />
-
-                    {
-                        item.item.selected && (
-                            <View style={{ position: 'absolute', right: 5, bottom: 5 }}>
-                                <Icon name="check-circle" size={SCREEN_HEIGHT * 0.03} color="#00aced" />
-                            </View>
-                        )
-                    }
-
-                    {
-                        item.item.litter && (
-                            <View style={{ position: 'absolute', left: 5, bottom: 0 }}>
-                                <Icon name="attachment" size={SCREEN_HEIGHT * 0.04} color="#00aced" />
-                            </View>
-                        )
-                    }
-                </View>
-            </TouchableWithoutFeedback>
-        );
-    };
 
     /**
      * A Gallery Item has been pressed
      *
-     * Note that gallery has item.type === "image" by default
+     * if this.props.isSelected is true, we want to select photos to delete
      *
-     * But when passed to this.props.photoSelected in the itemSelected function here,
-     *
-     * it gets the type of "gallery"
+     * otherwise, select an image for tagging
      */
-    galleryItemPressed (item)
+    galleryPhotoPressed (index)
     {
-        console.log('Gallery item pressed', item);
+        console.log('galleryPhotoPressed', index);
 
-        // If we are selecting (for delete), highlight / deselect the image
+        const image = this.props.gallery[index];
+
         if (this.props.isSelecting)
         {
-            if (item.item.selected)
-            {
-                // remove ['selected'] from the item
-                this.props.galleryIndexRemoveForDelete(item.index);
-                this.props.decrementSelected();
-            }
+            (image.selected)
+                ? this.props.decrementSelected()
+                : this.props.incrementSelected();
 
-            else
-            {
-                // add ['selected'] to the item
-                this.props.galleryIndexSelectedForDelete(item.index);
-                this.props.incrementSelected();
-            }
+            this.props.toggleSelectedGallery(index);
         }
-
         else
         {
-            // Select the image for tagging
-
-            // shared_reducer -> Open LitterPicker (modal)
+            // shared_reducer - Open LitterPicker modal
             this.props.toggleLitter();
 
-            let litter = {};
-            if (item.item.litter) litter = Object.assign({}, item.item.litter);
-
             // litter_reducer
-            this.props.itemSelected({
-                index: item.index,
-                lat: item.item.location.latitude,
-                lon: item.item.location.longitude,
-                uri: item.item.image.uri,
-                filename: item.item.image.filename,
-                timestamp: item.item.timestamp,
+            // When setting swiperIndex, we need to increment the gallery index by photos.length,
+            // as camera_photos appear first, followed by gallery_photos, followed by web_photos.
+            this.props.photoSelectedForTagging({
+                swiperIndex: this.props.photos.length + index,
                 type: 'gallery',
-                litter // data if exists
+                image
             });
-
-            console.log("galleryIndex: ", item.index);
         }
     }
 
     /**
-     * todo - fix this ?
+     * Render photos taken with the OLM camera
      */
-    renderSeparator = () => {
-        return (
-            <View
-                style={{
-                    height: 2,
-                    width: '100%'
-                }}
-            />
-        );
-    };
+    renderCameraPhoto = ({item, index}) => {
+        // console.log('renderCameraPhoto', item, index);
 
-    /**
-     * Render session item
-     * photos taken by the camera this session
-     */
-    renderSessionItem = ({item, index}) =>
-    {
-        // console.log('Render session item', item, index);
-
-        let width = null;
+        let width;
         let mgn = 0;
 
-        if (item.index % 3 === 1)
+        // middle image
+        if (index % 3 === 1)
         {
             width = SCREEN_WIDTH / 3.1;
             mgn = SCREEN_WIDTH * 0.005;
         }
-
-        else // 0, 2
+        else // left & right images
         {
             width = SCREEN_WIDTH / 3;
         }
 
         return (
             <TouchableWithoutFeedback
-                onPress={this.sessionItemPressed.bind(this, index)}
+                onPress={this.cameraPhotoPressed.bind(this, index)}
             >
                 <View>
                     <Image
@@ -227,7 +169,7 @@ class LeftPageImages extends PureComponent
                         )
                     }
                     {
-                        item.litter && (
+                        item.tags && (
                             <View style={{ position: 'absolute', left: 5, bottom: 0 }}>
                                 <Icon name="attachment" size={SCREEN_HEIGHT * 0.04} color="#00aced" />
                             </View>
@@ -235,6 +177,75 @@ class LeftPageImages extends PureComponent
                     }
                 </View>
             </TouchableWithoutFeedback>
+        );
+    };
+
+    /**
+     * Render photos selected from the users geotagged album
+     */
+    renderGalleryPhoto = ({item, index}) => {
+        // console.log('renderGalleryPhoto', item);
+
+        let width;
+        let mgn = 0;
+
+        // middle image
+        if (index % 3 === 1)
+        {
+            width = SCREEN_WIDTH / 3.1;
+            mgn = 2;
+        }
+        // left & right image
+        else
+        {
+            width = SCREEN_WIDTH / 3;
+        }
+
+        return (
+            <TouchableWithoutFeedback onPress={this.galleryPhotoPressed.bind(this, index)}>
+                <View>
+                    <Image
+                        style={{
+                            height: 135,
+                            width: width,
+                            marginLeft: mgn,
+                            marginRight: mgn
+                        }}
+                        source={{ uri: item.uri }}
+                        resizeMode="cover"
+                    />
+
+                    {
+                        item.selected && (
+                            <View style={{ position: 'absolute', right: 5, bottom: 5 }}>
+                                <Icon name="check-circle" size={SCREEN_HEIGHT * 0.03} color="#00aced" />
+                            </View>
+                        )
+                    }
+
+                    {
+                        item.tags && (
+                            <View style={{ position: 'absolute', left: 5, bottom: 0 }}>
+                                <Icon name="attachment" size={SCREEN_HEIGHT * 0.04} color="#00aced" />
+                            </View>
+                        )
+                    }
+                </View>
+            </TouchableWithoutFeedback>
+        );
+    };
+
+    /**
+     * todo - fix this ?
+     */
+    renderSeparator = () => {
+        return (
+            <View
+                style={{
+                    height: 2,
+                    width: '100%'
+                }}
+            />
         );
     };
 
@@ -262,7 +273,7 @@ class LeftPageImages extends PureComponent
             let image = this.props.webPhotos[0];
             // todo - load this litter object by default
             // todo - change this name to tags
-            image.litter = {};
+            image.tags = {};
 
             this.props.itemSelected(image);
 
@@ -298,8 +309,8 @@ class LeftPageImages extends PureComponent
      * Middle: Gallery
      * - Gallery are selected from the geotagged photos album here on the app
      *
-     * Bottom: Session
-     * - Session photos are taken with the camera app on the app
+     * Bottom: Camera
+     * - Camera photos are taken with the camera in the app
      *
      * @returns {JSX.Element}
      */
@@ -320,7 +331,7 @@ class LeftPageImages extends PureComponent
         }
 
         // Web photos have been uploaded to the web-app
-        // Photos are taken this session
+        // Photos are taken this camera
         // Gallery from albums
         return (
 
@@ -351,14 +362,14 @@ class LeftPageImages extends PureComponent
                             extraData={this.props.uniqueValue}
                             keyExtractor={(item, index) => item + index}
                             numColumns={3}
-                            renderItem={this.renderSessionItem}
+                            renderItem={this.renderCameraPhoto}
                             ItemSeparatorComponent={this.renderSeparator}
                             keyboardShouldPersistTaps="handled"
                         />
                     )
                 }
 
-                { /* Empty space between session & gallery photos */}
+                { /* Empty space between camera & gallery photos */}
                 <View style={{ height: SCREEN_HEIGHT * 0.003 }} />
 
                 {
@@ -368,7 +379,7 @@ class LeftPageImages extends PureComponent
                             extraData={this.props.uniqueValue}
                             keyExtractor={(item, index) => item + index}
                             numColumns={3}
-                            renderItem={this.renderGalleryItem}
+                            renderItem={this.renderGalleryPhoto}
                             ItemSeparatorComponent={this.renderSeparator}
                             keyboardShouldPersistTaps="handled"
                         />

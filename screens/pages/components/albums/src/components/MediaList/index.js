@@ -42,7 +42,7 @@ class MediaList extends Component
         let result = {};
         let temp = {};
 
-        for (let i = 0; i < images.length; ++ i)
+        for (let i = 0; i < images.length -1; i++)
         {
             const timestampOfImage = images[i].timestamp * 1000;
             const placeInTimeOfImage = placeInTime(timestampOfImage);
@@ -118,7 +118,7 @@ class MediaList extends Component
     selectMediaFile(item) {
         let { maximumSelectedFiles, itemsPerRow, callback, selectSingleItem } = this.props;
         let selected = this.state.selected,
-            index = existsInArray( selected, 'image', 'uri', item.image.uri );
+            index = existsInArray( selected, 'image', 'uri', item.uri );
 
         if ( index >= 0 ) {
             selected.splice( index, 1 );
@@ -131,6 +131,7 @@ class MediaList extends Component
             }
         }
         this.setState({ selected });
+
         // gallery_actions, gallery_reducer
         this.props.updateSelectedGalleryCount(this.state.selected.length);
 
@@ -163,8 +164,8 @@ class MediaList extends Component
             containerWidth
         } = this.props;
 
-        let uri = item.image.uri;
-        let isSelected = (existsInArray(selected, 'image', 'uri', uri) >= 0);
+        let uri = item.uri;
+        let isSelected = (existsInArray(selected, 'uri', uri) >= 0);
 
         return (
             <MediaItem
@@ -292,7 +293,7 @@ class MediaList extends Component
                     initialNumToRender={this.props.batchSize}
                     onEndReached={this.onEndReached.bind(this)}
                     renderItem={({item, index}) => this.renderRow(item, index)}
-                    keyExtractor={(item, index) => item[0].image.uri + item[0].timestamp + index}
+                    keyExtractor={(item, index) => item[0].uri + item[0].timestamp + index}
                     data={this.state.rows}
                     extraData={this.props.selected}
                 />

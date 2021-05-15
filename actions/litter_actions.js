@@ -9,6 +9,7 @@ import {
     // CONFIRM_FOR_UPLOAD,
     ITEM_SELECTED,
     LITTER_SELECTED,
+    PHOTO_SELECTED_FOR_TAGGING,
     REMOVE_PREVIOUS_TAG,
     REMOVE_TAG,
     RESET_LITTER_STATE,
@@ -63,7 +64,6 @@ export const changeQ = (q) => {
  * Needs to be extracted to Redux as the number of web-photos changes when 1 is submitted
  */
 export const swiperIndexChanged = index => {
-    console.log('action.swiperIndex', index);
     return {
         type: CHANGE_SWIPER_INDEX,
         payload: index
@@ -94,12 +94,26 @@ export const selectPhoto = (photo) => {
 }
 
 /**
+ * old.
+ *
  * The user has selected a photo from Web, Photos or Gallery on Leftpage or LitterPicker
  */
 export const itemSelected = item => {
     return {
         type: ITEM_SELECTED,
         payload: item
+    };
+}
+
+/**
+ * New - A photo has been selected for tagging
+ *
+ * Can be one of Web, Camera, or Gallery
+ */
+export const photoSelectedForTagging = (photo) => {
+    return {
+        type: PHOTO_SELECTED_FOR_TAGGING,
+        payload: photo
     };
 }
 

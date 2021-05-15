@@ -7,9 +7,7 @@ import {
     DELETE_GALLERY_UPLOAD_SUCCESS,
     DELETE_SELECTED_GALLERY,
     NEW_SELECTED,
-    GALLERY_ITEM_SELECTED,
-    GALLERY_REMOVED_FOR_DELETE,
-    GALLERY_SELECTED_FOR_DELETE,
+    GALLERY_SELECTED_FOR_TAGGING,
     GALLERY_UPLOADED_SUCCESSFULLY,
     TOGGLE_IMAGES_LOADING,
     INCREMENT_SELECTED,
@@ -20,6 +18,7 @@ import {
     RESET_GALLERY_TOTAL_TO_UPLOAD,
     RESET_TOTAL_GALLERY_UPLOADED_COUNT,
     TOGGLE_IMAGE_BROWSER,
+    TOGGLE_SELECTED_GALLERY,
     UPDATE_GALLERY_COUNT,
     UPLOAD_TAGGED_GALLERY,
     URL,
@@ -58,28 +57,6 @@ export const deleteSelectedGallery = (photo) => {
 //   };
 // }
 
-
-// todo - could probably merge these into toggle.
-/**
- * An index of gallery has been removed for delete
- */
-export const galleryIndexRemoveForDelete = (index) => {
-    return {
-        type: GALLERY_REMOVED_FOR_DELETE,
-        payload: index
-    };
-}
-
-/**
- * An index of gallery has been selected for delete
- */
-export const galleryIndexSelectedForDelete = (index) => {
-    return {
-        type: GALLERY_SELECTED_FOR_DELETE,
-        payload: index
-    };
-}
-
 /**
  * A Gallery Index has been uploaded successfully! - can be deleted.
  */
@@ -87,6 +64,16 @@ export const galleryPhotoUploadedSuccessfully = (index, id) => {
     return {
         type: GALLERY_UPLOADED_SUCCESSFULLY,
         payload: index
+    };
+}
+
+/**
+ * One of the images from the users photo album has been selected for tagging
+ */
+export const gallerySelectedForTagging = (data) => {
+    return {
+        type: GALLERY_SELECTED_FOR_TAGGING,
+        payload: data
     };
 }
 
@@ -177,6 +164,16 @@ export const toggleImageBrowser = () => {
 export const resetGalleryToUpload = () => {
     return {
         type: RESET_GALLERY_TOTAL_TO_UPLOAD
+    };
+}
+
+/**
+ * Toggle the value of a photo.selected
+ */
+export const toggleSelectedGallery = (index) => {
+    return {
+        type: TOGGLE_SELECTED_GALLERY,
+        payload: index
     };
 }
 

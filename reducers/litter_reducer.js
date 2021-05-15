@@ -8,6 +8,7 @@ import {
     // FILTER_TAGS,
     ITEM_SELECTED,
     LITTER_SELECTED,
+    PHOTO_SELECTED_FOR_TAGGING,
     REMOVE_PREVIOUS_TAG,
     REMOVE_TAG,
     RESET_TAGS,
@@ -39,6 +40,7 @@ const INITIAL_STATE = {
     displayAllTags: false,
     hasLitter: false,
     index: null,
+    indexSelected: null, // index of camera_photos, gallery or web
     photoSelected: null,
     presence: true,
     positions: {}, // coordinates of each tag for animation
@@ -47,7 +49,8 @@ const INITIAL_STATE = {
     tags: {},
     tagsModalVisible: false,
     totalImagesToUpload: 0,
-    totalLitterCount: 0
+    totalLitterCount: 0,
+    type: null // camera, gallery, or web
 };
 
 export default function (state = INITIAL_STATE, action)
@@ -138,27 +141,27 @@ export default function (state = INITIAL_STATE, action)
         //         ...state
         //     };
 
-        /**
-         * An item has been selected
-         */
-        case ITEM_SELECTED:
-
-            // Check if any litter already exists on this item / index?
-            console.log('reducer.item_selected', action.payload);
-
-            let newTags1 = Object.assign({}, action.payload.litter);
-            let newImage = Object.assign({}, action.payload);
-
-            console.log({ newImage });
-
-            return {
-                ...state,
-                photoSelected: newImage,
-                // modalVisible: true,
-                litterVisible: true,
-                tags: newTags1,
-                q: "1"
-            };
+        // /**
+        //  * An item has been selected
+        //  */
+        // case ITEM_SELECTED:
+        //
+        //     console.log('item_selected is deprecated')
+        //
+        //     // Check if any litter already exists on this item / index?
+        //     // console.log('reducer.item_selected', action.payload);
+        //
+        //     const newTags1 = Object.assign({}, action.payload.tags);
+        //     const newImage = Object.assign({}, action.payload);
+        //
+        //     return {
+        //         ...state,
+        //         photoSelected: newImage,
+        //         // modalVisible: true,
+        //         litterVisible: true,
+        //         tags: newTags1,
+        //         q: "1"
+        //     };
         
         case LITTER_SELECTED:
 
@@ -174,6 +177,35 @@ export default function (state = INITIAL_STATE, action)
               tags: newTags2,
               q: "1"
           };
+
+        /**
+         * One of the photos from Web, Camera or Gallery has been selected for tagging
+         *
+         * Copy it to photoSelected for tagging
+         *
+         * @param index = the index of photos (eg camera photos)
+         * @param type = camera, gallery, or web
+         */
+        case PHOTO_SELECTED_FOR_TAGGING:
+
+            console.log('photo_selected_for_tagging', action.payload);
+
+            const newTags3 = Object.assign({}, action.payload.image.tags);
+            const newImage3 = Object.assign({}, action.payload.image);
+
+            console.log({ newImage3 });
+            console.log('SET SWIPER INDEX', action.payload.swiperIndex);
+
+            return {
+                ...state,
+                swiperIndex: action.payload.swiperIndex,
+                type: action.payload.type, // camera, gallery, or web
+                photoSelected: newImage3, // the image data
+                // modalVisible: true,
+                litterVisible: true,
+                tags: newTags3, // tags applied to the image
+                q: "1" // set quantity to 1
+            };
 
         /**
          * Remove a tag
