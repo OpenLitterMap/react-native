@@ -6,7 +6,6 @@ import {
     GALLERY_UPLOADED_SUCCESSFULLY,
     TOGGLE_IMAGES_LOADING,
     PHOTOS_FROM_GALLERY,
-    RESET_GALLERY_COUNT,
     RESET_GALLERY_TOTAL_TO_UPLOAD,
     TOGGLE_IMAGE_BROWSER,
     TOGGLE_SELECTED_GALLERY
@@ -17,11 +16,7 @@ const INITIAL_STATE = {
     imageBrowserOpen: false,
     imagesLoading: true,
     totalGalleryUploaded: 0,
-    // totalTaggedGalleryCount: 0, // increment when image has been tagged, decrement when deleted or uploaded?
-    selectedGallery: 0,
-    isSelectingGallery: false,
-    galleryUploadProgress: 0,
-    galleryTotalCount: 0, // gallery.length
+    galleryUploadProgress: 0
 };
 
 export default function (state = INITIAL_STATE, action) {
@@ -65,9 +60,7 @@ export default function (state = INITIAL_STATE, action) {
                 gallery: [
                     ...state.gallery.slice(0, action.payload),
                     ...state.gallery.slice(action.payload + 1)
-                ],
-                selectedGallery: 0,
-                isSelectingGallery: false,
+                ]
             };
 
         /**
@@ -130,15 +123,6 @@ export default function (state = INITIAL_STATE, action) {
             return {
                 ...state,
                 gallery: photos,
-            };
-
-        /**
-         * Reset all gallery count when uploads finished successfully
-         */
-        case RESET_GALLERY_COUNT:
-            return {
-                ...state,
-                totalTaggedGalleryCount: 0
             };
 
         /**

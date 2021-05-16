@@ -8,7 +8,6 @@ import {
     DELETE_SELECTED_PHOTO, // current session
     DESELECT_ALL_CAMERA_PHOTOS,
     RESET_PHOTOS_TOTAL_TO_UPLOAD,
-    RESET_SESSION_COUNT,
     CAMERA_PHOTO_UPLOADED_SUCCESSFULLY,
     TOGGLE_SELECTED_PHOTO,
     UPDATE_COUNT_REMAINING,
@@ -62,15 +61,6 @@ export const deleteSelectedPhoto = (index) => {
 export const deselectAllCameraPhotos = () => {
     return {
         type: DESELECT_ALL_CAMERA_PHOTOS // REMOVE_ALL_SELECTED_PHOTOS
-    };
-}
-
-/**
- * Reset session count to 0 when all uploads completed successfully
- */
-export const resetSessionCount = () => {
-    return {
-        type: RESET_SESSION_COUNT
     };
 }
 

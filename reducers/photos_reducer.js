@@ -21,7 +21,6 @@ const INITIAL_STATE = {
     progress: 0,
     isSelecting: false,
     remainingCount: 0,
-    totalTaggedSessionCount: 0,
     uniqueValue: 0
 };
 
@@ -176,10 +175,7 @@ export default function(state = INITIAL_STATE, action) {
                     ...state.photos.slice(0, action.payload),
                     ...state.photos.slice(action.payload + 1)
                 ],
-                // total number of tagged photos can be decremented
-                totalTaggedSessionCount: state.totalTaggedSessionCount -1,
                 // total number of successfully uploaded photos can be incremented
-                // this process could be improved (without need to map and count large arrays)
                 totalCameraPhotosUploaded: state.totalCameraPhotosUploaded +1,
             };
 
