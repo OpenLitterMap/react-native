@@ -1,14 +1,14 @@
 import moment from 'moment';
 
 /**
-   * @param array
-   * @param property
-   * @param value
+   * @param selectedImages array
+   * @param property string
+   * @param value string
    */
-export const existsInArray = (array, property, value) => {
-  return array.map( (object) => {
-    return object[property];
-  } ).indexOf(value);
+export const existsInArray = (selectedImages, property, value) => {
+  return selectedImages.map((image) => {
+    return image[property];
+  }).indexOf(value);
 }
 
 

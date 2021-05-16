@@ -1,14 +1,10 @@
 import React from 'react';
-import AsyncStorage from '@react-native-community/async-storage';
 import {
     URL,
-    CLIENT_SECRET,
-    CLIENT_ID,
     LOAD_MORE_WEB_IMAGES,
     REMOVE_WEB_IMAGE,
     WEB_CONFIRM,
-    WEB_IMAGES,
-    WEB_UPLOAD
+    WEB_IMAGES
 } from './types';
 import axios from 'axios';
 
@@ -33,12 +29,22 @@ export const checkForImagesOnWeb = (token) => {
             }
         })
         .then(resp => {
-            // console.log('images_from_web', resp.data);
+            // console.log('images_from_web', resp.data.photos);
+
+            // Todo - load Tag: null with the data
+            let photos = (resp.data.photos)
+                ? resp.data.photos
+                : null;
+
+            photos = photos.map(photo => {
+                photo.tags = null;
+                return photo;
+            });
 
             // if photos is null, pass empty array
             dispatch({ type: WEB_IMAGES, payload: {
                 count: resp.data.count,
-                photos: resp.data.photos ? resp.data.photos : []
+                photos
             }});
         })
         .catch(err => {
@@ -67,10 +73,17 @@ export const loadMoreWebImages = (token, photo_id) => {
 
             if (resp.data)
             {
+                let photos = resp.data;
+
+                photos = photos.map(photo => {
+                    photo.tags = null;
+                    return photo;
+                });
+
                 dispatch({
                     type: LOAD_MORE_WEB_IMAGES,
                     payload: {
-                        photos: resp.data
+                        photos
                     }
                 });
             }

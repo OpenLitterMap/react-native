@@ -40,11 +40,7 @@ export default function(state = INITIAL_STATE, action)
 
             const filtered = state.photos.filter(photo => photo.id !== action.payload);
 
-            console.log({ filtered });
-
             const count = state.count - 1;
-
-            console.log({ count });
 
             return {
                 ...state,

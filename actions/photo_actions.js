@@ -2,27 +2,17 @@ import React from 'react';
 import axios from 'axios';
 import {
     ADD_PHOTO,
-    SET_PHOTOS,
+    LOAD_CAMERA_PHOTOS_FROM_ASYNC_STORAGE,
     CHANGE_UPLOAD_PROGRESS,
-    CLOSE_LITTER_MODAL,
     CONFIRM_SESSION_TAGS,
-    // DELETE_SELECTED_GALLERY, // camera roll
     DELETE_SELECTED_PHOTO, // current session
-    PHOTOS_FROM_GALLERY,
-    INCREMENT,
-    // ITEM_SELECTED,
-    REMOVE_ALL_SELECTED_PHOTOS,
+    DESELECT_ALL_CAMERA_PHOTOS,
     RESET_PHOTOS_TOTAL_TO_UPLOAD,
     RESET_SESSION_COUNT,
-    SESSION_UPLOADED_SUCCESSFULLY,
-    TOGGLE_IMAGE_BROWSER,
-    TOGGLE_SELECTING,
+    CAMERA_PHOTO_UPLOADED_SUCCESSFULLY,
     TOGGLE_SELECTED_PHOTO,
     UPDATE_COUNT_REMAINING,
     UPDATE_PERCENT,
-    UPLOAD_PHOTOS,
-    UPLOAD_COMPLETE_SUCCESS,
-    UNIQUE_VALUE,
     URL
 } from './types';
 
@@ -36,22 +26,16 @@ export const addPhoto = (photo) => {
     };
 }
 
-// /**
-//  * One of the photos taken from the camera was selected for tagging
-//  */
-// export const cameraPhotoSelected = (index) => {
-//     return {
-//         type: CAMERA_PHOTO_SELECTED,
-//         payload: index
-//     };
-// }
-
-export const setPhotos = (photos) => {
+/**
+ * When the app loads, if any camera photos exist, load them here
+ */
+export const loadCameraPhotosFromAsyncStorage = (photos) => {
   return {
-      type: SET_PHOTOS,
+      type: LOAD_CAMERA_PHOTOS_FROM_ASYNC_STORAGE,
       payload: photos
   };
 }
+
 /**
  * Confirm Button Pressed on LitterPicker
  */
@@ -73,11 +57,11 @@ export const deleteSelectedPhoto = (index) => {
 }
 
 /**
- * Remove ['selected'] from any gallery items set to be deleted
+ * Change selected => false on all photos
  */
-export const removeAllSelectedPhotos = () => {
+export const deselectAllCameraPhotos = () => {
     return {
-        type: REMOVE_ALL_SELECTED_PHOTOS
+        type: DESELECT_ALL_CAMERA_PHOTOS // REMOVE_ALL_SELECTED_PHOTOS
     };
 }
 
@@ -108,40 +92,16 @@ export const toggleSelectedPhoto = (index) => {
         payload: index
     };
 }
-// export const sessionIndexSelectedForDelete = (index) => {
-//     return {
-//         type: SESSION_SELECTED_FOR_DELETE,
-//         payload: index
-//     };
-// }
 
 /**
  * A Gallery Index has been uploaded successfully! - can be deleted.
  */
-export const sessionPhotoUploadedSuccessfully = (index) => {
+export const cameraPhotoUploadedSuccessfully = (index) => {
     return {
-        type: SESSION_UPLOADED_SUCCESSFULLY,
+        type: CAMERA_PHOTO_UPLOADED_SUCCESSFULLY,
         payload: index
     };
 }
-
-/**
- * The user selected a photo on LeftPage
- */
-// export const itemSelected = (item) => {
-//   console.log("photos action - itemSelected");
-//   console.log(item);
-//   return {
-//     type: ITEM_SELECTED,
-//     payload: item
-//   };
-// }
-
-// export const toggleSelecting = () => {
-//   return {
-//     type: TOGGLE_SELECTING
-//   };
-// }
 
 /**
  * Update progress percentage upload 0-100
@@ -164,12 +124,15 @@ export const updateRemainingCount = (count) => {
 }
 
 /**
- * Upload 1 photo per request
+ * Upload a photo taken using the camera app
+ *
+ * 1 photo uploaded per request
+ *
  *  - note onUploadProgress percentCompleted is different in development and production
  *    https://github.com/axios/axios/issues/639
  **/
-export const uploadTaggedSessionPhotos = (data, token, litterData) => {
-    console.log("Action - upload tagged Gallery photo");
+export const uploadTaggedCameraPhoto = (data, token, tags) => {
+
     // let progress = null;
     return (dispatch) => {
         return axios(URL + '/api/photos/submit', {
@@ -200,33 +163,32 @@ export const uploadTaggedSessionPhotos = (data, token, litterData) => {
                         'Authorization': 'Bearer ' + token
                     },
                     data: {
-                        litter: litterData,
+                        litter: tags,
                         photo_id: response.data.photo_id
                     },
-                    // need to debug this and make it smooooooth
-                    onUploadProgress: (p) => {
-                        progress = p.loaded / p.total
-                        progress = Math.round(progress * 100);
-                        console.log("Prog 2", progress);
-                        // dispatch({
-                        //   type: CHANGE_UPLOAD_PROGRESS,
-                        //   payload: progress
-                        // });
+                    // // need to debug this and make it smooth
+                    // onUploadProgress: (p) => {
+                    //     progress = p.loaded / p.total
+                    //     progress = Math.round(progress * 100);
+                    //     console.log("Prog 2", progress);
+                    //     // dispatch({
+                    //     //   type: CHANGE_UPLOAD_PROGRESS,
+                    //     //   payload: progress
+                    //     // });
+                    // }
+                })
+                .then(resp => {
+                    if (resp.status === 200)
+                    {
+                        console.log("SUCCESS - final status 200");
+                        return {
+                            success: true
+                        };
                     }
                 })
-                    .then(resp => {
-                        console.log("SUCCESS - Litter data for image updated");
-                        console.log(resp.data);
-                        if (resp.status == 200) {
-                            console.log("SUCCESS - final status 200");
-                            return {
-                                message: 'success'
-                            };
-                        }
-                    })
-                    .catch(err => {
-                        console.log(err);
-                    });
+                .catch(err => {
+                    console.log(err);
+                });
             }
         })
         .catch(error => {
@@ -247,11 +209,11 @@ export const checkForWebUpload = (token) => {
                 'Authorization': 'Bearer ' + token
             }
         })
-            .then(resp => {
-                console.log(resp);
-            })
-            .catch(err => {
-                console.log(err);
-            });
+        .then(resp => {
+            console.log(resp);
+        })
+        .catch(err => {
+            console.log(err);
+        });
     }
 }

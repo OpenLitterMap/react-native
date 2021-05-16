@@ -100,6 +100,9 @@ export default function(state = INITIAL_STATE, action) {
                 uniqueValue: state.uniqueValue + 1
             };
 
+        /**
+         * Total number of images to be uploaded from camera_photos and gallery_photos
+         */
         case UPDATE_COUNT_TOTAL:
             return {
                 ...state,

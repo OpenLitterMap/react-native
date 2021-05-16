@@ -161,7 +161,7 @@ class GalleryMediaPicker extends Component
                         lon: item.node.location.longitude,
                         timestamp: item.node.timestamp,
                         selected: false,
-                        pickedup: false,
+                        picked_up: false,
                         tags: null,
                         type: 'gallery'
                     };
@@ -183,7 +183,7 @@ class GalleryMediaPicker extends Component
                         lon: item.node.location.longitude,
                         timestamp: item.node.timestamp,
                         selected: false,
-                        pickedup: false,
+                        picked_up: false,
                         tags: null,
                         type: 'gallery'
                     };

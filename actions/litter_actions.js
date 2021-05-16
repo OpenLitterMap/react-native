@@ -1,25 +1,18 @@
 import React from 'react'
 
 import {
-    ADD_PREVIOUS_TAG,
     CHANGE_CATEGORY,
     CHANGE_ITEM,
     CHANGE_Q,
     CHANGE_SWIPER_INDEX,
-    // CONFIRM_FOR_UPLOAD,
-    ITEM_SELECTED,
     LITTER_SELECTED,
     PHOTO_SELECTED_FOR_TAGGING,
-    REMOVE_PREVIOUS_TAG,
     REMOVE_TAG,
     RESET_LITTER_STATE,
     RESET_TAGS,
     UPDATE_PREVIOUS_TAGS,
-    SAVE_PREVIOUS_TAGS,
-    SELECT_PHOTO,
     SHOW_ALL_TAGS,
     SHOW_INNER_MODAL,
-    SLIDE_IN_NEXT_GALLERY,
     SUGGEST_TAGS,
     TAG_LITTER,
     TOGGLE_SWITCH,
@@ -84,28 +77,6 @@ export const suggestTags = (data) => {
 }
 
 /**
- * Select the photo passed
- */
-export const selectPhoto = (photo) => {
-    return {
-        type: SELECT_PHOTO,
-        payload: photo
-    };
-}
-
-/**
- * old.
- *
- * The user has selected a photo from Web, Photos or Gallery on Leftpage or LitterPicker
- */
-export const itemSelected = item => {
-    return {
-        type: ITEM_SELECTED,
-        payload: item
-    };
-}
-
-/**
  * New - A photo has been selected for tagging
  *
  * Can be one of Web, Camera, or Gallery
@@ -151,16 +122,6 @@ export const resetTags = () => {
 export const resetLitterTags = () => {
     return {
         type: RESET_LITTER_STATE
-    };
-}
-
-/**
- * Slide in the next photo for tagging
- */
-export const slideInNext = (item) => {
-    return {
-        type: SLIDE_IN_NEXT_GALLERY,
-        payload: item
     };
 }
 
