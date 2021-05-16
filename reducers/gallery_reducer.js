@@ -1,35 +1,26 @@
 import {
     CHANGE_UPLOAD_PROGRESS,
-    CONFIRM_GALLERY_ITEM,
-    DECREMENT_SELECTED,
-    DELETE_GALLERY_UPLOAD_SUCCESS,
+    CONFIRM_GALLERY_TAGS,
     DELETE_SELECTED_GALLERY,
+    DESELECT_ALL_GALLERY_PHOTOS,
     GALLERY_UPLOADED_SUCCESSFULLY,
     TOGGLE_IMAGES_LOADING,
-    INCREMENT_SELECTED,
-    NEW_SELECTED,
     PHOTOS_FROM_GALLERY,
-    REMOVE_ALL_SELECTED_GALLERY,
     RESET_GALLERY_COUNT,
     RESET_GALLERY_TOTAL_TO_UPLOAD,
     TOGGLE_IMAGE_BROWSER,
-    TOGGLE_SELECTED_GALLERY,
-    UPDATE_GALLERY_COUNT,
-    UPLOAD_TAGGED_GALLERY
+    TOGGLE_SELECTED_GALLERY
 } from '../actions/types';
-import AsyncStorage from '@react-native-community/async-storage';
 
 const INITIAL_STATE = {
-    // selected Gallery images for upload
-    gallery: [],
+    gallery: [], // photos
     imageBrowserOpen: false,
     imagesLoading: true,
     totalGalleryUploaded: 0,
-    totalTaggedGalleryCount: 0, // increment when image has been tagged, decrement when deleted or uploaded?
+    // totalTaggedGalleryCount: 0, // increment when image has been tagged, decrement when deleted or uploaded?
     selectedGallery: 0,
     isSelectingGallery: false,
     galleryUploadProgress: 0,
-    totalGallerySelected: 0, // updated dynamically when an image is selected. Reset to 0 when photos album opened
     galleryTotalCount: 0, // gallery.length
 };
 
@@ -50,49 +41,20 @@ export default function (state = INITIAL_STATE, action) {
         /**
          * Add tags to the image at the index
          */
-        case CONFIRM_GALLERY_ITEM:
+        case CONFIRM_GALLERY_TAGS:
 
-            console.log("CONFIRM_GALLERY_ITEM", action.payload);
+            console.log("CONFIRM_GALLERY_TAGS", action.payload);
 
-            const newGalleryArray = state.gallery.map((image, index) => {
+            let photos2 = [...state.gallery];
+            let photo2 = photos2[action.payload.index];
 
-                // console.log('galleryItem', image);
-                if (index === action.payload.index)
-                {
-                    return {
-                        ...image,
-                        // litter: tags,
-                        litter: {
-                            ...action.payload.data
-                        },
-                        presence: action.payload.presence
-                    };
-                }
-
-                return {...image};
-            });
-
-            console.log({ newGalleryArray });
+            photo2.tags = action.payload.tags;
+            photo2.picked_up = action.payload.picked_up;
 
             return {
                 ...state,
-                totalTaggedGalleryCount: state.totalTaggedGalleryCount+1,
-                gallery: newGalleryArray
+                gallery: photos2
             };
-
-        /**
-         * Todo - add setting and try to achieve this
-         * Gallery photo has been uploaded successfully - delete it from the users device
-         */
-        // case DELETE_GALLERY_UPLOAD_SUCCESS:
-        //   return {
-        //     ...state,
-        //     gallery: [
-        //       ...state.gallery.slice(0, action.payload),
-        //       ...state.gallery.slice(action.payload + 1)
-        //     ],
-        //     // totalGalleryUploaded: state.totalGalleryUploaded +1
-        //   };
 
         /**
          * Delete selected images from the gallery array
@@ -106,25 +68,39 @@ export default function (state = INITIAL_STATE, action) {
                 ],
                 selectedGallery: 0,
                 isSelectingGallery: false,
+            };
 
+        /**
+         * Change selected => false for all photos
+         */
+        case DESELECT_ALL_GALLERY_PHOTOS:
+
+            let photos1 = [...state.gallery];
+
+            photos1 = photos1.map(photo => {
+                photo.selected = false;
+                return photo;
+            });
+
+            return {
+                ...state,
+                gallery: photos1
             };
 
         /**
          * Gallery Photo + Data has been uploaded successfully
          - todo, give the user the ability to delete the image from their device
-         - can be done with permission 1 at a time... can we get permission for multiple?
+         - This can be done with permission 1 at a time... can we get permission for multiple?
          */
         case GALLERY_UPLOADED_SUCCESSFULLY:
+
             return {
                 ...state,
                 gallery: [
                     ...state.gallery.slice(0, action.payload),
                     ...state.gallery.slice(action.payload + 1)
                 ],
-                // total number of tagged photos can be decremented
-                totalTaggedGalleryCount: state.totalTaggedGalleryCount -1,
-                // total number of successfully uploaded photos can be incremented
-                // could this convention be improved, without need to map and count potentially large arrays?
+                // total number of photos that were successfully uploaded
                 totalGalleryUploaded: state.totalGalleryUploaded +1,
             };
 
@@ -143,54 +119,17 @@ export default function (state = INITIAL_STATE, action) {
          */
         case PHOTOS_FROM_GALLERY:
 
-            console.log('photos_from_gallery', action.payload);
-
             // Copy the current stored gallery:
-            let newGallery = state.gallery;
+            let photos = [...state.gallery];
 
-            // Append each user selected photo (but only if it's not already in the stored gallery)
-            action.payload.forEach(
-                function(photo) {
-                    if(!newGallery.find( ({image}) => image.uri === photo.uri )) {
-                        newGallery.push(photo);
-                    }
-                }
-            );
+            action.payload.forEach(photo => {
+                photos.push(photo);
+            });
 
             // Store new version of gallery:
             return {
                 ...state,
-                gallery: newGallery,
-                galleryTotalCount: newGallery.length
-            };
-
-        /**
-         *
-         */
-        case NEW_SELECTED:
-            // console.log('- reducer, new selected -', action.payload);
-            return {
-                ...state
-                // selected: { action }
-            };
-
-        /**
-         * Delete any selected = true tags from gallery
-         */
-        case REMOVE_ALL_SELECTED_GALLERY:
-            return {
-                ...state,
-                gallery: state.gallery.map(image => {
-                    console.log("Delete", image);
-                    if (image.selected) {
-                        if (image.litter) {
-                            totalTaggedGalleryCount: state.totalTaggedGalleryCount -1
-                        }
-                        delete image.selected;
-                    }
-
-                    return {...image};
-                })
+                gallery: photos,
             };
 
         /**
@@ -234,27 +173,6 @@ export default function (state = INITIAL_STATE, action) {
             return {
                 ...state,
                 gallery
-            };
-
-        /**
-         * Number of images the user has selected in the MediaList
-         */
-        case UPDATE_GALLERY_COUNT:
-            return {
-                ...state,
-                totalGallerySelected: action.payload
-            };
-
-        /**
-         * Upload any Gallery items that are tagged
-         * change upload progress
-         * todo - delete uploaded image from users device
-         * then close UploadModal on Shared_Reducer
-         */
-        case UPLOAD_TAGGED_GALLERY:
-            console.log("todo - upload tagged gallery??");
-            return {
-                ...state
             };
 
         default:

@@ -63,16 +63,6 @@ export const updateTotalCount = (count) => {
     };
 }
 
-// /**
-//  * Turn Modal on / off
-//  */
-// -> deleted.
-// export const toggleModal = () => {
-//   return {
-//     type: TOGGLE_MODAL
-//   };
-// }
-
 /**
  * Toggle Litter content inside Modal on / off
  */

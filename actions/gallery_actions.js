@@ -3,35 +3,25 @@ import axios from 'axios'
 
 import {
     CHANGE_UPLOAD_PROGRESS,
-    CONFIRM_GALLERY_ITEM,
-    DELETE_GALLERY_UPLOAD_SUCCESS,
+    CONFIRM_GALLERY_TAGS,
     DELETE_SELECTED_GALLERY,
-    NEW_SELECTED,
-    GALLERY_SELECTED_FOR_TAGGING,
+    DESELECT_ALL_GALLERY_PHOTOS,
     GALLERY_UPLOADED_SUCCESSFULLY,
     TOGGLE_IMAGES_LOADING,
-    INCREMENT_SELECTED,
-    DECREMENT_SELECTED,
     PHOTOS_FROM_GALLERY,
-    REMOVE_ALL_SELECTED_GALLERY,
     RESET_GALLERY_COUNT,
     RESET_GALLERY_TOTAL_TO_UPLOAD,
-    RESET_TOTAL_GALLERY_UPLOADED_COUNT,
     TOGGLE_IMAGE_BROWSER,
     TOGGLE_SELECTED_GALLERY,
-    UPDATE_GALLERY_COUNT,
-    UPLOAD_TAGGED_GALLERY,
     URL,
-    URL_DEV,
-    URL_PRODUCTION
 } from './types'
 
 /**
- *
+ * Apply the selected tags to one of the users selected images
  */
-export const confirmGalleryItem = data => {
+export const confirmGalleryTags = data => {
     return {
-        type: CONFIRM_GALLERY_ITEM,
+        type: CONFIRM_GALLERY_TAGS,
         payload: data
     };
 }
@@ -47,33 +37,21 @@ export const deleteSelectedGallery = (photo) => {
 }
 
 /**
- *
+ * Change selected => false on all gallery photos
  */
-// export const galleryItemSelected = (item) => {
-//   // console.log("action - itemSelected");
-//   return {
-//     type: ITEM_SELECTED,
-//     payload: item
-//   };
-// }
-
-/**
- * A Gallery Index has been uploaded successfully! - can be deleted.
- */
-export const galleryPhotoUploadedSuccessfully = (index, id) => {
+export const deselectAllGalleryPhotos = () => {
     return {
-        type: GALLERY_UPLOADED_SUCCESSFULLY,
-        payload: index
+        type: DESELECT_ALL_GALLERY_PHOTOS
     };
 }
 
 /**
- * One of the images from the users photo album has been selected for tagging
+ * A Gallery Index has been uploaded successfully! - can be deleted.
  */
-export const gallerySelectedForTagging = (data) => {
+export const galleryPhotoUploadedSuccessfully = (index) => {
     return {
-        type: GALLERY_SELECTED_FOR_TAGGING,
-        payload: data
+        type: GALLERY_UPLOADED_SUCCESSFULLY,
+        payload: index
     };
 }
 
@@ -87,29 +65,6 @@ export const setImagesLoading = (bool) => {
     };
 }
 
-// TODO - delete the images.
-// return async (dispatch) => {
-//   try {
-//     console.log("Try - delete image from users device");
-//     // let path = data["_parts"][0][1]['uri'];
-//     // path = path.replace("ph", "file")
-//     // console.log("Image path to delete", path);
-//     // let del = await FileSystem.deleteAsync(path);
-//     let del = await MediaLibrary.deleteAssetsAsync([ id ]);
-//
-//     console.log("deleted?", del);
-//
-//     dispatch({
-//        type: GALLERY_UPLOADED_SUCCESSFULLY,
-//        payload: index
-//      });
-//
-//   } catch (e) {
-//     console.log("Error deleting", e);
-//   }
-// }
-// }
-
 /**
  * Add photos from gallery to redux
  */
@@ -117,26 +72,6 @@ export const photosFromGallery = (photos) => {
     return {
         type: PHOTOS_FROM_GALLERY,
         payload: photos
-    };
-}
-
-/**
- *
- */
-export const newSelected = (selected) => {
-    // console.log('- action -', selected);
-    return {
-        type: NEW_SELECTED,
-        payload: selected
-    };
-}
-
-/**
- * Remove ['selected'] from any gallery items set to be deleted
- */
-export const removeAllSelectedGallery = () => {
-    return {
-        type: REMOVE_ALL_SELECTED_GALLERY
     };
 }
 
@@ -178,31 +113,18 @@ export const toggleSelectedGallery = (index) => {
 }
 
 /**
- * Number of images the user has selected in their gallery
- */
-export const updateSelectedGalleryCount = (count) => {
-    return {
-        type: UPDATE_GALLERY_COUNT,
-        payload: count
-    };
-}
-
-/**
+ * Upload a photo selected from the users gallery
+ *
  * 1) Upload each gallery photo async that has data
  * 2) then upload the data associated with it
+ *
  * todo - delete the image on the users device
  * todo - try and upload all data in 1 request
  * todo - upload images earlier as a background process
- * @data = name, type (gallery, session), uri, lat, lon, presence, model
- * @litterData = smoking: cigarettes: 3.....
  */
 export const uploadTaggedGalleryPhoto = (data, token, tags) =>
 {
-    console.log('Action - uploadTaggedGalleryPhoto.data', data);
-    // console.log('Action - uploadTaggedGalleryPhoto.token', token);
-    console.log('Action - uploadTaggedGalleryPhoto.tags', tags);
-
-    let progress = null;
+    // let progress = null;
     return async (dispatch) => {
         return axios(URL + '/api/photos/submit', {
             method:'POST',
@@ -211,7 +133,7 @@ export const uploadTaggedGalleryPhoto = (data, token, tags) =>
                 'Content-Type': 'multipart/form-data'
             },
             data: data,
-            // need to debug this and make it smooooooth
+            // need to debug this and make it smooth
             // onUploadProgress: (p) => {
             //    progress = p.loaded / p.total; // ( total ) / 2
             //    progress = Math.round(progress * 100);
@@ -224,9 +146,8 @@ export const uploadTaggedGalleryPhoto = (data, token, tags) =>
         })
         .then(response => {
 
-            // console.log('uploadTaggedGalleryPhoto', response);
+            console.log('uploadTaggedGalleryPhoto', response);
 
-            // console.log('SUCCESS - Image uploaded - now upload associated data');
             if (response.status === 200)
             {
                 return axios(URL + '/api/v2/add-tags', {
@@ -238,7 +159,7 @@ export const uploadTaggedGalleryPhoto = (data, token, tags) =>
                         litter: tags,
                         photo_id: response.data.photo_id
                     } //,
-                    // need to debug this and make it smooooooth
+                    // need to debug this and make it smooth
                     // onUploadProgress: (p) => {
                     //    progress = p.loaded / p.total
                     //    progress = Math.round(progress * 100);
@@ -274,7 +195,7 @@ export const uploadTaggedGalleryPhoto = (data, token, tags) =>
                             // });
 
                             return {
-                                message: 'success'
+                                success: true
                             };
                         }
                     })

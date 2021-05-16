@@ -39,18 +39,24 @@ class LeftPageImages extends PureComponent
     /**
      * Gallery photo data
      *
-     * id
-     * filename
-     * height
-     * width
-     * uri
-     * lat
-     * lon
-     * pickedup
-     * selected
-     * tags
-     * timestamp
-     * type
+     * - id
+     * - filename
+     * - height
+     * - width
+     * - uri
+     * - lat
+     * - lon
+     * - pickedup
+     * - selected
+     * - tags
+     * - timestamp
+     * - type
+     */
+
+    /**
+     * Web photo data
+     *
+     * todo
      */
 
     /**
@@ -62,7 +68,7 @@ class LeftPageImages extends PureComponent
      */
     cameraPhotoPressed (index)
     {
-        console.log('cameraPhotoPressed', index);
+        // console.log('cameraPhotoPressed', index);
 
         const image = this.props.photos[index];
 
@@ -82,7 +88,6 @@ class LeftPageImages extends PureComponent
             // litter_reducer
             this.props.photoSelectedForTagging({
                 swiperIndex: index,
-                type: 'camera',
                 image
             });
         }
@@ -97,7 +102,7 @@ class LeftPageImages extends PureComponent
      */
     galleryPhotoPressed (index)
     {
-        console.log('galleryPhotoPressed', index);
+        // console.log('galleryPhotoPressed', index);
 
         const image = this.props.gallery[index];
 
@@ -119,7 +124,6 @@ class LeftPageImages extends PureComponent
             // as camera_photos appear first, followed by gallery_photos, followed by web_photos.
             this.props.photoSelectedForTagging({
                 swiperIndex: this.props.photos.length + index,
-                type: 'gallery',
                 image
             });
         }
@@ -264,19 +268,20 @@ class LeftPageImages extends PureComponent
      */
     _webImagePressed ()
     {
-        if (! this.props.isSelecting)
+        if (!this.props.isSelecting)
         {
             // shared.js
             this.props.toggleLitter();
 
+            const image = this.props.webPhotos[0];
+
+            const swiperIndex = this.props.photos.length + this.props.gallery.length;
+
             // litter.js
-            let image = this.props.webPhotos[0];
-            // todo - load this litter object by default
-            // todo - change this name to tags
-            image.tags = {};
-
-            this.props.itemSelected(image);
-
+            this.props.photoSelectedForTagging({
+                swiperIndex,
+                image
+            });
         }
     }
 
@@ -331,7 +336,7 @@ class LeftPageImages extends PureComponent
         }
 
         // Web photos have been uploaded to the web-app
-        // Photos are taken this camera
+        // Photos are taken the in-app camera
         // Gallery from albums
         return (
 
@@ -411,6 +416,7 @@ const styles = {
     },
     webImageContainer: {
         position: 'relative',
+        paddingBottom: SCREEN_HEIGHT * 0.002
         // backgroundColor: 'white'
     },
     webTextContainer: {

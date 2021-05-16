@@ -1,50 +1,26 @@
 import {
     ADD_PHOTO,
-    SET_PHOTOS,
-    CLOSE_LITTER_MODAL,
+    LOAD_CAMERA_PHOTOS_FROM_ASYNC_STORAGE,
     CONFIRM_SESSION_TAGS,
-    // DELETE_SELECTED_GALLERY,
     DELETE_SELECTED_PHOTO,
+    DESELECT_ALL_CAMERA_PHOTOS,
     LOGOUT,
-    PHOTOS_FROM_GALLERY,
     INCREMENT,
-    INCREMENT_SELECTED,
-    DECREMENT_SELECTED,
-    // ITEM_SELECTED,
     RESET_PHOTOS_TOTAL_TO_UPLOAD,
-    REMOVE_ALL_SELECTED_PHOTOS,
     RESET_SESSION_COUNT,
-    SESSION_UPLOADED_SUCCESSFULLY,
+    CAMERA_PHOTO_UPLOADED_SUCCESSFULLY,
     TOGGLE_SELECTED_PHOTO,
-    // TOGGLE_MODAL,
-    // TOGGLE_LITTER,
-    // TOGGLE_UPLOAD,
-    // TOGGLE_IMAGE_BROWSER,
     TOGGLE_SELECTING,
     UPDATE_PERCENT,
-    UPLOAD_PHOTOS,
     UPDATE_COUNT_REMAINING,
     UPLOAD_COMPLETE_SUCCESS,
-    UNIQUE_VALUE
 } from '../actions/types';
-
-// moved to Shared_Reducer
-// // modalVisible: false,
-// // litterVisible: false,
-// uploadVisible: false,
 
 const INITIAL_STATE = {
     photos: [],
-    photosData: [],
-    // photoSelected: null,
     progress: 0,
-    gallery: [],
-    imageBrowserOpen: false,
     isSelecting: false,
     remainingCount: 0,
-    selected: 0,
-    totalSessionUploaded: 0,
-    totalCount: null,
     totalTaggedSessionCount: 0,
     uniqueValue: 0
 };
@@ -72,7 +48,8 @@ export default function(state = INITIAL_STATE, action) {
                 date: action.payload.date,
                 type: 'camera', // Photos taken from the camera
                 selected: false,
-                tags: null
+                tags: null,
+                picked_up: false
             });
 
             return {
@@ -80,38 +57,47 @@ export default function(state = INITIAL_STATE, action) {
                 photos: photos1
             };
 
-        case SET_PHOTOS:
+        case LOAD_CAMERA_PHOTOS_FROM_ASYNC_STORAGE:
 
             return {
                 ...state,
                 photos: action.payload
             };
 
-        // case CLOSE_LITTER_MODAL:
-        //   return {
-        //     ...state,
-        //     modalVisible: false,
-        //     litterVisible: false
-        //   };
-
         /**
          * Confirm the tags for a Photo taken from the Camera
          */
         case CONFIRM_SESSION_TAGS:
 
-            console.log('confirmSessionTags', action.payload);
-
             let photos = [...state.photos];
-
             let photo1 = photos[action.payload.index];
 
             photo1.tags = action.payload.tags;
-            photo1.presence = action.payload.presence;
+            photo1.picked_up = action.payload.picked_up;
 
             return {
                 ...state,
-                totalTaggedSessionCount: state.totalTaggedSessionCount +1,
                 photos
+            };
+
+        /**
+         * When isSelecting is turned off,
+         *
+         * Change selected value on every photo to false
+         */
+        case DESELECT_ALL_CAMERA_PHOTOS:
+
+            let photos3 = [...state.photos];
+
+            photos3 = photos3.map(photo => {
+                photo.selected = false;
+
+                return photo;
+            });
+
+            return {
+                ...state,
+                photos: photos3
             };
 
         case DELETE_SELECTED_PHOTO:
@@ -121,7 +107,6 @@ export default function(state = INITIAL_STATE, action) {
                     ...state.photos.slice(0, action.payload),
                     ...state.photos.slice(action.payload + 1)
                 ],
-                selected: 0,
                 isSelecting: false
             };
 
@@ -142,7 +127,7 @@ export default function(state = INITIAL_STATE, action) {
         //   };
 
         case LOGOUT:
-        // return INITIAL_STATE;
+            // return INITIAL_STATE;
 
         /**
          * When uploading reset x (x / total) to 0
@@ -150,22 +135,7 @@ export default function(state = INITIAL_STATE, action) {
         case RESET_PHOTOS_TOTAL_TO_UPLOAD:
             return {
                 ...state,
-                totalSessionUploaded: 0
-            };
-
-        /**
-         * Delete any selected = true tags from Photos
-         */
-        case REMOVE_ALL_SELECTED_PHOTOS:
-            return {
-                ...state,
-                photos: state.photos.map(image => {
-                    if (image.selected) {
-                        delete image.selected;
-                    }
-
-                    return {...image};
-                })
+                totalCameraPhotosUploaded: 0
             };
 
         /**
@@ -198,9 +168,8 @@ export default function(state = INITIAL_STATE, action) {
 
         /**
          * Session Photo + Data has been uploaded successfully
-         - todo, give the user the ability to delete the image from their device
          */
-        case SESSION_UPLOADED_SUCCESSFULLY:
+        case CAMERA_PHOTO_UPLOADED_SUCCESSFULLY:
             return {
                 ...state,
                 photos: [
@@ -211,14 +180,13 @@ export default function(state = INITIAL_STATE, action) {
                 totalTaggedSessionCount: state.totalTaggedSessionCount -1,
                 // total number of successfully uploaded photos can be incremented
                 // this process could be improved (without need to map and count large arrays)
-                totalSessionUploaded: state.totalSessionUploaded +1,
+                totalCameraPhotosUploaded: state.totalCameraPhotosUploaded +1,
             };
 
         case TOGGLE_SELECTING:
             // console.log('reducer - toggle selecting');
             return {
                 ...state,
-                selected: 0,
                 isSelecting: ! state.isSelecting,
                 uniqueValue: state.uniqueValue + 1
             };

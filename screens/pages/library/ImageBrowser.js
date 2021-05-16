@@ -91,8 +91,7 @@ class ImageBrowser extends React.Component {
         try {
             // add photos to gallery_reducer.js
             this.props.photosFromGallery(selectedPhotos);
-            // add first photo to litter.js photoselected
-            this.props.selectPhoto(selectedPhotos[0]);
+
             this.props.toggleImageBrowser();
         } catch (e) {
             console.log(e);

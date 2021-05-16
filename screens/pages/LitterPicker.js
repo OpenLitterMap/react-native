@@ -77,33 +77,6 @@ class LitterPicker extends PureComponent
 
         this.keyboardDidShowListener = Keyboard.addListener('keyboardDidShow', this._keyboardDidShow.bind(this));
         this.keyboardDidHideListener = Keyboard.addListener('keyboardDidHide', this._keyboardDidHide.bind(this));
-
-        // This is loading the last photo when a gallery photo is pressed
-        // const photos = [].concat(this.props.photos, this.props.gallery, this.props.webPhotos);
-        //
-        // photos.forEach((photo, index) => {
-        //
-        //     // console.log({ photo });
-        //
-        //     // null is coming through here somewhere. Maybe from web?
-        //     if (photo)
-        //     {
-        //         if (photo.type === "gallery")
-        //         {
-        //             if (photo.image.filename === this.props.photoSelected.filename)
-        //             {
-        //                 this.props.swiperIndexChanged(index);
-        //             }
-        //         }
-        //         else
-        //         {
-        //             if (photo.filename === this.props.photoSelected.filename)
-        //             {
-        //                 this.props.swiperIndexChanged(index);
-        //             }
-        //         }
-        //     }
-        // });
     }
 
     /**
@@ -251,20 +224,6 @@ class LitterPicker extends PureComponent
                 <View style={styles.container}>
                     <StatusBar hidden />
 
-                    {/*<Modal*/}
-                    {/*    animationType="slide"*/}
-                    {/*    transparent={true}*/}
-                    {/*    visible={this.props.tagsModalVisible}*/}
-                    {/*>*/}
-                    {/*    <View style={styles.modalOuter}>*/}
-                    {/*        {*/}
-                    {/*            this.state.webLoading && (*/}
-                    {/*                <ActivityIndicator />*/}
-                    {/*            )*/}
-                    {/*        }*/}
-                    {/*    </View>*/}
-                    {/*</Modal>*/}
-
                     {/* First - Top Bar position: 'absolute'  */}
                     <LitterCategories
                         categories={CATEGORIES}
@@ -336,6 +295,7 @@ class LitterPicker extends PureComponent
                         </View>
                     </View>
 
+                    {/* 4.3 - Bottom Input - Search All Tags */}
                     <LitterBottomSearch
                         keyboardOpen={this.state.keyboardOpen}
                         suggestedTags={this.props.suggestedTags}
@@ -357,23 +317,6 @@ class LitterPicker extends PureComponent
     {
         return (this.props.gallery.length === 0 && this.props.photos.length === 0 && this.props.webImagesCount === 0);
     }
-
-    /**
-     * 20% height
-     */
-    // _computeBottomContainer ()
-    // {
-    //   return styles.bottomContainer
-    //
-    //   // if (Platform.OS === 'android') return styles.biggerBottomContainer;
-    //   //
-    //   // // if "iPhone 10+", return 17% card height
-    //   // let x = DeviceInfo.getModel().split(' ')[1];
-    //   //
-    //   // if (x.includes('X') || parseInt(x) >= 10) ;
-    //   //
-    //   // return styles.biggerBottomContainer;
-    // }
 
     /**
      * Position absolute
@@ -434,48 +377,44 @@ class LitterPicker extends PureComponent
      */
     swiperIndexChanged = (index) => {
 
-        console.log('swiperIndexChanged', index);
+        // console.log('swiperIndexChanged', index);
 
         const photos = [].concat(this.props.photos, this.props.gallery, this.props.webPhotos);
 
         const photo = photos[index];
 
+        let image = null;
+
         setTimeout(() => {
 
-            // Necessary to put this here to avoid error
+            // This was necessary to avoid error
             // litter.js swiperIndex
             this.props.swiperIndexChanged(index);
 
             // Camera
             if (photo.type === 'camera')
             {
-                this.props.photoSelectedForTagging({
-                    swiperIndex: index,
-                    type: 'camera',
-                    image: this.props.photos[index]
-                });
+                image = this.props.photos[index];
             }
             // Gallery
             else if (photo.type === 'gallery')
             {
                 const galleryIndex = index - this.props.photos.length;
-                console.log({ galleryIndex });
 
-                const gall = this.props.gallery[galleryIndex];
-                console.log({ gall });
-
-                this.props.photoSelectedForTagging({
-                    swiperIndex: galleryIndex,
-                    type: 'gallery',
-                    image: this.props.gallery[index]
-                });
+                image = this.props.gallery[galleryIndex];
             }
             // Web
-            else
+            else if (photo.type === 'web')
             {
-                console.log('WEB CHANGE')
-                // this.props.itemSelected(photo);
+                const webIndex = index - this.props.photos.length - this.props.gallery.length;
+
+                image = this.props.webPhotos[webIndex];
             }
+
+            this.props.photoSelectedForTagging({
+                swiperIndex: index,
+                image
+            });
 
             // If we are browsing web photos
             // At the end of the search, we need to check to see if we need to load more images
@@ -486,7 +425,6 @@ class LitterPicker extends PureComponent
                 if (this.props.photoSelected.id === this.props.webPhotos[this.props.webPhotos.length -1].id)
                 {
                     // show loading more images from web
-
                     this.props.loadMoreWebImages(this.props.token, this.props.photoSelected.id);
                 }
             }
@@ -497,22 +435,19 @@ class LitterPicker extends PureComponent
     /**
      * Array of images to swipe through
      *
-     * this.props.swiperIndex is the current index
+     * this.props.swiperIndex is the current index across all available photo types
      *
      * this.props.photos are from the in-app camera
+     * this.props.gallery are selected from the users photo album
+     * this.props.webPhotos were uploaded to web and in the app for tagging
      */
     _renderLitterImage = () =>
     {
         // Put all the data we want to display into an array
         const photos = [].concat(this.props.photos, this.props.gallery, this.props.webPhotos);
 
-        console.log('swiperIndex.1', this.props.swiperIndex);
-
         // Return an array of all photos
         return photos.map((photo, index) => {
-
-            // console.log({ photo });
-            // console.log({ index });
 
             // Only render one image
             if (index === this.props.swiperIndex)
@@ -530,25 +465,21 @@ class LitterPicker extends PureComponent
     /**
      * Confirm this data is ready for upload
      *
-     * @Gallery = Camera_Roll,
-     * @Photos  = Taken with OLM Camera
-     * @Web     = Uploaded via web-app
+     * this.props.photos are from the in-app camera
+     * this.props.gallery are selected from the users photo album
+     * this.props.webPhotos were uploaded to web and in the app for tagging
      *
      * some users have settings.previous_tags true
      */
     _confirmData = async () =>
     {
-        let deleteWebImageId = null;
-        let tags = null;
-
-        console.log('CONFIRM_DATA', this.props.tags);
+        const swiperIndex = this.props.swiperIndex;
 
         // The user can only confirm if tags exist
-        if (Object.keys(this.props.tags).length !== 0)
+        if (Object.keys(this.props.tags).length > 0)
         {
-            tags = cloneDeep(this.props.tags);
-
-            console.log({ tags });
+            // Some users want to copy the tags onto the next image, so we need to clone them
+            const tags = cloneDeep(this.props.tags);
 
             if (this.props.photoSelected.type === 'web')
             {
@@ -577,7 +508,10 @@ class LitterPicker extends PureComponent
 
                     if (nextWebPhoto)
                     {
-                        this.props.itemSelected(nextWebPhoto);
+                        this.props.photoSelectedForTagging({
+                            swiperIndex,
+                            image: nextWebPhoto
+                        });
 
                         if (this.props.previous_tags)
                         {
@@ -592,24 +526,24 @@ class LitterPicker extends PureComponent
                     }
                 }
             }
-
             else if (this.props.photoSelected.type === 'gallery')
             {
+                const galleryIndex = swiperIndex - this.props.photos.length;
+
                 // gallery_actions, gallery_reducer
-                await this.props.confirmGalleryItem({
-                    index: this.props.photoSelected.index,
-                    data: tags,
-                    presence: this.props.presence
+                await this.props.confirmGalleryTags({
+                    index: galleryIndex,
+                    tags,
+                    picked_up: this.props.presence
                 });
             }
-
-            else
+            else if (this.props.photoSelected.type === 'camera')
             {
                 // photo_actions, photos_reducer
                 await this.props.confirmSessionTags({
-                    index: this.props.indexSelected,
-                    tags: this.props.tags,
-                    presence: this.props.presence
+                    index: swiperIndex,
+                    tags,
+                    picked_up: this.props.presence
                 });
             }
         }
@@ -623,9 +557,7 @@ class LitterPicker extends PureComponent
         // swipe in the next image
         const imageCount = this.props.photos.length + this.props.gallery.length + this.props.webPhotos.length;
 
-        console.log({ imageCount });
-
-        if (imageCount === 0)
+        if (imageCount === 0 || this.props.swiperIndex + 1 === imageCount)
         {
             // litter_reducer
             this.props.resetLitterTags();
@@ -636,8 +568,9 @@ class LitterPicker extends PureComponent
         else
         {
             this.refs.imageSwiper.scrollTo(this.props.swiperIndex + 1, true);
-            console.log('Scroll to ', this.props.swiperIndex + 1);
 
+            // Some users want to apply the same tags to the next image
+            // this.props.previous_tags is a setting saved to the user
             // probably a better way to do this...
             if (this.props.previous_tags)
             {

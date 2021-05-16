@@ -1,23 +1,16 @@
 import {
-    ADD_PREVIOUS_TAG,
     CHANGE_CATEGORY,
     CHANGE_ITEM,
     CHANGE_Q,
     CONFIRM_FOR_UPLOAD,
     CHANGE_SWIPER_INDEX,
-    // FILTER_TAGS,
-    ITEM_SELECTED,
     LITTER_SELECTED,
     PHOTO_SELECTED_FOR_TAGGING,
-    REMOVE_PREVIOUS_TAG,
     REMOVE_TAG,
     RESET_TAGS,
     RESET_LITTER_STATE,
-    UPDATE_PREVIOUS_TAGS,
-    SELECT_PHOTO,
     SHOW_ALL_TAGS,
     SHOW_INNER_MODAL,
-    SLIDE_IN_NEXT_GALLERY,
     SUGGEST_TAGS,
     TAG_LITTER,
     TOGGLE_SWITCH,
@@ -45,12 +38,11 @@ const INITIAL_STATE = {
     presence: true,
     positions: {}, // coordinates of each tag for animation
     suggestedTags: [],
-    swiperIndex: 0,
+    swiperIndex: 0, // the index of all camera, web, gallery photos
     tags: {},
     tagsModalVisible: false,
     totalImagesToUpload: 0,
-    totalLitterCount: 0,
-    type: null // camera, gallery, or web
+    totalLitterCount: 0
 };
 
 export default function (state = INITIAL_STATE, action)
@@ -135,37 +127,11 @@ export default function (state = INITIAL_STATE, action)
                 ...state
             };
 
-        // case FILTER_TAGS:
-        //     console.log('filter_tags.reducer', action.payload);
-        //     return {
-        //         ...state
-        //     };
-
-        // /**
-        //  * An item has been selected
-        //  */
-        // case ITEM_SELECTED:
-        //
-        //     console.log('item_selected is deprecated')
-        //
-        //     // Check if any litter already exists on this item / index?
-        //     // console.log('reducer.item_selected', action.payload);
-        //
-        //     const newTags1 = Object.assign({}, action.payload.tags);
-        //     const newImage = Object.assign({}, action.payload);
-        //
-        //     return {
-        //         ...state,
-        //         photoSelected: newImage,
-        //         // modalVisible: true,
-        //         litterVisible: true,
-        //         tags: newTags1,
-        //         q: "1"
-        //     };
-        
+        /**
+         * Check if any litter already exists on this item / index?
+         */
         case LITTER_SELECTED:
 
-          // Check if any litter already exists on this item / index?
           // console.log('litter_reducer.item_selected', action.payload);
 
           let newTags2 = Object.assign({}, action.payload.litter);
@@ -193,13 +159,9 @@ export default function (state = INITIAL_STATE, action)
             const newTags3 = Object.assign({}, action.payload.image.tags);
             const newImage3 = Object.assign({}, action.payload.image);
 
-            console.log({ newImage3 });
-            console.log('SET SWIPER INDEX', action.payload.swiperIndex);
-
             return {
                 ...state,
                 swiperIndex: action.payload.swiperIndex,
-                type: action.payload.type, // camera, gallery, or web
                 photoSelected: newImage3, // the image data
                 // modalVisible: true,
                 litterVisible: true,
@@ -212,19 +174,22 @@ export default function (state = INITIAL_STATE, action)
          */
         case REMOVE_TAG:
 
-            // console.log("removetag", action.payload);
             let tags2 = Object.assign({}, state.tags);
             delete tags2[action.payload.category][action.payload.item];
 
             let total = 0;
             let length = 0;
             Object.keys(tags2).map(category => {
-                if (Object.keys(tags2[category]).length > 0) {
+
+                if (Object.keys(tags2[category]).length > 0)
+                {
                     Object.values(tags2[category]).map(values => {
                         total += parseInt(values);
                         length++;
                     });
-                } else {
+                }
+                else
+                {
                     // remove category
                     delete tags2[category];
                 }
@@ -261,18 +226,6 @@ export default function (state = INITIAL_STATE, action)
             });
 
         /**
-         * The user has selected a photo
-         * @return first photo selected from gallery
-         * else
-         * @return photo from camera roll
-         */
-        case SELECT_PHOTO:
-
-            return Object.assign({}, state, {
-                photoSelected: action.payload
-            });
-
-        /**
          * Content to show in the modal on LitterPicker
          */
         case SHOW_ALL_TAGS:
@@ -293,46 +246,15 @@ export default function (state = INITIAL_STATE, action)
             });
 
         /**
-         * Slide in the next photo for tagging
-         * todo - not just for gallery
-         * todo - create slide in animation
-         * todo - allow the user to swipe left & right between images
-         */
-        case SLIDE_IN_NEXT_GALLERY:
-            // console.log("reducer - litter Slide In Next", action.payload);
-
-            console.log('slide_in_next_gallery');
-
-            const category2 = CATEGORIES.find(cat => cat.title === action.payload);
-            const items2 = LITTERKEYS[category2.title];
-            const item2 = items2[0].key;
-
-            return Object.assign({}, state, {
-                category: category2,
-                items: items2,
-                item: item2,
-                q: "1",
-                // collection: [],
-                tags: action.payload.tags,
-                previousTags: {},
-                switchValue: true,
-                totalLitterCount: 0,
-                // collectionModalVisible: false,
-                tagsModalVisible: false,
-                collectionLength: 0,
-                hasLitter: false,
-                photoSelected: action.payload.item
-            });
-
-        /**
          * Filter all translated tag values
          *
          * Return all results
          *
-         * We are passing auth.lang as a prop which could be access from auth_reducer
+         * Note: We are passing auth.lang as a prop which could be access from auth_reducer
          */
         case SUGGEST_TAGS:
 
+            // return array of suggested tags based on payload text
             let x = [];
 
             Object.entries(LITTERKEYS).some(tags => {
@@ -358,12 +280,12 @@ export default function (state = INITIAL_STATE, action)
 
         /**
          * Add litter data to tags
-         * category[title] = quantity
-         * eg Smoking['Cigarette Butts'] = 4
-         *    Alcohol['Beer Cans'] = 5
-         *    etc
          *
-         * ++ Increment the quantity if button pressed repeatedly
+         * category[key] = quantity
+         *
+         * eg smoking[butts] = 1
+         *
+         * Increment the quantity if button pressed repeatedly
          */
         case TAG_LITTER:
 
@@ -431,7 +353,7 @@ export default function (state = INITIAL_STATE, action)
          */
         case UPDATE_TAGS:
 
-            let updateTags = Object.assign({}, action.payload);
+            const updateTags = Object.assign({}, action.payload);
 
             return {
                 ...state,

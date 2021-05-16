@@ -115,25 +115,27 @@ class MediaList extends Component
      * @description Select media file function
      * @param item
      */
-    selectMediaFile(item) {
+    selectMediaFile (item)
+    {
         let { maximumSelectedFiles, itemsPerRow, callback, selectSingleItem } = this.props;
-        let selected = this.state.selected,
-            index = existsInArray( selected, 'image', 'uri', item.uri );
+        let selected = this.state.selected;
+        let index = existsInArray(selected, 'uri', item.uri);
 
-        if ( index >= 0 ) {
+        if (index >= 0)
+        {
             selected.splice( index, 1 );
-        } else {
-            if ( selectSingleItem ) {
+        }
+        else
+        {
+            if (selectSingleItem) {
                 selected.splice( 0, selected.length );
             }
-            if ( selected.length < maximumSelectedFiles ) {
+            if (selected.length < maximumSelectedFiles) {
                 selected.push( item );
             }
         }
-        this.setState({ selected });
 
-        // gallery_actions, gallery_reducer
-        this.props.updateSelectedGalleryCount(this.state.selected.length);
+        this.setState({ selected });
 
         callback(selected, item);
     }

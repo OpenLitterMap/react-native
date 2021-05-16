@@ -36,7 +36,6 @@ import LitterPicker from './LitterPicker'
 
 import moment from 'moment'
 
-// Select + Upload Page
 class LeftPage extends PureComponent
 {
     constructor (props)
@@ -51,9 +50,7 @@ class LeftPage extends PureComponent
         // Photos selected from the Photos Album
         AsyncStorage.getItem('openlittermap-gallery')
             .then((gallery) => {
-                if (gallery === null) {
-                    this.props.photosFromGallery([]);
-                } else {
+                if (gallery) {
                     this.props.photosFromGallery(JSON.parse(gallery));
                 }
             }
@@ -62,10 +59,8 @@ class LeftPage extends PureComponent
         // Photos taken from the OLM Camera
         AsyncStorage.getItem('openlittermap-photos')
             .then((photos) => {
-                if (photos === null) {
-                    this.props.setPhotos([]);
-                } else {
-                    this.props.setPhotos(JSON.parse(photos));
+                if (photos) {
+                    this.props.loadCameraPhotosFromAsyncStorage(JSON.parse(photos));
                 }
             }
         );
@@ -335,11 +330,11 @@ class LeftPage extends PureComponent
 
         let tagged = 0;
         this.props.photos.map(photo => {
-            if (photo.hasOwnProperty('litter')) tagged++;
+            if (photo.tags && Object.keys(photo.tags).length > 0) tagged++;
         });
 
         this.props.gallery.map(gall => {
-            if (gall.hasOwnProperty('litter')) tagged++;
+            if (gall.tags && Object.keys(gall.tags).length > 0) tagged++;
         });
 
         if (tagged === 0) return;
@@ -401,7 +396,7 @@ class LeftPage extends PureComponent
             );
         }
 
-        if (this.props.gallery.length > 0 | this.props.photos.length > 0)
+        if (this.props.gallery.length > 0 || this.props.photos.length > 0)
         {
             for (let i = 0; i < this.props.gallery.length; i++)
             {
@@ -432,11 +427,11 @@ class LeftPage extends PureComponent
         {
             if (this.props.photos.length > 0)
             {
-                this.props.removeAllSelectedPhotos();
+                this.props.deselectAllCameraPhotos();
             }
             if (this.props.gallery.length > 0)
             {
-                this.props.removeAllSelectedGallery();
+                this.props.deselectAllGalleryPhotos();
             }
         }
 
@@ -449,143 +444,118 @@ class LeftPage extends PureComponent
      */
     _getRemainingUploadCount ()
     {
-        return this.props.totalGalleryUploaded + this.props.totalSessionUploaded;
+        return this.props.totalGalleryUploaded + this.props.totalCameraPhotosUploaded;
     }
 
     /**
      * Upload photos, 1 photo per request
-     * - todo - move all this to redux.
-     ** - status - images being sent across
-     *** - fix progress bar percentComplete
-     **** - Consider: Auto-upload any tagged images in the background once the user has pressed Confirm
+     *
+     * - status - images being sent across
+     * - fix progress bar percentComplete
+     * - Consider: Auto-upload any tagged images in the background once the user has pressed Confirm
      */
     uploadPhotos = async () => {
 
-        this.props.resetGalleryToUpload(); // gallery
-        this.props.resetPhotosToUpload(); // photo
+        this.props.resetGalleryToUpload(); // gallery.totalTaggedGalleryCount
+        this.props.resetPhotosToUpload(); // photos.totalCameraPhotosUploaded
 
         let galleryCount = 0;
-        let sessionCount = 0;
-        let model = '';
-
-        model = this.props.model;
+        let cameraPhotosCount = 0;
+        const model = this.props.model;
 
         this.props.gallery.map(item => {
-            if (item.litter) galleryCount++;
+            if (item.tags) galleryCount++;
         });
 
         this.props.photos.map(item => {
-            if (item.litter) sessionCount++;
+            if (item.tags) cameraPhotosCount++;
         });
 
-        const totalCount = galleryCount + sessionCount;
-        // console.log(({ totalCount }));
+        const totalCount = galleryCount + cameraPhotosCount;
 
-        // shared_actions, shared_reducer
-        // updates -> this.props.totalImagesToUpload
-        this.props.updateTotalCount(totalCount);
+        // shared.js
+        this.props.updateTotalCount(totalCount); // this.props.totalImagesToUpload
 
-        // 2. Open Upload Modal
+        // shared.js
         this.props.toggleUpload();
 
-        // 3. Upload Photos
-        // Photo Gallery - On Device
-        // this.props.totalTaggedGalleryCount > 0
         if (galleryCount > 0)
         {
             // async loop
-            for (const item of this.props.gallery)
+            for (const img of this.props.gallery)
             {
-                if (item.litter)
+                if (img.tags && Object.keys(img.tags).length > 0)
                 {
-                    let data = new FormData();
+                    let galleryToUpload = new FormData();
 
-                    data.append('photo', {
-                        // gallery
-                        name: item.filename,
+                    galleryToUpload.append('photo', {
+                        name: img.filename,
                         type: 'image/jpeg',
-                        uri: item.uri
+                        uri: img.uri
                     });
 
-                    const date = moment.unix(item.timestamp).format('YYYY:MM:DD HH:mm:ss');
+                    const date = moment.unix(img.timestamp).format('YYYY:MM:DD HH:mm:ss');
 
-                    data.append('lat', item.location.latitude);
-                    data.append('lon', item.location.longitude);
-                    data.append('date', date);
-                    data.append('presence', item.presence);
-                    data.append('model', model);
-                    console.log(data);
+                    galleryToUpload.append('lat', img.lat);
+                    galleryToUpload.append('lon', img.lon);
+                    galleryToUpload.append('date', date);
+                    galleryToUpload.append('presence', img.picked_up);
+                    galleryToUpload.append('model', model);
 
-                    // console.log('Data to upload', data);
+                    const myIndex = this.props.gallery.indexOf(img);
 
-                    // need to get index dynamically because gallery.length -1 with upload
-                    const myIndex = this.props.gallery.indexOf(item);
-                    console.log(item);
-
-                    // gallery_actions
-                    // this makes 2 requests
-                    // 1st to upload the IMAGE
-                    // 2nd to upload the DATA
-                    // when OLM recieves the data, it adds the processing to a queue so the user does not have to wait for a response here
+                    // gallery.js
                     const response = await this.props.uploadTaggedGalleryPhoto(
-                        data,
+                        galleryToUpload,
                         this.props.token,
-                        item.litter
+                        img.tags
                     );
-                    // console.log("LeftPage - after: Image should be uploaded");
-                    // console.log('Response - uploadTaggedGalleryPhotos');
-                    // console.log(response);
-                    if (response.message)
+
+                    if (response.success)
                     {
-                        // pass item.id to delete image from users screen
-                        // todo - find a way to delete the image from the users saved photos without asking for permission every time
-                        //
+                        // Remove the image
                         this.props.galleryPhotoUploadedSuccessfully(myIndex);
                     }
+                    // else, show the error to the user
                 }
             }
         }
 
-        if (this.props.totalTaggedSessionCount > 0)
+        if (cameraPhotosCount > 0)
         {
             // upload session photos
-            // console.log("upload session photos");
-            for (const item of this.props.photos)
+            for (const img of this.props.photos)
             {
-                if (item.litter)
+                if (img.tags && Object.keys(img.tags).length > 0)
                 {
-                    // console.log("Session - litter found");
-                    // console.log(item);
-                    let data = new FormData();
+                    let cameraPhoto = new FormData();
 
-                    data.append('photo', {
-                        name: item.filename,
+                    cameraPhoto.append('photo', {
+                        name: img.filename,
                         type: 'image/jpeg',
-                        uri: item.uri
+                        uri: img.uri
                     });
 
-                    data.append('lat', item.lat);
-                    data.append('lon', item.lon);
-                    data.append('date', item.date);
-                    data.append('presence', item.presence);
-                    data.append('model', model);
-                    // console.log('Data to upload', data);
+                    cameraPhoto.append('lat', img.lat);
+                    cameraPhoto.append('lon', img.lon);
+                    cameraPhoto.append('date', img.date);
+                    cameraPhoto.append('presence', img.presence);
+                    cameraPhoto.append('model', model);
 
-                    const myIndex = this.props.photos.indexOf(item);
+                    const myIndex = this.props.photos.indexOf(img);
 
-                    // photo_actions, photos_reducer
-                    const response = await this.props.uploadTaggedSessionPhotos(
-                        data,
+                    // photos.js
+                    const response = await this.props.uploadTaggedCameraPhoto(
+                        cameraPhoto,
                         this.props.token,
-                        item.litter
+                        img.tags
                     );
 
-                    // console.log('Response - uploadTaggedSessionPhotos');
-                    // console.log(response);
-                    // decrement this.props.totalTaggedSessionCount
-                    if (response.message) {
-                        this.props.sessionPhotoUploadedSuccessfully(myIndex);
+                    if (response.success)
+                    {
+                        this.props.cameraPhotoUploadedSuccessfully(myIndex);
                     }
+                    // else, show the error to the user
                 }
             }
         }
@@ -596,9 +566,11 @@ class LeftPage extends PureComponent
             // shared_actions, reducer
             this.props.toggleUpload();
             this.props.toggleThankYou();
-            // photos_actions
+
+            // photos.js
             this.props.resetSessionCount();
-            // gallery_actions
+
+            // gallery.js
             this.props.resetGalleryCount();
         }
 
@@ -740,7 +712,7 @@ const mapStateToProps = state => {
         remainingCount: state.photos.remainingCount,
         token: state.auth.token,
         totalGalleryUploaded: state.gallery.totalGalleryUploaded,
-        totalSessionUploaded: state.photos.totalSessionUploaded,
+        totalCameraPhotosUploaded: state.photos.totalCameraPhotosUploaded,
         thankYouVisible: state.shared.thankYouVisible,
         totalImagesToUpload: state.shared.totalImagesToUpload,
         totalTaggedGalleryCount: state.gallery.totalTaggedGalleryCount,
