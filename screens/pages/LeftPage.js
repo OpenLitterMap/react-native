@@ -566,12 +566,6 @@ class LeftPage extends PureComponent
             // shared_actions, reducer
             this.props.toggleUpload();
             this.props.toggleThankYou();
-
-            // photos.js
-            this.props.resetSessionCount();
-
-            // gallery.js
-            this.props.resetGalleryCount();
         }
 
         setTimeout(() => {

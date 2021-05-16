@@ -9,7 +9,6 @@ import {
     GALLERY_UPLOADED_SUCCESSFULLY,
     TOGGLE_IMAGES_LOADING,
     PHOTOS_FROM_GALLERY,
-    RESET_GALLERY_COUNT,
     RESET_GALLERY_TOTAL_TO_UPLOAD,
     TOGGLE_IMAGE_BROWSER,
     TOGGLE_SELECTED_GALLERY,
@@ -72,15 +71,6 @@ export const photosFromGallery = (photos) => {
     return {
         type: PHOTOS_FROM_GALLERY,
         payload: photos
-    };
-}
-
-/**
- * Reset gallery count to 0 when all uploads finished successfully
- */
-export const resetGalleryCount = () => {
-    return {
-        type: RESET_GALLERY_COUNT
     };
 }
 
