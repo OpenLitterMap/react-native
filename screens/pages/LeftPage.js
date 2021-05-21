@@ -87,11 +87,14 @@ class LeftPage extends PureComponent
         await this.props.checkForImagesOnWeb(this.props.token);
     }
 
+    /**
+     *
+     */
     _toggleUpload ()
     {
         this.props.toggleUpload();
-        this.props.resetGalleryCount();
-        this.props.resetSessionCount();
+
+        // cancel pending uploads
     }
 
     render ()
