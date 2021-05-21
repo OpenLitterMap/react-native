@@ -15,19 +15,19 @@ def getPassword(String currentUser, String keyChain) {
 
 buildscript {
     ext {
-        firebaseIidVersion = "19.0.1"
-        buildToolsVersion = "29.0.3"
+//         firebaseIidVersion = "19.0.1"
+        buildToolsVersion = "30.0.2"
         minSdkVersion = 16
         compileSdkVersion = 29
         targetSdkVersion = 29
-        supportLibVersion = '1.0.2'
+//         supportLibVersion = '1.0.2'
     }
     repositories {
         google()
-        jcenter()
+        mavenCentral()
     }
     dependencies {
-        classpath('com.android.tools.build:gradle:4.1.2')
+        classpath('com.android.tools.build:gradle:4.2.1')
 
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
@@ -37,6 +37,7 @@ buildscript {
 allprojects {
     repositories {
         mavenLocal()
+        mavenCentral()
         maven {
             // All of React Native (JS, Obj-C sources, Android binaries) is installed from npm
             url("$rootDir/../node_modules/react-native/android")
@@ -47,7 +48,6 @@ allprojects {
         }
 
         google()
-        jcenter()
         maven { url 'https://jitpack.io' }
     }
 }
