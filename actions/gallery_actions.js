@@ -135,10 +135,9 @@ export const uploadTaggedGalleryPhoto = (data, token, tags) =>
             //  }
         })
         .then(response => {
-
             console.log('uploadTaggedGalleryPhoto', response);
 
-            if (response.status === 200)
+            if (response.data.success)
             {
                 return axios(URL + '/api/v2/add-tags', {
                     method:'POST',
@@ -160,38 +159,36 @@ export const uploadTaggedGalleryPhoto = (data, token, tags) =>
                     //    // });
                     //  }
                 })
-                    .then(resp => {
-                        // console.log('SUCCESS - Litter data for image updated');
-                        // console.log(resp.data);
-                        if (resp.status === 200)
-                        {
-                            // console.log('SUCCESS - final status 200');
+                .then(resp => {
+                    console.log('upload_tags_after_image', resp);
 
-                            // todo - delete image from users device
-                            // try {
-                            //   console.log("Try - delete image from users device");
-                            //   let path = data["_parts"][0][1]['uri'];
-                            //   console.log("Image path to delete", path);
-                            //   let resp = FileSystem.deleteAsync(path);
-                            //
-                            //   console.log(resp);
-                            // } catch (e) {
-                            //   console.log("Error deleting", e);
-                            // }
+                    if (resp.data.success)
+                    {
+                        // todo - delete image from users device
+                        // try {
+                        //   console.log("Try - delete image from users device");
+                        //   let path = data["_parts"][0][1]['uri'];
+                        //   console.log("Image path to delete", path);
+                        //   let resp = FileSystem.deleteAsync(path);
+                        //
+                        //   console.log(resp);
+                        // } catch (e) {
+                        //   console.log("Error deleting", e);
+                        // }
 
-                            // dispatch({
-                            //   type: DELETE_GALLERY_UPLOAD_SUCCESS,
-                            //   payload: data
-                            // });
+                        // dispatch({
+                        //   type: DELETE_GALLERY_UPLOAD_SUCCESS,
+                        //   payload: data
+                        // });
 
-                            return {
-                                success: true
-                            };
-                        }
-                    })
-                    .catch(err => {
-                        console.log(err);
-                    });
+                        return {
+                            success: true
+                        };
+                    }
+                })
+                .catch(err => {
+                    console.log(err);
+                });
             }
         })
         .catch(error => {

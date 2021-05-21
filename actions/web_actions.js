@@ -29,23 +29,26 @@ export const checkForImagesOnWeb = (token) => {
             }
         })
         .then(resp => {
-            // console.log('images_from_web', resp.data.photos);
+            console.log('images_from_web', resp.data.photos);
 
-            // Todo - load Tag: null with the data
-            let photos = (resp.data.photos)
-                ? resp.data.photos
-                : null;
+            if (resp.data.photos)
+            {
+                // Todo - load Tag: null with the data
+                let photos = (resp.data.photos)
+                    ? resp.data.photos
+                    : null;
 
-            photos = photos.map(photo => {
-                photo.tags = null;
-                return photo;
-            });
+                photos = photos.map(photo => {
+                    photo.tags = null;
+                    return photo;
+                });
 
-            // if photos is null, pass empty array
-            dispatch({ type: WEB_IMAGES, payload: {
-                count: resp.data.count,
-                photos
-            }});
+                // if photos is null, pass empty array
+                dispatch({ type: WEB_IMAGES, payload: {
+                    count: resp.data.count,
+                    photos
+                }});
+            }
         })
         .catch(err => {
             console.log('web', err);
@@ -69,7 +72,7 @@ export const loadMoreWebImages = (token, photo_id) => {
             params: { photo_id }
         })
         .then(resp => {
-            // console.log('load_more_web_images', resp.data);
+            console.log('load_more_web_images', resp.data);
 
             if (resp.data)
             {
