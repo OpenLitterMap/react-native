@@ -44,6 +44,8 @@ class MediaList extends Component
 
         for (let i = 0; i < images.length -1; i++)
         {
+            if (!images[i]) continue;
+
             const timestampOfImage = images[i].timestamp * 1000;
             const placeInTimeOfImage = placeInTime(timestampOfImage);
 
