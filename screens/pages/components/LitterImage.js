@@ -60,8 +60,8 @@ class LitterImage extends PureComponent
      */
     _getFilenameOrUri ()
     {
-        return this.props.photoSelected.type === 'web'
-            ? this.props.photoSelected.filename
+        return (this.props.photoSelected.type === 'web')
+            ? this.props.photoSelected.filenam
             : this.props.photoSelected.uri;
     }
 

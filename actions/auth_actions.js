@@ -39,7 +39,6 @@ export const changeLang = lang => {
 }
 
 export const checkValidToken = token => {
-    // console.log('CHECK_VALID_TOKEN', token);
     return dispatch => {
         return axios({
             url: URL + '/api/validate-token',
@@ -48,21 +47,21 @@ export const checkValidToken = token => {
                 Authorization: 'Bearer ' + token
             }
         })
-            .then(response => {
-                // console.log('checkValidToken.response', response);
-                if (response.data.message === 'valid')
-                {
-                    return { valid: true };
-                }
+        .then(response => {
+            console.log('checkValidToken.response', response);
 
-                else
-                {
-                    return { valid: false };
-                }
-            })
-            .catch(error => {
-                // console.log('axios token error', error);
-            });
+            if (response.data.hasOwnProperty('message') && response.data.message === 'valid')
+            {
+                return { valid: true };
+            }
+            else
+            {
+                return { valid: false };
+            }
+        })
+        .catch(error => {
+            // console.log('axios token error', error);
+        });
     };
 };
 
