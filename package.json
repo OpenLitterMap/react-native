@@ -1,6 +1,6 @@
 {
   "name": "openlittermap",
-  "version": "2.3.0",
+  "version": "2.3.1",
   "private": true,
   "scripts": {
     "android": "react-native run-android",
@@ -16,7 +16,7 @@
     "@react-native-community/cameraroll": "^1.8.1",
     "@react-native-community/picker": "^1.8.1",
     "@react-native-community/viewpager": "^3.3.1",
-    "@sentry/react-native": "^2.4.2",
+    "@sentry/react-native": "^2.4.3",
     "@types/react": "^16.14.6",
     "axios": "^0.19.1",
     "babel-plugin-dotenv-import": "^2.2.0",

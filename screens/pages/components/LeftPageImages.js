@@ -342,7 +342,7 @@ class LeftPageImages extends PureComponent
 
             <View style={this._marginWhenPhotos()}>
                 {
-                    this.props.webImagesCount > 0 &&
+                    (this.props.webImagesCount && this.props.webPhotos[0]) > 0 &&
                     (
                         <View style={styles.webImageContainer}>
 
