@@ -47,7 +47,7 @@ export default function(state = INITIAL_STATE, action) {
                 date: action.payload.date,
                 type: 'camera', // Photos taken from the camera
                 selected: false,
-                tags: null,
+                tags: {},
                 picked_up: false
             });
 

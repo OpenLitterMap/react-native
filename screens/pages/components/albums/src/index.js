@@ -162,7 +162,7 @@ class GalleryMediaPicker extends Component
                         timestamp: item.node.timestamp,
                         selected: false,
                         picked_up: false,
-                        tags: null,
+                        tags: {},
                         type: 'gallery'
                     };
                 }
@@ -184,7 +184,7 @@ class GalleryMediaPicker extends Component
                         timestamp: item.node.timestamp,
                         selected: false,
                         picked_up: false,
-                        tags: null,
+                        tags: {},
                         type: 'gallery'
                     };
                 }
