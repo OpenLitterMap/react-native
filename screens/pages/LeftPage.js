@@ -333,11 +333,11 @@ class LeftPage extends PureComponent
 
         let tagged = 0;
         this.props.photos.map(photo => {
-            if (photo.tags && Object.keys(photo.tags).length > 0) tagged++;
+            if (Object.keys(photo.tags).length > 0) tagged++;
         });
 
         this.props.gallery.map(gall => {
-            if (gall.tags && Object.keys(gall.tags).length > 0) tagged++;
+            if (Object.keys(gall.tags).length > 0) tagged++;
         });
 
         if (tagged === 0) return;
@@ -467,11 +467,11 @@ class LeftPage extends PureComponent
         const model = this.props.model;
 
         this.props.gallery.map(item => {
-            if (item.tags) galleryCount++;
+            if (Object.keys(item.tags).length > 0) galleryCount++;
         });
 
         this.props.photos.map(item => {
-            if (item.tags) cameraPhotosCount++;
+            if (Object.keys(item.tags).length > 0) cameraPhotosCount++;
         });
 
         const totalCount = galleryCount + cameraPhotosCount;
@@ -487,7 +487,7 @@ class LeftPage extends PureComponent
             // async loop
             for (const img of this.props.gallery)
             {
-                if (img.tags && Object.keys(img.tags).length > 0)
+                if (Object.keys(img.tags).length > 0)
                 {
                     let galleryToUpload = new FormData();
 
@@ -529,7 +529,7 @@ class LeftPage extends PureComponent
             // upload session photos
             for (const img of this.props.photos)
             {
-                if (img.tags && Object.keys(img.tags).length > 0)
+                if (Object.keys(img.tags).length > 0)
                 {
                     let cameraPhoto = new FormData();
 

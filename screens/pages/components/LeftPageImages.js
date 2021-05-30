@@ -166,14 +166,14 @@ class LeftPageImages extends PureComponent
                         resizeMode="cover"
                     />
                     {
-                        item.selected && (
+                        (item.selected) && (
                             <View style={{ position: 'absolute', right: 5, bottom: 5 }}>
                                 <Icon name="check-circle" size={SCREEN_HEIGHT * 0.03} color="#00aced" />
                             </View>
                         )
                     }
                     {
-                        item.tags && (
+                        (Object.keys(item.tags).length > 0) && (
                             <View style={{ position: 'absolute', left: 5, bottom: 0 }}>
                                 <Icon name="attachment" size={SCREEN_HEIGHT * 0.04} color="#00aced" />
                             </View>
@@ -220,7 +220,7 @@ class LeftPageImages extends PureComponent
                     />
 
                     {
-                        item.selected && (
+                        (item.selected) && (
                             <View style={{ position: 'absolute', right: 5, bottom: 5 }}>
                                 <Icon name="check-circle" size={SCREEN_HEIGHT * 0.03} color="#00aced" />
                             </View>
@@ -228,7 +228,7 @@ class LeftPageImages extends PureComponent
                     }
 
                     {
-                        item.tags && (
+                        (Object.keys(item.tags).length > 0) && (
                             <View style={{ position: 'absolute', left: 5, bottom: 0 }}>
                                 <Icon name="attachment" size={SCREEN_HEIGHT * 0.04} color="#00aced" />
                             </View>

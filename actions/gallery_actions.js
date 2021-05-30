@@ -147,7 +147,7 @@ export const uploadTaggedGalleryPhoto = (data, token, tags) =>
                     data: {
                         litter: tags,
                         photo_id: response.data.photo_id
-                    } //,
+                    }
                     // need to debug this and make it smooth
                     // onUploadProgress: (p) => {
                     //    progress = p.loaded / p.total
