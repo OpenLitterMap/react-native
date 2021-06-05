@@ -10,14 +10,11 @@ import {
     EMAIL_VALID,
     PASSWORD_INCORRECT,
     PASSWORD_VALID,
-    FACEBOOK_LOGIN_SUCCESS,
-    FACEBOOK_LOGIN_FAIL,
     LOGIN_SUCCESS,
     LOGIN_FAIL,
-    SIGNUP_SUCCESS,
-    SIGNUP_FAIL,
     LOGOUT,
     TOGGLE_USERNAME_MODAL,
+    TOKEN_IS_VALID,
     STORE_CURRENT_APP_VERSION,
     UPDATE_USER_OBJECT,
     USERNAME_CHANGED,
@@ -49,6 +46,7 @@ const INITIAL_STATE = {
     passwordError: '',
     success: '',
     token: null,
+    tokenIsValid: false,
     user: null,
     username: '',
     usernameError: '',
@@ -205,6 +203,18 @@ export default function (state = INITIAL_STATE, action)
                 ...state,
                 modalUsernameVisible: !state.modalUsernameVisible
             };
+
+        /**
+         * When the app loads, we check if the JWT is valid
+         */
+        case TOKEN_IS_VALID:
+
+            console.log('token_is_valid', action.payload);
+
+            return {
+                ...state,
+                tokenIsValid: action.payload
+            }
 
         case USER_FOUND:
             // console.log('- user found, reducer -');

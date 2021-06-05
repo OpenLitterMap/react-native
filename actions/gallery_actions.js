@@ -116,7 +116,7 @@ export const uploadTaggedGalleryPhoto = (data, token, tags) =>
 {
     // let progress = null;
     return async (dispatch) => {
-        return axios(URL + '/api/photos/submit', {
+        return await axios(URL + '/api/photos/submit', {
             method:'POST',
             headers: {
                 'Authorization': 'Bearer ' + token,
@@ -135,7 +135,7 @@ export const uploadTaggedGalleryPhoto = (data, token, tags) =>
             //  }
         })
         .then(response => {
-            console.log('uploadTaggedGalleryPhoto', response);
+            console.log('uploadTaggedGalleryPhoto', response.data);
 
             if (response.data.success)
             {
@@ -160,7 +160,7 @@ export const uploadTaggedGalleryPhoto = (data, token, tags) =>
                     //  }
                 })
                 .then(resp => {
-                    console.log('upload_tags_after_image', resp);
+                    console.log('upload_tags_after_image', resp.data);
 
                     if (resp.data.success)
                     {
@@ -187,12 +187,12 @@ export const uploadTaggedGalleryPhoto = (data, token, tags) =>
                     }
                 })
                 .catch(err => {
-                    console.log(err);
+                    console.log('uploadGalleryPhotoTags', err.response.data);
                 });
             }
         })
         .catch(error => {
-            console.error('uploadTaggedGalleryPhoto', error);
+            console.log('uploadTaggedGalleryPhoto', error.response.data);
         });
     }
 }

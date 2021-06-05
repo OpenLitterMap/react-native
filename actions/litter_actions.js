@@ -88,13 +88,6 @@ export const photoSelectedForTagging = (photo) => {
     };
 }
 
-export const litterSelected = item => {
-  return {
-      type: LITTER_SELECTED,
-      payload: item
-  };
-}
-
 /**
  * Remove a tag and its quantity
  */

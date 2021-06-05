@@ -33,13 +33,13 @@ export const checkForImagesOnWeb = (token) => {
 
             if (resp.data.photos)
             {
-                // Todo - load Tag: null with the data
+                // Todo - load Tags: {} with the data
                 let photos = (resp.data.photos)
                     ? resp.data.photos
                     : null;
 
                 photos = photos.map(photo => {
-                    photo.tags = null;
+                    photo.tags = {};
                     return photo;
                 });
 

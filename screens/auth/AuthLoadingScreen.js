@@ -18,44 +18,56 @@ class AuthLoadingScreen extends Component {
         this._bootstrapAsync();
     }
 
+    /**
+     * Check if we have a token
+     *
+     * If we do, check if the token is valid
+     *
+     * If the token is valid, check if we already have a user
+     *
+     * If not, make a request to get the user
+     *
+     * @return redirect to main App or Auth
+     */
     _bootstrapAsync = async () =>
     {
+        let redirect = '';
+
         const userToken = await AsyncStorage.getItem('jwt');
 
-        if (userToken)
-        {
-            if (this.props.user)
-            {
-                console.log('User found @ this.props.user');
-                // next
-            }
-
-            else
-            {
-                console.log('User does not exist on props. Checking AsyncStorage');
-                const user = await AsyncStorage.getItem('user');
-
-                if (user)
-                {
-                    console.log('User object found in AsyncStorage. Updating state props.');
-                    this.props.userFound(user);
-                    // next
-                }
-
-                else
-                {
-                    console.log('User does not exist in AsyncStorage. Making API request with token.');
-                    this.props.fetchUser(userToken);
-                }
-            }
-        }
+        if (! userToken) redirect = 'Auth';
 
         else
         {
-            console.log('JWT authentication token not found. Navigating to Auth Stack.');
+            // Check if the token is valid
+            await this.props.checkValidToken(userToken);
+
+            if (! this.props.tokenIsValid) redirect = 'Auth';
+
+            else
+            {
+                redirect = 'App';
+
+                if (! this.props.user)
+                {
+                    console.log('User does not exist on props. Checking AsyncStorage');
+                    const user = await AsyncStorage.getItem('user');
+
+                    if (user)
+                    {
+                        console.log('User object found in AsyncStorage. Updating state props.');
+                        this.props.userFound(user);
+                    }
+                    else
+                    {
+                        console.log('User does not exist in AsyncStorage. Making API request with token.');
+                        this.props.fetchUser(userToken);
+                    }
+                }
+            }
         }
 
-        this.props.navigation.navigate(userToken ? 'App' : 'Auth');
+        this.props.navigation.navigate(redirect);
     };
 
     /**
@@ -83,7 +95,8 @@ const styles = StyleSheet.create({
 const mapStateToProps = state => {
     return {
         user: state.auth.user,
-        token: state.auth.token
+        token: state.auth.token,
+        tokenIsValid: state.auth.tokenIsValid
     };
 };
 
