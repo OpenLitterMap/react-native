@@ -50,7 +50,7 @@ class LeftPage extends PureComponent
         // Photos selected from the Photos Album
         AsyncStorage.getItem('openlittermap-gallery')
             .then((gallery) => {
-                if (gallery) {
+                if (gallery && gallery !== "[]") {
                     this.props.photosFromGallery(JSON.parse(gallery));
                 }
             }
@@ -59,7 +59,7 @@ class LeftPage extends PureComponent
         // Photos taken from the OLM Camera
         AsyncStorage.getItem('openlittermap-photos')
             .then((photos) => {
-                if (photos) {
+                if (photos && photos !== "[]") {
                     this.props.loadCameraPhotosFromAsyncStorage(JSON.parse(photos));
                 }
             }
@@ -485,8 +485,10 @@ class LeftPage extends PureComponent
         if (galleryCount > 0)
         {
             // async loop
+            // upload gallery photos
             for (const img of this.props.gallery)
             {
+                console.log({ img });
                 if (Object.keys(img.tags).length > 0)
                 {
                     let galleryToUpload = new FormData();
@@ -526,7 +528,8 @@ class LeftPage extends PureComponent
 
         if (cameraPhotosCount > 0)
         {
-            // upload session photos
+            // upload olm-camera photos
+            // async loop
             for (const img of this.props.photos)
             {
                 if (Object.keys(img.tags).length > 0)

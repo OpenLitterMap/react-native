@@ -3,14 +3,14 @@
 // We will set up a staging server later that will give others access to a shared online server
 
 // PRODUCTION KEYS
-import { SECRET_CLIENT } from "@env";
-import { ID_CLIENT } from "@env";
-import { OLM_ENDPOINT } from "@env"; // https://openlittermap.com
+// import { SECRET_CLIENT } from "@env";
+// import { ID_CLIENT } from "@env";
+// import { OLM_ENDPOINT } from "@env"; // https://openlittermap.com
 
 // LOCAL DEVELOPMENT
-// const SECRET_CLIENT = 'rnMHOS4OICXatHuNMbXeAucBP9Q3CkXkkjl9sdp8';
-// const ID_CLIENT = 2;
-// const OLM_ENDPOINT = 'http://olm.test';
+const SECRET_CLIENT = 'rnMHOS4OICXatHuNMbXeAucBP9Q3CkXkkjl9sdp8';
+const ID_CLIENT = 2;
+const OLM_ENDPOINT = 'http://olm.test';
 
 export const CLIENT_SECRET = SECRET_CLIENT;
 export const URL = OLM_ENDPOINT;
@@ -36,6 +36,7 @@ export const LOGIN_FAIL = 'LOGIN_FAIL';
 export const SIGNUP_SUCCESS = 'SIGNUP_SUCCESS';
 export const SIGNUP_FAIL = 'SIGNUP_FAIL';
 export const TOGGLE_USERNAME_MODAL = 'TOGGLE_USERNAME_MODAL';
+export const TOKEN_IS_VALID = 'TOKEN_IS_VALID';
 export const USERNAME_CHANGED = 'USERNAME_CHANGED';
 export const USERNAME_ERROR = 'USERNAME_ERROR';
 
@@ -77,7 +78,6 @@ export const TOGGLE_SELECTING = 'TOGGLE_SELECTING';
 
 export const INCREMENT = 'INCREMENT';
 export const ITEM_SELECTED = 'ITEM_SELECTED';
-export const LITTER_SELECTED = 'LITTER_SELECTED';
 
 // CAMERA / PHOTOS (camera_photos)
 export const CAMERA_GRANTED_PERMISSION = 'CAMERA_GRANTED_PERMISSION';

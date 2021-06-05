@@ -39,12 +39,13 @@ class CameraPage extends React.Component {
 
         this.state = {
             errorMessage: '',
-            token: null,
+            loading: true,
             shutterOpacity: new Animated.Value(0)
             // Camera.Constants.Type.back,
         };
 
-        let model = DeviceInfo.getModel();
+        const model = DeviceInfo.getModel();
+
         // settings_actions, settings_reducer
         this.props.setModel(model);
     }
@@ -55,39 +56,21 @@ class CameraPage extends React.Component {
             $rem: Dimensions.get('window').width / VALUES.remDivisionFactor
         });
 
-        // auth_actions
-        if (this.props.token)
-        {
-            // Submit request to check current token is valid
-            const resp = await this.props.checkValidToken(this.props.token);
+        let status = '';
+        let p = Platform.OS === 'android' ? PERMISSIONS.ANDROID : PERMISSIONS.IOS;
 
-            console.log('CameragePage.checkValidToken,resp', resp);
-
-            if (resp.valid)
-            {
-                this.setState({ token: true });
-
-                let status = '';
-                let p = Platform.OS === 'android' ? PERMISSIONS.ANDROID : PERMISSIONS.IOS;
-
-                request(p.CAMERA).then(result => {
-                    if (result === 'granted') {
-                        this.setState({ permissionGranted: status === 'granted' });
-                        this.props.grantCameraPermission(result);
-                    }
-                });
-
-                this._getLocationAsync();
+        request(p.CAMERA).then(result => {
+            if (result === 'granted') {
+                this.setState({ permissionGranted: status === 'granted' });
+                this.props.grantCameraPermission(result);
             }
-            else
-            {
-                this.props.navigation.navigate('Auth');
-            }
-        }
-        else
-        {
-            this.props.navigation.navigate('Auth');
-        }
+        });
+
+        this._getLocationAsync();
+
+        this.setState({
+            loading: false
+        });
     }
 
     /**
@@ -138,7 +121,8 @@ class CameraPage extends React.Component {
      */
     render ()
     {
-        if (! this.state.token) {
+        if (this.state.loading)
+        {
             return (
                 <View style={{ flex: 1, justifyContent: 'center' }}>
                     <ActivityIndicator />
@@ -156,6 +140,7 @@ class CameraPage extends React.Component {
      */
     renderCamera ()
     {
+        console.log('RENDER_CAMERA');
         return (
             <>
                 <RNCamera

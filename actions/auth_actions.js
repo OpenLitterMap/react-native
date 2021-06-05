@@ -7,11 +7,7 @@ import {
     CHANGE_LANG,
     SUBMIT_START,
     SERVER_STATUS,
-    EMAIL_ERROR,
-    PASSWORD_ERROR,
     ACCOUNT_CREATED,
-    FACEBOOK_LOGIN_SUCCESS,
-    FACEBOOK_LOGIN_FAIL,
     LOGIN_OR_SIGNUP_RESET,
     EMAIL_INCORRECT,
     EMAIL_VALID,
@@ -19,12 +15,9 @@ import {
     PASSWORD_VALID,
     LOGIN_SUCCESS,
     LOGIN_FAIL,
-    SIGNUP_SUCCESS,
-    SIGNUP_FAIL,
     LOGOUT,
     USER_FOUND,
     USERNAME_CHANGED,
-    USERNAME_ERROR,
     TOGGLE_USERNAME_MODAL,
     STORE_CURRENT_APP_VERSION,
     ON_SEEN_FEATURE_TOUR
@@ -38,9 +31,16 @@ export const changeLang = lang => {
     };
 }
 
+/**
+ * Check if the token is valid
+ *
+ * It will return "valid" if the user is logged in
+ *
+ * Or  "Unauthenticated." if they are logged out / not valid
+ */
 export const checkValidToken = token => {
-    return dispatch => {
-        return axios({
+    return async dispatch => {
+        await axios({
             url: URL + '/api/validate-token',
             method: 'POST',
             headers: {
@@ -48,19 +48,19 @@ export const checkValidToken = token => {
             }
         })
         .then(response => {
-            console.log('checkValidToken.response', response);
+            console.log('checkValidToken.response', response.data);
 
             if (response.data.hasOwnProperty('message') && response.data.message === 'valid')
             {
-                return { valid: true };
-            }
-            else
-            {
-                return { valid: false };
+                dispatch({
+                    type: 'TOKEN_IS_VALID',
+                    payload: true
+                });
             }
         })
         .catch(error => {
-            // console.log('axios token error', error);
+            // using console.error(); throws a react native error
+            console.log('checkValidToken', error.response.data);
         });
     };
 };
@@ -121,58 +121,58 @@ export const createAccount = data => {
                 username: data.username
             })
         })
-            .then(response => {
-                // console.log('Response!');
-                const responseJson = response
-                    .text() // returns a promise
-                    .then(async responseJson => {
-                        // console.log('=== create account - responseJson ===');
+        .then(response => {
+            // console.log('Response!');
+            const responseJson = response
+                .text() // returns a promise
+                .then(async responseJson => {
+                    // console.log('=== create account - responseJson ===');
 
-                        const jsonObj = JSON.parse(responseJson);
-                        // console.log('-- parsed response --');
-                        // console.log(jsonObj);
+                    const jsonObj = JSON.parse(responseJson);
+                    // console.log('-- parsed response --');
+                    // console.log(jsonObj);
 
-                        // TODO refactor returned errors to be simple text messages with status codes
-                        if (jsonObj.errors) {
-                            let payload;
-                            if (jsonObj.errors.email) {
-                                payload = jsonObj.errors.email;
-                            }
-                            if (jsonObj.errors.password) {
-                                payload = jsonObj.errors.password;
-                            }
-                            if (jsonObj.errors.username) {
-                                payload = jsonObj.errors.username;
-                            }
-
-                            dispatch({
-                                type: SERVER_STATUS,
-                                payload: payload
-                            });
+                    // TODO refactor returned errors to be simple text messages with status codes
+                    if (jsonObj.errors) {
+                        let payload;
+                        if (jsonObj.errors.email) {
+                            payload = jsonObj.errors.email;
+                        }
+                        if (jsonObj.errors.password) {
+                            payload = jsonObj.errors.password;
+                        }
+                        if (jsonObj.errors.username) {
+                            payload = jsonObj.errors.username;
                         }
 
-                        if (jsonObj.success) {
-                            dispatch({ type: ACCOUNT_CREATED, payload: jsonObj.success });
+                        dispatch({
+                            type: SERVER_STATUS,
+                            payload: payload
+                        });
+                    }
 
-                            var login = {
-                                email: data.email,
-                                password: data.password
-                            };
+                    if (jsonObj.success) {
+                        dispatch({ type: ACCOUNT_CREATED, payload: jsonObj.success });
 
-                            // Log the user in
-                            dispatch(serverLogin(login));
-                        }
-                    })
-                    .catch(err => {
-                        // console.log('Error 2');
-                        // console.log(err);
-                    });
-                // } // response status 200
-            })
-            .catch(error => {
-                // console.log('Error!');
-                // console.log(error);
-            });
+                        var login = {
+                            email: data.email,
+                            password: data.password
+                        };
+
+                        // Log the user in
+                        dispatch(serverLogin(login));
+                    }
+                })
+                .catch(err => {
+                    // console.log('Error 2');
+                    // console.log(err);
+                });
+            // } // response status 200
+        })
+        .catch(error => {
+            // console.log('Error!');
+            // console.log(error);
+        });
     };
 };
 
@@ -329,53 +329,54 @@ export const toggleUsernameModal = () => {
 
 /**
  * Make an API request to fetch the current user with an access token
+ *
+ * Todo - move this to axios, and use await
  */
 export const fetchUser = token => {
-    // console.log('fetch user.');
-    return dispatch => {
-        fetch(URL + '/api/user', {
+    return async dispatch => {
+        await fetch(URL + '/api/user', {
             method: 'GET',
             headers: {
                 Authorization: 'Bearer ' + token
             }
         })
-            .then(response => {
-                // console.log(response);
-                // console.log(response.data);
-                if (response.status === 200) {
-                    // console.log("=== fetchUser - 200 ===");
-                    const responseJson = response
-                        .text() // returns a promise
-                        .then(async responseJson => {
-                            // console.log('=== fetchUser - responseJson1 ===');
-                            // console.log(typeof(responseJson));
-                            // console.log(responseJson);
-                            const userObj = JSON.parse(responseJson);
-                            // console.log("User object ...", userObj);
+        .then(response => {
+            // console.log(response);
+            // console.log(response.data);
+            if (response.status === 200) {
+                // console.log("=== fetchUser - 200 ===");
+                const responseJson = response
+                    .text() // returns a promise
+                    .then(async responseJson => {
+                        // console.log('=== fetchUser - responseJson1 ===');
+                        // console.log(typeof(responseJson));
+                        // console.log(responseJson);
+                        const userObj = JSON.parse(responseJson);
+                        // console.log("User object ...", userObj);
 
-                            await AsyncStorage.setItem('user', JSON.stringify(userObj));
+                        await AsyncStorage.setItem('user', JSON.stringify(userObj));
 
-                            dispatch({ type: USER_FOUND, payload: { userObj, token } });
+                        dispatch({ type: USER_FOUND, payload: { userObj, token } });
 
-                            this.props.navigation.navigate(userToken ? 'App' : 'Auth');
-                        })
-                        .catch(error => {
-                            // console.log('fetch user - error 2');
-                            // console.log(error);
-                        });
-                } else {
-                    // response.status not 200
-                    const errorJson = response.text().then(async errorJson => {
-                        const errorObj = JSON.parse(errorJson);
-                        // console.log('Error object');
-                        // console.log(errorObj);
+                        this.props.navigation.navigate(userToken ? 'App' : 'Auth');
+                    })
+                    .catch(error => {
+                        // console.log('fetch user - error 2');
+                        // console.log(error);
                     });
-                }
-            })
-            .catch(err => {
-                // console.log('error 1');
-                // console.log(err);
-            });
+            } else {
+                // response.status not 200
+                const errorJson = response.text().then(async errorJson => {
+                    const errorObj = JSON.parse(errorJson);
+                    // console.log('Error object');
+                    // console.log(errorObj);
+                });
+            }
+        })
+        .catch(err => {
+            // console.log('error 1');
+            // console.log(err);
+        });
     };
 };
 

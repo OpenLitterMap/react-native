@@ -475,12 +475,12 @@ class LitterPicker extends PureComponent
     {
         const swiperIndex = this.props.swiperIndex;
 
+        // Some users want to copy the tags onto the next image, so we need to clone them
+        const tags = cloneDeep(this.props.tags);
+
         // The user can only confirm if tags exist
         if (Object.keys(this.props.tags).length > 0)
         {
-            // Some users want to copy the tags onto the next image, so we need to clone them
-            const tags = cloneDeep(this.props.tags);
-
             if (this.props.photoSelected.type === 'web')
             {
                 // Turn on spinner

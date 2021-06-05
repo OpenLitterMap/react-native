@@ -4,7 +4,6 @@ import {
     CHANGE_Q,
     CONFIRM_FOR_UPLOAD,
     CHANGE_SWIPER_INDEX,
-    LITTER_SELECTED,
     PHOTO_SELECTED_FOR_TAGGING,
     REMOVE_TAG,
     RESET_TAGS,
@@ -126,23 +125,6 @@ export default function (state = INITIAL_STATE, action)
             return {
                 ...state
             };
-
-        /**
-         * Check if any litter already exists on this item / index?
-         */
-        case LITTER_SELECTED:
-
-          // console.log('litter_reducer.item_selected', action.payload);
-
-          let newTags2 = Object.assign({}, action.payload.litter);
-
-          return {
-              ...state,
-              // modalVisible: true,
-              litterVisible: true,
-              tags: newTags2,
-              q: "1"
-          };
 
         /**
          * One of the photos from Web, Camera or Gallery has been selected for tagging
