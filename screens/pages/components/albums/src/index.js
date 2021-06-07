@@ -298,7 +298,6 @@ class GalleryMediaPicker extends Component
                 />
             );
         }
-
         else
         {
             return (

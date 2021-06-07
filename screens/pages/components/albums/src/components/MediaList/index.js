@@ -42,7 +42,7 @@ class MediaList extends Component
         let result = {};
         let temp = {};
 
-        for (let i = 0; i < images.length -1; i++)
+        for (let i = 0; i < images.length; i++)
         {
             if (!images[i]) continue;
 
