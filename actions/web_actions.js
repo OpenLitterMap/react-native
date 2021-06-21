@@ -51,7 +51,7 @@ export const checkForImagesOnWeb = (token) => {
             }
         })
         .catch(err => {
-            console.log('web', err);
+            console.log('checkForImagesOnWeb', err.response.data);
         });
     }
 }
@@ -92,7 +92,7 @@ export const loadMoreWebImages = (token, photo_id) => {
             }
         })
         .catch(err => {
-            console.log('web', err);
+            console.log('load_more_web_images', err.response.data);
         });
     }
 };

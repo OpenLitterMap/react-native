@@ -6,9 +6,6 @@ import {
 
 import { createBottomTabNavigator } from 'react-navigation-tabs'
 
-// import { connect } from 'react-redux'
-// import * as actions from '../actions'
-
 import AuthLoadingScreen from './auth/AuthLoadingScreen'
 import AuthScreen from './auth/AuthScreen'
 import WelcomeScreen from './auth/WelcomeScreen'

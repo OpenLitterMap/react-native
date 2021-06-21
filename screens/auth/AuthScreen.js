@@ -570,6 +570,16 @@ class AuthScreen extends Component {
     };
 
     /**
+     * When completing an input field or pressing tab,
+     *
+     * We can cycle to the next/previous input
+     */
+    _focusNextField (nextField)
+    {
+        this.refs[nextField].focus()
+    }
+
+    /**
      * Render JSX
      */
     render ()
@@ -630,7 +640,10 @@ class AuthScreen extends Component {
                                         type="material"
                                         color={COLORS.iconGreyDisabled}
                                     />
+                                    {/* Multiline param allows us to use text replacement eg "@@" => your email */}
                                     <TextInput
+                                        ref='1'
+                                        onSubmitEditing={() => this._focusNextField('2')}
                                         autoFocus={false}
                                         autoCorrect={false}
                                         autoCapitalize={'none'}
@@ -642,6 +655,7 @@ class AuthScreen extends Component {
                                         placeholderTextColor="#ccc"
                                         style={styles.inputStyle}
                                         value={email}
+                                        multiline
                                     />
                                 </View>
                                 {
@@ -666,6 +680,7 @@ class AuthScreen extends Component {
                                                 color={COLORS.iconGreyDisabled}
                                             />
                                             <TextInput
+                                                ref='2'
                                                 autoCorrect={false}
                                                 autoCapitalize={'none'}
                                                 containerStyle={styles.formContainer}

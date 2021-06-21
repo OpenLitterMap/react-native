@@ -254,7 +254,8 @@ class MediaList extends Component
      */
     renderFooterLoader ()
     {
-        if (! this.state.finishedLoading)
+        console.log('renderLoaderFooter', this.state.finishedLoading);
+        if (!this.state.finishedLoading)
         {
             return <ActivityIndicator color={this.props.activityIndicatorColor}/>;
         }

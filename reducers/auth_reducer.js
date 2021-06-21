@@ -136,6 +136,9 @@ export default function (state = INITIAL_STATE, action)
                 lang: lang
             };
 
+        /**
+         * There was a problem during login
+         */
         case LOGIN_FAIL:
             // change error to action.payload.emailError, .passwordError
             return {
@@ -208,8 +211,6 @@ export default function (state = INITIAL_STATE, action)
          * When the app loads, we check if the JWT is valid
          */
         case TOKEN_IS_VALID:
-
-            console.log('token_is_valid', action.payload);
 
             return {
                 ...state,

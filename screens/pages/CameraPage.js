@@ -264,6 +264,8 @@ class CameraPage extends React.Component {
                             ? base64.encode(date) + '.jpg'
                             : result.uri.split('/').pop();
 
+                        // iOS 96790415-6575-4CED-BA64-D6E8B16BF10D.jpg
+
                         // photo_action.js, photos_reducer
                         this.props.addPhoto({
                             result,

@@ -60,7 +60,15 @@ export const checkValidToken = token => {
         })
         .catch(error => {
             // using console.error(); throws a react native error
-            console.log('checkValidToken', error.response.data);
+            console.log('auth_actions.checkValidToken', error.response.data);
+
+            if (error.response.data.message === "Unauthenticated.")
+            {
+                dispatch({
+                    type: 'TOKEN_IS_VALID',
+                    payload: false
+                });
+            }
         });
     };
 };
@@ -263,59 +271,49 @@ export const sendResetPasswordRequest = email => {
  */
 export const serverLogin = data => {
 
-    return dispatch => {
+    return async (dispatch) => {
         dispatch({ type: SUBMIT_START });
 
-        fetch(URL + '/oauth/token', {
+        return await axios(URL + '/api/oauth/token', {
             method: 'POST',
             headers: {
                 Accept: 'application/json',
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({
+            data: {
                 client_id: CLIENT_ID,
                 client_secret: CLIENT_SECRET,
                 grant_type: 'password',
                 username: data.email,
                 password: data.password
-            })
+            }
         })
-        .then(response => {
-            console.log(response);
+        .then(async response => {
+            console.log('serverLogin', response);
+
             if (response.status === 200)
             {
-                console.log('=== login success 200 ===');
-                const responseJson = response
-                    .json() // returns a promise
-                    .then(async responseJson => {
-                        console.log('responseJson', responseJson);
-                        let token = responseJson.access_token;
-                        try {
-                            console.log('Trying to save token');
-                            await AsyncStorage.setItem('jwt', token);
-                        } catch (err) {
-                            console.log('--- error saving JWT ---');
-                            // console.log(err);
-                        }
-                        console.log("dispatch login success");
-                        dispatch({ type: LOGIN_SUCCESS, payload: token });
-                        console.log('dispatch fetch user', token);
-                        dispatch(fetchUser(token));
-                    });
-            } else {
-                console.log('=== response.status fail ===');
-                console.log(response);
-                console.log(response.status);
-                const errorJson = response.text().then(async errorJson => {
-                    const errorObj = JSON.parse(errorJson);
-                    console.log('-= login fail =-');
-                    console.log(errorObj);
-                });
+                const token = response.data[0].access_token;
+
+                try
+                {
+                    await AsyncStorage.setItem('jwt', token);
+                }
+                catch (err)
+                {
+                    console.log('serverLogin.saveJWT', err);
+                }
+
+                dispatch({ type: LOGIN_SUCCESS, payload: token });
+                dispatch(fetchUser(token));
+            }
+            else
+            {
                 dispatch({ type: LOGIN_FAIL });
             }
         })
         .catch(error => {
-            console.log('error.login', error);
+            console.log('serverLogin.error', error);
             dispatch({ type: LOGIN_FAIL });
         });
     };
