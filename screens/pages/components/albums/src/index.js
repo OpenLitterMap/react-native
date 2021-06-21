@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { ActivityIndicator, Platform, View } from 'react-native';
+import { ActivityIndicator, Platform, Text, View } from 'react-native';
 import CameraRoll from '@react-native-community/cameraroll';
 // import _ from 'lodash';
 import AlbumsList from '../src/components/AlbumsList';
@@ -152,7 +152,7 @@ class GalleryMediaPicker extends Component
                 {
                     return {
                         id,
-                        filename: item.node.image.filename, // don't use this
+                        filename: item.node.image.filename, // this will get hashed on the backend
                         uri: item.node.image.uri,
                         size: item.node.image.fileSize,
                         height: item.node.image.height,
@@ -279,9 +279,11 @@ class GalleryMediaPicker extends Component
 
     renderMedia ()
     {
+        console.log('renderMedia', this.props.imagesLoading);
+        console.log('albumSelected', this.state);
+
         if (this.props.imagesLoading)
         {
-            // todo - this.props.setImagesLoading(true); when app loads on refresh
             return (
                 <View style={{ flex: 1, justifyContent: 'center' }}>
                     <ActivityIndicator />
@@ -289,17 +291,19 @@ class GalleryMediaPicker extends Component
             );
         }
 
-        if (!this.state.albumSelected)
+        if (this.state.albumSelected)
         {
-            return (
-                <AlbumsList
-                    albums={this.state.albums}
-                    onAlbumPress={this.selectAlbum.bind(this)}
-                />
-            );
-        }
-        else
-        {
+            const images = this.getAlbumImages(this.state.albumSelected);
+
+            if (images[0] === undefined)
+            {
+                return (
+                    <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+                        <Text>No geotagged photos found</Text>
+                    </View>
+                );
+            }
+
             return (
                 <MediaList
                     images={this.getAlbumImages(this.state.albumSelected)}
@@ -316,6 +320,17 @@ class GalleryMediaPicker extends Component
                     maximumSelectedFiles={
                         this.props.maximumSelectedFiles || this.state.maximumSelectedFiles
                     }
+                />
+            );
+        }
+        else
+        {
+
+
+            return (
+                <AlbumsList
+                    albums={this.state.albums}
+                    onAlbumPress={this.selectAlbum.bind(this)}
                 />
             );
         }
