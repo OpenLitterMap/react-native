@@ -78,55 +78,69 @@ class SettingsScreen extends Component {
                             renderSectionHeader={({ section: { title }}) => (
                                 <TransText style={styles.sectionHeaderTitle} dictionary={`${lang}.${title}`} />
                             )}
-                            // Todo, save these elsewhere and import them for readability.
-                            sections={[
-                                { title: 'settings.my-account', data: [
-                                        {
-                                            id: 1,
-                                            title: 'settings.name'
-                                        },
-                                        {
-                                            id: 2,
-                                            title: 'settings.username'
-                                        },
-                                        {
-                                            id: 3,
-                                            title: 'settings.email'
-                                        }]},
-                                { title: 'settings.privacy', data: [
-                                        {
-                                            id: 4,
-                                            title: 'settings.show-name-maps'
-                                        },
-                                        {
-                                            id: 5,
-                                            title: 'settings.show-username-maps'
-                                        },
-                                        {
-                                            id: 6,
-                                            title: 'settings.show-name-leaderboards'
-                                        },
-                                        {
-                                            id: 7,
-                                            title: 'settings.show-username-leaderboards'
-                                        },
-                                        {
-                                            id: 8,
-                                            title: 'settings.show-name-createdby'
-                                        },
-                                        {
-                                            id: 9,
-                                            title: 'settings.show-username-createdby'
-                                        }
-                                    ]},
-                                { title: 'settings.tags', data: [
-                                        {
-                                            id: 10,
-                                            title: 'settings.show-previous-tags'
-                                        }
-                                    ]}
-                            ]}
-                            renderItem={({item, index, section}) => (
+                            sections={
+                                [
+                                    {
+                                        title: 'settings.my-account',
+                                        data: [
+                                            {
+                                                id: 1,
+                                                key: 'name',
+                                                title: 'settings.name'
+                                            },
+                                            {
+                                                id: 2,
+                                                key: 'username',
+                                                title: 'settings.username'
+                                            },
+                                            {
+                                                id: 3,
+                                                key: 'email',
+                                                title: 'settings.email'
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        title: 'settings.privacy',
+                                        data: [
+                                            {
+                                                id: 4,
+                                                title: 'settings.show-name-maps'
+                                            },
+                                            {
+                                                id: 5,
+                                                title: 'settings.show-username-maps'
+                                            },
+                                            {
+                                                id: 6,
+                                                title: 'settings.show-name-leaderboards'
+                                            },
+                                            {
+                                                id: 7,
+                                                title: 'settings.show-username-leaderboards'
+                                            },
+                                            {
+                                                id: 8,
+                                                title: 'settings.show-name-createdby'
+                                            },
+                                            {
+                                                id: 9,
+                                                title: 'settings.show-username-createdby'
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        title: 'settings.tags',
+                                        data: [
+                                            {
+                                                id: 10,
+                                                title: 'settings.show-previous-tags'
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                            renderItem={({ item, index, section }) => (
                                 <View style={styles.sectionRow} key={index}>
                                     {this._renderRow(item)}
                                 </View>
@@ -145,12 +159,14 @@ class SettingsScreen extends Component {
      */
     _renderRow (item)
     {
-        if (item.id <= 3) {
+        // name, username, email
+        if (item.id <= 3)
+        {
             return (
                 <TouchableHighlight
                     underlayColor={'#95a5a6'}
                     style={{ flex: 1, padding: 10 }}
-                    onPress={() => this._rowPressed(item.id, item.title)}
+                    onPress={() => this._rowPressed(item.id, item.title, item.key)}
                 >
                     <View style={{ flexDirection: 'row' }}>
                         <TransText
@@ -161,7 +177,9 @@ class SettingsScreen extends Component {
                     </View>
                 </TouchableHighlight>
             );
-        } else {
+        }
+        else
+        {
             return (
                 <View style={styles.switchRow}>
                     <TransText style={{ flex: 1, fontSize: SCREEN_HEIGHT * 0.02 }} dictionary={`${this.props.lang}.${item.title}`} />
@@ -182,17 +200,14 @@ class SettingsScreen extends Component {
             {
                 return this.props.user.name;
             }
-
             else if (id === 2)
             {
                 return this.props.user.username;
             }
-
             else if (id === 3)
             {
                 return this.props.user.email;
             }
-
             else
             {
                 return (
@@ -229,9 +244,9 @@ class SettingsScreen extends Component {
     /**
      * A Row was pressed - open onTextChange
      */
-    _rowPressed (id, title)
+    _rowPressed (id, title, key = '')
     {
-        this.props.toggleSettingsModal(id, title);
+        this.props.toggleSettingsModal(id, title, key);
     }
 
     /**
@@ -240,19 +255,19 @@ class SettingsScreen extends Component {
     _getSwitchValue (id)
     {
         if (id === 4) {
-            return this.props.user.show_name_maps ? true : false;
+            return (this.props.user.show_name_maps);
         } else if (id === 5) {
-            return this.props.user.show_username_maps ? true : false;
+            return (this.props.user.show_username_maps);
         } else if (id === 6) {
-            return this.props.user.show_name ? true : false;
+            return (this.props.user.show_name);
         } else if (id === 7) {
-            return this.props.user.show_username ? true : false;
+            return (this.props.user.show_username);
         } else if (id === 8) {
-            return this.props.user.show_name_createdby ? true : false;
+            return (this.props.user.show_name_createdby);
         } else if (id === 9) {
-            return this.props.user.show_username_createdby ? true : false;
+            return (this.props.user.show_username_createdby);
         } else if (id === 10) {
-            return this.props.user.previous_tags ? true : false
+            return (this.props.user.previous_tag);
         }
     }
 }
