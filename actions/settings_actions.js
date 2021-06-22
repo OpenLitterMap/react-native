@@ -58,8 +58,8 @@ export const setModel = model => {
 /**
  * Update a specific setting (Name, Username or Email)
  */
-export const saveSetting = (data, value, token) => {
-    return dispatch => {
+export const saveSettings = (data, value, token) => {
+    return async dispatch => {
 
         // turn on loading symbol for second inner modal
         // type: TOGGLE_SECOND_SETINGS_MODAL
@@ -67,30 +67,30 @@ export const saveSetting = (data, value, token) => {
             type: START_UPDATING_SETTINGS
         });
 
-        var params = {};
-        params[data] = value;
+        let dataToSend = {};
+        dataToSend[data.key] = value;
 
-        axios(URL + '/api/settings/update/' + data, {
+        await axios(URL + '/api/settings/update/', {
             method: "POST",
             headers: {
                 'Authorization': 'Bearer ' + token,
                 'content-type': 'application/json'
             },
-            data: params
+            params: {
+                dataToSend
+            }
         })
         .then(async response => {
-            console.log(response);
-            if (response.status == 200) {
+            console.log('saveSettings', response.data.success);
 
-                const key = Object.keys(response.data)[0];
-                const val = Object.values(response.data)[0];
-
+            if (response.data.success)
+            {
                 // Get user and parse json to Object
-                var user = await AsyncStorage.getItem("user");
+                let user = await AsyncStorage.getItem("user");
                 user = JSON.parse(user);
 
                 // update user object
-                user[key] = val;
+                user[data.key] = value;
                 // save updated user data
                 AsyncStorage.setItem("user", JSON.stringify(user));
 
@@ -107,9 +107,18 @@ export const saveSetting = (data, value, token) => {
 
                 // close modals - done from settings update success
             }
+            else
+            {
+                console.log('ERROR updating settings. Todo - inform the user');
+
+                // Todo - Change this to a failure message
+                dispatch({
+                    type: SETTINGS_UPDATE_SUCCESS
+                });
+            }
         })
         .catch(error => {
-            console.log(error);
+            console.log('saveSettings', error);
         });
 
     }
@@ -118,10 +127,10 @@ export const saveSetting = (data, value, token) => {
 /**
  * Toggle the modal and turn one of these options for updating
  */
-export const toggleSettingsModal = (id, title) => {
+export const toggleSettingsModal = (id, title, key) => {
     return {
         type: TOGGLE_SETTINGS_MODAL,
-        payload: { id, title }
+        payload: { id, title, key }
     };
 }
 

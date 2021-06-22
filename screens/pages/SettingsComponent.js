@@ -120,9 +120,18 @@ class SettingsComponent extends Component {
         return edit + " " + text;
     }
 
+    /**
+     * Save the settings within a component
+     *
+     * settings_actions.js
+     */
     _saveSettings ()
     {
-        this.props.saveSetting(this.props.dataToEdit.id, this.props.settingsEditProp, this.props.token);
+        this.props.saveSettings(
+            this.props.dataToEdit,
+            this.props.settingsEditProp,
+            this.props.token,
+        );
     }
 
     _goBack ()
