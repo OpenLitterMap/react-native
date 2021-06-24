@@ -47,6 +47,8 @@ class LeftPage extends PureComponent
         // this.renderGalleryItem = this.renderGalleryItem.bind(this);
         // this.galleryItemPressed = this.galleryItemPressed.bind(this);
 
+        // If the app is below a certain version, delete stored data.
+
         // Photos selected from the Photos Album
         AsyncStorage.getItem('openlittermap-gallery')
             .then((gallery) => {
@@ -250,8 +252,8 @@ class LeftPage extends PureComponent
 
         // async-storage photos & gallery set
         setTimeout(() => {
-          AsyncStorage.setItem('openlittermap-photos', JSON.stringify(this.props.photos));
-          AsyncStorage.setItem('openlittermap-gallery', JSON.stringify(this.props.gallery));
+            AsyncStorage.setItem('openlittermap-photos', JSON.stringify(this.props.photos));
+            AsyncStorage.setItem('openlittermap-gallery', JSON.stringify(this.props.gallery));
         }, 1000);
     };
 
@@ -488,7 +490,6 @@ class LeftPage extends PureComponent
             // upload gallery photos
             for (const img of this.props.gallery)
             {
-                console.log({ img });
                 if (Object.keys(img.tags).length > 0)
                 {
                     let galleryToUpload = new FormData();
@@ -510,18 +511,24 @@ class LeftPage extends PureComponent
                     const myIndex = this.props.gallery.indexOf(img);
 
                     // gallery.js
-                    const response = await this.props.uploadTaggedGalleryPhoto(
-                        galleryToUpload,
+                    const response = await this.props.uploadPhoto(
                         this.props.token,
-                        img.tags
+                        galleryToUpload,
                     );
+
+                    console.log({ response });
 
                     if (response.success)
                     {
+                        // upload the tags
+                        const resp = await this.props.uploadTags(
+                            this.props.token,
+                            img.tags
+                        )
+
                         // Remove the image
                         this.props.galleryPhotoUploadedSuccessfully(myIndex);
                     }
-                    // else, show the error to the user
                 }
             }
         }

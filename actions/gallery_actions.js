@@ -111,18 +111,21 @@ export const toggleSelectedGallery = (index) => {
  * todo - delete the image on the users device
  * todo - try and upload all data in 1 request
  * todo - upload images earlier as a background process
+ *
+ * eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIyIiwianRpIjoiNGM0OWM5MDdjYTE2MGY5Y2Q0YzEyNGNlYzZjOTczMGM3YjFhN2U4MWZmNTFkMzYzYmY2NDBmOGE3MzNkMjJkNGQ5MTlkYTkzOTExM2E1MjIiLCJpYXQiOjE2MjQ0ODU3OTEsIm5iZiI6MTYyNDQ4NTc5MSwiZXhwIjoxNjU2MDIxNzkxLCJzdWIiOiIxIiwic2NvcGVzIjpbXX0.DQIHGpxjIQUmnpmZUYxEXMGUYSSYa4i9x3hxkm_BdMy1AWaXLc6f78G8BLZA1X0rnKCKZHXVLmcguarzA7f0pLXwy9gpikSMfi8iWN4xSPincwFkNKcOefsmwT_mGlY341Hd3oVWD-CDwrtq0O45ViOzFAVsQnwXSqxjaqu-jRdCqy2b5uJdsRZqDT_ZFF-t3Ylk_dFeLJij6SKO_CcaTw-vPi9B-wRfT-QhfWJ7Y2F7PfqZi-IGvS21cjtKwZJO9KhEe8LCc-CtWUQ0mOeB51DT_2A8CEWoX_HGOshaa0xH7c_b_58Ug7TcFAku99aKPPAvvGgm0-sOoshBgbiyfr0IZQBkrlNPoSs6e1diBOgyiyGBbXNn4GqBx3CLm3n2UYymL2OG9P8ROKjIrpj19xOo8nb_X_cJJBrF1G2cZjP0d9eboESwClBiKdW0e_p_v99XVtt2jE0q7Ul8CYZ8PZ5vy4qersOmehsObQA3vcQ4K_p1bSYbyRsJrrpALg0Ok8_I6xVIVDqPBV9PxVDRtsPVif4COcxjOxPnaTO_uf4DlvA61zSpzHXAyOKFk7QmOwNSthf3wajMJDkd3nJqPn4TFQxUjHxm1BcyRhbBI5K9YfnnMKkGFSNuHizYbVMNHDms3GCFtiLyc0UA7kH8-TApWd3WfuWFZju5xYcBEf
+ * eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIyIiwianRpIjoiNGM0OWM5MDdjYTE2MGY5Y2Q0YzEyNGNlYzZjOTczMGM3YjFhN2U4MWZmNTFkMzYzYmY2NDBmOGE3MzNkMjJkNGQ5MTlkYTkzOTExM2E1MjIiLCJpYXQiOjE2MjQ0ODU3OTEsIm5iZiI6MTYyNDQ4NTc5MSwiZXhwIjoxNjU2MDIxNzkxLCJzdWIiOiIxIiwic2NvcGVzIjpbXX0.DQIHGpxjIQUmnpmZUYxEXMGUYSSYa4i9x3hxkm_BdMy1AWaXLc6f78G8BLZA1X0rnKCKZHXVLmcguarzA7f0pLXwy9gpikSMfi8iWN4xSPincwFkNKcOefsmwT_mGlY341Hd3oVWD-CDwrtq0O45ViOzFAVsQnwXSqxjaqu-jRdCqy2b5uJdsRZqDT_ZFF-t3Ylk_dFeLJij6SKO_CcaTw-vPi9B-wRfT-QhfWJ7Y2F7PfqZi-IGvS21cjtKwZJO9KhEe8LCc-CtWUQ0mOeB51DT_2A8CEWoX_HGOshaa0xH7c_b_58Ug7TcFAku99aKPPAvvGgm0-sOoshBgbiyfr0IZQBkrlNPoSs6e1diBOgyiyGBbXNn4GqBx3CLm3n2UYymL2OG9P8ROKjIrpj19xOo8nb_X_cJJBrF1G2cZjP0d9eboESwClBiKdW0e_p_v99XVtt2jE0q7Ul8CYZ8PZ5vy4qersOmehsObQA3vcQ4K_p1bSYbyRsJrrpALg0Ok8_I6xVIVDqPBV9PxVDRtsPVif4COcxjOxPnaTO_uf4DlvA61zSpzHXAyOKFk7QmOwNSthf3wajMJDkd3nJqPn4TFQxUjHxm1BcyRhbBI5K9YfnnMKkGFSNuHizYbVMNHDms3GCFtiLyc0UA7kH8-TApWd3WfuWFZju5xYcBEfM
  */
-export const uploadTaggedGalleryPhoto = (data, token, tags) =>
+export const uploadPhoto = (token, image) =>
 {
     // let progress = null;
-    return async (dispatch) => {
-        return await axios(URL + '/api/photos/submit', {
-            method:'POST',
+    return (dispatch) => {
+        return axios(URL + '/api/photos/submit', {
+            method: "POST",
             headers: {
                 'Authorization': 'Bearer ' + token,
                 'Content-Type': 'multipart/form-data'
             },
-            data: data,
+            data: image
             // need to debug this and make it smooth
             // onUploadProgress: (p) => {
             //    progress = p.loaded / p.total; // ( total ) / 2
@@ -139,60 +142,56 @@ export const uploadTaggedGalleryPhoto = (data, token, tags) =>
 
             if (response.data.success)
             {
-                return axios(URL + '/api/v2/add-tags', {
-                    method:'POST',
-                    headers: {
-                        'Authorization': 'Bearer ' + token
-                    },
-                    data: {
-                        litter: tags,
-                        photo_id: response.data.photo_id
-                    }
-                    // need to debug this and make it smooth
-                    // onUploadProgress: (p) => {
-                    //    progress = p.loaded / p.total
-                    //    progress = Math.round(progress * 100);
-                    //    console.log('Prog 2', progress);
-                    //    // dispatch({
-                    //    //   type: CHANGE_UPLOAD_PROGRESS,
-                    //    //   payload: progress
-                    //    // });
-                    //  }
-                })
-                .then(resp => {
-                    console.log('upload_tags_after_image', resp.data);
-
-                    if (resp.data.success)
-                    {
-                        // todo - delete image from users device
-                        // try {
-                        //   console.log("Try - delete image from users device");
-                        //   let path = data["_parts"][0][1]['uri'];
-                        //   console.log("Image path to delete", path);
-                        //   let resp = FileSystem.deleteAsync(path);
-                        //
-                        //   console.log(resp);
-                        // } catch (e) {
-                        //   console.log("Error deleting", e);
-                        // }
-
-                        // dispatch({
-                        //   type: DELETE_GALLERY_UPLOAD_SUCCESS,
-                        //   payload: data
-                        // });
-
-                        return {
-                            success: true
-                        };
-                    }
-                })
-                .catch(err => {
-                    console.log('uploadGalleryPhotoTags', err.response.data);
-                });
+                return {
+                    success: true,
+                    photo_id: response.data.photo_id
+                }
             }
         })
         .catch(error => {
-            console.log('uploadTaggedGalleryPhoto', error.response.data);
+            console.log('ERROR:uploadTaggedGalleryPhoto', error.response.data);
+        });
+    }
+}
+
+/**
+ * Upload the tags associated with a photo
+ */
+export const uploadTags = (token, tags, photo_id) => {
+
+    return (dispatch) => {
+        return axios(URL + '/api/add-tags', {
+            method: "POST",
+            headers: {
+                'Authorization': 'Bearer ' + token
+            },
+            data: {
+                litter: tags,
+                photo_id: photo_id
+            }
+            // need to debug this and make it smooth
+            // onUploadProgress: (p) => {
+            //    progress = p.loaded / p.total
+            //    progress = Math.round(progress * 100);
+            //    console.log('Prog 2', progress);
+            //    // dispatch({
+            //    //   type: CHANGE_UPLOAD_PROGRESS,
+            //    //   payload: progress
+            //    // });
+            //  }
+        })
+        .then(resp => {
+            console.log('uploadGalleryPhotoTags', resp.data);
+
+            if (resp.data.success)
+            {
+                return {
+                    success: true
+                };
+            }
+        })
+        .catch(err => {
+            console.log('uploadGalleryPhotoTags', err);
         });
     }
 }

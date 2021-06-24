@@ -279,9 +279,6 @@ class GalleryMediaPicker extends Component
 
     renderMedia ()
     {
-        console.log('renderMedia', this.props.imagesLoading);
-        console.log('albumSelected', this.state);
-
         if (this.props.imagesLoading)
         {
             return (

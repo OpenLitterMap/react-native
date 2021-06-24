@@ -122,11 +122,10 @@ export const updateRemainingCount = (count) => {
  *    https://github.com/axios/axios/issues/639
  **/
 export const uploadTaggedCameraPhoto = (data, token, tags) => {
-
     // let progress = null;
     return (dispatch) => {
         return axios(URL + '/api/photos/submit', {
-            method:'POST',
+            method: "POST",
             headers: {
                 'Authorization': 'Bearer ' + token,
                 'Content-Type': 'multipart/form-data'
@@ -144,11 +143,12 @@ export const uploadTaggedCameraPhoto = (data, token, tags) => {
             //  }
         })
         .then(response => {
-            console.log("SUCCESS - Image uploaded - now upload associated data");
-            if (response.status === 200)
+            console.log('uploadTaggedCameraPhoto', response.data);
+
+            if (response.data.success)
             {
                 return axios(URL + '/api/photos/update', {
-                    method:'POST',
+                    method: "POST",
                     headers: {
                         'Authorization': 'Bearer ' + token
                     },
@@ -168,16 +168,18 @@ export const uploadTaggedCameraPhoto = (data, token, tags) => {
                     // }
                 })
                 .then(resp => {
-                    if (resp.status === 200)
+                    console.log('uploadPhotoImages', resp);
+
+                    if (resp.data.success)
                     {
-                        console.log("SUCCESS - final status 200");
-                        return {
-                            success: true
-                        };
+                        console.log('todo - delete');
+                        // return {
+                        //     success: true
+                        // };
                     }
                 })
                 .catch(err => {
-                    console.log(err);
+                    console.log('uploadPhotosTags', err);
                 });
             }
         })
