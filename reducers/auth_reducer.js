@@ -168,9 +168,10 @@ export default function (state = INITIAL_STATE, action)
                 usernameError: ''
             };
 
+        /**
+         * After a successful login
+         */
         case LOGIN_SUCCESS:
-            // console.log('=== LOGIN SUCCESS - REDUCER ==');
-            // console.log(action.payload);
             return {
                 ...state,
                 token: action.payload,

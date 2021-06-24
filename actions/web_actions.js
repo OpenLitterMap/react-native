@@ -29,7 +29,7 @@ export const checkForImagesOnWeb = (token) => {
             }
         })
         .then(resp => {
-            console.log('images_from_web', resp.data.photos);
+            // console.log('images_from_web', resp.data.photos);
 
             if (resp.data.photos)
             {
