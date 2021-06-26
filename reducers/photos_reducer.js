@@ -1,5 +1,7 @@
 import {
     ADD_PHOTO,
+    ADD_TAGS_TO_CAMERA_PHOTO,
+    CAMERA_INDEX_CHANGED,
     LOAD_CAMERA_PHOTOS_FROM_ASYNC_STORAGE,
     CONFIRM_SESSION_TAGS,
     DELETE_SELECTED_PHOTO,
@@ -19,6 +21,7 @@ import {
 const INITIAL_STATE = {
     photos: [],
     progress: 0,
+    indexSelected: 0,
     isSelecting: false,
     remainingCount: 0,
     uniqueValue: 0
@@ -56,6 +59,83 @@ export default function(state = INITIAL_STATE, action) {
                 photos: photos1
             };
 
+        /**
+         * Add or update tags object on a gallery image
+         */
+        case ADD_TAGS_TO_CAMERA_PHOTO:
+
+            let photos4 = [...state.photos];
+
+            let image = photos4[action.payload.currentIndex];
+
+            // update tags on image
+            let newTags = Object.assign({}, image.tags);
+
+            let quantity = 1;
+
+            // if quantity exists, assign it
+            if (action.payload.hasOwnProperty('quantity'))
+            {
+                quantity = action.payload.quantity;
+            }
+
+            // Increment quantity from the text filter
+            // sometimes (when tag is being added from text-filter, quantity does not exist
+            // we check to see if it exists on the object, if so, we can increment it
+            if (newTags.hasOwnProperty(action.payload.tag.category))
+            {
+                if (newTags[action.payload.tag.category].hasOwnProperty(action.payload.tag.title))
+                {
+                    quantity = newTags[action.payload.tag.category][action.payload.tag.title];
+
+                    if (newTags[action.payload.tag.category][action.payload.tag.title] === quantity) quantity++;
+                }
+            }
+
+            // create a new object with the new values
+            newTags = {
+                ...newTags,
+                [action.payload.tag.category]: {
+                    ...newTags[action.payload.tag.category],
+                    [action.payload.tag.title]: quantity
+                }
+            };
+
+            // create new total values (Bottom Right total)
+            let litter_total = 0;
+            let litter_length = 0;
+            Object.keys(newTags).map(category => {
+                Object.values(newTags[category]).map(values => {
+                    litter_total += parseInt(values);
+                    litter_length++;
+                });
+            });
+
+            console.log({ newTags });
+
+            image.tags = newTags;
+
+            return {
+                ...state,
+                photos: photos4
+            };
+
+        /**
+         * One of the photos were selected for tagging
+         *
+         * Or, the swiperIndex has changed on LitterPicker
+         *
+         * @param action.payload int (index)
+         */
+        case CAMERA_INDEX_CHANGED:
+
+            console.log("camera_index_changed", action.payload);
+
+            return {
+                ...state,
+                indexSelected: action.payload
+            };
+
         case LOAD_CAMERA_PHOTOS_FROM_ASYNC_STORAGE:
 
             return {
@@ -68,11 +148,12 @@ export default function(state = INITIAL_STATE, action) {
          */
         case CONFIRM_SESSION_TAGS:
 
+            console.log('confirm_session_tags', action.payload);
+
             let photos = [...state.photos];
             let photo1 = photos[action.payload.index];
 
             photo1.tags = action.payload.tags;
-            photo1.picked_up = action.payload.picked_up;
 
             return {
                 ...state,

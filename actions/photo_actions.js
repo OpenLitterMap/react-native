@@ -2,6 +2,8 @@ import React from 'react';
 import axios from 'axios';
 import {
     ADD_PHOTO,
+    ADD_TAGS_TO_CAMERA_PHOTO,
+    CAMERA_INDEX_CHANGED,
     LOAD_CAMERA_PHOTOS_FROM_ASYNC_STORAGE,
     CHANGE_UPLOAD_PROGRESS,
     CONFIRM_SESSION_TAGS,
@@ -24,6 +26,36 @@ export const addPhoto = (photo) => {
         payload: photo
     };
 }
+
+/**
+ *
+ */
+export const addTagsToCameraPhoto = (payload) => {
+    return {
+        type: ADD_TAGS_TO_CAMERA_PHOTO,
+        payload: payload
+    };
+}
+
+/**
+ * One of the photos was selected for tagging
+ */
+export const cameraIndexChanged = (index) => {
+    return {
+        type: CAMERA_INDEX_CHANGED,
+        payload: index
+    };
+}
+
+// /**
+//  *
+//  */
+// export const addTag = (tag) => {
+//     return {
+//         type: 'ADD_TAG',
+//         payload: tag
+//     };
+// }
 
 /**
  * When the app loads, if any camera photos exist, load them here
@@ -111,82 +143,6 @@ export const updateRemainingCount = (count) => {
         type: UPDATE_COUNT_REMAINING,
         payload: count
     };
-}
-
-/**
- * Upload a photo taken using the camera app
- *
- * 1 photo uploaded per request
- *
- *  - note onUploadProgress percentCompleted is different in development and production
- *    https://github.com/axios/axios/issues/639
- **/
-export const uploadTaggedCameraPhoto = (data, token, tags) => {
-    // let progress = null;
-    return (dispatch) => {
-        return axios(URL + '/api/photos/submit', {
-            method: "POST",
-            headers: {
-                'Authorization': 'Bearer ' + token,
-                'Content-Type': 'multipart/form-data'
-            },
-            data: data,
-            // need to debug this and make it smooooooth
-            // onUploadProgress: (p) => {
-            //    progress = p.loaded / p.total; // ( total ) / 2
-            //    progress = Math.round(progress * 100);
-            //    console.log("Prog 1", progress);
-            //    dispatch({
-            //      type: CHANGE_UPLOAD_PROGRESS,
-            //      payload: progress
-            //    });
-            //  }
-        })
-        .then(response => {
-            console.log('uploadTaggedCameraPhoto', response.data);
-
-            if (response.data.success)
-            {
-                return axios(URL + '/api/photos/update', {
-                    method: "POST",
-                    headers: {
-                        'Authorization': 'Bearer ' + token
-                    },
-                    data: {
-                        litter: tags,
-                        photo_id: response.data.photo_id
-                    },
-                    // // need to debug this and make it smooth
-                    // onUploadProgress: (p) => {
-                    //     progress = p.loaded / p.total
-                    //     progress = Math.round(progress * 100);
-                    //     console.log("Prog 2", progress);
-                    //     // dispatch({
-                    //     //   type: CHANGE_UPLOAD_PROGRESS,
-                    //     //   payload: progress
-                    //     // });
-                    // }
-                })
-                .then(resp => {
-                    console.log('uploadPhotoImages', resp);
-
-                    if (resp.data.success)
-                    {
-                        console.log('todo - delete');
-                        // return {
-                        //     success: true
-                        // };
-                    }
-                })
-                .catch(err => {
-                    console.log('uploadPhotosTags', err);
-                });
-            }
-        })
-        .catch(error => {
-            console.log(error);
-        });
-    }
 }
 
 /**

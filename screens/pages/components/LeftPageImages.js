@@ -68,8 +68,6 @@ class LeftPageImages extends PureComponent
      */
     cameraPhotoPressed (index)
     {
-        // console.log('cameraPhotoPressed', index);
-
         const image = this.props.photos[index];
 
         if (this.props.isSelecting)
@@ -85,10 +83,13 @@ class LeftPageImages extends PureComponent
             // shared_reducer - Open LitterPicker modal
             this.props.toggleLitter();
 
+            // camera photos.js
+            this.props.cameraIndexChanged(index);
+
             // litter_reducer
             this.props.photoSelectedForTagging({
                 swiperIndex: index,
-                image
+                type: "camera"
             });
         }
     }
@@ -102,8 +103,6 @@ class LeftPageImages extends PureComponent
      */
     galleryPhotoPressed (index)
     {
-        // console.log('galleryPhotoPressed', index);
-
         const image = this.props.gallery[index];
 
         if (this.props.isSelecting)
@@ -119,12 +118,15 @@ class LeftPageImages extends PureComponent
             // shared_reducer - Open LitterPicker modal
             this.props.toggleLitter();
 
+            // gallery.js
+            this.props.galleryIndexChanged(index);
+
             // litter_reducer
             // When setting swiperIndex, we need to increment the gallery index by photos.length,
             // as camera_photos appear first, followed by gallery_photos, followed by web_photos.
             this.props.photoSelectedForTagging({
                 swiperIndex: this.props.photos.length + index,
-                image
+                type: "gallery"
             });
         }
     }

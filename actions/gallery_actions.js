@@ -2,10 +2,12 @@ import React from 'react'
 import axios from 'axios'
 
 import {
+    ADD_TAGS_TO_GALLERY_IMAGE,
     CHANGE_UPLOAD_PROGRESS,
     CONFIRM_GALLERY_TAGS,
     DELETE_SELECTED_GALLERY,
     DESELECT_ALL_GALLERY_PHOTOS,
+    GALLERY_INDEX_CHANGED,
     GALLERY_UPLOADED_SUCCESSFULLY,
     TOGGLE_IMAGES_LOADING,
     PHOTOS_FROM_GALLERY,
@@ -13,7 +15,17 @@ import {
     TOGGLE_IMAGE_BROWSER,
     TOGGLE_SELECTED_GALLERY,
     URL,
-} from './types'
+} from './types';
+
+/**
+ * Create or Update tags on a gallery image
+ */
+export const addTagsToGalleryImage = tags => {
+    return {
+        type: ADD_TAGS_TO_GALLERY_IMAGE,
+        payload: tags
+    };
+}
 
 /**
  * Apply the selected tags to one of the users selected images
@@ -50,6 +62,16 @@ export const deselectAllGalleryPhotos = () => {
 export const galleryPhotoUploadedSuccessfully = (index) => {
     return {
         type: GALLERY_UPLOADED_SUCCESSFULLY,
+        payload: index
+    };
+}
+
+/**
+ * A gallery index has been selected for tagging
+ */
+export const galleryIndexChanged = (index) => {
+    return {
+        type: GALLERY_INDEX_CHANGED,
         payload: index
     };
 }
@@ -130,7 +152,7 @@ export const uploadPhoto = (token, image) =>
             // onUploadProgress: (p) => {
             //    progress = p.loaded / p.total; // ( total ) / 2
             //    progress = Math.round(progress * 100);
-            //    console.log('Prog 1', progress);
+            //    console.log(progress);
             //    dispatch({
             //      type: CHANGE_UPLOAD_PROGRESS,
             //      payload: progress
@@ -173,7 +195,7 @@ export const uploadTags = (token, tags, photo_id) => {
             // onUploadProgress: (p) => {
             //    progress = p.loaded / p.total
             //    progress = Math.round(progress * 100);
-            //    console.log('Prog 2', progress);
+            //    console.log(progress);
             //    // dispatch({
             //    //   type: CHANGE_UPLOAD_PROGRESS,
             //    //   payload: progress
