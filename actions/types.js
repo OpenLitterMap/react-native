@@ -7,6 +7,8 @@
 // import { ID_CLIENT } from "@env";
 // import { OLM_ENDPOINT } from "@env"; // https://openlittermap.com
 
+export const IS_PRODUCTION = false; // change this when working locally to disable Sentry
+
 // LOCAL DEVELOPMENT
 const SECRET_CLIENT = 'rnMHOS4OICXatHuNMbXeAucBP9Q3CkXkkjl9sdp8';
 const ID_CLIENT = 2;
@@ -46,6 +48,8 @@ export const USERNAME_ERROR = 'USERNAME_ERROR';
 
 // Photos - Taken from OLM Camera
 export const ADD_PHOTO = 'ADD_PHOTO';
+export const ADD_TAGS_TO_CAMERA_PHOTO = 'ADD_TAGS_TO_CAMERA_PHOTO';
+export const CAMERA_INDEX_CHANGED = 'CAMERA_INDEX_CHANGED';
 export const CLOSE_LITTER_MODAL = 'CLOSE_LITTER_MODAL';
 export const CONFIRM_SESSION_TAGS = 'CONFIRM_SESSION_TAGS';
 export const DELETE_SELECTED_PHOTO = 'DELETE_SELECTED_PHOTO'; // from current session
@@ -89,10 +93,12 @@ export const ZOOM_OUT = 'ZOOM_OUT';
 export const ZOOM_IN = 'ZOOM_IN';
 
 // gallery
+export const ADD_TAGS_TO_GALLERY_IMAGE = 'ADD_TAGS_TO_GALLERY_IMAGE';
 export const CHANGE_UPLOAD_PROGRESS = 'CHANGE_UPLOAD_PROGRESS';
 export const CONFIRM_GALLERY_TAGS = 'CONFIRM_GALLERY_TAGS';
 export const DELETE_GALLERY_UPLOAD_SUCCESS = 'DELETE_GALLERY_UPLOAD_SUCCESS';
 export const DESELECT_ALL_GALLERY_PHOTOS = 'DESELECT_ALL_GALLERY_PHOTOS';
+export const GALLERY_INDEX_CHANGED = 'GALLERY_INDEX_CHANGED';
 export const REMOVE_ALL_SELECTED_GALLERY = 'REMOVE_ALL_SELECTED_GALLERY';
 export const RESET_GALLERY_TOTAL_TO_UPLOAD = 'RESET_GALLERY_TOTAL_TO_UPLOAD';
 export const TOGGLE_IMAGE_BROWSER = 'TOGGLE_IMAGE_BROWSER';
@@ -102,6 +108,7 @@ export const GALLERY_UPLOADED_SUCCESSFULLY = 'GALLERY_UPLOADED_SUCCESSFULLY';
 // Litter, Tags
 export const ADD_PREVIOUS_TAG = 'ADD_PREVIOUS_TAG';
 export const CHANGE_CATEGORY = 'CHANGE_CATEGORY';
+export const CHANGE_PHOTO_TYPE = 'CHANGE_PHOTO_TYPE;'
 export const CHANGE_ITEM = 'CHANGE_ITEM';
 export const CHANGE_Q = 'CHANGE_Q';
 export const CONFIRM_FOR_UPLOAD = 'CONFIRM_FOR_UPLOAD';

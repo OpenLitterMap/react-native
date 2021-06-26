@@ -2,6 +2,7 @@ import React from 'react'
 
 import {
     CHANGE_CATEGORY,
+    CHANGE_PHOTO_TYPE,
     CHANGE_ITEM,
     CHANGE_Q,
     CHANGE_SWIPER_INDEX,
@@ -38,6 +39,18 @@ export const changeItem = (item) => {
     return {
         type: CHANGE_ITEM,
         payload: item
+    };
+}
+
+/**
+ * Change the type of photo being selected for tagging
+ *
+ * @param payload string : "camera", "gallery", or "web".
+ */
+export const changePhotoType = (payload) => {
+    return {
+        type: CHANGE_PHOTO_TYPE,
+        action: payload
     };
 }
 
@@ -81,10 +94,10 @@ export const suggestTags = (data) => {
  *
  * Can be one of Web, Camera, or Gallery
  */
-export const photoSelectedForTagging = (photo) => {
+export const photoSelectedForTagging = (data) => {
     return {
         type: PHOTO_SELECTED_FOR_TAGGING,
-        payload: photo
+        payload: data
     };
 }
 
@@ -158,15 +171,15 @@ export const toggleSwitch = () => {
     };
 }
 
-/**
- * Add data + quantity to tags
- */
-export const tagLitter = (tags) => {
-    return {
-        type: TAG_LITTER,
-        payload: tags
-    };
-}
+// /**
+//  * Add data + quantity to tags
+//  */
+// export const tagLitter = (tags) => {
+//     return {
+//         type: TAG_LITTER,
+//         payload: tags
+//     };
+// }
 
 /**
  * Change the quantity of an existing piece of litter

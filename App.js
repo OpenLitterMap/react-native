@@ -15,18 +15,16 @@ if (! langs[lang]) lang = 'en';
 
 import * as Sentry from "@sentry/react-native";
 import { SENTRY_DSN } from "@env";
+import { IS_PRODUCTION } from './actions/types';
 
 const App = () => {
 
-    // Todo - Splash screen
-    // useEffect(() => {
-    //   SplashScreen.hide();
-    // }, []);
-
-    // you need to add a key in sentry.properties for iOS and Android
-    Sentry.init({
-        dsn: SENTRY_DSN,
-    });
+    if (IS_PRODUCTION)
+    {
+        Sentry.init({
+            dsn: SENTRY_DSN,
+        });
+    }
 
     const { persistor, store } = configureStore();
 

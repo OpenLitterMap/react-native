@@ -14,7 +14,7 @@ import {
 const INITIAL_STATE = {
     selected: 0,
     isSelecting: false,
-    litterVisible: false,
+    litterVisible: false, // show LitterPicker
     modalVisible: false,
     thankYouVisible: false,
     totalImagesToUpload: 0,

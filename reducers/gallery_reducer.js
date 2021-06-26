@@ -1,8 +1,10 @@
 import {
+    ADD_TAGS_TO_GALLERY_IMAGE,
     CHANGE_UPLOAD_PROGRESS,
     CONFIRM_GALLERY_TAGS,
     DELETE_SELECTED_GALLERY,
     DESELECT_ALL_GALLERY_PHOTOS,
+    GALLERY_INDEX_CHANGED,
     GALLERY_UPLOADED_SUCCESSFULLY,
     TOGGLE_IMAGES_LOADING,
     PHOTOS_FROM_GALLERY,
@@ -12,17 +14,77 @@ import {
 } from '../actions/types';
 
 const INITIAL_STATE = {
-    gallery: [], // photos
+    gallery: [], // array of selected images
     imageBrowserOpen: false,
     imagesLoading: true,
+    indexSelected: 0,
     totalGalleryUploaded: 0,
     galleryUploadProgress: 0
 };
 
-export default function (state = INITIAL_STATE, action) {
-
+export default function (state = INITIAL_STATE, action)
+{
     switch (action.type)
     {
+        /**
+         * Add or update tags object on a gallery image
+         */
+        case ADD_TAGS_TO_GALLERY_IMAGE:
+
+            let images = [...state.gallery];
+
+            let image = images[state.indexSelected];
+
+            // update tags on image
+            // This is also duplicated by photos.js
+            let newTags = Object.assign({}, image.tags);
+
+            let quantity = 1;
+
+            // if quantity exists, assign it
+            if (action.payload.hasOwnProperty('quantity'))
+            {
+                quantity = action.payload.quantity;
+            }
+
+            // Increment quantity from the text filter
+            // sometimes (when tag is being added from text-filter, quantity does not exist
+            // we check to see if it exists on the object, if so, we can increment it
+            if (newTags.hasOwnProperty(action.payload.category))
+            {
+                if (newTags[action.payload.category].hasOwnProperty(action.payload.title))
+                {
+                    quantity = newTags[action.payload.category][action.payload.title];
+
+                    if (newTags[action.payload.category][action.payload.title] === quantity) quantity++;
+                }
+            }
+
+            // create a new object with the new values
+            newTags = {
+                ...newTags,
+                [action.payload.category]: {
+                    ...newTags[action.payload.category],
+                    [action.payload.title]: quantity
+                }
+            };
+
+            // create new total values (Bottom Right total)
+            let litter_total = 0;
+            let litter_length = 0;
+            Object.keys(newTags).map(category => {
+                Object.values(newTags[category]).map(values => {
+                    litter_total += parseInt(values);
+                    litter_length++;
+                });
+            });
+
+            image.tags = newTags;
+
+            return {
+                ...state,
+                gallery: images
+            };
 
         /**
          * User is uploading photos
@@ -78,6 +140,18 @@ export default function (state = INITIAL_STATE, action) {
             return {
                 ...state,
                 gallery: photos1
+            };
+
+        /**
+         * One of the gallery images has been selected
+         *
+         * @param int action.payload (index)
+         */
+        case GALLERY_INDEX_CHANGED:
+
+            return {
+                ...state,
+                indexSelected: action.payload
             };
 
         /**

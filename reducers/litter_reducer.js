@@ -1,5 +1,6 @@
 import {
     CHANGE_CATEGORY,
+    CHANGE_PHOTO_TYPE,
     CHANGE_ITEM,
     CHANGE_Q,
     CONFIRM_FOR_UPLOAD,
@@ -33,7 +34,8 @@ const INITIAL_STATE = {
     hasLitter: false,
     index: null,
     indexSelected: null, // index of camera_photos, gallery or web
-    photoSelected: null,
+    // photoSelected: null,
+    photoType: "", // gallery, camera, or web.
     presence: true,
     positions: {}, // coordinates of each tag for animation
     suggestedTags: [],
@@ -67,6 +69,18 @@ export default function (state = INITIAL_STATE, action)
                 items,
                 item,
                 q: 1
+            };
+
+        /**
+         * Change the type of photo being selected for tagging
+         *
+         * @payload type string "camera", "gallery", or "web"
+         */
+        case CHANGE_PHOTO_TYPE:
+
+            return {
+                ...state,
+                photoType: action.payload
             };
 
         /**
@@ -129,25 +143,18 @@ export default function (state = INITIAL_STATE, action)
         /**
          * One of the photos from Web, Camera or Gallery has been selected for tagging
          *
-         * Copy it to photoSelected for tagging
+         * Hold the type of image "web", "camera", or "gallery"
+         * and the index that was selected.
          *
-         * @param index = the index of photos (eg camera photos)
-         * @param type = camera, gallery, or web
+         * @param int index = photos[index]
+         * @param string type = camera, gallery, or web
          */
         case PHOTO_SELECTED_FOR_TAGGING:
-
-            console.log('photo_selected_for_tagging', action.payload);
-
-            const newTags3 = Object.assign({}, action.payload.image.tags);
-            const newImage3 = Object.assign({}, action.payload.image);
 
             return {
                 ...state,
                 swiperIndex: action.payload.swiperIndex,
-                photoSelected: newImage3, // the image data
-                // modalVisible: true,
-                litterVisible: true,
-                tags: newTags3, // tags applied to the image
+                photoType: action.payload.type, // camera, gallery, or web
                 q: "1" // set quantity to 1
             };
 
@@ -269,56 +276,59 @@ export default function (state = INITIAL_STATE, action)
          *
          * Increment the quantity if button pressed repeatedly
          */
-        case TAG_LITTER:
-
-            let newTags = Object.assign({}, state.tags);
-
-            let quantity = 1;
-
-            // if quantity exists, assign it
-            if (action.payload.hasOwnProperty('quantity'))
-            {
-                quantity = action.payload.quantity;
-            }
-
-            // sometimes (when tag is being added from text-filter, quantity does not exist
-            // we check to see if it exists on the object, if so, we can increment it
-            if (newTags.hasOwnProperty(action.payload.category))
-            {
-                if (newTags[action.payload.category].hasOwnProperty(action.payload.title))
-                {
-                    quantity = newTags[action.payload.category][action.payload.title];
-
-                    if (newTags[action.payload.category][action.payload.title] === quantity) quantity++;
-                }
-            }
-
-            // create a new object with the new values
-            newTags = {
-                ...newTags,
-                [action.payload.category]: {
-                    ...newTags[action.payload.category],
-                    [action.payload.title]: quantity
-                }
-            };
-
-            // create new total values (Bottom Right total)
-            let litter_total = 0;
-            let litter_length = 0;
-            Object.keys(newTags).map(category => {
-                Object.values(newTags[category]).map(values => {
-                    litter_total += parseInt(values);
-                    litter_length++;
-                });
-            });
-
-            return {
-                ...state,
-                tags: newTags,
-                totalLitterCount: litter_total,
-                collectionLength: litter_length,
-                q: quantity
-            };
+        // case TAG_LITTER:
+        //
+        //     let newTags = Object.assign({}, state.tags);
+        //
+        //     let quantity = 1;
+        //
+        //     // if quantity exists, assign it
+        //     if (action.payload.hasOwnProperty('quantity'))
+        //     {
+        //         quantity = action.payload.quantity;
+        //     }
+        //
+        //     // Increment quantity from the text filter
+        //     // sometimes (when tag is being added from text-filter, quantity does not exist
+        //     // we check to see if it exists on the object, if so, we can increment it
+        //     if (newTags.hasOwnProperty(action.payload.category))
+        //     {
+        //         if (newTags[action.payload.category].hasOwnProperty(action.payload.title))
+        //         {
+        //             quantity = newTags[action.payload.category][action.payload.title];
+        //
+        //             if (newTags[action.payload.category][action.payload.title] === quantity) quantity++;
+        //         }
+        //     }
+        //
+        //     // create a new object with the new values
+        //     newTags = {
+        //         ...newTags,
+        //         [action.payload.category]: {
+        //             ...newTags[action.payload.category],
+        //             [action.payload.title]: quantity
+        //         }
+        //     };
+        //
+        //     // create new total values (Bottom Right total)
+        //     let litter_total = 0;
+        //     let litter_length = 0;
+        //     Object.keys(newTags).map(category => {
+        //         Object.values(newTags[category]).map(values => {
+        //             litter_total += parseInt(values);
+        //             litter_length++;
+        //         });
+        //     });
+        //
+        //     console.log({ newTags });
+        //
+        //     return {
+        //         ...state,
+        //         tags: newTags,
+        //         totalLitterCount: litter_total,
+        //         collectionLength: litter_length,
+        //         q: quantity
+        //     };
 
         /**
          * This will toggle the value for the Switch, not the value for each individual image.

@@ -516,8 +516,6 @@ class LeftPage extends PureComponent
                         galleryToUpload,
                     );
 
-                    console.log({ response });
-
                     if (response.success)
                     {
                         // upload the tags
@@ -526,8 +524,11 @@ class LeftPage extends PureComponent
                             img.tags
                         )
 
-                        // Remove the image
-                        this.props.galleryPhotoUploadedSuccessfully(myIndex);
+                        if (resp.success)
+                        {
+                            // Remove the image
+                            this.props.galleryPhotoUploadedSuccessfully(myIndex);
+                        }
                     }
                 }
             }
@@ -558,17 +559,23 @@ class LeftPage extends PureComponent
                     const myIndex = this.props.photos.indexOf(img);
 
                     // photos.js
-                    const response = await this.props.uploadTaggedCameraPhoto(
-                        cameraPhoto,
+                    const response = await this.props.uploadPhoto(
                         this.props.token,
-                        img.tags
+                        cameraPhoto,
                     );
 
                     if (response.success)
                     {
-                        this.props.cameraPhotoUploadedSuccessfully(myIndex);
+                        const resp = await this.props.uploadTags(
+                            this.props.token,
+                            img.tags
+                        );
+
+                        if (resp.success)
+                        {
+                            this.props.cameraPhotoUploadedSuccessfully(myIndex);
+                        }
                     }
-                    // else, show the error to the user
                 }
             }
         }
