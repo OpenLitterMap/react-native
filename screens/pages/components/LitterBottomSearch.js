@@ -84,59 +84,37 @@ class LitterBottomSearch extends PureComponent
      *
      * Todo - translate
      */
-    deleteImage()
+    deleteImage ()
     {
+        const currentIndex = this.props.swiperIndex;
+        const { photosLength, galleryLength, webLength } = this.props;
+
         Alert.alert('Alert', 'Do you really want to delete the image?',
             [
                 {
                     text: 'OK',
-                    onPress: () => {
-
-                        if (this.props.photoSelected.type === 'gallery')
+                    onPress: () =>
+                    {
+                        if (currentIndex < photosLength)
                         {
-                            let selectedIndex = 0;
-
-                            this.props.gallery.forEach((photo, index) => {
-                                if (photo.filename === this.props.photoSelected.filename) {
-                                    selectedIndex = index;
-                                }
-                            });
-
-                            if (selectedIndex === this.props.gallery.length - 1)
-                            {
-                                this.closeLitterPicker();
-                            }
-                            else
-                            {
-                                this.props.photoSelected = this.props.gallery[selectedIndex + 1];
-                            }
-
-                            this.props.deleteSelectedGallery(selectedIndex);
-
+                            this.props.deleteSelectedPhoto(currentIndex);
                         }
+                        else if (currentIndex < (galleryLength + photosLength))
+                        {
+                            this.props.deleteSelectedGallery(currentIndex - photosLength);
+                        }
+                        // else if (currentIndex < webLength)
+                        // {
+                        //     delete web image
+                        // }
                         else
                         {
-                            let selectedIndex = 0;
+                            console.log("problem @ deleteImage")
 
-                            this.props.photos.forEach((photo, index) => {
-
-                                if (photo.filename === this.props.photoSelected.filename)
-                                {
-                                    selectedIndex = index;
-                                }
-                            });
-
-                            if (selectedIndex === this.props.photos.length - 1)
-                            {
-                                this.closeLitterPicker();
-                            }
-                            else
-                            {
-                                this.props.photoSelected = this.props.photos[selectedIndex + 1].image;
-                            }
-
-                            this.props.deleteSelectedPhoto(selectedIndex);
+                            return {};
                         }
+
+                        this.closeLitterPicker();
                     }
                 },
                 {

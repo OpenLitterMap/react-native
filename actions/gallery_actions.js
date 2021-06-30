@@ -4,7 +4,6 @@ import axios from 'axios'
 import {
     ADD_TAGS_TO_GALLERY_IMAGE,
     CHANGE_UPLOAD_PROGRESS,
-    CONFIRM_GALLERY_TAGS,
     DELETE_SELECTED_GALLERY,
     DESELECT_ALL_GALLERY_PHOTOS,
     GALLERY_INDEX_CHANGED,
@@ -25,16 +24,6 @@ export const addTagsToGalleryImage = tags => {
     return {
         type: ADD_TAGS_TO_GALLERY_IMAGE,
         payload: tags
-    };
-}
-
-/**
- * Apply the selected tags to one of the users selected images
- */
-export const confirmGalleryTags = data => {
-    return {
-        type: CONFIRM_GALLERY_TAGS,
-        payload: data
     };
 }
 

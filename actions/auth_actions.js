@@ -225,7 +225,11 @@ export const passwordValid = () => {
 };
 
 /**
- * LOG OUT
+ * The user wants to log out.
+ *
+ * First, delete the auth token
+ *
+ * This action will call many reducers
  */
 export const logout = () => {
     AsyncStorage.removeItem('jwt');
@@ -237,45 +241,59 @@ export const logout = () => {
 };
 
 /**
- * Forgot Password
+ * The user forgot their password and is submitting their email address to request a link
  */
-// export const checkForToken = () => async dispatch => {
 export const sendResetPasswordRequest = email => {
     return dispatch => {
-        return axios
-            .post(URL + '/password/email', {
-                email: email,
-                api: true // we need this to override the response
+        return axios(URL + '/api/password/email', {
+                method: "POST",
+                data: {
+                    email: email,
+                    api: true // we need this to override the response
+                },
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json'
+                }
             })
             .then(response => {
-                // console.log('resp', response);
-                // console.log('resp', response.data);
-                // Success
-                if (response.data === 'passwords.sent') {
-                    return true;
-                } else if (response.data === 'passwords.user') {
-                    return 'user'; // user does not exist
-                } else {
-                    return false; // other problem
+                console.log('sendResetPasswordRequest', response.data);
+
+                if (response.data.message === "We have emailed your password reset link!")
+                {
+                    return {
+                        success: true
+                    };
                 }
             })
             .catch(error => {
-                // console.log('axios token error', error);
-                return false;
-            });
+                console.log('sendResetPasswordRequest', error.response.data);
+
+                if (error.response.data.message === "The given data was invalid.")
+                {
+                    return {
+                        success: false,
+                        msg: error.response.data.errors.email // We can't find a user with that email address
+                    }
+                }
+
+                return {
+                    success: false,
+                    msg: 'error'
+                };
+        });
     };
 };
 
 /**
- * LOG IN
- *
+ * A user is trying to login with email and password
  */
 export const serverLogin = data => {
 
-    return (dispatch) => {
+    return async (dispatch) => {
         dispatch({ type: SUBMIT_START });
 
-        return axios(URL + '/oauth/token', {
+        return await axios(URL + '/api/oauth/token', {
             method: 'POST',
             headers: {
                 Accept: 'application/json',
@@ -315,7 +333,8 @@ export const serverLogin = data => {
             }
         })
         .catch(error => {
-            console.log('serverLogin.error', error);
+            console.log('serverLogin.error', error.response.data);
+
             dispatch({ type: LOGIN_FAIL });
         });
     };

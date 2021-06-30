@@ -1,15 +1,13 @@
-import React, { PureComponent, useEffect } from 'react';
+import React, { PureComponent } from 'react';
 import {
     Dimensions,
-    Keyboard, Modal,
+    Keyboard,
     Platform,
     SafeAreaView,
     StatusBar,
     TouchableOpacity,
-    TouchableWithoutFeedback,
     View
 } from 'react-native';
-import AsyncStorage from '@react-native-community/async-storage';
 import { TransText } from "react-native-translation";
 import { Icon } from 'react-native-elements'
 import Swiper from 'react-native-swiper'
@@ -218,15 +216,14 @@ class LitterPicker extends PureComponent
     {
         console.log('LitterPicker.render');
         const { lang, swiperIndex } = this.props;
-        console.log({ swiperIndex });
 
         // Todo - save these globally
         const photosLength = this.props.photos.length;
         const galleryLength = this.props.gallery.length;
         const webLength = this.props.webPhotos.length;
 
+        // We need this to show/hide the left and right arrows
         const IMAGES_COUNT = photosLength + galleryLength + webLength;
-        console.log({ IMAGES_COUNT });
 
         return (
             <View style={{ flex: 1 }}>
@@ -340,6 +337,10 @@ class LitterPicker extends PureComponent
                         bottomHeight={this.state.bottomHeight}
                         presence={this.props.presence}
                         lang={this.props.lang}
+                        swiperIndex={swiperIndex}
+                        photosLength={photosLength}
+                        galleryLength={galleryLength}
+                        webLength={webLength}
                     />
                 </View>
                 <SafeAreaView style={{ flex: 0 }} />
@@ -408,7 +409,7 @@ class LitterPicker extends PureComponent
     }
 
     /**
-     *
+     * Show the leftArrow when the currentIndex is greater than 0
      */
     getLeftArrowContainer ()
     {
@@ -418,7 +419,7 @@ class LitterPicker extends PureComponent
     }
 
     /**
-     *
+     * Load the previous image
      */
     previousImage ()
     {
@@ -432,13 +433,13 @@ class LitterPicker extends PureComponent
     }
 
     /**
-     *
+     * Load the next image
      */
     nextImage ()
     {
         const currentIndex = this.props.swiperIndex;
 
-        // check total length of all camera_photos, gallery_photos and web_photos
+        // todo - check total length of all camera_photos, gallery_photos and web_photos
 
         this.props.swiperIndexChanged(currentIndex + 1);
     }
@@ -455,8 +456,6 @@ class LitterPicker extends PureComponent
      * @param newIndex (int): the global index across all photo types.
      */
     swiperIndexChanged = (newIndex) => {
-
-        console.log({ newIndex });
 
         // todo - save these globally
         const photosLength = this.props.photos.length;
@@ -481,8 +480,7 @@ class LitterPicker extends PureComponent
             else if (newIndex < (galleryLength + photosLength + webLength))
             {
                 const webIndex = newIndex - this.props.photos.length - this.props.gallery.length;
-                console.log({ webIndex });
-                console.log('todo - webIndexChanged LitterPicker #413')
+                console.log('todo - webIndexChanged LitterPicker #413', webIndex);
             }
             else
             {
@@ -492,31 +490,6 @@ class LitterPicker extends PureComponent
             // This was necessary to avoid error
             // litter.js swiperIndex
             this.props.swiperIndexChanged(newIndex);
-
-            // // Camera
-            // if (currentPhotoType === 'camera')
-            // {
-            //     console.log({ newIndex })
-            //
-            // }
-            // // Gallery
-            // else if (currentPhotoType === 'gallery')
-            // {
-            //
-            //     console.log({ galleryIndex });
-            //
-            //
-            // }
-            // // Web
-            // else if (currentPhotoType === 'web')
-            // {
-
-            // }
-
-            // this.props.photoSelectedForTagging({
-            //     swiperIndex: newIndex,
-            //     image
-            // });
 
             // If we are browsing web photos
             // At the end of the search, we need to check to see if we need to load more images
@@ -541,7 +514,6 @@ class LitterPicker extends PureComponent
      */
     getTags ()
     {
-        console.log("getTags");
         const currentIndex = this.props.swiperIndex;
 
         const photosLength = this.props.photos.length;
@@ -550,12 +522,10 @@ class LitterPicker extends PureComponent
 
         if (currentIndex < photosLength)
         {
-            console.log('get_tags.photo[index]', this.props.photos[currentIndex].tags);
             return this.props.photos[currentIndex].tags
         }
         else if (currentIndex < (galleryLength + photosLength))
         {
-            console.log('get_tags.gallery[index]', this.props.gallery[currentIndex - photosLength]);
             return this.props.gallery[currentIndex - photosLength].tags;
         }
         else if (currentIndex < webLength)
@@ -568,23 +538,6 @@ class LitterPicker extends PureComponent
 
             return {};
         }
-
-        // const photoType = this.props.photoType;
-        // console.log('getTags', photoType);
-
-        // if (photoType === "camera")
-        // {
-        //     return this.props.photos[this.props.selectedCameraPhotosIndex].tags;
-        // }
-        // else if (photoType === "gallery")
-        // {
-        //     return this.props.gallery[this.props.selectedGalleryIndex].tags
-        // }
-        // else if (photoType === "web")
-        // {
-        //     console.log('todo - LitterPicker@getTags #448');
-        //     return this.props.web[0];
-        // }
     }
 
     /**
@@ -617,132 +570,128 @@ class LitterPicker extends PureComponent
         });
     }
 
-    /**
-     * Confirm this data is ready for upload
-     *
-     * this.props.photos are from the in-app camera
-     * this.props.gallery are selected from the users photo album
-     * this.props.webPhotos were uploaded to web and in the app for tagging
-     *
-     * some users have settings.previous_tags true
-     */
-    _confirmData ()
-    {
-        const swiperIndex = this.props.swiperIndex;
-
-        console.log('TYPE', this.props.photoType);
-
-        // Some users want to copy the tags onto the next image, so we need to clone them
-        const tags = cloneDeep(this.props.tags);
-
-        console.log({ tags });
-
-        // The user can only confirm if tags exist
-        if (Object.keys(this.props.tags).length > 0)
-        {
-            if (this.props.photoType === 'web')
-            {
-                // Turn on spinner
-                this.setState({ webLoading: true });
-
-                // Show the modal
-                this.props.setLitterPickerModal(true);
-
-                // Submit data to the server, web_actions.js
-                this.props.confirmWebPhoto({
-                    id: this.props.photoSelected.id,
-                    tags,
-                    presence: this.props.presence,
-                    token: this.props.token
-                });
-r
-                // web.js - filter out the current image by ID and decrement web.count
-                // this.props.photoSelected needs to be updated
-                this.props.removeWebImage(this.props.photoSelected.id);
-
-                // update this.props.photoSelected with the next image
-                if (this.props.webPhotos.length > 0)
-                {
-                    const nextWebPhoto = this.props.webPhotos[0];
-
-                    if (nextWebPhoto)
-                    {
-                        this.props.photoSelectedForTagging({
-                            swiperIndex,
-                            image: nextWebPhoto
-                        });
-
-                        if (this.props.previous_tags)
-                        {
-                            this.props.updateTags(tags);
-                        }
-                        else
-                        {
-                            this.props.resetTags();
-                        }
-
-                        return;
-                    }
-                }
-            }
-            else if (this.props.photoType === 'gallery')
-            {
-                console.log('confirm gallery');
-                const galleryIndex = swiperIndex - this.props.photos.length;
-
-                // gallery_actions, gallery_reducer
-                this.props.confirmGalleryTags({
-                    index: galleryIndex,
-                    tags,
-                    picked_up: this.props.presence
-                });
-            }
-            else if (this.props.photoType === 'camera')
-            {
-                console.log('confirm camera');
-                // photo_actions, photos_reducer
-                this.props.confirmSessionTags({
-                    index: swiperIndex,
-                    tags,
-                    picked_up: this.props.presence
-                });
-            }
-        }
-
-        // Store remaining images in-case app closes or crashes
-        // setTimeout(() => {
-        //     AsyncStorage.setItem('openlittermap-photos', JSON.stringify(this.props.photos));
-        //     AsyncStorage.setItem('openlittermap-gallery', JSON.stringify(this.props.gallery));
-        // }, 1000);
-
-        console.log('done', tags);
-
-        // // swipe in the next image
-        // const imageCount = this.props.photos.length + this.props.gallery.length + this.props.webPhotos.length;
-        //
-        // if (imageCount === 0 || this.props.swiperIndex + 1 === imageCount)
-        // {
-        //     // litter_reducer
-        //     this.props.resetLitterTags();
-        //
-        //     // shared_reducer
-        //     this.props.closeLitterModal();
-        // }
-        // else
-        // {
-        //     this.refs.imageSwiper.scrollTo(this.props.swiperIndex + 1, true);
-        //
-        //     // Some users want to apply the same tags to the next image
-        //     // this.props.previous_tags is a setting saved to the user
-        //     // probably a better way to do this...
-        //     if (this.props.previous_tags)
-        //     {
-        //         setTimeout(() => {
-        //             this.props.updateTags(tags);
-        //         }, 500);
-        //     }
-        // }
-    };
+//     /**
+//      * Confirm this data is ready for upload
+//      *
+//      * this.props.photos are from the in-app camera
+//      * this.props.gallery are selected from the users photo album
+//      * this.props.webPhotos were uploaded to web and in the app for tagging
+//      *
+//      * some users have settings.previous_tags true
+//      */
+//     _confirmData ()
+//     {
+//         const swiperIndex = this.props.swiperIndex;
+//
+//         // Some users want to copy the tags onto the next image, so we need to clone them
+//         const tags = cloneDeep(this.props.tags);
+//
+//         // The user can only confirm if tags exist
+//         if (Object.keys(this.props.tags).length > 0)
+//         {
+//             if (this.props.photoType === 'web')
+//             {
+//                 // Turn on spinner
+//                 this.setState({ webLoading: true });
+//
+//                 // Show the modal
+//                 this.props.setLitterPickerModal(true);
+//
+//                 // Submit data to the server, web_actions.js
+//                 this.props.confirmWebPhoto({
+//                     id: this.props.photoSelected.id,
+//                     tags,
+//                     presence: this.props.presence,
+//                     token: this.props.token
+//                 });
+// r
+//                 // web.js - filter out the current image by ID and decrement web.count
+//                 // this.props.photoSelected needs to be updated
+//                 this.props.removeWebImage(this.props.photoSelected.id);
+//
+//                 // update this.props.photoSelected with the next image
+//                 if (this.props.webPhotos.length > 0)
+//                 {
+//                     const nextWebPhoto = this.props.webPhotos[0];
+//
+//                     if (nextWebPhoto)
+//                     {
+//                         this.props.photoSelectedForTagging({
+//                             swiperIndex,
+//                             image: nextWebPhoto
+//                         });
+//
+//                         if (this.props.previous_tags)
+//                         {
+//                             this.props.updateTags(tags);
+//                         }
+//                         else
+//                         {
+//                             this.props.resetTags();
+//                         }
+//
+//                         return;
+//                     }
+//                 }
+//             }
+//             else if (this.props.photoType === 'gallery')
+//             {
+//                 console.log('confirm gallery');
+//                 const galleryIndex = swiperIndex - this.props.photos.length;
+//
+//                 // gallery_actions, gallery_reducer
+//                 this.props.confirmGalleryTags({
+//                     index: galleryIndex,
+//                     tags,
+//                     picked_up: this.props.presence
+//                 });
+//             }
+//             else if (this.props.photoType === 'camera')
+//             {
+//                 console.log('confirm camera');
+//                 // photo_actions, photos_reducer
+//                 this.props.confirmSessionTags({
+//                     index: swiperIndex,
+//                     tags,
+//                     picked_up: this.props.presence
+//                 });
+//             }
+//         }
+//
+//         // Store remaining images in-case app closes or crashes
+//         // setTimeout(() => {
+//         //     AsyncStorage.setItem('openlittermap-photos', JSON.stringify(this.props.photos));
+//         //     AsyncStorage.setItem('openlittermap-gallery', JSON.stringify(this.props.gallery));
+//         // }, 1000);
+//
+//         console.log('done', tags);
+//
+//         // // swipe in the next image
+//         // const imageCount = this.props.photos.length + this.props.gallery.length + this.props.webPhotos.length;
+//         //
+//         // if (imageCount === 0 || this.props.swiperIndex + 1 === imageCount)
+//         // {
+//         //     // litter_reducer
+//         //     this.props.resetLitterTags();
+//         //
+//         //     // shared_reducer
+//         //     this.props.closeLitterModal();
+//         // }
+//         // else
+//         // {
+//         //     this.refs.imageSwiper.scrollTo(this.props.swiperIndex + 1, true);
+//         //
+//         //     // Some users want to apply the same tags to the next image
+//         //     // this.props.previous_tags is a setting saved to the user
+//         //     // probably a better way to do this...
+//         //     if (this.props.previous_tags)
+//         //     {
+//         //         setTimeout(() => {
+//         //             this.props.updateTags(tags);
+//         //         }, 500);
+//         //     }
+//         // }
+//     };
 
     /**
      * Add or Update Tags
@@ -757,8 +706,6 @@ r
             quantity: parseInt(this.props.q)
         };
 
-        console.log("addTag", tag);
-
         // this.props.tagLitter(tag);
         // this._confirmData();
 
@@ -768,13 +715,11 @@ r
         const webLength = this.props.webPhotos.length;
 
         const currentIndex = this.props.swiperIndex;
-        console.log({ currentIndex });
 
         // Add tag to image
         if (currentIndex < photosLength)
         {
             // photo_actions
-            console.log('addTagsToCameraPhoto');
             this.props.addTagsToCameraPhoto({
                 tag,
                 currentIndex
@@ -783,7 +728,6 @@ r
         else if (currentIndex < (photosLength + galleryLength))
         {
             // gallery_actions
-            console.log('addTagsToGalleryImage');
             this.props.addTagsToGalleryImage({
                 tag,
                 currentIndex: currentIndex - photosLength
@@ -792,7 +736,6 @@ r
         else if (currentIndex < (photosLength + galleryLength + webLength))
         {
             // web_actions
-            console.log('addTagsToWebImage');
             this.props.addTagsToWebImage({
                 tag,
                 currentIndex: (currentIndex - photosLength - galleryLength)

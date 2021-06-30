@@ -5,14 +5,12 @@ import {
     CHANGE_Q,
     CONFIRM_FOR_UPLOAD,
     CHANGE_SWIPER_INDEX,
-    PHOTO_SELECTED_FOR_TAGGING,
     REMOVE_TAG,
     RESET_TAGS,
     RESET_LITTER_STATE,
     SHOW_ALL_TAGS,
     SHOW_INNER_MODAL,
     SUGGEST_TAGS,
-    TAG_LITTER,
     TOGGLE_SWITCH,
     UPDATE_TAGS,
     UPDATE_TAGS_X_POS,
@@ -141,24 +139,6 @@ export default function (state = INITIAL_STATE, action)
             };
 
         /**
-         * One of the photos from Web, Camera or Gallery has been selected for tagging
-         *
-         * Hold the type of image "web", "camera", or "gallery"
-         * and the index that was selected.
-         *
-         * @param int index = photos[index]
-         * @param string type = camera, gallery, or web
-         */
-        case PHOTO_SELECTED_FOR_TAGGING:
-
-            return {
-                ...state,
-                swiperIndex: action.payload.swiperIndex,
-                photoType: action.payload.type, // camera, gallery, or web
-                q: "1" // set quantity to 1
-            };
-
-        /**
          * Remove a tag
          */
         case REMOVE_TAG:
@@ -268,69 +248,6 @@ export default function (state = INITIAL_STATE, action)
                 ...state,
                 suggestedTags: x
             };
-
-        /**
-         * Add litter data to tags
-         *
-         * category[key] = quantity
-         *
-         * eg smoking[butts] = 1
-         *
-         * Increment the quantity if button pressed repeatedly
-         */
-        // case TAG_LITTER:
-        //
-        //     let newTags = Object.assign({}, state.tags);
-        //
-        //     let quantity = 1;
-        //
-        //     // if quantity exists, assign it
-        //     if (action.payload.hasOwnProperty('quantity'))
-        //     {
-        //         quantity = action.payload.quantity;
-        //     }
-        //
-        //     // Increment quantity from the text filter
-        //     // sometimes (when tag is being added from text-filter, quantity does not exist
-        //     // we check to see if it exists on the object, if so, we can increment it
-        //     if (newTags.hasOwnProperty(action.payload.category))
-        //     {
-        //         if (newTags[action.payload.category].hasOwnProperty(action.payload.title))
-        //         {
-        //             quantity = newTags[action.payload.category][action.payload.title];
-        //
-        //             if (newTags[action.payload.category][action.payload.title] === quantity) quantity++;
-        //         }
-        //     }
-        //
-        //     // create a new object with the new values
-        //     newTags = {
-        //         ...newTags,
-        //         [action.payload.category]: {
-        //             ...newTags[action.payload.category],
-        //             [action.payload.title]: quantity
-        //         }
-        //     };
-        //
-        //     // create new total values (Bottom Right total)
-        //     let litter_total = 0;
-        //     let litter_length = 0;
-        //     Object.keys(newTags).map(category => {
-        //         Object.values(newTags[category]).map(values => {
-        //             litter_total += parseInt(values);
-        //             litter_length++;
-        //         });
-        //     });
-        //
-        //     console.log({ newTags });
-        //
-        //     return {
-        //         ...state,
-        //         tags: newTags,
-        //         totalLitterCount: litter_total,
-        //         collectionLength: litter_length,
-        //         q: quantity
-        //     };
 
         /**
          * This will toggle the value for the Switch, not the value for each individual image.

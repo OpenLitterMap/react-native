@@ -133,7 +133,6 @@ class LitterTags extends Component {
         if (currentIndex < photosLength)
         {
             // photo_actions
-            console.log('removeTagFromCameraPhoto');
             this.props.removeTagFromCameraPhoto({
                 category,
                 tag,
@@ -143,7 +142,6 @@ class LitterTags extends Component {
         else if (currentIndex < (photosLength + galleryLength))
         {
             // gallery_actions
-            console.log('removeTagFromGalleryPhoto');
             this.props.removeTagFromGalleryPhoto({
                 category,
                 tag,
@@ -153,7 +151,6 @@ class LitterTags extends Component {
         else if (currentIndex < (photosLength + galleryLength + webLength))
         {
             // web_actions
-            console.log('removeTagFromWebPhoto');
             this.props.removeTagFromWebPhoto({
                 category,
                 tag,
@@ -164,8 +161,6 @@ class LitterTags extends Component {
         {
             console.log("problem@removeTag");
         }
-
-
     }
 
     /**

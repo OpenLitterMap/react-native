@@ -126,8 +126,10 @@ export default function (state = INITIAL_STATE, action)
                 buttonDisabled: false
             };
 
+        /**
+         * The user wants to log out. JWT has been deleted.
+         */
         case LOGOUT:
-
             // we need to init lang again
             if (!lang) lang = 'en';
 
