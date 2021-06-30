@@ -8,6 +8,7 @@ import {
     GALLERY_UPLOADED_SUCCESSFULLY,
     TOGGLE_IMAGES_LOADING,
     PHOTOS_FROM_GALLERY,
+    REMOVE_TAG_FROM_GALLERY_PHOTO,
     RESET_GALLERY_TOTAL_TO_UPLOAD,
     TOGGLE_IMAGE_BROWSER,
     TOGGLE_SELECTED_GALLERY
@@ -31,53 +32,80 @@ export default function (state = INITIAL_STATE, action)
          */
         case ADD_TAGS_TO_GALLERY_IMAGE:
 
+            console.log('add_tags_to_gallery_image', action);
+
             let images = [...state.gallery];
 
-            let image = images[state.indexSelected];
+            let image = images[action.payload.currentIndex];
 
-            // update tags on image
-            // This is also duplicated by photos.js
+            console.log({ image });
+
             let newTags = Object.assign({}, image.tags);
 
-            let quantity = 1;
-
-            // if quantity exists, assign it
-            if (action.payload.hasOwnProperty('quantity'))
+            try
             {
-                quantity = action.payload.quantity;
-            }
+                // update tags on image
+                // duplicated by photos_reducer
+                console.log('newTags1', newTags);
 
-            // Increment quantity from the text filter
-            // sometimes (when tag is being added from text-filter, quantity does not exist
-            // we check to see if it exists on the object, if so, we can increment it
-            if (newTags.hasOwnProperty(action.payload.category))
-            {
-                if (newTags[action.payload.category].hasOwnProperty(action.payload.title))
+                let quantity = 1;
+
+                // if quantity exists, assign it
+                if (action.payload.hasOwnProperty('quantity'))
                 {
-                    quantity = newTags[action.payload.category][action.payload.title];
-
-                    if (newTags[action.payload.category][action.payload.title] === quantity) quantity++;
+                    quantity = action.payload.quantity;
                 }
-            }
 
-            // create a new object with the new values
-            newTags = {
-                ...newTags,
-                [action.payload.category]: {
-                    ...newTags[action.payload.category],
-                    [action.payload.title]: quantity
+                console.log('test 1');
+
+                const category = action.payload.tag.category;
+                const title = action.payload.tag.title;
+
+                // Increment quantity from the text filter
+                // sometimes (when tag is being added from text-filter, quantity does not exist
+                // we check to see if it exists on the object, if so, we can increment it
+                if (newTags.hasOwnProperty(category))
+                {
+                    if (newTags[category].hasOwnProperty(title))
+                    {
+                        quantity = newTags[category][title];
+
+                        if (newTags[category][title] === quantity) quantity++;
+                    }
                 }
-            };
 
-            // create new total values (Bottom Right total)
-            let litter_total = 0;
-            let litter_length = 0;
-            Object.keys(newTags).map(category => {
-                Object.values(newTags[category]).map(values => {
-                    litter_total += parseInt(values);
-                    litter_length++;
+                console.log('test 2', newTags);
+
+                // create a new object with the new values
+                newTags = {
+                    ...newTags,
+                    [category]: {
+                        ...newTags[category],
+                        [title]: quantity
+                    }
+                };
+
+                console.log('test 3', newTags);
+
+                // create new total values (Bottom Right total)
+                let litter_total = 0;
+                let litter_length = 0;
+                // map category
+                Object.keys(newTags).map(cat => {
+                    Object.values(newTags[cat]).map(values => {
+                        litter_total += parseInt(values);
+                        litter_length++;
+                    });
                 });
-            });
+
+                console.log('test 4', newTags);
+
+                console.log({ newTags });
+            }
+            catch (e)
+            {
+                console.log({ e });
+            }
 
             image.tags = newTags;
 
@@ -197,6 +225,27 @@ export default function (state = INITIAL_STATE, action)
             return {
                 ...state,
                 gallery: photos,
+            };
+
+        /**
+         * Remove a tag that has been pressed
+         */
+        case REMOVE_TAG_FROM_GALLERY_PHOTO:
+
+            let deletedTagGallery = [...state.gallery];
+
+            let img = deletedTagGallery[action.payload.currentIndex];
+            delete img.tags[action.payload.category][action.payload.tag];
+
+            // Delete the category if empty
+            if (Object.keys(img.tags[action.payload.category]).length === 0)
+            {
+                delete img.tags[action.payload.category];
+            }
+
+            return {
+                ...state,
+                gallery: deletedTagGallery
             };
 
         /**

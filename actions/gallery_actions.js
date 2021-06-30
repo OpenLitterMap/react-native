@@ -11,6 +11,7 @@ import {
     GALLERY_UPLOADED_SUCCESSFULLY,
     TOGGLE_IMAGES_LOADING,
     PHOTOS_FROM_GALLERY,
+    REMOVE_TAG_FROM_GALLERY_PHOTO,
     RESET_GALLERY_TOTAL_TO_UPLOAD,
     TOGGLE_IMAGE_BROWSER,
     TOGGLE_SELECTED_GALLERY,
@@ -93,6 +94,16 @@ export const photosFromGallery = (photos) => {
     return {
         type: PHOTOS_FROM_GALLERY,
         payload: photos
+    };
+}
+
+/**
+ * A tag has been selected from a gallery photo
+ */
+export const removeTagFromGalleryPhoto = (data) => {
+    return {
+        type: REMOVE_TAG_FROM_GALLERY_PHOTO,
+        payload: data
     };
 }
 

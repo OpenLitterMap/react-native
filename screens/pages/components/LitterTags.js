@@ -1,4 +1,4 @@
-import React, { PureComponent } from 'react';
+import React, { Component } from 'react';
 import {
     Dimensions,
     Platform,
@@ -17,7 +17,8 @@ import DeviceInfo from 'react-native-device-info'
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
-class LitterTags extends PureComponent {
+// Tags not being deleted when using PureComponent
+class LitterTags extends Component {
 
     /**
      * The tags container is positioned absolutely from the top
@@ -88,25 +89,25 @@ class LitterTags extends PureComponent {
     renderTags ()
     {
         return Object.keys(this.props.tags).map(category => {
-            return Object.keys(this.props.tags[category]).map(item => {
+            return Object.keys(this.props.tags[category]).map(tag => {
 
-                const value = this.props.tags[category][item];
+                const value = this.props.tags[category][tag];
 
                 return (
                     <TouchableHighlight
-                        key={item}
-                        onPress={this.removeTag.bind(this, category, item)}
+                        key={tag}
+                        onPress={this.removeTag.bind(this, category, tag)}
                         underlayColor='transparent'
                         onLayout={event => {
                             const layout = event.nativeEvent.layout;
 
                             // When layout is rendered, save its X-positions to this.props.positions
-                            this.props.updateTagXPosition({x: layout.x, item});
+                            this.props.updateTagXPosition({x: layout.x, tag});
                         }}
                     >
                         <View style={styles.card}>
                             <TransText style={styles.category} dictionary={`${this.props.lang}.litter.categories.${category}`} />
-                            <TransText style={styles.item} dictionary={`${this.props.lang}.litter.${category}.${item}`} />
+                            <TransText style={styles.item} dictionary={`${this.props.lang}.litter.${category}.${tag}`} />
                             <Text style={styles.val}>&nbsp; ({value})</Text>
                         </View>
                     </TouchableHighlight>
@@ -116,12 +117,55 @@ class LitterTags extends PureComponent {
     }
 
     /**
-     * Remove a tag
+     * Remove a tag from a category,
+     *
+     * From a specific image.
+     *
      * @litter_actions
+     * @gallery_actions
+     * @web_actions
      */
-    removeTag (category, item)
+    removeTag (category, tag)
     {
-        this.props.removeTag({ category, item });
+        const currentIndex = this.props.swiperIndex;
+        const { photosLength, galleryLength, webLength } = this.props;
+
+        if (currentIndex < photosLength)
+        {
+            // photo_actions
+            console.log('removeTagFromCameraPhoto');
+            this.props.removeTagFromCameraPhoto({
+                category,
+                tag,
+                currentIndex
+            });
+        }
+        else if (currentIndex < (photosLength + galleryLength))
+        {
+            // gallery_actions
+            console.log('removeTagFromGalleryPhoto');
+            this.props.removeTagFromGalleryPhoto({
+                category,
+                tag,
+                currentIndex: currentIndex - photosLength
+            });
+        }
+        else if (currentIndex < (photosLength + galleryLength + webLength))
+        {
+            // web_actions
+            console.log('removeTagFromWebPhoto');
+            this.props.removeTagFromWebPhoto({
+                category,
+                tag,
+                currentIndex: (currentIndex - photosLength - galleryLength)
+            });
+        }
+        else
+        {
+            console.log("problem@removeTag");
+        }
+
+
     }
 
     /**

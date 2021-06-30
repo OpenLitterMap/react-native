@@ -163,6 +163,8 @@ export default function (state = INITIAL_STATE, action)
          */
         case REMOVE_TAG:
 
+            console.log('remove_tag', action.payload);
+
             let tags2 = Object.assign({}, state.tags);
             delete tags2[action.payload.category][action.payload.item];
 

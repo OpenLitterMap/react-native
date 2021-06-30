@@ -9,6 +9,7 @@ import {
     LOGOUT,
     INCREMENT,
     RESET_PHOTOS_TOTAL_TO_UPLOAD,
+    REMOVE_TAG_FROM_CAMERA_PHOTO,
     RESET_SESSION_COUNT,
     CAMERA_PHOTO_UPLOADED_SUCCESSFULLY,
     TOGGLE_SELECTED_PHOTO,
@@ -208,6 +209,27 @@ export default function(state = INITIAL_STATE, action) {
 
         case LOGOUT:
             // return INITIAL_STATE;
+
+        /**
+         * A tag has been pressed
+         */
+        case REMOVE_TAG_FROM_CAMERA_PHOTO:
+
+            let untaggedPhotos = [...state.photos];
+
+            let img = untaggedPhotos[action.payload.currentIndex];
+            delete img.tags[action.payload.category][action.payload.tag];
+
+            // Delete the category if empty
+            if (Object.keys(img.tags[action.payload.category]).length === 0)
+            {
+                delete img.tags[action.payload.category];
+            }
+
+            return {
+                ...state,
+                photos: untaggedPhotos
+            }
 
         /**
          * When uploading reset x (x / total) to 0

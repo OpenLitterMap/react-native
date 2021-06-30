@@ -1,11 +1,11 @@
 import React, { PureComponent, useEffect } from 'react';
 import {
     Dimensions,
-    Keyboard,
+    Keyboard, Modal,
     Platform,
     SafeAreaView,
     StatusBar,
-    TouchableHighlight,
+    TouchableOpacity,
     TouchableWithoutFeedback,
     View
 } from 'react-native';
@@ -217,7 +217,16 @@ class LitterPicker extends PureComponent
     render ()
     {
         console.log('LitterPicker.render');
-        const { lang } = this.props;
+        const { lang, swiperIndex } = this.props;
+        console.log({ swiperIndex });
+
+        // Todo - save these globally
+        const photosLength = this.props.photos.length;
+        const galleryLength = this.props.gallery.length;
+        const webLength = this.props.webPhotos.length;
+
+        const IMAGES_COUNT = photosLength + galleryLength + webLength;
+        console.log({ IMAGES_COUNT });
 
         return (
             <View style={{ flex: 1 }}>
@@ -234,7 +243,7 @@ class LitterPicker extends PureComponent
 
                     {/* Second - Image. Height: 80% */}
                     <Swiper
-                        index={this.props.swiperIndex}
+                        index={swiperIndex}
                         loop={false}
                         showsPagination={false}
                         keyboardShouldPersistTaps="handled"
@@ -250,6 +259,10 @@ class LitterPicker extends PureComponent
                         item={this.props.item}
                         keyboardOpen={this.state.keyboardOpen}
                         lang={this.props.lang}
+                        swiperIndex={swiperIndex}
+                        photosLength={photosLength}
+                        galleryLength={galleryLength}
+                        webLength={webLength}
                     />
 
                     {/* Fourth - bottomContainer 20% height */}
@@ -267,16 +280,29 @@ class LitterPicker extends PureComponent
                             />
                         </View>
 
-                        {/* 4.2 - Confirm Data | Add Tags */}
+                        {/* 4.2 - <- Previous Image || Add Tags || Next Image -> */}
                         <View style={this._computeButtonsContainer()}>
-                            <TouchableHighlight style={styles.tabArrowIconContainer}>
-                                <View>
-                                    <Icon name="arrow-back" size={SCREEN_HEIGHT * 0.05} />
-                                </View>
-                            </TouchableHighlight>
+
+                            {/* When swiperIndex is 0, don't show the previousImageArrow */}
+                            {
+                                (swiperIndex === 0) && (
+                                    <View style={{ flex: 0.15 }} />
+                                )
+                            }
+                            {/* Only show previousImage when swiperIndex is greater than 0 */}
+                            {
+                                (swiperIndex > 0) && (
+                                    <TouchableOpacity
+                                        onPress={this.previousImage.bind(this)}
+                                        style={styles.tabArrowIconContainer}
+                                    >
+                                        <Icon name="arrow-back" size={SCREEN_HEIGHT * 0.05} />
+                                    </TouchableOpacity>
+                                )
+                            }
 
                             {/* 4.2.2 - Add Tag or Increment Quantity */}
-                            <TouchableHighlight
+                            <TouchableOpacity
                                 onPress={this.addTag.bind(this)}
                                 style={styles.addTagButtonOuter}
                                 disabled={this._checkForPhotos()}
@@ -285,13 +311,24 @@ class LitterPicker extends PureComponent
                                     <Icon name="add" size={SCREEN_HEIGHT * 0.05} />
                                     <TransText style={styles.textIconStyle} dictionary={`${lang}.tag.add-tag`} />
                                 </View>
-                            </TouchableHighlight>
+                            </TouchableOpacity>
 
-                            <TouchableHighlight style={styles.tabArrowIconContainer}>
-                                <View >
-                                    <Icon name="arrow-forward" size={SCREEN_HEIGHT * 0.05} />
-                                </View>
-                            </TouchableHighlight>
+                            {/* Hide the nextImageArrow  */}
+                            {
+                                (swiperIndex === IMAGES_COUNT -1) && (
+                                    <View style={{ flex: 0.15 }} />
+                                )
+                            }
+                            {
+                                (swiperIndex >= 0 && (swiperIndex !== IMAGES_COUNT -1)) && (
+                                    <TouchableOpacity
+                                        onPress={this.nextImage.bind(this)}
+                                        style={styles.tabArrowIconContainer}
+                                    >
+                                        <Icon name="arrow-forward" size={SCREEN_HEIGHT * 0.05} />
+                                    </TouchableOpacity>
+                                )
+                            }
                         </View>
                     </View>
 
@@ -368,6 +405,42 @@ class LitterPicker extends PureComponent
     _checkCollectionLength ()
     {
         return Object.keys(this.props.tags).length === 0;
+    }
+
+    /**
+     *
+     */
+    getLeftArrowContainer ()
+    {
+        return (this.props.swiperIndex === 0)
+            ? styles.hideArrowContainer
+            : styles.tabArrowIconContainer;
+    }
+
+    /**
+     *
+     */
+    previousImage ()
+    {
+        const currentIndex = this.props.swiperIndex;
+
+        if (currentIndex > 0)
+        {
+            this.props.swiperIndexChanged(currentIndex - 1);
+        }
+
+    }
+
+    /**
+     *
+     */
+    nextImage ()
+    {
+        const currentIndex = this.props.swiperIndex;
+
+        // check total length of all camera_photos, gallery_photos and web_photos
+
+        this.props.swiperIndexChanged(currentIndex + 1);
     }
 
     /**
@@ -463,32 +536,29 @@ class LitterPicker extends PureComponent
 
     /**
      * Return the tags for an image
+     *
+     * was = () =>
      */
-    getTags = () =>
+    getTags ()
     {
         console.log("getTags");
         const currentIndex = this.props.swiperIndex;
-        console.log({ currentIndex });
 
-        const cameraPhotosLength = this.props.photos.length;
-        const galleryPhotosLength = this.props.gallery.length;
-        const webImagesLength = this.props.webPhotos.length;
+        const photosLength = this.props.photos.length;
+        const galleryLength = this.props.gallery.length;
+        const webLength = this.props.webPhotos.length;
 
-        console.log({ cameraPhotosLength });
-        console.log({ galleryPhotosLength });
-        console.log({ webImagesLength });
-
-        if (currentIndex < cameraPhotosLength)
+        if (currentIndex < photosLength)
         {
-            console.log('photo[index]', this.props.photos[currentIndex]);
+            console.log('get_tags.photo[index]', this.props.photos[currentIndex].tags);
             return this.props.photos[currentIndex].tags
         }
-        else if (currentIndex < (galleryPhotosLength + cameraPhotosLength))
+        else if (currentIndex < (galleryLength + photosLength))
         {
-            console.log('gallery[index]', this.props.gallery[currentIndex]);
-            return this.props.gallery[currentIndex].tags;
+            console.log('get_tags.gallery[index]', this.props.gallery[currentIndex - photosLength]);
+            return this.props.gallery[currentIndex - photosLength].tags;
         }
-        else if (currentIndex < webImagesLength)
+        else if (currentIndex < webLength)
         {
             return this.props.webPhotos[currentIndex].tags;
         }
@@ -676,6 +746,8 @@ r
 
     /**
      * Add or Update Tags
+     *
+     * on a specific image
      */
     addTag ()
     {
@@ -693,7 +765,7 @@ r
         // const photoType = this.props.photoType;
         const photosLength = this.props.photos.length;
         const galleryLength = this.props.gallery.length;
-        const webLength = this.props.webPhotos.lengthl
+        const webLength = this.props.webPhotos.length;
 
         const currentIndex = this.props.swiperIndex;
         console.log({ currentIndex });
@@ -714,7 +786,7 @@ r
             console.log('addTagsToGalleryImage');
             this.props.addTagsToGalleryImage({
                 tag,
-                currentIndex
+                currentIndex: currentIndex - photosLength
             });
         }
         else if (currentIndex < (photosLength + galleryLength + webLength))
@@ -723,7 +795,7 @@ r
             console.log('addTagsToWebImage');
             this.props.addTagsToWebImage({
                 tag,
-                currentIndex
+                currentIndex: (currentIndex - photosLength - galleryLength)
             });
         }
         else
@@ -797,6 +869,11 @@ const styles = {
     hide: {
         display: 'none'
     },
+    hideArrowContainer: {
+        backgroundColor: 'red',
+        height: SCREEN_HEIGHT * 0.05,
+        flex: 0.15
+    },
     modalOuter: {
         justifyContent: 'center',
         backgroundColor: 'rgba(0,0,0,0.8)',
@@ -826,7 +903,8 @@ const styles = {
         flex: 0.15,
         flexDirection: 'row',
         justifyContent: 'center',
-        alignItems: 'center'
+        alignItems: 'center',
+        backgroundColor: 'white'
     },
     tabBarButtonLeft: {
         backgroundColor: '#2ecc71',

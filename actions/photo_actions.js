@@ -11,6 +11,7 @@ import {
     DESELECT_ALL_CAMERA_PHOTOS,
     RESET_PHOTOS_TOTAL_TO_UPLOAD,
     CAMERA_PHOTO_UPLOADED_SUCCESSFULLY,
+    REMOVE_TAG_FROM_CAMERA_PHOTO,
     TOGGLE_SELECTED_PHOTO,
     UPDATE_COUNT_REMAINING,
     UPDATE_PERCENT,
@@ -93,6 +94,16 @@ export const deleteSelectedPhoto = (index) => {
 export const deselectAllCameraPhotos = () => {
     return {
         type: DESELECT_ALL_CAMERA_PHOTOS // REMOVE_ALL_SELECTED_PHOTOS
+    };
+}
+
+/**
+ * A tag has been clicked
+ */
+export const removeTagFromCameraPhoto = (data) => {
+    return {
+        type: REMOVE_TAG_FROM_CAMERA_PHOTO,
+        payload: data
     };
 }
 
