@@ -6,8 +6,6 @@ import {
     CHANGE_ITEM,
     CHANGE_Q,
     CHANGE_SWIPER_INDEX,
-    LITTER_SELECTED,
-    PHOTO_SELECTED_FOR_TAGGING,
     REMOVE_TAG,
     RESET_LITTER_STATE,
     RESET_TAGS,
@@ -15,7 +13,6 @@ import {
     SHOW_ALL_TAGS,
     SHOW_INNER_MODAL,
     SUGGEST_TAGS,
-    TAG_LITTER,
     TOGGLE_SWITCH,
     UPDATE_TAGS,
     UPDATE_TAGS_X_POS,
@@ -90,18 +87,6 @@ export const suggestTags = (data) => {
 }
 
 /**
- * New - A photo has been selected for tagging
- *
- * Can be one of Web, Camera, or Gallery
- */
-export const photoSelectedForTagging = (data) => {
-    return {
-        type: PHOTO_SELECTED_FOR_TAGGING,
-        payload: data
-    };
-}
-
-/**
  * Remove a tag and its quantity
  */
 export const removeTag = tags => {
@@ -170,16 +155,6 @@ export const toggleSwitch = () => {
         type: TOGGLE_SWITCH
     };
 }
-
-// /**
-//  * Add data + quantity to tags
-//  */
-// export const tagLitter = (tags) => {
-//     return {
-//         type: TAG_LITTER,
-//         payload: tags
-//     };
-// }
 
 /**
  * Change the quantity of an existing piece of litter

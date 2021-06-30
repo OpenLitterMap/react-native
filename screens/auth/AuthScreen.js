@@ -211,23 +211,23 @@ class AuthScreen extends Component {
         });
 
         // send password request and respond
-        let resp = await this.props.sendResetPasswordRequest(this.state.email);
+        const resp = await this.props.sendResetPasswordRequest(this.state.email);
+
+        console.log({ resp });
 
         // respond if success, else show error message
-        if (resp === true) {
+        if (resp.success)
+        {
             this.setState({
                 resetPwProcessing: false,
                 serverStatusText: 'Success! Check your email'
             });
-        } else if (resp === 'user') {
+        }
+        else
+        {
             this.setState({
                 resetPwProcessing: false,
-                serverStatusText: 'This user does not exist'
-            });
-        } else {
-            this.setState({
-                resetPwProcessing: false,
-                serverStatusText: 'Sorry, please try again'
+                serverStatusText: resp.msg
             });
         }
 

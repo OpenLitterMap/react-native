@@ -197,16 +197,6 @@ export default function(state = INITIAL_STATE, action) {
                 remainingCount: state.remainingCount + 1 // todo make immutable
             };
 
-        // case ITEM_SELECTED:
-        //   console.log("- photos reducer - item selected");
-        //   console.log(action.payload);
-        //   return {
-        //     ...state,
-        //     photoSelected: action.payload,
-        //     modalVisible: true, // todo - make this immutable
-        //     litterVisible: true, // todo - make this immutable
-        //   };
-
         case LOGOUT:
             // return INITIAL_STATE;
 

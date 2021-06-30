@@ -1,7 +1,6 @@
 import {
     ADD_TAGS_TO_GALLERY_IMAGE,
     CHANGE_UPLOAD_PROGRESS,
-    CONFIRM_GALLERY_TAGS,
     DELETE_SELECTED_GALLERY,
     DESELECT_ALL_GALLERY_PHOTOS,
     GALLERY_INDEX_CHANGED,
@@ -32,13 +31,9 @@ export default function (state = INITIAL_STATE, action)
          */
         case ADD_TAGS_TO_GALLERY_IMAGE:
 
-            console.log('add_tags_to_gallery_image', action);
-
             let images = [...state.gallery];
 
             let image = images[action.payload.currentIndex];
-
-            console.log({ image });
 
             let newTags = Object.assign({}, image.tags);
 
@@ -46,8 +41,6 @@ export default function (state = INITIAL_STATE, action)
             {
                 // update tags on image
                 // duplicated by photos_reducer
-                console.log('newTags1', newTags);
-
                 let quantity = 1;
 
                 // if quantity exists, assign it
@@ -55,8 +48,6 @@ export default function (state = INITIAL_STATE, action)
                 {
                     quantity = action.payload.quantity;
                 }
-
-                console.log('test 1');
 
                 const category = action.payload.tag.category;
                 const title = action.payload.tag.title;
@@ -74,8 +65,6 @@ export default function (state = INITIAL_STATE, action)
                     }
                 }
 
-                console.log('test 2', newTags);
-
                 // create a new object with the new values
                 newTags = {
                     ...newTags,
@@ -84,23 +73,6 @@ export default function (state = INITIAL_STATE, action)
                         [title]: quantity
                     }
                 };
-
-                console.log('test 3', newTags);
-
-                // create new total values (Bottom Right total)
-                let litter_total = 0;
-                let litter_length = 0;
-                // map category
-                Object.keys(newTags).map(cat => {
-                    Object.values(newTags[cat]).map(values => {
-                        litter_total += parseInt(values);
-                        litter_length++;
-                    });
-                });
-
-                console.log('test 4', newTags);
-
-                console.log({ newTags });
             }
             catch (e)
             {
@@ -121,24 +93,6 @@ export default function (state = INITIAL_STATE, action)
             return {
                 ...state,
                 galleryUploadProgress: action.payload,
-            };
-
-        /**
-         * Add tags to the image at the index
-         */
-        case CONFIRM_GALLERY_TAGS:
-
-            console.log("CONFIRM_GALLERY_TAGS", action.payload);
-
-            let photos2 = [...state.gallery];
-            let photo2 = photos2[action.payload.index];
-
-            photo2.tags = action.payload.tags;
-            photo2.picked_up = action.payload.picked_up;
-
-            return {
-                ...state,
-                gallery: photos2
             };
 
         /**
@@ -214,14 +168,12 @@ export default function (state = INITIAL_STATE, action)
          */
         case PHOTOS_FROM_GALLERY:
 
-            // Copy the current stored gallery:
             let photos = [...state.gallery];
 
             action.payload.forEach(photo => {
                 photos.push(photo);
             });
 
-            // Store new version of gallery:
             return {
                 ...state,
                 gallery: photos,
