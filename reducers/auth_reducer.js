@@ -1,15 +1,10 @@
 import {
-    SUBMIT_START,
     ACCOUNT_CREATED,
+    BAD_PASSWORD,
     CHANGE_LANG,
-    EMAIL_CHANGED,
-    EMAIL_ERROR,
+    CHANGE_SERVER_STATUS_TEXT,
     PASSWORD_ERROR,
     LOGIN_OR_SIGNUP_RESET,
-    EMAIL_INCORRECT,
-    EMAIL_VALID,
-    PASSWORD_INCORRECT,
-    PASSWORD_VALID,
     LOGIN_SUCCESS,
     LOGIN_FAIL,
     LOGOUT,
@@ -21,7 +16,8 @@ import {
     USER_FOUND,
     USERNAME_ERROR,
     ON_SEEN_FEATURE_TOUR,
-    SERVER_STATUS
+    SERVER_STATUS,
+    SUBMIT_START
 } from '../actions/types';
 
 // import AsyncStorage from '@react-native-community/async-storage';
@@ -37,31 +33,48 @@ const INITIAL_STATE = {
     buttonPressed: false,
     buttonDisabled: false,
     email: '',
-    emailError: ' ',
     isLoggingIn: false,
     isSubmitting: false,
     loading: false,
     modalUsernameVisible: false,
     password: '',
-    passwordError: '',
     success: '',
     token: null,
     tokenIsValid: false,
     user: null,
     username: '',
     usernameError: '',
-    serverStatus: ''
+    serverStatusText: ''
 };
 
 export default function (state = INITIAL_STATE, action)
 {
     switch (action.type)
     {
+        /**
+         * Status 400 : The user entered the wrong password
+         */
+        case BAD_PASSWORD:
+
+            return {
+                ...state,
+                password: '',
+                token: null,
+                serverStatusText: 'Your password is incorrect. Please try again or reset it.',
+                isSubmitting: false
+            };
+
         case CHANGE_LANG:
             return {
                 ...state,
                 lang: action.payload
             };
+
+        case CHANGE_SERVER_STATUS_TEXT:
+            return {
+                ...state,
+                serverStatusText: action.payload
+            }
 
         case STORE_CURRENT_APP_VERSION:
             return {
@@ -98,32 +111,8 @@ export default function (state = INITIAL_STATE, action)
         case SERVER_STATUS:
             return {
                 ...state,
-                serverStatus: action.payload,
+                serverStatusText: action.payload,
                 isSubmitting: false
-            };
-
-        case EMAIL_ERROR:
-            return {
-                ...state,
-                emailError: action.payload,
-                modalUsernameVisible: false,
-                isSubmitting: false
-            };
-
-        case EMAIL_INCORRECT:
-            return {
-                ...state,
-                emailError: action.payload,
-                buttonDisabled: true,
-                success: ''
-            };
-
-        case EMAIL_VALID:
-            // console.log('reducer - email is valid');
-            return {
-                ...state,
-                emailError: action.payload,
-                buttonDisabled: false
             };
 
         /**
@@ -142,14 +131,12 @@ export default function (state = INITIAL_STATE, action)
          * There was a problem during login
          */
         case LOGIN_FAIL:
-            // change error to action.payload.emailError, .passwordError
+
             return {
                 ...state,
                 password: '',
                 token: null,
-                emailError: 'Login Unsuccessful. Please try again.',
-                passwordError: 'Login Unsuccessful. Please try again.',
-                serverStatus: 'Login Unsuccessful. Please try again.',
+                serverStatusText: 'Login Unsuccessful. Please try again.',
                 isSubmitting: false
             };
 
@@ -189,21 +176,6 @@ export default function (state = INITIAL_STATE, action)
                 isSubmitting: false
             };
 
-        case PASSWORD_INCORRECT:
-            return {
-                ...state,
-                passwordError: action.payload,
-                buttonDisabled: true
-            };
-
-        case PASSWORD_VALID:
-            // console.log('reducer - password is valid');
-            return {
-                ...state,
-                passwordError: action.payload,
-                buttonDisabled: false
-            };
-
         case TOGGLE_USERNAME_MODAL:
             return {
                 ...state,
@@ -231,7 +203,6 @@ export default function (state = INITIAL_STATE, action)
                 // console.log(JSON.parse(action.payload));
                 user = JSON.parse(action.payload);
             }
-
             else
             {
                 // console.log('Payload is not string');

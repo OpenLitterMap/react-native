@@ -36,8 +36,8 @@ const formModes = {
 // TODO need to refactor screen sizing variables to global
 // TODO need to refactor validation regex functions to utils
 // TODO encapsulate form inputs into a separate ValidatedInput Component
-class AuthScreen extends Component {
-
+class AuthScreen extends Component
+{
     constructor(props)
     {
         super(props);
@@ -59,6 +59,8 @@ class AuthScreen extends Component {
             serverStatusText: '',
             isLogoDisplayed: true
         };
+
+        this.props.changeServerStatusText("");
     }
 
     /**
@@ -104,9 +106,12 @@ class AuthScreen extends Component {
         }
 
         // if server status text changed
-        if (prevProps.serverStatus !== this.props.serverStatus) {
+        if (prevProps.serverStatusText !== this.props.serverStatusText)
+        {
+            console.log('ServerStatusText Changed', prevProps.serverStatusText, this.props.serverStatusText);
+
             this.setState({
-                serverStatusText: this.props.serverStatus
+                serverStatusText: this.props.serverStatusText
             });
         }
 
@@ -213,14 +218,12 @@ class AuthScreen extends Component {
         // send password request and respond
         const resp = await this.props.sendResetPasswordRequest(this.state.email);
 
-        console.log({ resp });
-
         // respond if success, else show error message
         if (resp.success)
         {
             this.setState({
                 resetPwProcessing: false,
-                serverStatusText: 'Success! Check your email'
+                serverStatusText: 'We have sent you an email to reset your password.'
             });
         }
         else
@@ -237,7 +240,7 @@ class AuthScreen extends Component {
     };
 
     /**
-     * Submit button execute..
+     * Main action button clicked
      */
     submitButtonClick = () => {
         // the button has been pressed - first, we validate the inputs
@@ -251,26 +254,33 @@ class AuthScreen extends Component {
             serverStatusText: ''
         });
 
+        this.props.changeServerStatusText("");
+
         // Client side validation..
-        let isValidClientSide = this.validateFields();
+        const isValidClientSide = this.validateFields();
 
         if (isValidClientSide)
         {
             switch (this.state.formMode)
             {
-                case formModes.CREATE_ACCOUNT: {
+                case formModes.CREATE_ACCOUNT:
+                {
                     this.props.createAccount({
                         email: this.state.email,
                         username: this.state.username,
                         password: this.state.password
                     });
+
                     break;
                 }
-                case formModes.LOGIN: {
+
+                case formModes.LOGIN:
+                {
                     this.props.serverLogin({
                         email: this.state.email,
                         password: this.state.password
                     });
+
                     break;
                 }
                 case formModes.FORGOT_PASSWORD: {
@@ -278,7 +288,9 @@ class AuthScreen extends Component {
                     break;
                 }
             }
-        } else {
+        }
+        else
+        {
             // input is invalid, don't send anything to the server and disable the submit button
             this.setState({
                 isFormReady: false
@@ -288,6 +300,7 @@ class AuthScreen extends Component {
 
     /**
      * Validate all showing input fields
+     *
      * @returns {boolean}
      */
     validateFields = () => {
@@ -322,7 +335,6 @@ class AuthScreen extends Component {
                 emailErrorMessage: null
             });
         }
-
         else
         {
             this.setState({
@@ -484,6 +496,12 @@ class AuthScreen extends Component {
     {
         this.setState({ password: password });
 
+        // Clear error if it exists
+        if (this.props.server !== "")
+        {
+            this.props.changeServerStatusText("");
+        }
+
         // only check for errors if the login/signup button has been pressed
         if (this.state.buttonPressed) {
             this.validatePassword(password);
@@ -640,7 +658,7 @@ class AuthScreen extends Component {
                                         type="material"
                                         color={COLORS.iconGreyDisabled}
                                     />
-                                    {/* Multiline param allows us to use text replacement eg "@@" => your email */}
+                                    {/* Multiline param allows us to use text replacement eg "@@" => you@email.com */}
                                     <TextInput
                                         ref='1'
                                         onSubmitEditing={() => this._focusNextField('2')}
@@ -716,6 +734,7 @@ class AuthScreen extends Component {
                                     </>
                                 )}
 
+                                {/* Change Login to Forgot Password */}
                                 {formMode === formModes.LOGIN && (
                                     <TransText
                                         style={styles.forgotPw}
@@ -776,6 +795,7 @@ class AuthScreen extends Component {
                                     </View>
                                 )}
 
+                                {/* Main action button shared between all form types */}
                                 <View style={styles.buttonContainer}>
                                     <TouchableOpacity
                                         disabled={!isFormReady}
@@ -986,7 +1006,7 @@ const styles = StyleSheet.create({
 const mapStateToProps = state => {
     return {
         lang: state.auth.lang,
-        serverStatus: state.auth.serverStatus,
+        serverStatusText: state.auth.serverStatusText,
         success: state.auth.success,
         user: state.auth.user,
         username: state.auth.username,

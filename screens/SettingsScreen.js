@@ -63,7 +63,7 @@ class SettingsScreen extends Component {
                             icon: 'keyboard-arrow-left',
                             color: '#fff',
                             onPress: () => this.props.navigation.navigate('swipe'),
-                            size: SCREEN_HEIGHT * 0.03,
+                            size: SCREEN_HEIGHT * 0.03
                         }}
                         centerComponent={{ text: settings, style: { color: '#fff', fontSize: SCREEN_HEIGHT * 0.02 } }}
                         rightComponent={{

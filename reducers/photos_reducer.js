@@ -10,7 +10,6 @@ import {
     INCREMENT,
     RESET_PHOTOS_TOTAL_TO_UPLOAD,
     REMOVE_TAG_FROM_CAMERA_PHOTO,
-    RESET_SESSION_COUNT,
     CAMERA_PHOTO_UPLOADED_SUCCESSFULLY,
     TOGGLE_SELECTED_PHOTO,
     TOGGLE_SELECTING,
@@ -28,8 +27,8 @@ const INITIAL_STATE = {
     uniqueValue: 0
 };
 
-export default function(state = INITIAL_STATE, action) {
-
+export default function (state = INITIAL_STATE, action)
+{
     switch(action.type)
     {
         /**
@@ -202,24 +201,33 @@ export default function(state = INITIAL_STATE, action) {
 
         /**
          * A tag has been pressed
+         *
+         * Bug: Why is this being called from logout? SettingsScreen@logout
          */
         case REMOVE_TAG_FROM_CAMERA_PHOTO:
 
-            let untaggedPhotos = [...state.photos];
+            console.log('remove_tag_from_camera_photo', action.payload);
 
-            let img = untaggedPhotos[action.payload.currentIndex];
-            delete img.tags[action.payload.category][action.payload.tag];
-
-            // Delete the category if empty
-            if (Object.keys(img.tags[action.payload.category]).length === 0)
+            // For some reason, this is being called on logout.
+            if (action.payload)
             {
-                delete img.tags[action.payload.category];
+                let untaggedPhotos = [...state.photos];
+
+                let img = untaggedPhotos[action.payload.currentIndex];
+                delete img.tags[action.payload.category][action.payload.tag];
+
+                // Delete the category if empty
+                if (Object.keys(img.tags[action.payload.category]).length === 0)
+                {
+                    delete img.tags[action.payload.category];
+                }
+
+                return {
+                    ...state,
+                    photos: untaggedPhotos
+                }
             }
 
-            return {
-                ...state,
-                photos: untaggedPhotos
-            }
 
         /**
          * When uploading reset x (x / total) to 0
@@ -230,14 +238,14 @@ export default function(state = INITIAL_STATE, action) {
                 totalCameraPhotosUploaded: 0
             };
 
-        /**
-         * Reset session count to 0 when all items uploaded successfully
-         */
-        case RESET_SESSION_COUNT:
-            return {
-                ...state,
-                totalTaggedSessionCount: 0
-            };
+        // /**
+        //  * Reset session count to 0 when all items uploaded successfully
+        //  */
+        // case RESET_SESSION_COUNT:
+        //     return {
+        //         ...state,
+        //         totalTaggedSessionCount: 0
+        //     };
 
         /**
          * Change the selected value of a photo
