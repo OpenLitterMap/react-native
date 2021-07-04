@@ -101,6 +101,7 @@ export const deselectAllCameraPhotos = () => {
  * A tag has been clicked
  */
 export const removeTagFromCameraPhoto = (data) => {
+    console.log('action.removeTagFromCameraPhoto');
     return {
         type: REMOVE_TAG_FROM_CAMERA_PHOTO,
         payload: data

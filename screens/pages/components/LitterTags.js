@@ -127,6 +127,7 @@ class LitterTags extends Component {
      */
     removeTag (category, tag)
     {
+        console.log('LitterTag@removeTag', category, tag);
         const currentIndex = this.props.swiperIndex;
         const { photosLength, galleryLength, webLength } = this.props;
 

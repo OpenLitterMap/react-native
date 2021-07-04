@@ -1,18 +1,15 @@
 import React from 'react';
 import AsyncStorage from '@react-native-community/async-storage';
 import {
-    URL,
+    ACCOUNT_CREATED,
+    BAD_PASSWORD,
+    CHANGE_SERVER_STATUS_TEXT,
     CLIENT_SECRET,
     CLIENT_ID,
     CHANGE_LANG,
     SUBMIT_START,
     SERVER_STATUS,
-    ACCOUNT_CREATED,
     LOGIN_OR_SIGNUP_RESET,
-    EMAIL_INCORRECT,
-    EMAIL_VALID,
-    PASSWORD_INCORRECT,
-    PASSWORD_VALID,
     LOGIN_SUCCESS,
     LOGIN_FAIL,
     LOGOUT,
@@ -20,7 +17,8 @@ import {
     USERNAME_CHANGED,
     TOGGLE_USERNAME_MODAL,
     STORE_CURRENT_APP_VERSION,
-    ON_SEEN_FEATURE_TOUR
+    ON_SEEN_FEATURE_TOUR,
+    URL,
 } from './types';
 import axios from 'axios';
 
@@ -91,22 +89,26 @@ export const onSeenFeatureTour = text => {
  *** CHECK IF TOKEN EXISTS - log in
  **  - fired on AuthScreen componentDidMount
  */
-export const checkForToken = () => async dispatch => {
-    // console.log('auth_action - does token exist ?');
-    let jwt;
-    try {
-        jwt = await AsyncStorage.getItem('jwt');
-    } catch (e) {
-        // console.log('Error getting token - check for token');
-    }
-    if (jwt) {
-        // console.log('auth_action - token exists');
-        // Dispatch an action, login success
-        await dispatch({ type: LOGIN_SUCCESS, payload: jwt });
-    } else {
-        return null;
-    }
-};
+export const checkForToken = () =>
+
+    async dispatch => {
+        // console.log('auth_action - does token exist ?');
+        let jwt;
+
+        try {
+            jwt = await AsyncStorage.getItem('jwt');
+        } catch (e) {
+            // console.log('Error getting token - check for token');
+        }
+
+        if (jwt) {
+            // console.log('auth_action - token exists');
+            // Dispatch an action, login success
+            await dispatch({type: LOGIN_SUCCESS, payload: jwt});
+        } else {
+            return null;
+        }
+    };
 
 /**
  * Create an Account
@@ -194,36 +196,6 @@ export const loginOrSignupReset = () => {
     };
 };
 
-export const emailFail = text => {
-    return {
-        type: EMAIL_INCORRECT,
-        payload: text
-    };
-};
-
-export const emailValid = () => {
-    // console.log('action - email is valid');
-    return {
-        type: EMAIL_VALID,
-        payload: ''
-    };
-};
-
-export const passwordFail = text => {
-    return {
-        type: PASSWORD_INCORRECT,
-        payload: text
-    };
-};
-
-export const passwordValid = () => {
-    // console.log('action - password is valid');
-    return {
-        type: PASSWORD_VALID,
-        payload: ''
-    };
-};
-
 /**
  * The user wants to log out.
  *
@@ -239,6 +211,18 @@ export const logout = () => {
         type: LOGOUT
     };
 };
+
+/**
+ * Change the text of serverStatusText
+ *
+ * @param text: string
+ */
+export const changeServerStatusText = text => {
+    return {
+        type: CHANGE_SERVER_STATUS_TEXT,
+        payload: text
+    };
+}
 
 /**
  * The user forgot their password and is submitting their email address to request a link
@@ -293,7 +277,7 @@ export const serverLogin = data => {
     return async (dispatch) => {
         dispatch({ type: SUBMIT_START });
 
-        return await axios(URL + '/api/oauth/token', {
+        return await axios(URL + '/oauth/token', {
             method: 'POST',
             headers: {
                 Accept: 'application/json',
@@ -312,7 +296,6 @@ export const serverLogin = data => {
 
             if (response.status === 200)
             {
-                // get 1st element when using api/oauth/token
                 const token = response.data.access_token;
 
                 try
@@ -334,8 +317,19 @@ export const serverLogin = data => {
         })
         .catch(error => {
             console.log('serverLogin.error', error.response.data);
+            console.log('status', error.response.status)
 
-            dispatch({ type: LOGIN_FAIL });
+            switch (error.response.status)
+            {
+                case 400:
+                    dispatch({ type: BAD_PASSWORD });
+                    break;
+
+                default:
+                    dispatch({ type: LOGIN_FAIL });
+                    break;
+            }
+
         });
     };
 };
