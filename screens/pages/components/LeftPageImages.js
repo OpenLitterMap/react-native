@@ -85,12 +85,6 @@ class LeftPageImages extends PureComponent
 
             // camera photos.js
             this.props.cameraIndexChanged(index);
-
-            // litter_reducer
-            this.props.photoSelectedForTagging({
-                swiperIndex: index,
-                type: "camera"
-            });
         }
     }
 
@@ -120,14 +114,6 @@ class LeftPageImages extends PureComponent
 
             // gallery.js
             this.props.galleryIndexChanged(index);
-
-            // litter_reducer
-            // When setting swiperIndex, we need to increment the gallery index by photos.length,
-            // as camera_photos appear first, followed by gallery_photos, followed by web_photos.
-            this.props.photoSelectedForTagging({
-                swiperIndex: this.props.photos.length + index,
-                type: "gallery"
-            });
         }
     }
 

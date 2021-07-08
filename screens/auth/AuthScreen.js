@@ -63,11 +63,13 @@ class AuthScreen extends Component
         this.props.changeServerStatusText("");
     }
 
-    /**
-     *
-     */
     componentDidUpdate (prevProps, prevState)
     {
+        console.log('componentDidUpdate');
+        console.log('prevProps.isSubmitting', prevProps.isSubmitting);
+        console.log('this.props.isSubmitting', this.props.isSubmitting);
+        console.log('isFormReady', this.state.isFormReady);
+
         // if formMode changed, recheck validity
         if (prevState.formMode !== this.state.formMode)
         {
@@ -97,32 +99,31 @@ class AuthScreen extends Component
             this.recheckFormValidity();
         }
 
-        if (!Lodash.isEqual(prevProps.user, this.props.user)) {
+        if (!Lodash.isEqual(prevProps.user, this.props.user))
+        {
             this.navigationToDashboard();
         }
 
-        if (!Lodash.isEqual(prevProps.success, this.props.success)) {
+        if (!Lodash.isEqual(prevProps.success, this.props.success))
+        {
             this.setState({ email: '', password: '' });
         }
 
         // if server status text changed
         if (prevProps.serverStatusText !== this.props.serverStatusText)
         {
-            console.log('ServerStatusText Changed', prevProps.serverStatusText, this.props.serverStatusText);
-
             this.setState({
                 serverStatusText: this.props.serverStatusText
             });
         }
 
         // if just finished submitting, set server response messages
-        if (
-            prevProps.isSubmitting !== this.props.isSubmitting &&
-            !this.props.isSubmitting
-        ) {
-            this.setState({
-                formReady: true
-            });
+        if (prevProps.isSubmitting !== this.props.isSubmitting && !this.props.isSubmitting)
+        {
+            console.log('changeFormReady to True');
+            // this.setState({
+            //     formReady: true
+            // });
         }
     }
 
@@ -351,21 +352,27 @@ class AuthScreen extends Component
     };
 
     /**
-     * sets the error messages for invalid password
-     * @returns {boolean}
+     * Sets the error messages for invalid password
+     *
+     * @return boolean
      */
     validatePassword = password => {
+
         let isEmpty = password.trim() === '';
 
         // check pw requirements in create acc mode, but only check if a pw was provided in login mode
-        if (this.state.formMode === formModes.CREATE_ACCOUNT) {
-            if (this.isPasswordValid(password)) {
+        if (this.state.formMode === formModes.CREATE_ACCOUNT)
+        {
+            if (this.isPasswordValid(password))
+            {
                 this.setState({
                     passwordErrorMessage: null
                 });
 
                 return true;
-            } else {
+            }
+            else
+            {
                 this.setState({
                     passwordErrorMessage: isEmpty
                         ? `${this.props.lang}.auth.enter-password`
@@ -374,7 +381,9 @@ class AuthScreen extends Component
 
                 return false;
             }
-        } else {
+        }
+        else
+        {
             this.setState({
                 passwordErrorMessage: isEmpty ? `${this.props.lang}.auth.enter-password` : null
             });
@@ -384,23 +393,30 @@ class AuthScreen extends Component
     };
 
     /**
-     * sets the error messages for invalid username
-     * @returns {boolean}
+     * Sets the error messages for invalid username
+     *
+     * @return boolean
      */
     validateUsername = username => {
-        if (this.isUsernameValid(username)) {
+
+        if (this.isUsernameValid(username))
+        {
             this.setState({
                 usernameErrorMessage: null
             });
-        } else {
+        }
+        else
+        {
             this.setState({
                 usernameErrorMessage:
                     username.trim() === ''
                         ? `${this.props.lang}.auth.enter-username`
                         : `${this.props.lang}.auth.alphanumeric-username`
             });
+
             return false;
         }
+
         return true;
     };
 
@@ -411,7 +427,7 @@ class AuthScreen extends Component
         /*
           source: https://stackoverflow.com/questions/201323/how-to-validate-an-email-address-using-a-regular-expression
         */
-        let regex = /^(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])$/;
+        const regex = /^(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])$/;
 
         return regex.test(email);
     };
@@ -428,7 +444,8 @@ class AuthScreen extends Component
           $                         End anchor.
           source: https://stackoverflow.com/questions/5142103/regex-to-validate-password-strength
          */
-        let regex = /^(?=.*[A-Z])(?=.*[0-9]).{6,}$/;
+        const regex = /^(?=.*[A-Z])(?=.*[0-9]).{6,}$/;
+
         return regex.test(password);
     };
 
@@ -470,55 +487,86 @@ class AuthScreen extends Component
             isValid = usernameErrorMessage === null;
         }
 
-        if (isValid) {
+        if (isValid)
+        {
             this.setState({
                 isFormReady: true
             });
-        } else {
+        }
+        else
+        {
             this.setState({
                 isFormReady: false
             });
         }
     }
 
+    /**
+     * Change the email to login, or reset password
+     *
+     * @param email
+     */
     updateEmail = email =>
     {
         email = email.trim().toLocaleLowerCase();
+
         this.setState({ email: email });
 
         // only check for errors if the login/signup button has been pressed
-        if (this.state.buttonPressed) {
+        if (this.state.buttonPressed)
+        {
             this.validateEmail(email);
         }
     };
 
+    /**
+     * Change the password to login
+     *
+     * NOTE: This is causing a bug for me locally when I type
+     *
+     * Using password Litter locally, the final letter "r" is missing on first render,
+     * after switching from the first input field.
+     *
+     * @param password
+     */
     updatePassword = password =>
     {
         this.setState({ password: password });
 
         // Clear error if it exists
-        if (this.props.server !== "")
+        if (this.props.serverStatusText !== "")
         {
             this.props.changeServerStatusText("");
         }
 
         // only check for errors if the login/signup button has been pressed
-        if (this.state.buttonPressed) {
+        if (this.state.buttonPressed)
+        {
             this.validatePassword(password);
         }
     };
 
+    /**
+     * Change the username when creating an account
+     *
+     * @param username
+     */
     updateUsername = username =>
     {
         username = username.trim();
+
         this.setState({ username: username });
 
         // only check for errors if the login/signup button has been pressed
-        if (this.state.buttonPressed) {
+        if (this.state.buttonPressed)
+        {
             this.validateUsername(username);
         }
     };
 
+    /**
+     * Change the type of Form we are submitting
+     */
     toggleFormMode = () =>
     {
         this.props.loginOrSignupReset();
@@ -526,9 +574,12 @@ class AuthScreen extends Component
         let newMode;
 
         // determine what the toggle button does depending on the form mode
-        if (this.state.formMode === formModes.LOGIN) {
+        if (this.state.formMode === formModes.LOGIN)
+        {
             newMode = formModes.CREATE_ACCOUNT;
-        } else {
+        }
+        else
+        {
             newMode = formModes.LOGIN;
         }
 
@@ -537,6 +588,9 @@ class AuthScreen extends Component
         });
     };
 
+    /**
+     * Change the form mode to Reset Password
+     */
     forgotPassword = () =>
     {
         this.setState({
@@ -551,6 +605,11 @@ class AuthScreen extends Component
         this.forceUpdate();
     };
 
+    /**
+     * Return text for the main submit button
+     *
+     * @return string
+     */
     getSubmitButtonText = () =>
     {
         switch (this.state.formMode)
@@ -569,21 +628,26 @@ class AuthScreen extends Component
         }
     };
 
+    /**
+     * Return text for the option below the main button
+     *
+     * @return string
+     */
     getModeSwitchText = () =>
     {
         switch (this.state.formMode)
         {
             case formModes.CREATE_ACCOUNT:
 
-                return  `${this.props.lang}.auth.already-have`; // 'Already have an account?';
+                return  `${this.props.lang}.auth.already-have`; // Already have an account?
 
             case formModes.LOGIN:
 
-                return `${this.props.lang}.auth.create-account`; // 'Create Account';
+                return `${this.props.lang}.auth.create-account`; // Create Account'
 
             case formModes.FORGOT_PASSWORD:
 
-                return `${this.props.lang}.auth.back-to-login`;
+                return `${this.props.lang}.auth.back-to-login`; // Back to Login
         }
     };
 
@@ -598,7 +662,9 @@ class AuthScreen extends Component
     }
 
     /**
-     * Render JSX
+     * Render the component
+     *
+     * @return jsx
      */
     render ()
     {
@@ -660,8 +726,8 @@ class AuthScreen extends Component
                                     />
                                     {/* Multiline param allows us to use text replacement eg "@@" => you@email.com */}
                                     <TextInput
-                                        ref='1'
-                                        onSubmitEditing={() => this._focusNextField('2')}
+                                        ref='email'
+                                        onSubmitEditing={() => this._focusNextField('password')}
                                         autoFocus={false}
                                         autoCorrect={false}
                                         autoCapitalize={'none'}
@@ -698,7 +764,7 @@ class AuthScreen extends Component
                                                 color={COLORS.iconGreyDisabled}
                                             />
                                             <TextInput
-                                                ref='2'
+                                                ref='password'
                                                 autoCorrect={false}
                                                 autoCapitalize={'none'}
                                                 containerStyle={styles.formContainer}
@@ -743,6 +809,7 @@ class AuthScreen extends Component
                                     />
                                 )}
 
+                                {/* Show input to create a username */}
                                 {formMode === formModes.CREATE_ACCOUNT && (
                                     <>
                                         <View
@@ -770,30 +837,32 @@ class AuthScreen extends Component
                                                 value={username}
                                             />
                                         </View>
-                                        {usernameErrorMessage !== null &&
-                                        usernameErrorMessage !== undefined && (
-                                            <View style={styles.errorWrap}>
-                                                <TransText style={styles.error} dictionary={usernameErrorMessage} />
-                                            </View>
-                                        )}
+                                        {
+                                            usernameErrorMessage !== null && usernameErrorMessage !== undefined && (
+                                                <View style={styles.errorWrap}>
+                                                    <TransText style={styles.error} dictionary={usernameErrorMessage} />
+                                                </View>
+                                            )}
                                     </>
                                 )}
 
-                                {buttonPressed && (serverStatusText || isSubmitting) && (
-                                    <View style={{ paddingTop: 5 }}>
-                                        {isSubmitting ? (
-                                            <ActivityIndicator color={COLORS.whiteText} />
-                                        ) : (
-                                            <Text
-                                                style={{
-                                                    textAlign: 'center',
-                                                    color: COLORS.whiteText
-                                                }}>
-                                                {serverStatusText}
-                                            </Text>
-                                        )}
-                                    </View>
-                                )}
+                                {
+                                    buttonPressed && (serverStatusText || isSubmitting) && (
+                                        <View style={{ paddingTop: 5 }}>
+                                            {isSubmitting ? (
+                                                <ActivityIndicator color={COLORS.whiteText} />
+                                            ) : (
+                                                <Text
+                                                    style={{
+                                                        textAlign: 'center',
+                                                        color: COLORS.whiteText
+                                                    }}>
+                                                    {serverStatusText}
+                                                </Text>
+                                            )}
+                                        </View>
+                                    )
+                                }
 
                                 {/* Main action button shared between all form types */}
                                 <View style={styles.buttonContainer}>
