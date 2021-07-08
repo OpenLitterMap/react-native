@@ -40,7 +40,8 @@ class CameraPage extends React.Component {
         this.state = {
             errorMessage: '',
             loading: true,
-            shutterOpacity: new Animated.Value(0)
+            shutterOpacity: new Animated.Value(0),
+            permissionGranted: false
             // Camera.Constants.Type.back,
         };
 
@@ -61,11 +62,10 @@ class CameraPage extends React.Component {
 
         request(p.CAMERA)
             .then(result => {
+                console.log({ result });
                 if (result === 'granted')
                 {
                     this.setState({ permissionGranted: status === 'granted' });
-
-                    this.props.grantCameraPermission(result);
                 }
             });
 
@@ -133,6 +133,9 @@ class CameraPage extends React.Component {
                 </View>
             );
         }
+
+        console.log('render.loading', this.state.loading);
+        console.log('render.permission', this.state.permissionGranted);
 
         return (this.state.permissionGranted)
             ? this.renderCamera()

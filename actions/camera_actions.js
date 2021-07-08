@@ -7,21 +7,21 @@ import {
     ZOOM_IN
 } from './types'
 
-export const grantCameraPermission = (status) => {
-    if (status === "granted")
-    {
-        return {
-            type: CAMERA_GRANTED_PERMISSION
-        };
-    }
-
-    else
-    {
-        return {
-            type: CAMERA_NOT_GRANTED_PERMISSION
-        };
-    }
-}
+// export const grantCameraPermission = (status) => {
+//     if (status === "granted")
+//     {
+//         return {
+//             type: CAMERA_GRANTED_PERMISSION
+//         };
+//     }
+//
+//     else
+//     {
+//         return {
+//             type: CAMERA_NOT_GRANTED_PERMISSION
+//         };
+//     }
+// }
 
 export const setLocation = (lat, lon) => {
     return {
