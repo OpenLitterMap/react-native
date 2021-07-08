@@ -59,12 +59,15 @@ class CameraPage extends React.Component {
         let status = '';
         let p = Platform.OS === 'android' ? PERMISSIONS.ANDROID : PERMISSIONS.IOS;
 
-        request(p.CAMERA).then(result => {
-            if (result === 'granted') {
-                this.setState({ permissionGranted: status === 'granted' });
-                this.props.grantCameraPermission(result);
-            }
-        });
+        request(p.CAMERA)
+            .then(result => {
+                if (result === 'granted')
+                {
+                    this.setState({ permissionGranted: status === 'granted' });
+
+                    this.props.grantCameraPermission(result);
+                }
+            });
 
         this._getLocationAsync();
 
@@ -103,6 +106,7 @@ class CameraPage extends React.Component {
             }
         })
         .then(granted => {
+            console.log({ granted });
             if (granted) {
                 this.locationSubscription = RNLocation.subscribeToLocationUpdates(
                     locations => {
@@ -130,7 +134,7 @@ class CameraPage extends React.Component {
             );
         }
 
-        return this.props.permissionGranted
+        return (this.state.permissionGranted)
             ? this.renderCamera()
             : this.renderNoPermissions();
     }
@@ -218,6 +222,8 @@ class CameraPage extends React.Component {
 
     /**
      * Render No Permissions
+     *
+     * Todo - Add Button to request permissions again
      */
     renderNoPermissions ()
     {
@@ -304,13 +310,20 @@ class CameraPage extends React.Component {
     }
 
     /**
-     * Todo - Zoom In / Out
+     * Todo - Zoom In
+     *
+     * This should be on state
      */
     zoomOut ()
     {
         this.props.zoomOut();
     }
 
+    /**
+     * Todo - Zoom out
+     *
+     * This shouldve on state
+     */
     zoomIn ()
     {
         this.props.zoomIn();
@@ -394,7 +407,6 @@ const mapStateToProps = state => {
         autoFocus: state.camera.autoFocus,
         lat: state.camera.lat,
         lon: state.camera.lon,
-        permissionGranted: state.camera.permissionGranted,
         photos: state.photos.photos,
         token: state.auth.token,
         type: state.camera.type,

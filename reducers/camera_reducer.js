@@ -15,7 +15,6 @@ const INITIAL_STATE = {
     lat: null,
     lon: null,
     location: null,
-    permissionGranted: false,
     photoId: 1,
     photos: [],
     type: 'back',
@@ -26,18 +25,6 @@ export default function (state = INITIAL_STATE, action) {
 
     switch (action.type)
     {
-        case CAMERA_GRANTED_PERMISSION:
-            return {
-                ...state,
-                permissionGranted: true
-            };
-
-        case CAMERA_NOT_GRANTED_PERMISSION:
-            return {
-                ...state,
-                permissionGranted: false
-            };
-
         case SET_GPS_COORDINATES:
             return {
                 ...state,
