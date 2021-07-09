@@ -65,15 +65,15 @@ class CameraPage extends React.Component {
                 console.log({ result });
                 if (result === 'granted')
                 {
-                    this.setState({ permissionGranted: status === 'granted' });
+                    this.setState({ permissionGranted: true });
                 }
             });
 
-        this._getLocationAsync();
+         this._getLocationAsync();
 
-        this.setState({
-            loading: false
-        });
+        // this.setState({
+        //     loading: false
+        // });
     }
 
     /**
@@ -117,7 +117,13 @@ class CameraPage extends React.Component {
                     }
                 );
             }
-        });
+        }).finally( _ => {
+            this.setState({
+                loading: false
+            })
+        }
+            
+        );
     };
 
     /**
@@ -134,9 +140,9 @@ class CameraPage extends React.Component {
             );
         }
 
-        console.log('render.loading', this.state.loading);
-        console.log('render.permission', this.state.permissionGranted);
-
+        // console.log('render.loading', this.state.loading);
+        // console.log('render.permission', this.state.permissionGranted);
+// console.log(this.state)
         return (this.state.permissionGranted)
             ? this.renderCamera()
             : this.renderNoPermissions();
@@ -147,7 +153,7 @@ class CameraPage extends React.Component {
      */
     renderCamera ()
     {
-        console.log('RENDER_CAMERA');
+        // console.log('RENDER_CAMERA');
         return (
             <>
                 <RNCamera
