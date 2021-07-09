@@ -38,6 +38,8 @@ class CameraPage extends React.Component {
         super (props);
 
         this.state = {
+            lat: null,
+            lon: null,
             errorMessage: '',
             loading: true,
             shutterOpacity: new Animated.Value(0),
@@ -57,12 +59,11 @@ class CameraPage extends React.Component {
             $rem: Dimensions.get('window').width / VALUES.remDivisionFactor
         });
 
-        let status = '';
-        let p = Platform.OS === 'android' ? PERMISSIONS.ANDROID : PERMISSIONS.IOS;
+        const p = Platform.OS === 'android' ? PERMISSIONS.ANDROID : PERMISSIONS.IOS;
 
         request(p.CAMERA)
             .then(result => {
-                console.log({ result });
+                // console.log({ result });
                 if (result === 'granted')
                 {
                     this.setState({ permissionGranted: true });
@@ -70,10 +71,6 @@ class CameraPage extends React.Component {
             });
 
          this._getLocationAsync();
-
-        // this.setState({
-        //     loading: false
-        // });
     }
 
     /**
@@ -106,24 +103,23 @@ class CameraPage extends React.Component {
             }
         })
         .then(granted => {
-            console.log({ granted });
-            if (granted) {
+            if (granted)
+            {
                 this.locationSubscription = RNLocation.subscribeToLocationUpdates(
                     locations => {
-                        this.props.setLocation(
-                            locations[0].latitude,
-                            locations[0].longitude
-                        );
+                        this.setState({
+                            lat: locations[0].latitude,
+                            lon: locations[0].longitude
+                        });
                     }
                 );
             }
-        }).finally( _ => {
+        })
+        .finally( _ => {
             this.setState({
                 loading: false
-            })
-        }
-            
-        );
+            });
+        });
     };
 
     /**
@@ -140,9 +136,6 @@ class CameraPage extends React.Component {
             );
         }
 
-        // console.log('render.loading', this.state.loading);
-        // console.log('render.permission', this.state.permissionGranted);
-// console.log(this.state)
         return (this.state.permissionGranted)
             ? this.renderCamera()
             : this.renderNoPermissions();
@@ -232,7 +225,7 @@ class CameraPage extends React.Component {
     /**
      * Render No Permissions
      *
-     * Todo - Add Button to request permissions again
+     * Todo - When permissions are denied: Add Button to request permissions again
      */
     renderNoPermissions ()
     {
@@ -259,15 +252,16 @@ class CameraPage extends React.Component {
                 this.animateShutter();
 
                 this.camera
-                    .takePictureAsync() // { exif: true }
+                    .takePictureAsync()
                     .then(result => {
                         console.log('takePicture', result); // height, uri, width
 
-                        const lat = this.props.lat;
-                        const lon = this.props.lon;
+                        const lat = this.state.lat;
+                        const lon = this.state.lon;
 
                         if (lat === null || lon === null)
                         {
+                            // Todo: Needs translation
                             alert('Your location services are not turn on. Please activate them to take geotagged photos.');
                         }
 
@@ -308,35 +302,23 @@ class CameraPage extends React.Component {
                 console.error('catch.camera.takePicture', e);
             }
 
-            // console.log("Camera Page, image should be added. Todo - check and add to litter.photoSelected");
-
             // todo - upload images to database automatically in background
             // todo - check settings for TagNow (this does not exist yet)
             // todo - if true, set currently selected photo and load LitterPicker.js
-        } else {
-            // console.log('this.camera does not exist');
         }
     }
 
     /**
-     * Todo - Zoom In
+     * Todo - Zoom In & Out
      *
      * This should be on state
      */
-    zoomOut ()
-    {
-        this.props.zoomOut();
-    }
-
-    /**
-     * Todo - Zoom out
-     *
-     * This shouldve on state
-     */
-    zoomIn ()
-    {
-        this.props.zoomIn();
-    }
+    // zoomIn ()
+    // {
+    // }
+    // zoomOut ()
+    // {
+    // }
 
     /**
      * Slide to value, passed to Parent Slides.js
@@ -344,10 +326,6 @@ class CameraPage extends React.Component {
     changeView (value)
     {
         this.props.swipe(value);
-    }
-
-    toggleView () {
-        // console.log('Toggle view');
     }
 }
 

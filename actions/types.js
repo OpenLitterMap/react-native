@@ -44,10 +44,6 @@ export const TOKEN_IS_VALID = 'TOKEN_IS_VALID';
 export const USERNAME_CHANGED = 'USERNAME_CHANGED';
 export const USERNAME_ERROR = 'USERNAME_ERROR';
 
-// not using this atm
-// export const FACEBOOK_LOGIN_SUCCESS = 'facebook_login_success';
-// export const FACEBOOK_LOGIN_FAIL = 'facebook_login_fail';
-
 // Photos - Taken from OLM Camera
 export const ADD_PHOTO = 'ADD_PHOTO';
 export const ADD_TAGS_TO_CAMERA_PHOTO = 'ADD_TAGS_TO_CAMERA_PHOTO';
@@ -87,13 +83,8 @@ export const INCREMENT = 'INCREMENT';
 export const ITEM_SELECTED = 'ITEM_SELECTED';
 
 // CAMERA / PHOTOS (camera_photos)
-export const CAMERA_GRANTED_PERMISSION = 'CAMERA_GRANTED_PERMISSION';
-export const CAMERA_NOT_GRANTED_PERMISSION = 'CAMERA_NOT_GRANTED_PERMISSION';
 export const CAMERA_PHOTO_UPLOADED_SUCCESSFULLY = 'CAMERA_PHOTO_UPLOADED_SUCCESSFULLY';
 export const SET_GPS_COORDINATES = 'SET_GPS_COORDINATES';
-
-export const ZOOM_OUT = 'ZOOM_OUT';
-export const ZOOM_IN = 'ZOOM_IN';
 
 // gallery
 export const ADD_TAGS_TO_GALLERY_IMAGE = 'ADD_TAGS_TO_GALLERY_IMAGE';
