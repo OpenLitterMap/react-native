@@ -1,1 +1,4 @@
 node_modules/
+assets/
+babel.config.js
+i18n.js
