@@ -27,8 +27,6 @@ export default function(state = INITIAL_STATE, action)
 
             let image = webPhotos[action.payload.currentIndex];
 
-            console.log({ image });
-
             // update tags on image
             let newTags = Object.assign({}, image.tags);
 
@@ -104,20 +102,20 @@ export default function(state = INITIAL_STATE, action)
                 count
             };
 
-        /**
-         * Toggle webImageSuccess to show modal content on LitterPicker
-         */
-        case WEB_CONFIRM:
-
-            const photos = state.photos = [
-                ...state.photos.slice(0, 0),
-                ...state.photos.slice(1)
-            ];
-
-            return {
-                ...state,
-                photos
-            };
+        // /**
+        //  * Toggle webImageSuccess to show modal content on LitterPicker
+        //  */
+        // case WEB_CONFIRM:
+        //
+        //     const photos = state.photos = [
+        //         ...state.photos.slice(0, 0),
+        //         ...state.photos.slice(1)
+        //     ];
+        //
+        //     return {
+        //         ...state,
+        //         photos
+        //     };
 
         /**
          * Images have been uploaded from the web

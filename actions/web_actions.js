@@ -109,11 +109,26 @@ export const loadMoreWebImages = (token, photo_id) => {
     }
 };
 
+export const removeWebImage = id => {
+    return {
+        type: REMOVE_WEB_IMAGE,
+        payload: id
+    };
+};
+
+export const toggleWebImageSuccess = bool => {
+    return {
+        type: WEB_CONFIRM,
+        payload: bool
+    }
+};
+
 /**
- * User has clicked Confirm on LitterPicker
+ * User has clicked Confirm on AddTags
+ *
  * Post to server and return 200
  */
-export const confirmWebPhoto = data => {
+export const uploadTagsForWebPhoto = data => {
     return dispatch => {
         return axios({
             url: URL + '/api/photos/update',
@@ -131,28 +146,14 @@ export const confirmWebPhoto = data => {
 
             if (response.data.success)
             {
-
+                // ...
             }
         })
         .catch(err => {
-            console.log({ err });
+            console.log('ERROR: uploadTagsForWebPhoto', err.response.data);
         });
     }
 }
-
-export const removeWebImage = id => {
-    return {
-        type: REMOVE_WEB_IMAGE,
-        payload: id
-    };
-};
-
-export const toggleWebImageSuccess = bool => {
-    return {
-        type: WEB_CONFIRM,
-        payload: bool
-    }
-};
 
 /**
  * The first web photo has been selected for tagging

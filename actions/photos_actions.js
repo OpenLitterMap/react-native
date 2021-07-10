@@ -48,15 +48,26 @@ export const cameraIndexChanged = (index) => {
     };
 }
 
-// /**
-//  *
-//  */
-// export const addTag = (tag) => {
-//     return {
-//         type: 'ADD_TAG',
-//         payload: tag
-//     };
-// }
+/**
+ * Check & get an image uploaded on web that is ready for tagging
+ */
+export const checkForWebUpload = (token) => {
+    return (dispatch) => {
+        return axios({
+            method: 'get',
+            url: URL + '/api/check',
+            headers: {
+                'Authorization': 'Bearer ' + token
+            }
+        })
+            .then(resp => {
+                console.log(resp);
+            })
+            .catch(err => {
+                console.log(err);
+            });
+    }
+}
 
 /**
  * When the app loads, if any camera photos exist, load them here
@@ -155,25 +166,4 @@ export const updateRemainingCount = (count) => {
         type: UPDATE_COUNT_REMAINING,
         payload: count
     };
-}
-
-/**
- * Check & get an image uploaded on web that is ready for tagging
- */
-export const checkForWebUpload = (token) => {
-    return (dispatch) => {
-        return axios({
-            method: 'get',
-            url: URL + '/api/check',
-            headers: {
-                'Authorization': 'Bearer ' + token
-            }
-        })
-        .then(resp => {
-            console.log(resp);
-        })
-        .catch(err => {
-            console.log(err);
-        });
-    }
 }

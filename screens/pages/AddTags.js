@@ -460,33 +460,25 @@ class AddTags extends PureComponent
         // todo - save these globally
         const photosLength = this.props.photos.length;
         const galleryLength = this.props.gallery.length;
-        const webLength = this.props.webPhotos.length;
 
         // Without this, we get "cannot update a component from within the function body of another component"
         setTimeout(() => {
 
-            // 0, 1 < 2
             if (newGlobalIndex < photosLength)
             {
                 this.props.cameraIndexChanged(newGlobalIndex);
             }
-            // 3, 4 < 4
             else if (newGlobalIndex < (galleryLength + photosLength))
             {
                 const galleryIndex = newGlobalIndex - photosLength;
 
                 this.props.galleryIndexChanged(galleryIndex);
             }
-            else if (newGlobalIndex < (galleryLength + photosLength + webLength))
-            {
-                const webIndex = newGlobalIndex - this.props.photos.length - this.props.gallery.length;
-                // console.log('todo - webIndexChanged LitterPicker #413', webIndex);
-
-                this.props.webIndexChanged(webIndex);
-            }
             else
             {
-                console.log("problem swiperIndexChanged");
+                const webIndex = (newGlobalIndex - this.props.photos.length - this.props.gallery.length);
+
+                this.props.webIndexChanged(webIndex);
             }
 
             // This was necessary to avoid error
@@ -510,9 +502,7 @@ class AddTags extends PureComponent
     }
 
     /**
-     * Return the tags for an image
-     *
-     * was = () =>
+     * Return the tags for an image at a specific index
      */
     getTags ()
     {
