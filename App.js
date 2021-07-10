@@ -18,29 +18,29 @@ import * as Sentry from '@sentry/react-native';
 import { IS_PRODUCTION } from './actions/types';
 
 const App = () => {
-  // if (IS_PRODUCTION)
-  // {
-  //     Sentry.init({
-  //         dsn: SENTRY_DSN,
-  //     });
-  // }
+    // if (IS_PRODUCTION)
+    // {
+    //     Sentry.init({
+    //         dsn: SENTRY_DSN,
+    //     });
+    // }
 
-  const { persistor, store } = configureStore();
+    const { persistor, store } = configureStore();
 
-  store.dispatch({ type: 'CHANGE_LANG', payload: lang });
+    store.dispatch({ type: 'CHANGE_LANG', payload: lang });
 
-  return (
-    <Provider store={store}>
-      <PersistGate persistor={persistor}>
-        <LanguageProvider
-          language={lang}
-          defaultLanguage={'en'}
-          translations={langs}>
-          <RootContainer />
-        </LanguageProvider>
-      </PersistGate>
-    </Provider>
-  );
+    return (
+        <Provider store={store}>
+            <PersistGate persistor={persistor}>
+                <LanguageProvider
+                    language={lang}
+                    defaultLanguage={'en'}
+                    translations={langs}>
+                    <RootContainer />
+                </LanguageProvider>
+            </PersistGate>
+        </Provider>
+    );
 };
 
 export default App;

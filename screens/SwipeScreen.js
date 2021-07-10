@@ -6,35 +6,35 @@ import LeftPage from './pages/LeftPage';
 // import RightPage from './pages/RightPage'
 
 class SwipeScreen extends Component {
-  static navigationOptions = {
-    tabBarVisible: false
-  };
-
-  viewStyle() {
-    return {
-      flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center'
+    static navigationOptions = {
+        tabBarVisible: false
     };
-  }
 
-  jumpToSlide(n) {
-    this.refs.swiper.scrollBy(n); // n is the number of places to move the swipe, eg: 2, -1, etc.
-  }
+    viewStyle() {
+        return {
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center'
+        };
+    }
 
-  render() {
-    return (
-      <Swiper
-        index={1}
-        loop={false}
-        showsPagination={false}
-        ref="swiper"
-        keyboardShouldPersistTaps="handled">
-        <LeftPage
-          navigation={this.props.navigation}
-          swiper={this.refs.swiper}
-        />
-        {/*
+    jumpToSlide(n) {
+        this.refs.swiper.scrollBy(n); // n is the number of places to move the swipe, eg: 2, -1, etc.
+    }
+
+    render() {
+        return (
+            <Swiper
+                index={1}
+                loop={false}
+                showsPagination={false}
+                ref="swiper"
+                keyboardShouldPersistTaps="handled">
+                <LeftPage
+                    navigation={this.props.navigation}
+                    swiper={this.refs.swiper}
+                />
+                {/*
                     <Swiper
                       horizontal={false}
                       loop={false}
@@ -44,8 +44,8 @@ class SwipeScreen extends Component {
                           <TitleText label="Top" />
                           </View>
                       */}
-        <CameraPage swipe={value => this.jumpToSlide(value)} />
-        {/*
+                <CameraPage swipe={value => this.jumpToSlide(value)} />
+                {/*
                     <View style={this.viewStyle()}>
                       <TitleText label="Bottom - Verify Images Page." />
                     </View>
@@ -54,9 +54,9 @@ class SwipeScreen extends Component {
                 <RightPage navigation={this.props.navigation} swiper={this.refs.swiper} />
 
                 */}
-      </Swiper>
-    );
-  }
+            </Swiper>
+        );
+    }
 }
 
 export default SwipeScreen;

@@ -8,12 +8,12 @@ import settings from './settings_reducer';
 import web from './web_reducer';
 
 export default {
-  auth,
-  photos,
-  camera,
-  gallery,
-  litter,
-  shared,
-  settings,
-  web
+    auth,
+    photos,
+    camera,
+    gallery,
+    litter,
+    shared,
+    settings,
+    web
 };

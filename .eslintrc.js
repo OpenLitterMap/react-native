@@ -2,7 +2,7 @@ module.exports = {
   root: true,
   extends: '@react-native-community',
   rules: {
-    indent: ['warn', 2, { SwitchCase: 1 }],
+    indent: ['warn', 4, { SwitchCase: 1 }],
     // semi: ['off', 'always'], // recommend on and always
     'no-control-regex': 'off',
     'comma-dangle': ['warn', 'never'], // recommend always

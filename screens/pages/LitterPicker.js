@@ -1,12 +1,12 @@
 import React, { PureComponent } from 'react';
 import {
-  Dimensions,
-  Keyboard,
-  Platform,
-  SafeAreaView,
-  StatusBar,
-  TouchableOpacity,
-  View
+    Dimensions,
+    Keyboard,
+    Platform,
+    SafeAreaView,
+    StatusBar,
+    TouchableOpacity,
+    View
 } from 'react-native';
 import { TransText } from 'react-native-translation';
 import { Icon } from 'react-native-elements';
@@ -30,838 +30,860 @@ import LITTERKEYS from './data/litterkeys';
 const cloneDeep = require('clone-deep');
 
 class LitterPicker extends PureComponent {
-  constructor(props) {
-    super(props);
+    constructor(props) {
+        super(props);
 
-    this.state = {
-      loading: false,
-      webLoading: false,
-      keyboardOpen: false,
-      bottomHeight: 0,
-      topPadding: 0,
-      height: 0
+        this.state = {
+            loading: false,
+            webLoading: false,
+            keyboardOpen: false,
+            bottomHeight: 0,
+            topPadding: 0,
+            height: 0
+        };
+
+        this._checkForPhotos = this._checkForPhotos.bind(this);
+        this.closeKeyboardAndroid = this.closeKeyboardAndroid.bind(this);
+    }
+
+    /**
+     *
+     */
+    UNSAFE_componentWillMount() {
+        if (this.props.rightPage) {
+            this.setState({
+                loading: true
+            });
+        }
+    }
+
+    /**
+     * Check if the user has any photos on web
+     *
+     * @photo_actions.js
+     */
+    async componentDidMount() {
+        // this is necessary to allow the user to click on text input because of a bug with keyboardAvoidingView on Android
+        if (Platform.OS === 'android')
+            await this.setState({ height: SCREEN_HEIGHT * 0.1 });
+
+        if (this.state.loading)
+            await this.props.checkForWebUpload(this.props.token);
+
+        this.keyboardDidShowListener = Keyboard.addListener(
+            'keyboardDidShow',
+            this._keyboardDidShow.bind(this)
+        );
+        this.keyboardDidHideListener = Keyboard.addListener(
+            'keyboardDidHide',
+            this._keyboardDidHide.bind(this)
+        );
+    }
+
+    /**
+     * Cancel event listeners
+     */
+    componentWillUnmount() {
+        this.keyboardDidShowListener.remove();
+        this.keyboardDidHideListener.remove();
+    }
+
+    /**
+     * Set params when keyboard has been opened to show bottom nav panel
+     * We need to change the height-offset based on device type
+     */
+    _keyboardDidShow(e) {
+        let height = 0;
+        let bottomHeight = 0; // Height on the "suggested tags" container
+
+        if (Platform.OS === 'android') {
+            height = 0;
+            bottomHeight = 0;
+        } else {
+            // if "iPhone 10+"
+            let x = DeviceInfo.getModel().split(' ')[1];
+
+            bottomHeight = 0.2025;
+
+            if (x.includes('X') || parseInt(x) >= 10) {
+                height = 0.345;
+            }
+            // iPhone 5,6,7,8
+            else {
+                height = 0.39;
+            }
+        }
+
+        height = height * SCREEN_HEIGHT;
+        bottomHeight = bottomHeight * SCREEN_HEIGHT;
+
+        this.setState({
+            keyboardOpen: true,
+            bottomHeight: bottomHeight,
+            height: height
+        });
+    }
+
+    /**
+     * Set params when keyboard has been closed to hide bottom nav panel
+     *
+     * 2 bugs here
+     *
+     * 1. On android, we need to set height of keyboardAvoidingView to 10% screen height when closed...not sure why
+     *
+     * 2. When a tag is set from the keyboard, the tag.key changes (eg "facemask") but the category does not change.
+     *    onKeyboardClose, we need to reset tag.key to the first item of the currently selected category
+     */
+    _keyboardDidHide() {
+        let height = 0;
+
+        // this is necessary to allow the user to click on text input because of a bug with keyboardAvoidingView on Android
+        if (Platform.OS === 'android') height = SCREEN_HEIGHT * 0.1;
+
+        // we need to reset item for currently selected category
+        if (this.props.category.hasOwnProperty('title')) {
+            const first = LITTERKEYS[this.props.category.title][0];
+
+            this.props.changeItem(first);
+        }
+
+        this.setState({
+            keyboardOpen: false,
+            bottomHeight: 0,
+            height
+        });
+    }
+
+    /**
+     * Close the modal and all content types
+     */
+    _closeModal() {
+        this.props.setLitterPickerModal(false);
+
+        this.props.showAllTags(false);
+
+        this.setState({
+            webLoading: false
+        });
+    }
+
+    /**
+     * This container is showing on Android when the board is open
+     * We can hide it here
+     */
+    hideBottomContainer() {
+        return this.state.keyboardOpen ? styles.hide : styles.bottomContainer;
+    }
+
+    /**
+     * If we are an Android, we need to close the keyboard programatically
+     *
+     * as onClickOutside is not working yet
+     */
+    closeKeyboardAndroid() {
+        if (Platform.OS === 'android') {
+            this.setState({
+                keyboardOpen: false
+            });
+
+            Keyboard.dismiss();
+        }
+    }
+
+    /**
+     * A category card has been clicked
+     *
+     * This is a callback function from LitterCategories
+     */
+    categoryClicked = () => {
+        this.closeKeyboardAndroid();
     };
 
-    this._checkForPhotos = this._checkForPhotos.bind(this);
-    this.closeKeyboardAndroid = this.closeKeyboardAndroid.bind(this);
-  }
+    /**
+     * The LitterPicker component
+     */
+    render() {
+        console.log('LitterPicker.render');
+        const { lang, swiperIndex } = this.props;
 
-  /**
-   *
-   */
-  UNSAFE_componentWillMount() {
-    if (this.props.rightPage) {
-      this.setState({
-        loading: true
-      });
-    }
-  }
+        // Todo - save these globally
+        const photosLength = this.props.photos.length;
+        const galleryLength = this.props.gallery.length;
+        const webLength = this.props.webPhotos.length;
 
-  /**
-   * Check if the user has any photos on web
-   *
-   * @photo_actions.js
-   */
-  async componentDidMount() {
-    // this is necessary to allow the user to click on text input because of a bug with keyboardAvoidingView on Android
-    if (Platform.OS === 'android')
-      await this.setState({ height: SCREEN_HEIGHT * 0.1 });
+        // We need this to show/hide the left and right arrows
+        const IMAGES_COUNT = photosLength + galleryLength + webLength;
 
-    if (this.state.loading)
-      await this.props.checkForWebUpload(this.props.token);
+        return (
+            <View style={{ flex: 1 }}>
+                <View style={styles.container}>
+                    <StatusBar hidden />
 
-    this.keyboardDidShowListener = Keyboard.addListener(
-      'keyboardDidShow',
-      this._keyboardDidShow.bind(this)
-    );
-    this.keyboardDidHideListener = Keyboard.addListener(
-      'keyboardDidHide',
-      this._keyboardDidHide.bind(this)
-    );
-  }
+                    {/* First - Top Bar position: 'absolute'  */}
+                    <LitterCategories
+                        categories={CATEGORIES}
+                        category={this.props.category}
+                        lang={this.props.lang}
+                        callback={this.categoryClicked}
+                    />
 
-  /**
-   * Cancel event listeners
-   */
-  componentWillUnmount() {
-    this.keyboardDidShowListener.remove();
-    this.keyboardDidHideListener.remove();
-  }
+                    {/* Second - Image. Height: 80% */}
+                    <Swiper
+                        index={swiperIndex}
+                        loop={false}
+                        showsPagination={false}
+                        keyboardShouldPersistTaps="handled"
+                        ref="imageSwiper"
+                        onIndexChanged={index =>
+                            this.swiperIndexChanged(index)
+                        }>
+                        {this._renderLitterImage()}
+                    </Swiper>
 
-  /**
-   * Set params when keyboard has been opened to show bottom nav panel
-   * We need to change the height-offset based on device type
-   */
-  _keyboardDidShow(e) {
-    let height = 0;
-    let bottomHeight = 0; // Height on the "suggested tags" container
+                    {/* Third - Tags. position: absolute */}
+                    <LitterTags
+                        tags={this.getTags()}
+                        previousTags={this.props.previousTags}
+                        positions={this.props.positions}
+                        item={this.props.item}
+                        keyboardOpen={this.state.keyboardOpen}
+                        lang={this.props.lang}
+                        swiperIndex={swiperIndex}
+                        photosLength={photosLength}
+                        galleryLength={galleryLength}
+                        webLength={webLength}
+                    />
 
-    if (Platform.OS === 'android') {
-      height = 0;
-      bottomHeight = 0;
-    } else {
-      // if "iPhone 10+"
-      let x = DeviceInfo.getModel().split(' ')[1];
+                    {/* Fourth - bottomContainer 20% height */}
+                    <View style={styles.bottomContainer}>
+                        {/* 4.1 - LitterPickerWheels */}
+                        <View style={this._computePickerWheelsContainer()}>
+                            <LitterPickerWheels
+                                item={this.props.item}
+                                items={this.props.items}
+                                model={this.props.model}
+                                category={this.props.category}
+                                q={this.props.q}
+                                lang={this.props.lang}
+                            />
+                        </View>
 
-      bottomHeight = 0.2025;
+                        {/* 4.2 - <- Previous Image || Add Tags || Next Image -> */}
+                        <View style={this._computeButtonsContainer()}>
+                            {/* When swiperIndex is 0, don't show the previousImageArrow */}
+                            {swiperIndex === 0 && (
+                                <View style={{ flex: 0.15 }} />
+                            )}
+                            {/* Only show previousImage when swiperIndex is greater than 0 */}
+                            {swiperIndex > 0 && (
+                                <TouchableOpacity
+                                    onPress={this.previousImage.bind(this)}
+                                    style={styles.tabArrowIconContainer}>
+                                    <Icon
+                                        name="arrow-back"
+                                        size={SCREEN_HEIGHT * 0.05}
+                                    />
+                                </TouchableOpacity>
+                            )}
 
-      if (x.includes('X') || parseInt(x) >= 10) {
-        height = 0.345;
-      }
-      // iPhone 5,6,7,8
-      else {
-        height = 0.39;
-      }
-    }
+                            {/* 4.2.2 - Add Tag or Increment Quantity */}
+                            <TouchableOpacity
+                                onPress={this.addTag.bind(this)}
+                                style={styles.addTagButtonOuter}
+                                disabled={this._checkForPhotos()}>
+                                <View style={styles.addTagButtonInner}>
+                                    <Icon
+                                        name="add"
+                                        size={SCREEN_HEIGHT * 0.05}
+                                    />
+                                    <TransText
+                                        style={styles.textIconStyle}
+                                        dictionary={`${lang}.tag.add-tag`}
+                                    />
+                                </View>
+                            </TouchableOpacity>
 
-    height = height * SCREEN_HEIGHT;
-    bottomHeight = bottomHeight * SCREEN_HEIGHT;
+                            {/* Hide the nextImageArrow  */}
+                            {swiperIndex === IMAGES_COUNT - 1 && (
+                                <View style={{ flex: 0.15 }} />
+                            )}
+                            {swiperIndex >= 0 &&
+                                swiperIndex !== IMAGES_COUNT - 1 && (
+                                    <TouchableOpacity
+                                        onPress={this.nextImage.bind(this)}
+                                        style={styles.tabArrowIconContainer}>
+                                        <Icon
+                                            name="arrow-forward"
+                                            size={SCREEN_HEIGHT * 0.05}
+                                        />
+                                    </TouchableOpacity>
+                                )}
+                        </View>
+                    </View>
 
-    this.setState({
-      keyboardOpen: true,
-      bottomHeight: bottomHeight,
-      height: height
-    });
-  }
-
-  /**
-   * Set params when keyboard has been closed to hide bottom nav panel
-   *
-   * 2 bugs here
-   *
-   * 1. On android, we need to set height of keyboardAvoidingView to 10% screen height when closed...not sure why
-   *
-   * 2. When a tag is set from the keyboard, the tag.key changes (eg "facemask") but the category does not change.
-   *    onKeyboardClose, we need to reset tag.key to the first item of the currently selected category
-   */
-  _keyboardDidHide() {
-    let height = 0;
-
-    // this is necessary to allow the user to click on text input because of a bug with keyboardAvoidingView on Android
-    if (Platform.OS === 'android') height = SCREEN_HEIGHT * 0.1;
-
-    // we need to reset item for currently selected category
-    if (this.props.category.hasOwnProperty('title')) {
-      const first = LITTERKEYS[this.props.category.title][0];
-
-      this.props.changeItem(first);
-    }
-
-    this.setState({
-      keyboardOpen: false,
-      bottomHeight: 0,
-      height
-    });
-  }
-
-  /**
-   * Close the modal and all content types
-   */
-  _closeModal() {
-    this.props.setLitterPickerModal(false);
-
-    this.props.showAllTags(false);
-
-    this.setState({
-      webLoading: false
-    });
-  }
-
-  /**
-   * This container is showing on Android when the board is open
-   * We can hide it here
-   */
-  hideBottomContainer() {
-    return this.state.keyboardOpen ? styles.hide : styles.bottomContainer;
-  }
-
-  /**
-   * If we are an Android, we need to close the keyboard programatically
-   *
-   * as onClickOutside is not working yet
-   */
-  closeKeyboardAndroid() {
-    if (Platform.OS === 'android') {
-      this.setState({
-        keyboardOpen: false
-      });
-
-      Keyboard.dismiss();
-    }
-  }
-
-  /**
-   * A category card has been clicked
-   *
-   * This is a callback function from LitterCategories
-   */
-  categoryClicked = () => {
-    this.closeKeyboardAndroid();
-  };
-
-  /**
-   * The LitterPicker component
-   */
-  render() {
-    console.log('LitterPicker.render');
-    const { lang, swiperIndex } = this.props;
-
-    // Todo - save these globally
-    const photosLength = this.props.photos.length;
-    const galleryLength = this.props.gallery.length;
-    const webLength = this.props.webPhotos.length;
-
-    // We need this to show/hide the left and right arrows
-    const IMAGES_COUNT = photosLength + galleryLength + webLength;
-
-    return (
-      <View style={{ flex: 1 }}>
-        <View style={styles.container}>
-          <StatusBar hidden />
-
-          {/* First - Top Bar position: 'absolute'  */}
-          <LitterCategories
-            categories={CATEGORIES}
-            category={this.props.category}
-            lang={this.props.lang}
-            callback={this.categoryClicked}
-          />
-
-          {/* Second - Image. Height: 80% */}
-          <Swiper
-            index={swiperIndex}
-            loop={false}
-            showsPagination={false}
-            keyboardShouldPersistTaps="handled"
-            ref="imageSwiper"
-            onIndexChanged={index => this.swiperIndexChanged(index)}>
-            {this._renderLitterImage()}
-          </Swiper>
-
-          {/* Third - Tags. position: absolute */}
-          <LitterTags
-            tags={this.getTags()}
-            previousTags={this.props.previousTags}
-            positions={this.props.positions}
-            item={this.props.item}
-            keyboardOpen={this.state.keyboardOpen}
-            lang={this.props.lang}
-            swiperIndex={swiperIndex}
-            photosLength={photosLength}
-            galleryLength={galleryLength}
-            webLength={webLength}
-          />
-
-          {/* Fourth - bottomContainer 20% height */}
-          <View style={styles.bottomContainer}>
-            {/* 4.1 - LitterPickerWheels */}
-            <View style={this._computePickerWheelsContainer()}>
-              <LitterPickerWheels
-                item={this.props.item}
-                items={this.props.items}
-                model={this.props.model}
-                category={this.props.category}
-                q={this.props.q}
-                lang={this.props.lang}
-              />
-            </View>
-
-            {/* 4.2 - <- Previous Image || Add Tags || Next Image -> */}
-            <View style={this._computeButtonsContainer()}>
-              {/* When swiperIndex is 0, don't show the previousImageArrow */}
-              {swiperIndex === 0 && <View style={{ flex: 0.15 }} />}
-              {/* Only show previousImage when swiperIndex is greater than 0 */}
-              {swiperIndex > 0 && (
-                <TouchableOpacity
-                  onPress={this.previousImage.bind(this)}
-                  style={styles.tabArrowIconContainer}>
-                  <Icon name="arrow-back" size={SCREEN_HEIGHT * 0.05} />
-                </TouchableOpacity>
-              )}
-
-              {/* 4.2.2 - Add Tag or Increment Quantity */}
-              <TouchableOpacity
-                onPress={this.addTag.bind(this)}
-                style={styles.addTagButtonOuter}
-                disabled={this._checkForPhotos()}>
-                <View style={styles.addTagButtonInner}>
-                  <Icon name="add" size={SCREEN_HEIGHT * 0.05} />
-                  <TransText
-                    style={styles.textIconStyle}
-                    dictionary={`${lang}.tag.add-tag`}
-                  />
+                    {/* 4.3 - Bottom Input - Search All Tags */}
+                    <LitterBottomSearch
+                        keyboardOpen={this.state.keyboardOpen}
+                        suggestedTags={this.props.suggestedTags}
+                        height={this.state.height}
+                        bottomHeight={this.state.bottomHeight}
+                        presence={this.props.presence}
+                        lang={this.props.lang}
+                        swiperIndex={swiperIndex}
+                        photosLength={photosLength}
+                        galleryLength={galleryLength}
+                        webLength={webLength}
+                    />
                 </View>
-              </TouchableOpacity>
-
-              {/* Hide the nextImageArrow  */}
-              {swiperIndex === IMAGES_COUNT - 1 && (
-                <View style={{ flex: 0.15 }} />
-              )}
-              {swiperIndex >= 0 && swiperIndex !== IMAGES_COUNT - 1 && (
-                <TouchableOpacity
-                  onPress={this.nextImage.bind(this)}
-                  style={styles.tabArrowIconContainer}>
-                  <Icon name="arrow-forward" size={SCREEN_HEIGHT * 0.05} />
-                </TouchableOpacity>
-              )}
+                <SafeAreaView style={{ flex: 0 }} />
             </View>
-          </View>
-
-          {/* 4.3 - Bottom Input - Search All Tags */}
-          <LitterBottomSearch
-            keyboardOpen={this.state.keyboardOpen}
-            suggestedTags={this.props.suggestedTags}
-            height={this.state.height}
-            bottomHeight={this.state.bottomHeight}
-            presence={this.props.presence}
-            lang={this.props.lang}
-            swiperIndex={swiperIndex}
-            photosLength={photosLength}
-            galleryLength={galleryLength}
-            webLength={webLength}
-          />
-        </View>
-        <SafeAreaView style={{ flex: 0 }} />
-      </View>
-    );
-  }
-
-  /**
-   * Return True or False
-   */
-  _checkForPhotos() {
-    return (
-      this.props.gallery.length === 0 &&
-      this.props.photos.length === 0 &&
-      this.props.webImagesCount === 0
-    );
-  }
-
-  /**
-   * Position absolute
-   * bottom: pickerWheelsContainer 15%
-   * bottom: iPickerWheelsContainer 12%
-   *
-   * @hide on Android when keyboard is open
-   */
-  _computePickerWheelsContainer() {
-    if (this.state.keyboardOpen) return styles.hide;
-
-    if (Platform.OS === 'android') return styles.pickerWheelsContainer;
-
-    // if "iPhone 10+", return 17% card height
-    let x = DeviceInfo.getModel().split(' ')[1];
-
-    if (x.includes('X') || parseInt(x) >= 10)
-      return styles.iPickerWheelsContainer;
-
-    return styles.pickerWheelsContainer;
-  }
-
-  /**
-   * Container for Confirm, Add Tag buttons
-   * marginTop: 5%
-   * if iPhoneX+ marginTop: 8%;
-   *
-   * @hide on Android when keyboard is open
-   */
-  _computeButtonsContainer() {
-    if (this.state.keyboardOpen) return styles.hide;
-
-    if (Platform.OS === 'android') return styles.buttonsContainer;
-
-    // if iPhone 10+, return 17% card height
-    let x = DeviceInfo.getModel().split(' ')[1];
-
-    if (x.includes('X') || parseInt(x) >= 10) return styles.iButtonsContainer;
-
-    return styles.buttonsContainer;
-  }
-
-  /**
-   * Check length of tags object
-   *
-   * Return True or False
-   */
-  _checkCollectionLength() {
-    return Object.keys(this.props.tags).length === 0;
-  }
-
-  /**
-   * Show the leftArrow when the currentIndex is greater than 0
-   */
-  getLeftArrowContainer() {
-    return this.props.swiperIndex === 0
-      ? styles.hideArrowContainer
-      : styles.tabArrowIconContainer;
-  }
-
-  /**
-   * Load the previous image
-   */
-  previousImage() {
-    const currentIndex = this.props.swiperIndex;
-
-    if (currentIndex > 0) {
-      this.props.swiperIndexChanged(currentIndex - 1);
+        );
     }
-  }
 
-  /**
-   * Load the next image
-   */
-  nextImage() {
-    const currentIndex = this.props.swiperIndex;
-
-    // todo - check total length of all camera_photos, gallery_photos and web_photos
-
-    this.props.swiperIndexChanged(currentIndex + 1);
-  }
-
-  /**
-   * The user has swiped left or right across an array of all photo types.
-   *
-   * This function gives us the new index the user has swiped to.
-   *
-   * this.props.photos = from in-app camera.
-   * this.props.gallery = chosen by user.
-   * this.pros.web = uploaded to web, tag with the app.
-   *
-   * @param newIndex (int): the global index across all photo types.
-   */
-  swiperIndexChanged = newIndex => {
-    // todo - save these globally
-    const photosLength = this.props.photos.length;
-    const galleryLength = this.props.gallery.length;
-    const webLength = this.props.webPhotos.length;
-
-    // Without this, we get "cannot update a component from within the function body of another component"
-    setTimeout(() => {
-      // 0, 1 < 2
-      if (newIndex < photosLength) {
-        this.props.cameraIndexChanged(newIndex);
-      }
-      // 3, 4 < 4
-      else if (newIndex < galleryLength + photosLength) {
-        const galleryIndex = newIndex - photosLength;
-
-        this.props.galleryIndexChanged(galleryIndex);
-      } else if (newIndex < galleryLength + photosLength + webLength) {
-        const webIndex =
-          newIndex - this.props.photos.length - this.props.gallery.length;
-        console.log('todo - webIndexChanged LitterPicker #413', webIndex);
-      } else {
-        console.log('problem swiperIndexChanged');
-      }
-
-      // This was necessary to avoid error
-      // litter.js swiperIndex
-      this.props.swiperIndexChanged(newIndex);
-
-      // If we are browsing web photos
-      // At the end of the search, we need to check to see if we need to load more images
-      // Currently we are loading 10 images at a time
-      // if (currentPhotoType === 'web')
-      // {
-      //     // If this is the last webPhoto, load more
-      //     if (this.props.photoSelected.id === this.props.webPhotos[this.props.webPhotos.length -1].id)
-      //     {
-      //         // show loading more images from web
-      //         this.props.loadMoreWebImages(this.props.token, this.props.photoSelected.id);
-      //     }
-      // }
-    }, 0);
-  };
-
-  /**
-   * Return the tags for an image
-   *
-   * was = () =>
-   */
-  getTags() {
-    const currentIndex = this.props.swiperIndex;
-
-    const photosLength = this.props.photos.length;
-    const galleryLength = this.props.gallery.length;
-    const webLength = this.props.webPhotos.length;
-
-    if (currentIndex < photosLength) {
-      return this.props.photos[currentIndex].tags;
-    } else if (currentIndex < galleryLength + photosLength) {
-      return this.props.gallery[currentIndex - photosLength].tags;
-    } else if (currentIndex < webLength) {
-      return this.props.webPhotos[currentIndex].tags;
-    } else {
-      console.log('problem @ getTags;');
-
-      return {};
+    /**
+     * Return True or False
+     */
+    _checkForPhotos() {
+        return (
+            this.props.gallery.length === 0 &&
+            this.props.photos.length === 0 &&
+            this.props.webImagesCount === 0
+        );
     }
-  }
 
-  /**
-   * Array of images to swipe through
-   *
-   * this.props.swiperIndex is the current index across all available photo types
-   *
-   * this.props.photos are from the app camera
-   * this.props.gallery are selected from the users photo album
-   * this.props.webPhotos were uploaded to web and in the app for tagging
-   */
-  _renderLitterImage = () => {
-    // Put all the data we want to display into an array
-    const photos = [].concat(
-      this.props.photos,
-      this.props.gallery,
-      this.props.webPhotos
-    );
+    /**
+     * Position absolute
+     * bottom: pickerWheelsContainer 15%
+     * bottom: iPickerWheelsContainer 12%
+     *
+     * @hide on Android when keyboard is open
+     */
+    _computePickerWheelsContainer() {
+        if (this.state.keyboardOpen) return styles.hide;
 
-    // Return an array of all photos
-    return photos.map((photo, index) => {
-      // Only render one image
-      if (index === this.props.swiperIndex) {
-        return <LitterImage key={photos.length} photoSelected={photo} />;
-      }
+        if (Platform.OS === 'android') return styles.pickerWheelsContainer;
 
-      // Otherwise, just return an empty view
-      return <View key={photos.length} />;
-    });
-  };
+        // if "iPhone 10+", return 17% card height
+        let x = DeviceInfo.getModel().split(' ')[1];
 
-  //     /**
-  //      * Confirm this data is ready for upload
-  //      *
-  //      * this.props.photos are from the in-app camera
-  //      * this.props.gallery are selected from the users photo album
-  //      * this.props.webPhotos were uploaded to web and in the app for tagging
-  //      *
-  //      * some users have settings.previous_tags true
-  //      */
-  //     _confirmData ()
-  //     {
-  //         const swiperIndex = this.props.swiperIndex;
-  //
-  //         // Some users want to copy the tags onto the next image, so we need to clone them
-  //         const tags = cloneDeep(this.props.tags);
-  //
-  //         // The user can only confirm if tags exist
-  //         if (Object.keys(this.props.tags).length > 0)
-  //         {
-  //             if (this.props.photoType === 'web')
-  //             {
-  //                 // Turn on spinner
-  //                 this.setState({ webLoading: true });
-  //
-  //                 // Show the modal
-  //                 this.props.setLitterPickerModal(true);
-  //
-  //                 // Submit data to the server, web_actions.js
-  //                 this.props.confirmWebPhoto({
-  //                     id: this.props.photoSelected.id,
-  //                     tags,
-  //                     presence: this.props.presence,
-  //                     token: this.props.token
-  //                 });
-  // r
-  //                 // web.js - filter out the current image by ID and decrement web.count
-  //                 // this.props.photoSelected needs to be updated
-  //                 this.props.removeWebImage(this.props.photoSelected.id);
-  //
-  //                 // update this.props.photoSelected with the next image
-  //                 if (this.props.webPhotos.length > 0)
-  //                 {
-  //                     const nextWebPhoto = this.props.webPhotos[0];
-  //
-  //                     if (nextWebPhoto)
-  //                     {
-  //                         this.props.photoSelectedForTagging({
-  //                             swiperIndex,
-  //                             image: nextWebPhoto
-  //                         });
-  //
-  //                         if (this.props.previous_tags)
-  //                         {
-  //                             this.props.updateTags(tags);
-  //                         }
-  //                         else
-  //                         {
-  //                             this.props.resetTags();
-  //                         }
-  //
-  //                         return;
-  //                     }
-  //                 }
-  //             }
-  //             else if (this.props.photoType === 'gallery')
-  //             {
-  //                 console.log('confirm gallery');
-  //                 const galleryIndex = swiperIndex - this.props.photos.length;
-  //
-  //                 // gallery_actions, gallery_reducer
-  //                 this.props.confirmGalleryTags({
-  //                     index: galleryIndex,
-  //                     tags,
-  //                     picked_up: this.props.presence
-  //                 });
-  //             }
-  //             else if (this.props.photoType === 'camera')
-  //             {
-  //                 console.log('confirm camera');
-  //                 // photo_actions, photos_reducer
-  //                 this.props.confirmSessionTags({
-  //                     index: swiperIndex,
-  //                     tags,
-  //                     picked_up: this.props.presence
-  //                 });
-  //             }
-  //         }
-  //
-  //         // Store remaining images in-case app closes or crashes
-  //         // setTimeout(() => {
-  //         //     AsyncStorage.setItem('openlittermap-photos', JSON.stringify(this.props.photos));
-  //         //     AsyncStorage.setItem('openlittermap-gallery', JSON.stringify(this.props.gallery));
-  //         // }, 1000);
-  //
-  //         console.log('done', tags);
-  //
-  //         // // swipe in the next image
-  //         // const imageCount = this.props.photos.length + this.props.gallery.length + this.props.webPhotos.length;
-  //         //
-  //         // if (imageCount === 0 || this.props.swiperIndex + 1 === imageCount)
-  //         // {
-  //         //     // litter_reducer
-  //         //     this.props.resetLitterTags();
-  //         //
-  //         //     // shared_reducer
-  //         //     this.props.closeLitterModal();
-  //         // }
-  //         // else
-  //         // {
-  //         //     this.refs.imageSwiper.scrollTo(this.props.swiperIndex + 1, true);
-  //         //
-  //         //     // Some users want to apply the same tags to the next image
-  //         //     // this.props.previous_tags is a setting saved to the user
-  //         //     // probably a better way to do this...
-  //         //     if (this.props.previous_tags)
-  //         //     {
-  //         //         setTimeout(() => {
-  //         //             this.props.updateTags(tags);
-  //         //         }, 500);
-  //         //     }
-  //         // }
-  //     };
+        if (x.includes('X') || parseInt(x) >= 10)
+            return styles.iPickerWheelsContainer;
 
-  /**
-   * Add or Update Tags
-   *
-   * on a specific image
-   */
-  addTag() {
-    const tag = {
-      category: this.props.category.title.toString(),
-      title: this.props.item.toString(),
-      quantity: parseInt(this.props.q)
+        return styles.pickerWheelsContainer;
+    }
+
+    /**
+     * Container for Confirm, Add Tag buttons
+     * marginTop: 5%
+     * if iPhoneX+ marginTop: 8%;
+     *
+     * @hide on Android when keyboard is open
+     */
+    _computeButtonsContainer() {
+        if (this.state.keyboardOpen) return styles.hide;
+
+        if (Platform.OS === 'android') return styles.buttonsContainer;
+
+        // if iPhone 10+, return 17% card height
+        let x = DeviceInfo.getModel().split(' ')[1];
+
+        if (x.includes('X') || parseInt(x) >= 10)
+            return styles.iButtonsContainer;
+
+        return styles.buttonsContainer;
+    }
+
+    /**
+     * Check length of tags object
+     *
+     * Return True or False
+     */
+    _checkCollectionLength() {
+        return Object.keys(this.props.tags).length === 0;
+    }
+
+    /**
+     * Show the leftArrow when the currentIndex is greater than 0
+     */
+    getLeftArrowContainer() {
+        return this.props.swiperIndex === 0
+            ? styles.hideArrowContainer
+            : styles.tabArrowIconContainer;
+    }
+
+    /**
+     * Load the previous image
+     */
+    previousImage() {
+        const currentIndex = this.props.swiperIndex;
+
+        if (currentIndex > 0) {
+            this.props.swiperIndexChanged(currentIndex - 1);
+        }
+    }
+
+    /**
+     * Load the next image
+     */
+    nextImage() {
+        const currentIndex = this.props.swiperIndex;
+
+        // todo - check total length of all camera_photos, gallery_photos and web_photos
+
+        this.props.swiperIndexChanged(currentIndex + 1);
+    }
+
+    /**
+     * The user has swiped left or right across an array of all photo types.
+     *
+     * This function gives us the new index the user has swiped to.
+     *
+     * this.props.photos = from in-app camera.
+     * this.props.gallery = chosen by user.
+     * this.pros.web = uploaded to web, tag with the app.
+     *
+     * @param newIndex (int): the global index across all photo types.
+     */
+    swiperIndexChanged = newIndex => {
+        // todo - save these globally
+        const photosLength = this.props.photos.length;
+        const galleryLength = this.props.gallery.length;
+        const webLength = this.props.webPhotos.length;
+
+        // Without this, we get "cannot update a component from within the function body of another component"
+        setTimeout(() => {
+            // 0, 1 < 2
+            if (newIndex < photosLength) {
+                this.props.cameraIndexChanged(newIndex);
+            }
+            // 3, 4 < 4
+            else if (newIndex < galleryLength + photosLength) {
+                const galleryIndex = newIndex - photosLength;
+
+                this.props.galleryIndexChanged(galleryIndex);
+            } else if (newIndex < galleryLength + photosLength + webLength) {
+                const webIndex =
+                    newIndex -
+                    this.props.photos.length -
+                    this.props.gallery.length;
+                console.log(
+                    'todo - webIndexChanged LitterPicker #413',
+                    webIndex
+                );
+            } else {
+                console.log('problem swiperIndexChanged');
+            }
+
+            // This was necessary to avoid error
+            // litter.js swiperIndex
+            this.props.swiperIndexChanged(newIndex);
+
+            // If we are browsing web photos
+            // At the end of the search, we need to check to see if we need to load more images
+            // Currently we are loading 10 images at a time
+            // if (currentPhotoType === 'web')
+            // {
+            //     // If this is the last webPhoto, load more
+            //     if (this.props.photoSelected.id === this.props.webPhotos[this.props.webPhotos.length -1].id)
+            //     {
+            //         // show loading more images from web
+            //         this.props.loadMoreWebImages(this.props.token, this.props.photoSelected.id);
+            //     }
+            // }
+        }, 0);
     };
 
-    // this.props.tagLitter(tag);
-    // this._confirmData();
+    /**
+     * Return the tags for an image
+     *
+     * was = () =>
+     */
+    getTags() {
+        const currentIndex = this.props.swiperIndex;
 
-    // const photoType = this.props.photoType;
-    const photosLength = this.props.photos.length;
-    const galleryLength = this.props.gallery.length;
-    const webLength = this.props.webPhotos.length;
+        const photosLength = this.props.photos.length;
+        const galleryLength = this.props.gallery.length;
+        const webLength = this.props.webPhotos.length;
 
-    const currentIndex = this.props.swiperIndex;
+        if (currentIndex < photosLength) {
+            return this.props.photos[currentIndex].tags;
+        } else if (currentIndex < galleryLength + photosLength) {
+            return this.props.gallery[currentIndex - photosLength].tags;
+        } else if (currentIndex < webLength) {
+            return this.props.webPhotos[currentIndex].tags;
+        } else {
+            console.log('problem @ getTags;');
 
-    // Add tag to image
-    if (currentIndex < photosLength) {
-      // photo_actions
-      this.props.addTagsToCameraPhoto({
-        tag,
-        currentIndex
-      });
-    } else if (currentIndex < photosLength + galleryLength) {
-      // gallery_actions
-      this.props.addTagsToGalleryImage({
-        tag,
-        currentIndex: currentIndex - photosLength
-      });
-    } else if (currentIndex < photosLength + galleryLength + webLength) {
-      // web_actions
-      this.props.addTagsToWebImage({
-        tag,
-        currentIndex: currentIndex - photosLength - galleryLength
-      });
-    } else {
-      console.log('problem@addTag');
+            return {};
+        }
     }
-  }
+
+    /**
+     * Array of images to swipe through
+     *
+     * this.props.swiperIndex is the current index across all available photo types
+     *
+     * this.props.photos are from the app camera
+     * this.props.gallery are selected from the users photo album
+     * this.props.webPhotos were uploaded to web and in the app for tagging
+     */
+    _renderLitterImage = () => {
+        // Put all the data we want to display into an array
+        const photos = [].concat(
+            this.props.photos,
+            this.props.gallery,
+            this.props.webPhotos
+        );
+
+        // Return an array of all photos
+        return photos.map((photo, index) => {
+            // Only render one image
+            if (index === this.props.swiperIndex) {
+                return (
+                    <LitterImage key={photos.length} photoSelected={photo} />
+                );
+            }
+
+            // Otherwise, just return an empty view
+            return <View key={photos.length} />;
+        });
+    };
+
+    //     /**
+    //      * Confirm this data is ready for upload
+    //      *
+    //      * this.props.photos are from the in-app camera
+    //      * this.props.gallery are selected from the users photo album
+    //      * this.props.webPhotos were uploaded to web and in the app for tagging
+    //      *
+    //      * some users have settings.previous_tags true
+    //      */
+    //     _confirmData ()
+    //     {
+    //         const swiperIndex = this.props.swiperIndex;
+    //
+    //         // Some users want to copy the tags onto the next image, so we need to clone them
+    //         const tags = cloneDeep(this.props.tags);
+    //
+    //         // The user can only confirm if tags exist
+    //         if (Object.keys(this.props.tags).length > 0)
+    //         {
+    //             if (this.props.photoType === 'web')
+    //             {
+    //                 // Turn on spinner
+    //                 this.setState({ webLoading: true });
+    //
+    //                 // Show the modal
+    //                 this.props.setLitterPickerModal(true);
+    //
+    //                 // Submit data to the server, web_actions.js
+    //                 this.props.confirmWebPhoto({
+    //                     id: this.props.photoSelected.id,
+    //                     tags,
+    //                     presence: this.props.presence,
+    //                     token: this.props.token
+    //                 });
+    // r
+    //                 // web.js - filter out the current image by ID and decrement web.count
+    //                 // this.props.photoSelected needs to be updated
+    //                 this.props.removeWebImage(this.props.photoSelected.id);
+    //
+    //                 // update this.props.photoSelected with the next image
+    //                 if (this.props.webPhotos.length > 0)
+    //                 {
+    //                     const nextWebPhoto = this.props.webPhotos[0];
+    //
+    //                     if (nextWebPhoto)
+    //                     {
+    //                         this.props.photoSelectedForTagging({
+    //                             swiperIndex,
+    //                             image: nextWebPhoto
+    //                         });
+    //
+    //                         if (this.props.previous_tags)
+    //                         {
+    //                             this.props.updateTags(tags);
+    //                         }
+    //                         else
+    //                         {
+    //                             this.props.resetTags();
+    //                         }
+    //
+    //                         return;
+    //                     }
+    //                 }
+    //             }
+    //             else if (this.props.photoType === 'gallery')
+    //             {
+    //                 console.log('confirm gallery');
+    //                 const galleryIndex = swiperIndex - this.props.photos.length;
+    //
+    //                 // gallery_actions, gallery_reducer
+    //                 this.props.confirmGalleryTags({
+    //                     index: galleryIndex,
+    //                     tags,
+    //                     picked_up: this.props.presence
+    //                 });
+    //             }
+    //             else if (this.props.photoType === 'camera')
+    //             {
+    //                 console.log('confirm camera');
+    //                 // photo_actions, photos_reducer
+    //                 this.props.confirmSessionTags({
+    //                     index: swiperIndex,
+    //                     tags,
+    //                     picked_up: this.props.presence
+    //                 });
+    //             }
+    //         }
+    //
+    //         // Store remaining images in-case app closes or crashes
+    //         // setTimeout(() => {
+    //         //     AsyncStorage.setItem('openlittermap-photos', JSON.stringify(this.props.photos));
+    //         //     AsyncStorage.setItem('openlittermap-gallery', JSON.stringify(this.props.gallery));
+    //         // }, 1000);
+    //
+    //         console.log('done', tags);
+    //
+    //         // // swipe in the next image
+    //         // const imageCount = this.props.photos.length + this.props.gallery.length + this.props.webPhotos.length;
+    //         //
+    //         // if (imageCount === 0 || this.props.swiperIndex + 1 === imageCount)
+    //         // {
+    //         //     // litter_reducer
+    //         //     this.props.resetLitterTags();
+    //         //
+    //         //     // shared_reducer
+    //         //     this.props.closeLitterModal();
+    //         // }
+    //         // else
+    //         // {
+    //         //     this.refs.imageSwiper.scrollTo(this.props.swiperIndex + 1, true);
+    //         //
+    //         //     // Some users want to apply the same tags to the next image
+    //         //     // this.props.previous_tags is a setting saved to the user
+    //         //     // probably a better way to do this...
+    //         //     if (this.props.previous_tags)
+    //         //     {
+    //         //         setTimeout(() => {
+    //         //             this.props.updateTags(tags);
+    //         //         }, 500);
+    //         //     }
+    //         // }
+    //     };
+
+    /**
+     * Add or Update Tags
+     *
+     * on a specific image
+     */
+    addTag() {
+        const tag = {
+            category: this.props.category.title.toString(),
+            title: this.props.item.toString(),
+            quantity: parseInt(this.props.q)
+        };
+
+        // this.props.tagLitter(tag);
+        // this._confirmData();
+
+        // const photoType = this.props.photoType;
+        const photosLength = this.props.photos.length;
+        const galleryLength = this.props.gallery.length;
+        const webLength = this.props.webPhotos.length;
+
+        const currentIndex = this.props.swiperIndex;
+
+        // Add tag to image
+        if (currentIndex < photosLength) {
+            // photo_actions
+            this.props.addTagsToCameraPhoto({
+                tag,
+                currentIndex
+            });
+        } else if (currentIndex < photosLength + galleryLength) {
+            // gallery_actions
+            this.props.addTagsToGalleryImage({
+                tag,
+                currentIndex: currentIndex - photosLength
+            });
+        } else if (currentIndex < photosLength + galleryLength + webLength) {
+            // web_actions
+            this.props.addTagsToWebImage({
+                tag,
+                currentIndex: currentIndex - photosLength - galleryLength
+            });
+        } else {
+            console.log('problem@addTag');
+        }
+    }
 }
 
 const styles = {
-  container: {
-    flex: 1,
-    // paddingTop: SCREEN_HEIGHT * 0.05,
-    backgroundColor: 'white'
-  },
-  innerTagsContainer: {
-    // backgroundColor: 'red',
-    height: SCREEN_HEIGHT * 0.08,
-    // paddingLeft: SCREEN_WIDTH * 0.05,
-    // marginRight: SCREEN_WIDTH * 0.05,
-    // marginBottom: - SCREEN_HEIGHT * 0.02,
-    width: SCREEN_WIDTH
-  },
-  biggerContainer: {
-    alignItems: 'center',
-    // backgroundColor: 'blue',
-    flexDirection: 'row',
-    height: SCREEN_HEIGHT * 0.15,
-    position: 'absolute',
-    top: SCREEN_HEIGHT * 0.63
-    // marginTop: SCREEN_HEIGHT * 0.66,
-  },
-  // biggerBottomContainer: {
-  //   backgroundColor: 'yellow',
-  //   position: 'absolute',
-  //   bottom: 0,
-  //   height: SCREEN_HEIGHT * 0.2
-  // },
-  bottomContainer: {
-    position: 'absolute',
-    bottom: 0,
-    height: SCREEN_HEIGHT * 0.2
-  },
-  buttonsContainer: {
-    flexDirection: 'row',
-    width: SCREEN_WIDTH,
-    height: SCREEN_HEIGHT * 0.08,
-    marginTop: SCREEN_HEIGHT * 0.05
-  },
-  iButtonsContainer: {
-    flexDirection: 'row',
-    width: SCREEN_WIDTH,
-    height: SCREEN_HEIGHT * 0.07,
-    marginTop: SCREEN_HEIGHT * 0.08
-  },
-  addTagButtonInner: {
-    flexDirection: 'row',
-    marginTop: 'auto',
-    marginBottom: 'auto',
-    justifyContent: 'center',
-    alignItems: 'center'
-  },
-  addTagButtonOuter: {
-    backgroundColor: '#e67e22',
-    flex: 0.7,
-    zIndex: 1,
-    borderRadius: 10,
-    marginTop: 5,
-    marginBottom: 5
-  },
-  hide: {
-    display: 'none'
-  },
-  hideArrowContainer: {
-    backgroundColor: 'red',
-    height: SCREEN_HEIGHT * 0.05,
-    flex: 0.15
-  },
-  modalOuter: {
-    justifyContent: 'center',
-    backgroundColor: 'rgba(0,0,0,0.8)',
-    flex: 1
-  },
-  // modalInner: {
-  //     backgroundColor: 'white',
-  //     padding: 50,
-  //     borderRadius: 6
-  // },
-  modalTaggedText: {
-    alignSelf: 'center',
-    fontSize: SCREEN_HEIGHT * 0.02,
-    paddingTop: SCREEN_HEIGHT * 0.02,
-    paddingBottom: SCREEN_HEIGHT * 0.02,
-    fontWeight: '600'
-  },
-  pickerWheelsContainer: {
-    position: 'absolute',
-    bottom: SCREEN_HEIGHT * 0.15
-  },
-  iPickerWheelsContainer: {
-    position: 'absolute',
-    bottom: SCREEN_HEIGHT * 0.12
-  },
-  tabArrowIconContainer: {
-    flex: 0.15,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'white'
-  },
-  tabBarButtonLeft: {
-    backgroundColor: '#2ecc71',
-    width: SCREEN_WIDTH * 0.5,
-    zIndex: 1
-  },
-  tabBarButtonLeftDisabled: {
-    display: 'none'
-  },
-  tabBarButtonRightDisabled: {
-    backgroundColor: '#ccc',
-    // borderRadius: '50%',
-    marginRight: SCREEN_WIDTH * 0.04
-    // position: 'absolute',
-    // right: 0,
-  },
-  textIconStyle: {
-    marginTop: 'auto',
-    marginBottom: 'auto',
-    fontSize: SCREEN_HEIGHT * 0.02,
-    paddingLeft: SCREEN_WIDTH * 0.04
-  }
+    container: {
+        flex: 1,
+        // paddingTop: SCREEN_HEIGHT * 0.05,
+        backgroundColor: 'white'
+    },
+    innerTagsContainer: {
+        // backgroundColor: 'red',
+        height: SCREEN_HEIGHT * 0.08,
+        // paddingLeft: SCREEN_WIDTH * 0.05,
+        // marginRight: SCREEN_WIDTH * 0.05,
+        // marginBottom: - SCREEN_HEIGHT * 0.02,
+        width: SCREEN_WIDTH
+    },
+    biggerContainer: {
+        alignItems: 'center',
+        // backgroundColor: 'blue',
+        flexDirection: 'row',
+        height: SCREEN_HEIGHT * 0.15,
+        position: 'absolute',
+        top: SCREEN_HEIGHT * 0.63
+        // marginTop: SCREEN_HEIGHT * 0.66,
+    },
+    // biggerBottomContainer: {
+    //   backgroundColor: 'yellow',
+    //   position: 'absolute',
+    //   bottom: 0,
+    //   height: SCREEN_HEIGHT * 0.2
+    // },
+    bottomContainer: {
+        position: 'absolute',
+        bottom: 0,
+        height: SCREEN_HEIGHT * 0.2
+    },
+    buttonsContainer: {
+        flexDirection: 'row',
+        width: SCREEN_WIDTH,
+        height: SCREEN_HEIGHT * 0.08,
+        marginTop: SCREEN_HEIGHT * 0.05
+    },
+    iButtonsContainer: {
+        flexDirection: 'row',
+        width: SCREEN_WIDTH,
+        height: SCREEN_HEIGHT * 0.07,
+        marginTop: SCREEN_HEIGHT * 0.08
+    },
+    addTagButtonInner: {
+        flexDirection: 'row',
+        marginTop: 'auto',
+        marginBottom: 'auto',
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
+    addTagButtonOuter: {
+        backgroundColor: '#e67e22',
+        flex: 0.7,
+        zIndex: 1,
+        borderRadius: 10,
+        marginTop: 5,
+        marginBottom: 5
+    },
+    hide: {
+        display: 'none'
+    },
+    hideArrowContainer: {
+        backgroundColor: 'red',
+        height: SCREEN_HEIGHT * 0.05,
+        flex: 0.15
+    },
+    modalOuter: {
+        justifyContent: 'center',
+        backgroundColor: 'rgba(0,0,0,0.8)',
+        flex: 1
+    },
+    // modalInner: {
+    //     backgroundColor: 'white',
+    //     padding: 50,
+    //     borderRadius: 6
+    // },
+    modalTaggedText: {
+        alignSelf: 'center',
+        fontSize: SCREEN_HEIGHT * 0.02,
+        paddingTop: SCREEN_HEIGHT * 0.02,
+        paddingBottom: SCREEN_HEIGHT * 0.02,
+        fontWeight: '600'
+    },
+    pickerWheelsContainer: {
+        position: 'absolute',
+        bottom: SCREEN_HEIGHT * 0.15
+    },
+    iPickerWheelsContainer: {
+        position: 'absolute',
+        bottom: SCREEN_HEIGHT * 0.12
+    },
+    tabArrowIconContainer: {
+        flex: 0.15,
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'white'
+    },
+    tabBarButtonLeft: {
+        backgroundColor: '#2ecc71',
+        width: SCREEN_WIDTH * 0.5,
+        zIndex: 1
+    },
+    tabBarButtonLeftDisabled: {
+        display: 'none'
+    },
+    tabBarButtonRightDisabled: {
+        backgroundColor: '#ccc',
+        // borderRadius: '50%',
+        marginRight: SCREEN_WIDTH * 0.04
+        // position: 'absolute',
+        // right: 0,
+    },
+    textIconStyle: {
+        marginTop: 'auto',
+        marginBottom: 'auto',
+        fontSize: SCREEN_HEIGHT * 0.02,
+        paddingLeft: SCREEN_WIDTH * 0.04
+    }
 };
 
 const mapStateToProps = state => {
-  return {
-    selectedCameraPhotosIndex: state.photos.indexSelected,
-    category: state.litter.category,
-    collectionLength: state.litter.collectionLength,
-    currentTotalItems: state.litter.currentTotalItems,
-    displayAllTags: state.litter.displayAllTags,
-    gallery: state.gallery.gallery,
-    galleryTaggedCount: state.gallery.galleryTaggedCount,
-    galleryTotalCount: state.gallery.galleryTotalCount,
-    indexSelected: state.litter.indexSelected, // index of photos, gallery, web
-    item: state.litter.item,
-    items: state.litter.items,
-    lang: state.auth.lang,
-    model: state.settings.model,
-    photos: state.photos.photos,
-    photoSelected: state.litter.photoSelected,
-    photoType: state.litter.photoType,
-    positions: state.litter.positions,
-    presence: state.litter.presence,
-    previous_tags: state.auth.user.previous_tags,
-    previousTags: state.litter.previousTags,
-    selectedGalleryIndex: state.gallery.indexSelected,
-    suggestedTags: state.litter.suggestedTags,
-    swiperIndex: state.litter.swiperIndex,
-    totalLitterCount: state.litter.totalLitterCount,
-    tags: state.litter.tags,
-    tagsModalVisible: state.litter.tagsModalVisible,
-    token: state.auth.token,
-    totalTaggedGalleryCount: state.gallery.totalTaggedGalleryCount,
-    totalTaggedSessionCount: state.photos.totalTaggedSessionCount,
-    q: state.litter.q,
-    // webImages: state.web.images,
-    // webNextImage: state.web.nextImage,
-    webImagesCount: state.web.count,
-    webPhotos: state.web.photos,
-    webImageSuccess: state.web.webImageSuccess
-  };
+    return {
+        selectedCameraPhotosIndex: state.photos.indexSelected,
+        category: state.litter.category,
+        collectionLength: state.litter.collectionLength,
+        currentTotalItems: state.litter.currentTotalItems,
+        displayAllTags: state.litter.displayAllTags,
+        gallery: state.gallery.gallery,
+        galleryTaggedCount: state.gallery.galleryTaggedCount,
+        galleryTotalCount: state.gallery.galleryTotalCount,
+        indexSelected: state.litter.indexSelected, // index of photos, gallery, web
+        item: state.litter.item,
+        items: state.litter.items,
+        lang: state.auth.lang,
+        model: state.settings.model,
+        photos: state.photos.photos,
+        photoSelected: state.litter.photoSelected,
+        photoType: state.litter.photoType,
+        positions: state.litter.positions,
+        presence: state.litter.presence,
+        previous_tags: state.auth.user.previous_tags,
+        previousTags: state.litter.previousTags,
+        selectedGalleryIndex: state.gallery.indexSelected,
+        suggestedTags: state.litter.suggestedTags,
+        swiperIndex: state.litter.swiperIndex,
+        totalLitterCount: state.litter.totalLitterCount,
+        tags: state.litter.tags,
+        tagsModalVisible: state.litter.tagsModalVisible,
+        token: state.auth.token,
+        totalTaggedGalleryCount: state.gallery.totalTaggedGalleryCount,
+        totalTaggedSessionCount: state.photos.totalTaggedSessionCount,
+        q: state.litter.q,
+        // webImages: state.web.images,
+        // webNextImage: state.web.nextImage,
+        webImagesCount: state.web.count,
+        webPhotos: state.web.photos,
+        webImageSuccess: state.web.webImageSuccess
+    };
 };
 
 export default connect(
-  mapStateToProps,
-  actions
+    mapStateToProps,
+    actions
 )(LitterPicker);

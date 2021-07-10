@@ -14,49 +14,49 @@ import { TextInput } from 'react-native';
 TextInput.defaultProps.selectionColor = 'white';
 
 const AuthStack = createBottomTabNavigator(
-  {
-    welcome: { screen: WelcomeScreen },
-    auth: { screen: AuthScreen }
-  },
-  {
-    initialRouteName: 'welcome',
-    lazy: true,
-    defaultNavigationOptions: {
-      tabBarVisible: false
+    {
+        welcome: { screen: WelcomeScreen },
+        auth: { screen: AuthScreen }
+    },
+    {
+        initialRouteName: 'welcome',
+        lazy: true,
+        defaultNavigationOptions: {
+            tabBarVisible: false
+        }
     }
-  }
 );
 
 const AppStack = createBottomTabNavigator(
-  {
-    swipe: { screen: SwipeScreen },
-    settings: { screen: SettingsScreen }
-  },
-  {
-    initialRouteName: 'swipe',
-    lazy: true,
-    navigationOptions: {
-      tabBarVisible: false
+    {
+        swipe: { screen: SwipeScreen },
+        settings: { screen: SettingsScreen }
     },
-    defaultNavigationOptions: {
-      tabBarVisible: false
+    {
+        initialRouteName: 'swipe',
+        lazy: true,
+        navigationOptions: {
+            tabBarVisible: false
+        },
+        defaultNavigationOptions: {
+            tabBarVisible: false
+        }
     }
-  }
 );
 
 const MainNavigator = createSwitchNavigator(
-  {
-    AuthLoading: AuthLoadingScreen,
-    Auth: AuthStack,
-    App: AppStack
-  },
-  {
-    initialRouteName: 'AuthLoading',
-    lazy: true,
-    navigationOptions: {
-      tabBarVisible: false
+    {
+        AuthLoading: AuthLoadingScreen,
+        Auth: AuthStack,
+        App: AppStack
+    },
+    {
+        initialRouteName: 'AuthLoading',
+        lazy: true,
+        navigationOptions: {
+            tabBarVisible: false
+        }
     }
-  }
 );
 
 const RootContainer = createAppContainer(MainNavigator);

@@ -5,29 +5,33 @@ import AlbumItem from '../AlbumItem';
 import styles from './styles';
 
 class AlbumsList extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {};
-  }
+    constructor(props) {
+        super(props);
+        this.state = {};
+    }
 
-  render() {
-    let { albums } = this.props;
+    render() {
+        let { albums } = this.props;
 
-    return (
-      <ScrollView style={{ flex: 1, backgroundColor: 'white' }}>
-        {albums.map((album, index) => (
-          <AlbumItem
-            key={index}
-            albumName={album.albumName}
-            thumbnail={album.images && album.images[0] && album.images[0].uri}
-            counter={album.images ? album.images.length : 0}
-            index={index}
-            onAlbumPress={this.props.onAlbumPress}
-          />
-        ))}
-      </ScrollView>
-    );
-  }
+        return (
+            <ScrollView style={{ flex: 1, backgroundColor: 'white' }}>
+                {albums.map((album, index) => (
+                    <AlbumItem
+                        key={index}
+                        albumName={album.albumName}
+                        thumbnail={
+                            album.images &&
+                            album.images[0] &&
+                            album.images[0].uri
+                        }
+                        counter={album.images ? album.images.length : 0}
+                        index={index}
+                        onAlbumPress={this.props.onAlbumPress}
+                    />
+                ))}
+            </ScrollView>
+        );
+    }
 }
 
 export default AlbumsList;

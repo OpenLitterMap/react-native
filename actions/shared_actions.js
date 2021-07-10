@@ -1,24 +1,24 @@
 import React from 'react';
 import {
-  CLOSE_LITTER_MODAL,
-  INCREMENT_SELECTED,
-  DECREMENT_SELECTED,
-  // TOGGLE_MODAL,
-  TOGGLE_LITTER,
-  TOGGLE_SELECTING,
-  TOGGLE_THANK_YOU,
-  TOGGLE_UPLOAD,
-  UNIQUE_VALUE,
-  UPDATE_COUNT_TOTAL
+    CLOSE_LITTER_MODAL,
+    INCREMENT_SELECTED,
+    DECREMENT_SELECTED,
+    // TOGGLE_MODAL,
+    TOGGLE_LITTER,
+    TOGGLE_SELECTING,
+    TOGGLE_THANK_YOU,
+    TOGGLE_UPLOAD,
+    UNIQUE_VALUE,
+    UPDATE_COUNT_TOTAL
 } from './types';
 
 /**
  * Close the Litter Picker Modal
  */
 export const closeLitterModal = () => {
-  return {
-    type: CLOSE_LITTER_MODAL
-  };
+    return {
+        type: CLOSE_LITTER_MODAL
+    };
 };
 
 /**
@@ -27,9 +27,9 @@ export const closeLitterModal = () => {
  *      - not sure if this is actually necessary?
  */
 export const decrementSelected = () => {
-  return {
-    type: DECREMENT_SELECTED
-  };
+    return {
+        type: DECREMENT_SELECTED
+    };
 };
 
 /**
@@ -38,9 +38,9 @@ export const decrementSelected = () => {
  *      - not sure if this is actually necessary?
  */
 export const incrementSelected = () => {
-  return {
-    type: INCREMENT_SELECTED
-  };
+    return {
+        type: INCREMENT_SELECTED
+    };
 };
 
 /**
@@ -48,50 +48,50 @@ export const incrementSelected = () => {
  ** todo - probably not this.
  */
 export const incrUnique = () => {
-  return {
-    type: UNIQUE_VALUE
-  };
+    return {
+        type: UNIQUE_VALUE
+    };
 };
 
 /**
  * Update the total number of photos to be uploaded
  */
 export const updateTotalCount = count => {
-  return {
-    type: UPDATE_COUNT_TOTAL,
-    payload: count
-  };
+    return {
+        type: UPDATE_COUNT_TOTAL,
+        payload: count
+    };
 };
 
 /**
  * Toggle Litter content inside Modal on / off
  */
 export const toggleLitter = () => {
-  return {
-    type: TOGGLE_LITTER
-  };
+    return {
+        type: TOGGLE_LITTER
+    };
 };
 
 export const toggleThankYou = () => {
-  return {
-    type: TOGGLE_THANK_YOU
-  };
+    return {
+        type: TOGGLE_THANK_YOU
+    };
 };
 
 /**
  * Toggle Uploaad content inside modal on / off
  */
 export const toggleUpload = () => {
-  return {
-    type: TOGGLE_UPLOAD
-  };
+    return {
+        type: TOGGLE_UPLOAD
+    };
 };
 
 /**
  * Toggle if the user wnts to Select + Delete a photo
  */
 export const toggleSelecting = () => {
-  return {
-    type: TOGGLE_SELECTING
-  };
+    return {
+        type: TOGGLE_SELECTING
+    };
 };
