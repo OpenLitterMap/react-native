@@ -1,5 +1,5 @@
 export * from './auth_actions'
-export * from './photo_actions'
+export * from './photos_actions'
 export * from './camera_actions'
 export * from './gallery_actions'
 export * from './litter_actions'

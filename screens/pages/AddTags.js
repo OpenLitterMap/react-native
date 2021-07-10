@@ -29,7 +29,7 @@ import DeviceInfo from 'react-native-device-info'
 import LITTERKEYS from "./data/litterkeys";
 const cloneDeep = require('clone-deep')
 
-class LitterPicker extends PureComponent
+class AddTags extends PureComponent
 {
     constructor (props)
     {
@@ -214,15 +214,13 @@ class LitterPicker extends PureComponent
      */
     render ()
     {
-        console.log('LitterPicker.render');
+        console.log('Rendering: AddTags');
         const { lang, swiperIndex } = this.props;
 
         // Todo - save these globally
         const photosLength = this.props.photos.length;
         const galleryLength = this.props.gallery.length;
         const webLength = this.props.webPhotos.length;
-
-        // We need this to show/hide the left and right arrows
         const IMAGES_COUNT = photosLength + galleryLength + webLength;
 
         return (
@@ -453,9 +451,11 @@ class LitterPicker extends PureComponent
      * this.props.gallery = chosen by user.
      * this.pros.web = uploaded to web, tag with the app.
      *
-     * @param newIndex (int): the global index across all photo types.
+     * @param newGlobalIndex (int): the global index across all photo types.
      */
-    swiperIndexChanged = (newIndex) => {
+    swiperIndexChanged = (newGlobalIndex) => {
+
+        console.log('swiperIndexChanged', newGlobalIndex);
 
         // todo - save these globally
         const photosLength = this.props.photos.length;
@@ -466,21 +466,23 @@ class LitterPicker extends PureComponent
         setTimeout(() => {
 
             // 0, 1 < 2
-            if (newIndex < photosLength)
+            if (newGlobalIndex < photosLength)
             {
-                this.props.cameraIndexChanged(newIndex);
+                this.props.cameraIndexChanged(newGlobalIndex);
             }
             // 3, 4 < 4
-            else if (newIndex < (galleryLength + photosLength))
+            else if (newGlobalIndex < (galleryLength + photosLength))
             {
-                const galleryIndex = newIndex - photosLength;
+                const galleryIndex = newGlobalIndex - photosLength;
 
                 this.props.galleryIndexChanged(galleryIndex);
             }
-            else if (newIndex < (galleryLength + photosLength + webLength))
+            else if (newGlobalIndex < (galleryLength + photosLength + webLength))
             {
-                const webIndex = newIndex - this.props.photos.length - this.props.gallery.length;
-                console.log('todo - webIndexChanged LitterPicker #413', webIndex);
+                const webIndex = newGlobalIndex - this.props.photos.length - this.props.gallery.length;
+                // console.log('todo - webIndexChanged LitterPicker #413', webIndex);
+
+                this.props.webIndexChanged(webIndex);
             }
             else
             {
@@ -489,7 +491,7 @@ class LitterPicker extends PureComponent
 
             // This was necessary to avoid error
             // litter.js swiperIndex
-            this.props.swiperIndexChanged(newIndex);
+            this.props.swiperIndexChanged(newGlobalIndex);
 
             // If we are browsing web photos
             // At the end of the search, we need to check to see if we need to load more images
@@ -514,29 +516,26 @@ class LitterPicker extends PureComponent
      */
     getTags ()
     {
-        const currentIndex = this.props.swiperIndex;
+        const currentGlobalIndex = this.props.swiperIndex;
+
+        console.log('Rendering: getTags at currentGlobalIndex: ', currentGlobalIndex);
 
         const photosLength = this.props.photos.length;
         const galleryLength = this.props.gallery.length;
-        const webLength = this.props.webPhotos.length;
 
-        if (currentIndex < photosLength)
+        if (currentGlobalIndex < photosLength)
         {
-            return this.props.photos[currentIndex].tags
+            return this.props.photos[currentGlobalIndex].tags
         }
-        else if (currentIndex < (galleryLength + photosLength))
+        else if (currentGlobalIndex < (galleryLength + photosLength))
         {
-            return this.props.gallery[currentIndex - photosLength].tags;
-        }
-        else if (currentIndex < webLength)
-        {
-            return this.props.webPhotos[currentIndex].tags;
+            return this.props.gallery[currentGlobalIndex - photosLength].tags;
         }
         else
         {
-            console.log("problem @ getTags;")
+            const webIndex = currentGlobalIndex - (photosLength + galleryLength);
 
-            return {};
+            return this.props.webPhotos[webIndex].tags;
         }
     }
 
@@ -551,6 +550,7 @@ class LitterPicker extends PureComponent
      */
     _renderLitterImage = () =>
     {
+        console.log('renderLitterImage index:', this.props.swiperIndex);
         // Put all the data we want to display into an array
         const photos = [].concat(this.props.photos, this.props.gallery, this.props.webPhotos);
 
@@ -714,6 +714,7 @@ class LitterPicker extends PureComponent
         const galleryLength = this.props.gallery.length;
         const webLength = this.props.webPhotos.length;
 
+        // currentGlobalIndex
         const currentIndex = this.props.swiperIndex;
 
         // Add tag to image
@@ -915,4 +916,4 @@ const mapStateToProps = state => {
 export default connect(
     mapStateToProps,
     actions
-)(LitterPicker);
+)(AddTags);

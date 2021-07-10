@@ -101,16 +101,6 @@ export default function (state = INITIAL_STATE, action)
                 }
             };
 
-            // create new total values (Bottom Right total)
-            let litter_total = 0;
-            let litter_length = 0;
-            Object.keys(newTags).map(category => {
-                Object.values(newTags[category]).map(values => {
-                    litter_total += parseInt(values);
-                    litter_length++;
-                });
-            });
-
             console.log({ newTags });
 
             image.tags = newTags;
@@ -128,8 +118,6 @@ export default function (state = INITIAL_STATE, action)
          * @param action.payload int (index)
          */
         case CAMERA_INDEX_CHANGED:
-
-            console.log("camera_index_changed", action.payload);
 
             return {
                 ...state,

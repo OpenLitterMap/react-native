@@ -60,11 +60,34 @@ class LeftPageImages extends PureComponent
      */
 
     /**
-     * A photo taken from the Camera was pressed
+     * A photo uploaded to web needs to be tagged
+     *
+     * Can only be pressed when the user is not selecting images to delete
+     *
+     * Load the first web image
+     */
+    _webImagePressed ()
+    {
+        if (!this.props.isSelecting)
+        {
+            // shared.js
+            this.props.toggleLitter();
+
+            // get the index of web_photos[0];
+            // The order of the photos is camera_photos -> gallery_photos -> web_photos
+            const globalIndex = this.props.photos.length + this.props.gallery.length;
+
+            // litter.js
+            this.props.swiperIndexChanged(globalIndex);
+        }
+    }
+
+    /**
+     * A photo taken by the Camera was pressed
      *
      * if this.props.isSelected is true, we want to select photos to delete
      *
-     * otherwise, select an image for tagging
+     * otherwise, open an image for tagging
      */
     cameraPhotoPressed (index)
     {
@@ -250,30 +273,6 @@ class LeftPageImages extends PureComponent
     }
 
     /**
-     * Load the next image due to tag from Web
-     *
-     * Web uploads were uploaded from the web-app and need to be tagged here
-     */
-    _webImagePressed ()
-    {
-        if (!this.props.isSelecting)
-        {
-            // shared.js
-            this.props.toggleLitter();
-
-            const image = this.props.webPhotos[0];
-
-            const swiperIndex = this.props.photos.length + this.props.gallery.length;
-
-            // litter.js
-            this.props.photoSelectedForTagging({
-                swiperIndex,
-                image
-            });
-        }
-    }
-
-    /**
      * Style of webText tag
      */
     _webTextStyle ()
@@ -327,7 +326,6 @@ class LeftPageImages extends PureComponent
         // Photos are taken the in-app camera
         // Gallery from albums
         return (
-
             <View style={this._marginWhenPhotos()}>
                 {
                     (this.props.webPhotos.length > 0) &&

@@ -146,7 +146,6 @@ class CameraPage extends React.Component {
      */
     renderCamera ()
     {
-        // console.log('RENDER_CAMERA');
         return (
             <>
                 <RNCamera
@@ -273,7 +272,9 @@ class CameraPage extends React.Component {
                             ? base64.encode(date) + '.jpg'
                             : result.uri.split('/').pop();
 
+                        // Example:
                         // iOS 96790415-6575-4CED-BA64-D6E8B16BF10D.jpg
+                        // Android...
 
                         // photo_action.js, photos_reducer
                         this.props.addPhoto({

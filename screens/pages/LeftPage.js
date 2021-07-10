@@ -32,7 +32,7 @@ const equalWidth = SCREEN_WIDTH / 3
 // Components
 import LeftPageImages from './components/LeftPageImages'
 // import Stats from './components/Stats'
-import LitterPicker from './LitterPicker'
+import AddTags from './AddTags'
 
 import moment from 'moment'
 
@@ -153,7 +153,7 @@ class LeftPage extends PureComponent
                         {
                             this.props.litterVisible && (
                                 <View style={styles.litterModal}>
-                                    <LitterPicker />
+                                    <AddTags />
                                 </View>
                             )
                         }

@@ -1,12 +1,24 @@
 import React from 'react';
 import {
-    URL,
+    ADD_TAGS_TO_WEB_IMAGE,
     LOAD_MORE_WEB_IMAGES,
     REMOVE_WEB_IMAGE,
     WEB_CONFIRM,
-    WEB_IMAGES
+    WEB_INDEX_CHANGED,
+    WEB_IMAGES,
+    URL
 } from './types';
 import axios from 'axios';
+
+/**
+ * Apply these tags to one of the web images
+ */
+export const addTagsToWebImage = (data) => {
+    return {
+        type: ADD_TAGS_TO_WEB_IMAGE,
+        payload: data
+    };
+}
 
 /**
  * When LeftPage didMount, check web for any images
@@ -141,3 +153,13 @@ export const toggleWebImageSuccess = bool => {
         payload: bool
     }
 };
+
+/**
+ * The first web photo has been selected for tagging
+ */
+export const webIndexChanged = index => {
+    return {
+        type: WEB_INDEX_CHANGED,
+        payload: index
+    };
+}
