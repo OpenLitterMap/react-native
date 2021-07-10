@@ -1,7 +1,7 @@
-import {StyleSheet} from 'react-native';
+import { StyleSheet } from 'react-native';
 export default StyleSheet.create({
   base: {
-    flex:1,
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 20,

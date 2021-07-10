@@ -1,19 +1,15 @@
 import React, { Component } from 'react';
-import {
-  Text,
-  View
-} from 'react-native';
+import { Text, View } from 'react-native';
 
 class Stats extends Component {
-
   render() {
     return (
       <View style={styles.topContainer}>
         <View style={styles.topRow}>
-            <View style={styles.statCol}>
-              <Text style={styles.largeInt}>Total Litter 123</Text>
-              <Text>Total Photos 100</Text>
-            </View>
+          <View style={styles.statCol}>
+            <Text style={styles.largeInt}>Total Litter 123</Text>
+            <Text>Total Photos 100</Text>
+          </View>
         </View>
 
         <View style={styles.middleRow}>
@@ -73,7 +69,7 @@ const styles = {
     left: 0,
     right: 0,
     backgroundColor: 'white'
-  },
+  }
 };
 
 export default Stats;

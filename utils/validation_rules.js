@@ -8,8 +8,8 @@ const validation_rules = {
     //   message: '^Please enter a valid email'
     // },
     format: {
-        pattern: /^\S+@\S+$/,
-        message: '^Please enter a valid email'
+      pattern: /^\S+@\S+$/,
+      message: '^Please enter a valid email'
     }
   },
 
@@ -20,7 +20,7 @@ const validation_rules = {
     length: {
       minimum: 5,
       message: '^Your password must be at least 6 characters'
-    },
+    }
     // format: {
     //   pattern: /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])[\w~@#$%^&+=`|{}:;!.?\""()\[\]-]{5,}$/,
     //   flags: 'i',

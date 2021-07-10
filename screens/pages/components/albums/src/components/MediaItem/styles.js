@@ -1,10 +1,10 @@
-import {StyleSheet} from 'react-native'
+import { StyleSheet } from 'react-native';
 export default StyleSheet.create({
   marker: {
     position: 'absolute',
     bottom: 5,
-    right: 5,
-  },
+    right: 5
+  }
   // overlay: {
   //   flex: 1,
   //   position: 'absolute',

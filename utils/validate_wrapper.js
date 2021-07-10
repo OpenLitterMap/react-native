@@ -18,9 +18,9 @@ export default function validate_wrapper(field, value) {
   // const result = validate(formValues, { [field]: constraint })
   const result = validate(formValues, formFields);
 
-  console.log("=== Validation Result ===");
+  console.log('=== Validation Result ===');
   console.log(result); // undefined : 'string'
-  if(result) {
+  if (result) {
     return result[field][0];
   }
   return null;

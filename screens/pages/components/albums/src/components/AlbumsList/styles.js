@@ -1,4 +1,4 @@
-import {StyleSheet} from 'react-native';
+import { StyleSheet } from 'react-native';
 export default StyleSheet.create({
   marker: {
     position: 'absolute',
@@ -17,6 +17,6 @@ export default StyleSheet.create({
     bottom: 0,
     right: 0,
     opacity: 0.5,
-    backgroundColor: 'white',
+    backgroundColor: 'white'
   }
 });

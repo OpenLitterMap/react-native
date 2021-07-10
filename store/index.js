@@ -5,24 +5,19 @@ import AsyncStorage from '@react-native-community/async-storage';
 import reducers from '../reducers';
 
 const config = {
-    key: 'root',
-    storage: AsyncStorage,
-    whitelist: ['auth']
+  key: 'root',
+  storage: AsyncStorage,
+  whitelist: ['auth']
 };
 
 const reducer = persistCombineReducers(config, reducers);
 
-export default function configurationStore (initialState = {})
-{
-    const store = createStore(
-        reducer,
-        initialState,
-        applyMiddleware(thunk)
-    );
+export default function configurationStore(initialState = {}) {
+  const store = createStore(reducer, initialState, applyMiddleware(thunk));
 
-    const persistor = persistStore(store);
+  const persistor = persistStore(store);
 
-    return { persistor, store };
+  return { persistor, store };
 }
 
 // applyMiddleware is redux thunk

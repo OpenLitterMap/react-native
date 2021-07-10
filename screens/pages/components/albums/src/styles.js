@@ -1,22 +1,22 @@
-import {StyleSheet} from 'react-native';
+import { StyleSheet } from 'react-native';
 export default StyleSheet.create({
-  wrapper:{
+  wrapper: {
     flexGrow: 1,
     paddingRight: 0
   },
   loading: {
     flexGrow: 1,
     justifyContent: 'center',
-    alignItems: 'center',
+    alignItems: 'center'
   },
-  row:{
+  row: {
     flexDirection: 'row',
-    flex: 1,
+    flex: 1
   },
   marker: {
     position: 'absolute',
     top: 5,
-    backgroundColor: 'transparent',
+    backgroundColor: 'transparent'
   },
   emptyText: {
     textAlign: 'center'

@@ -1,10 +1,10 @@
 import React from 'react';
 import {
-    URL,
-    LOAD_MORE_WEB_IMAGES,
-    REMOVE_WEB_IMAGE,
-    WEB_CONFIRM,
-    WEB_IMAGES
+  URL,
+  LOAD_MORE_WEB_IMAGES,
+  REMOVE_WEB_IMAGE,
+  WEB_CONFIRM,
+  WEB_IMAGES
 } from './types';
 import axios from 'axios';
 
@@ -18,43 +18,42 @@ import axios from 'axios';
  *
  * @return [id, filename]
  */
-export const checkForImagesOnWeb = (token) => {
+export const checkForImagesOnWeb = token => {
+  return dispatch => {
+    return axios({
+      url: URL + '/api/v2/photos/web/index',
+      method: 'GET',
+      headers: {
+        Authorization: 'Bearer ' + token
+      }
+    })
+      .then(resp => {
+        // console.log('images_from_web', resp.data.photos);
 
-    return dispatch => {
-        return axios({
-            url: URL + '/api/v2/photos/web/index',
-            method: 'GET',
-            headers: {
-                Authorization: 'Bearer ' + token
+        if (resp.data.photos) {
+          // Todo - load Tags: {} with the data
+          let photos = resp.data.photos ? resp.data.photos : null;
+
+          photos = photos.map(photo => {
+            photo.tags = {};
+            return photo;
+          });
+
+          // if photos is null, pass empty array
+          dispatch({
+            type: WEB_IMAGES,
+            payload: {
+              count: resp.data.count,
+              photos
             }
-        })
-        .then(resp => {
-            // console.log('images_from_web', resp.data.photos);
-
-            if (resp.data.photos)
-            {
-                // Todo - load Tags: {} with the data
-                let photos = (resp.data.photos)
-                    ? resp.data.photos
-                    : null;
-
-                photos = photos.map(photo => {
-                    photo.tags = {};
-                    return photo;
-                });
-
-                // if photos is null, pass empty array
-                dispatch({ type: WEB_IMAGES, payload: {
-                    count: resp.data.count,
-                    photos
-                }});
-            }
-        })
-        .catch(err => {
-            console.log('checkForImagesOnWeb', err.response.data);
-        });
-    }
-}
+          });
+        }
+      })
+      .catch(err => {
+        console.log('checkForImagesOnWeb', err.response.data);
+      });
+  };
+};
 
 /**
  * Load the next 10 images on the web
@@ -62,39 +61,38 @@ export const checkForImagesOnWeb = (token) => {
  * Executed when the user swipes to their last image on web_photos
  */
 export const loadMoreWebImages = (token, photo_id) => {
-    return dispatch => {
-        return axios({
-            url: URL + '/api/v2/photos/web/load-more',
-            method: 'GET',
-            headers: {
-                Authorization: 'Bearer ' + token
-            },
-            params: { photo_id }
-        })
-        .then(resp => {
-            console.log('load_more_web_images', resp.data);
+  return dispatch => {
+    return axios({
+      url: URL + '/api/v2/photos/web/load-more',
+      method: 'GET',
+      headers: {
+        Authorization: 'Bearer ' + token
+      },
+      params: { photo_id }
+    })
+      .then(resp => {
+        console.log('load_more_web_images', resp.data);
 
-            if (resp.data)
-            {
-                let photos = resp.data;
+        if (resp.data) {
+          let photos = resp.data;
 
-                photos = photos.map(photo => {
-                    photo.tags = null;
-                    return photo;
-                });
+          photos = photos.map(photo => {
+            photo.tags = null;
+            return photo;
+          });
 
-                dispatch({
-                    type: LOAD_MORE_WEB_IMAGES,
-                    payload: {
-                        photos
-                    }
-                });
+          dispatch({
+            type: LOAD_MORE_WEB_IMAGES,
+            payload: {
+              photos
             }
-        })
-        .catch(err => {
-            console.log('load_more_web_images', err.response.data);
-        });
-    }
+          });
+        }
+      })
+      .catch(err => {
+        console.log('load_more_web_images', err.response.data);
+      });
+  };
 };
 
 /**
@@ -102,42 +100,40 @@ export const loadMoreWebImages = (token, photo_id) => {
  * Post to server and return 200
  */
 export const confirmWebPhoto = data => {
-    return dispatch => {
-        return axios({
-            url: URL + '/api/photos/update',
-            method: 'POST',
-            headers: {
-                Authorization: 'Bearer ' + data.token
-            },
-            data: {
-                photo_id: data.id,
-                litter: data.tags
-            }
-        })
-        .then(response => {
-            console.log('confirmWebPhoto', response.data);
+  return dispatch => {
+    return axios({
+      url: URL + '/api/photos/update',
+      method: 'POST',
+      headers: {
+        Authorization: 'Bearer ' + data.token
+      },
+      data: {
+        photo_id: data.id,
+        litter: data.tags
+      }
+    })
+      .then(response => {
+        console.log('confirmWebPhoto', response.data);
 
-            if (response.data.success)
-            {
-
-            }
-        })
-        .catch(err => {
-            console.log({ err });
-        });
-    }
-}
+        if (response.data.success) {
+        }
+      })
+      .catch(err => {
+        console.log({ err });
+      });
+  };
+};
 
 export const removeWebImage = id => {
-    return {
-        type: REMOVE_WEB_IMAGE,
-        payload: id
-    };
+  return {
+    type: REMOVE_WEB_IMAGE,
+    payload: id
+  };
 };
 
 export const toggleWebImageSuccess = bool => {
-    return {
-        type: WEB_CONFIRM,
-        payload: bool
-    }
+  return {
+    type: WEB_CONFIRM,
+    payload: bool
+  };
 };
