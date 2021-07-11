@@ -41,8 +41,8 @@ class LeftPage extends PureComponent {
         super(props);
 
         this.state = {
-            totalToBeUploaded: 0,
-            uploaded: 0
+            total: 0, // total number of images with tags to upload
+            uploaded: 0 // total number of tagged images uploaded
         };
 
         // Bind any functions that call props
@@ -122,8 +122,7 @@ class LeftPage extends PureComponent {
                                 />
 
                                 <Text style={styles.uploadCount}>
-                                    {this.props.uploaded} /{' '}
-                                    {this.props.totalImagesToUpload}
+                                    {this.state.uploaded} / {this.state.total}
                                 </Text>
 
                                 {/* <Progress.Circle
@@ -167,8 +166,7 @@ class LeftPage extends PureComponent {
                                         }}
                                         dictionary={`${lang}.leftpage.you-have-uploaded`}
                                         values={{
-                                            count: this.props
-                                                .totalImagesToUpload
+                                            count: this.state.uploaded
                                         }}
                                     />
 
@@ -513,12 +511,12 @@ class LeftPage extends PureComponent {
             if (Object.keys(item.tags).length > 0) webCount++;
         });
 
-        const totalToBeUploaded = galleryCount + photosCount + webCount;
+        const total = galleryCount + photosCount + webCount;
 
-        console.log({ totalToBeUploaded });
+        console.log({ total });
 
         this.setState({
-            totalToBeUploaded
+            total
         });
 
         // shared.js
@@ -646,8 +644,8 @@ class LeftPage extends PureComponent {
         }
 
         //  Last step - if all photos have been deleted, close modal
-        if (this.props.uploaded === this.props.totalImagesToUpload) {
-            // shared_actions, reducer
+        if (this.state.uploaded === this.state.total) {
+            // shared_actions
             this.props.toggleUpload();
             this.props.toggleThankYou();
         }
@@ -668,6 +666,7 @@ class LeftPage extends PureComponent {
      *
      */
     _toggleThankYou() {
+        console.log('toggleThankYou');
         this.props.toggleThankYou();
     }
 }
