@@ -32,10 +32,8 @@ const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
 class CameraPage extends React.Component {
-
-    constructor (props)
-    {
-        super (props);
+    constructor(props) {
+        super(props);
 
         this.state = {
             lat: null,
@@ -53,31 +51,28 @@ class CameraPage extends React.Component {
         this.props.setModel(model);
     }
 
-    async componentDidMount ()
-    {
+    async componentDidMount() {
         StyleSheet.build({
             $rem: Dimensions.get('window').width / VALUES.remDivisionFactor
         });
 
-        const p = Platform.OS === 'android' ? PERMISSIONS.ANDROID : PERMISSIONS.IOS;
+        const p =
+            Platform.OS === 'android' ? PERMISSIONS.ANDROID : PERMISSIONS.IOS;
 
-        request(p.CAMERA)
-            .then(result => {
-                // console.log({ result });
-                if (result === 'granted')
-                {
-                    this.setState({ permissionGranted: true });
-                }
-            });
+        request(p.CAMERA).then(result => {
+            // console.log({ result });
+            if (result === 'granted') {
+                this.setState({ permissionGranted: true });
+            }
+        });
 
-         this._getLocationAsync();
+        this._getLocationAsync();
     }
 
     /**
      * Flash a black screen when the user takes a photo
      */
-    animateShutter()
-    {
+    animateShutter() {
         Animated.sequence([
             Animated.timing(this.state.shutterOpacity, {
                 toValue: 1,
@@ -90,7 +85,7 @@ class CameraPage extends React.Component {
                 useNativeDriver: true
             })
         ]).start();
-    };
+    }
 
     /**
      * Get the location of the device when the user takes a photo
@@ -102,33 +97,30 @@ class CameraPage extends React.Component {
                 detail: 'fine'
             }
         })
-        .then(granted => {
-            if (granted)
-            {
-                this.locationSubscription = RNLocation.subscribeToLocationUpdates(
-                    locations => {
-                        this.setState({
-                            lat: locations[0].latitude,
-                            lon: locations[0].longitude
-                        });
-                    }
-                );
-            }
-        })
-        .finally( _ => {
-            this.setState({
-                loading: false
+            .then(granted => {
+                if (granted) {
+                    this.locationSubscription = RNLocation.subscribeToLocationUpdates(
+                        locations => {
+                            this.setState({
+                                lat: locations[0].latitude,
+                                lon: locations[0].longitude
+                            });
+                        }
+                    );
+                }
+            })
+            .finally(_ => {
+                this.setState({
+                    loading: false
+                });
             });
-        });
     };
 
     /**
      * Render the camera page
      */
-    render ()
-    {
-        if (this.state.loading)
-        {
+    render() {
+        if (this.state.loading) {
             return (
                 <View style={{ flex: 1, justifyContent: 'center' }}>
                     <ActivityIndicator />
@@ -136,7 +128,7 @@ class CameraPage extends React.Component {
             );
         }
 
-        return (this.state.permissionGranted)
+        return this.state.permissionGranted
             ? this.renderCamera()
             : this.renderNoPermissions();
     }
@@ -153,9 +145,7 @@ class CameraPage extends React.Component {
                         this.camera = ref;
                     }}
                     style={{ flex: 1 }}
-                    captureAudio={false}
-                >
-
+                    captureAudio={false}>
                     {/*Top Row
                         <View
                           style={{
@@ -187,14 +177,22 @@ class CameraPage extends React.Component {
                         <TouchableOpacity
                             onPress={this.changeView.bind(this, -1)}
                             style={styles.bottomLeftIcon}>
-                            <Icon color="white" name="backup" size={SCREEN_HEIGHT * 0.05} />
+                            <Icon
+                                color="white"
+                                name="backup"
+                                size={SCREEN_HEIGHT * 0.05}
+                            />
                         </TouchableOpacity>
 
                         {/* Photo Button*/}
                         <TouchableOpacity
                             onPress={this.takePicture.bind(this)}
                             style={styles.cameraButton}>
-                            <Icon color="white" name="adjust" size={SCREEN_HEIGHT * 0.1} />
+                            <Icon
+                                color="white"
+                                name="adjust"
+                                size={SCREEN_HEIGHT * 0.1}
+                            />
                         </TouchableOpacity>
 
                         {/* Shutter Layer with props */}
@@ -226,8 +224,7 @@ class CameraPage extends React.Component {
      *
      * Todo - When permissions are denied: Add Button to request permissions again
      */
-    renderNoPermissions ()
-    {
+    renderNoPermissions() {
         return (
             <View style={styles.noPermissionView}>
                 <Text style={styles.noPermissionText}>
@@ -242,12 +239,9 @@ class CameraPage extends React.Component {
      *
      * We attach the users current GPS to the image
      */
-    takePicture ()
-    {
-        if (this.camera)
-        {
-            try
-            {
+    takePicture() {
+        if (this.camera) {
+            try {
                 this.animateShutter();
 
                 this.camera
@@ -258,19 +252,21 @@ class CameraPage extends React.Component {
                         const lat = this.state.lat;
                         const lon = this.state.lon;
 
-                        if (lat === null || lon === null)
-                        {
+                        if (lat === null || lon === null) {
                             // Todo: Needs translation
-                            alert('Your location services are not turn on. Please activate them to take geotagged photos.');
+                            alert(
+                                'Your location services are not turn on. Please activate them to take geotagged photos.'
+                            );
                         }
 
                         const now = moment();
                         const date = moment(now).format('YYYY:MM:DD HH:mm:ss');
 
                         // We need to generate a better filename for android
-                        const filename = (Platform.OS === 'android')
-                            ? base64.encode(date) + '.jpg'
-                            : result.uri.split('/').pop();
+                        const filename =
+                            Platform.OS === 'android'
+                                ? base64.encode(date) + '.jpg'
+                                : result.uri.split('/').pop();
 
                         // Example:
                         // iOS 96790415-6575-4CED-BA64-D6E8B16BF10D.jpg
@@ -286,7 +282,10 @@ class CameraPage extends React.Component {
                         });
 
                         // async-storage photos set
-                        AsyncStorage.setItem('openlittermap-photos', JSON.stringify(this.props.photos));
+                        AsyncStorage.setItem(
+                            'openlittermap-photos',
+                            JSON.stringify(this.props.photos)
+                        );
                     })
                     .catch(error => {
                         console.error('camera.takePicture', error);
@@ -297,9 +296,7 @@ class CameraPage extends React.Component {
                 // can we create a new photo album for them?
                 // let saveResult = await CameraRoll.saveToCameraRoll(data, 'photo');
                 // this.setState({ cameraRollUri: saveResult });
-            }
-            catch (e)
-            {
+            } catch (e) {
                 console.error('catch.camera.takePicture', e);
             }
 
@@ -324,8 +321,7 @@ class CameraPage extends React.Component {
     /**
      * Slide to value, passed to Parent Slides.js
      */
-    changeView (value)
-    {
+    changeView(value) {
         this.props.swipe(value);
     }
 }

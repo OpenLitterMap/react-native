@@ -7,15 +7,13 @@ import {
     View
 } from 'react-native';
 import PageControl from 'react-native-page-control';
-import { getLanguage, TransText } from "react-native-translation";
+import { getLanguage, TransText } from 'react-native-translation';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
 class Slides extends Component {
-
-    constructor (props)
-    {
+    constructor(props) {
         super(props);
 
         this.state = {
@@ -25,42 +23,46 @@ class Slides extends Component {
 
     // for android only
     // async
-    componentDidMount ()
-    {
+    componentDidMount() {
         this.setState({ fontLoaded: true });
     }
 
     /**
      * For langs with longer text, we need to change flexDirection
      */
-    getInnerTextContainer ()
-    {
+    getInnerTextContainer() {
         let flexDirection = 'row';
 
-        if (getLanguage() === 'nl')
-        {
+        if (getLanguage() === 'nl') {
             flexDirection = 'column';
         }
 
         return { flex: 1, flexDirection: flexDirection, alignSelf: 'center' };
     }
 
-    renderSlides ()
-    {
+    renderSlides() {
         const lang = this.props.lang;
 
         return this.props.data.map((slide, i) => {
             return (
                 <View key={slide.id} style={styles.slide}>
-
                     <Image source={slide.image} style={styles.slideImage} />
 
                     <View style={styles.textContainer}>
                         <View style={this.getInnerTextContainer()}>
-                            <TransText style={styles.slideTitle1} dictionary={`${lang}.welcome.its`} />
-                            <TransText style={styles.slideTitle2} dictionary={`${lang}.${slide.title}`} />
+                            <TransText
+                                style={styles.slideTitle1}
+                                dictionary={`${lang}.welcome.its`}
+                            />
+                            <TransText
+                                style={styles.slideTitle2}
+                                dictionary={`${lang}.${slide.title}`}
+                            />
                         </View>
-                        <TransText style={styles.slideText} dictionary={`${lang}.${slide.text}`} />
+                        <TransText
+                            style={styles.slideText}
+                            dictionary={`${lang}.${slide.text}`}
+                        />
                     </View>
 
                     <PageControl
@@ -80,10 +82,8 @@ class Slides extends Component {
         });
     }
 
-    render ()
-    {
-        if (this.state.fontLoaded === false)
-        {
+    render() {
+        if (this.state.fontLoaded === false) {
             return <ActivityIndicator />;
         }
 
@@ -92,8 +92,9 @@ class Slides extends Component {
                 horizontal
                 style={{ flex: 1 }}
                 pagingEnabled
-                showsHorizontalScrollIndicator={false}
-            >{this.renderSlides()}</ScrollView>
+                showsHorizontalScrollIndicator={false}>
+                {this.renderSlides()}
+            </ScrollView>
         );
     }
 }

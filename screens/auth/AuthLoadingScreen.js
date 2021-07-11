@@ -1,18 +1,12 @@
 import React, { Component } from 'react';
-import {
-    ActivityIndicator,
-    StatusBar,
-    View
-} from 'react-native';
+import { ActivityIndicator, StatusBar, View } from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
 import { connect } from 'react-redux';
 import * as actions from '../../actions';
 import StyleSheet from 'react-native-extended-stylesheet';
 
 class AuthLoadingScreen extends Component {
-
-    constructor (props)
-    {
+    constructor(props) {
         super(props);
 
         this._bootstrapAsync();
@@ -29,40 +23,37 @@ class AuthLoadingScreen extends Component {
      *
      * @return redirect to main App or Auth
      */
-    _bootstrapAsync = async () =>
-    {
+    _bootstrapAsync = async () => {
         let redirect = '';
 
         const userToken = await AsyncStorage.getItem('jwt');
 
-        if (! userToken) redirect = 'Auth';
-
-        else
-        {
+        if (!userToken) redirect = 'Auth';
+        else {
             // Check if the token is valid
             await this.props.checkValidToken(userToken);
 
             console.log('tokenIsValid', this.props.tokenIsValid);
 
-            if (! this.props.tokenIsValid) redirect = 'Auth';
-
-            else
-            {
+            if (!this.props.tokenIsValid) redirect = 'Auth';
+            else {
                 redirect = 'App';
 
-                if (! this.props.user)
-                {
-                    console.log('User does not exist on props. Checking AsyncStorage');
+                if (!this.props.user) {
+                    console.log(
+                        'User does not exist on props. Checking AsyncStorage'
+                    );
                     const user = await AsyncStorage.getItem('user');
 
-                    if (user)
-                    {
-                        console.log('User object found in AsyncStorage. Updating state props.');
+                    if (user) {
+                        console.log(
+                            'User object found in AsyncStorage. Updating state props.'
+                        );
                         this.props.userFound(user);
-                    }
-                    else
-                    {
-                        console.log('User does not exist in AsyncStorage. Making API request with token.');
+                    } else {
+                        console.log(
+                            'User does not exist in AsyncStorage. Making API request with token.'
+                        );
                         this.props.fetchUser(userToken);
                     }
                 }
@@ -75,8 +66,7 @@ class AuthLoadingScreen extends Component {
     /**
      * Render function
      */
-    render ()
-    {
+    render() {
         return (
             <View style={styles.container}>
                 <ActivityIndicator />
@@ -102,4 +92,7 @@ const mapStateToProps = state => {
     };
 };
 
-export default connect(mapStateToProps, actions)(AuthLoadingScreen);
+export default connect(
+    mapStateToProps,
+    actions
+)(AuthLoadingScreen);

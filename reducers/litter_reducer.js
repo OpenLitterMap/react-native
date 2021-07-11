@@ -18,7 +18,7 @@ import {
 } from '../actions/types';
 
 import CATEGORIES from '../screens/pages/data/categories';
-import LITTERKEYS from "../screens/pages/data/litterkeys";
+import LITTERKEYS from '../screens/pages/data/litterkeys';
 
 import { getTranslation } from 'react-native-translation';
 
@@ -33,7 +33,7 @@ const INITIAL_STATE = {
     index: null,
     indexSelected: null, // index of camera_photos, gallery or web
     // photoSelected: null,
-    photoType: "", // gallery, camera, or web.
+    photoType: '', // gallery, camera, or web.
     presence: true,
     positions: {}, // coordinates of each tag for animation
     suggestedTags: [],
@@ -44,10 +44,8 @@ const INITIAL_STATE = {
     totalLitterCount: 0
 };
 
-export default function (state = INITIAL_STATE, action)
-{
-    switch (action.type)
-    {
+export default function(state = INITIAL_STATE, action) {
+    switch (action.type) {
         /**
          * Change category
          *
@@ -56,8 +54,9 @@ export default function (state = INITIAL_STATE, action)
          * @item = First key from array 'butts'
          */
         case CHANGE_CATEGORY:
-
-            const category = CATEGORIES.find(cat => cat.title === action.payload);
+            const category = CATEGORIES.find(
+                cat => cat.title === action.payload
+            );
             const items = LITTERKEYS[category.title];
             const item = items[0].key;
 
@@ -75,7 +74,6 @@ export default function (state = INITIAL_STATE, action)
          * @payload type string "camera", "gallery", or "web"
          */
         case CHANGE_PHOTO_TYPE:
-
             return {
                 ...state,
                 photoType: action.payload
@@ -87,11 +85,10 @@ export default function (state = INITIAL_STATE, action)
          * @return 'butts', 'facemask', etc.
          */
         case CHANGE_ITEM:
-
             return {
                 ...state,
                 item: action.payload,
-                q: "1"
+                q: '1'
             };
 
         /**
@@ -100,7 +97,6 @@ export default function (state = INITIAL_STATE, action)
          * @return 1,2,3...
          */
         case CHANGE_Q:
-
             return {
                 ...state,
                 q: action.payload
@@ -110,7 +106,6 @@ export default function (state = INITIAL_STATE, action)
          * Change the index of the Swiper on LitterPicker.Swiper.LitterImage
          */
         case CHANGE_SWIPER_INDEX:
-
             return {
                 ...state,
                 swiperIndex: action.payload
@@ -120,7 +115,6 @@ export default function (state = INITIAL_STATE, action)
          * When a web-image is submitted, we need to reset the tags
          */
         case RESET_TAGS:
-
             return {
                 ...state,
                 tags: {}
@@ -132,7 +126,6 @@ export default function (state = INITIAL_STATE, action)
          * @return this image can be uploaded
          */
         case CONFIRM_FOR_UPLOAD:
-
             // console.log("reducer, index", action.payload);
             return {
                 ...state
@@ -142,7 +135,6 @@ export default function (state = INITIAL_STATE, action)
          * Remove a tag
          */
         case REMOVE_TAG:
-
             console.log('remove_tag', action.payload);
 
             let tags2 = Object.assign({}, state.tags);
@@ -151,16 +143,12 @@ export default function (state = INITIAL_STATE, action)
             let total = 0;
             let length = 0;
             Object.keys(tags2).map(category => {
-
-                if (Object.keys(tags2[category]).length > 0)
-                {
+                if (Object.keys(tags2[category]).length > 0) {
                     Object.values(tags2[category]).map(values => {
                         total += parseInt(values);
                         length++;
                     });
-                }
-                else
-                {
+                } else {
                     // remove category
                     delete tags2[category];
                 }
@@ -177,7 +165,6 @@ export default function (state = INITIAL_STATE, action)
 
         // Reset tags to null and close LitterPicker modal
         case RESET_LITTER_STATE:
-
             const category1 = CATEGORIES[0];
             const items1 = LITTERKEYS[category1.title];
             const item1 = items1[0].key;
@@ -186,7 +173,7 @@ export default function (state = INITIAL_STATE, action)
                 category: category1,
                 items: items1,
                 item: item1,
-                q: "1",
+                q: '1',
                 tags: {},
                 switchValue: true,
                 totalLitterCount: 0,
@@ -200,7 +187,6 @@ export default function (state = INITIAL_STATE, action)
          * Content to show in the modal on LitterPicker
          */
         case SHOW_ALL_TAGS:
-
             return {
                 ...state,
                 displayAllTags: action.payload
@@ -211,9 +197,8 @@ export default function (state = INITIAL_STATE, action)
          * Need to set the content separately
          */
         case SHOW_INNER_MODAL:
-
             return Object.assign({}, state, {
-                tagsModalVisible: ! state.tagsModalVisible
+                tagsModalVisible: !state.tagsModalVisible
             });
 
         /**
@@ -224,18 +209,20 @@ export default function (state = INITIAL_STATE, action)
          * Note: We are passing auth.lang as a prop which could be access from auth_reducer
          */
         case SUGGEST_TAGS:
-
             // return array of suggested tags based on payload text
             let x = [];
 
             Object.entries(LITTERKEYS).some(tags => {
-
                 tags[1].some(tag => {
+                    const t = getTranslation(
+                        `${action.payload.lang}.litter.${tags[0]}.${tag.key}`
+                    );
 
-                    const t = getTranslation(`${action.payload.lang}.litter.${tags[0]}.${tag.key}`);
-
-                    if (t.toLowerCase().includes(action.payload.text.toLowerCase()))
-                    {
+                    if (
+                        t
+                            .toLowerCase()
+                            .includes(action.payload.text.toLowerCase())
+                    ) {
                         x.push({
                             category: tags[0],
                             key: tag.key
@@ -253,17 +240,14 @@ export default function (state = INITIAL_STATE, action)
          * This will toggle the value for the Switch, not the value for each individual image.
          */
         case TOGGLE_SWITCH:
-
             return Object.assign({}, state, {
-                presence: ! state.presence
+                presence: !state.presence
             });
-
 
         /**
          * When previous tags is true, we re-apply them to the next image here
          */
         case UPDATE_TAGS:
-
             const updateTags = Object.assign({}, action.payload);
 
             return {
@@ -275,7 +259,6 @@ export default function (state = INITIAL_STATE, action)
          * Update X-position of tags
          */
         case UPDATE_TAGS_X_POS:
-
             let positions = Object.assign({}, state.positions);
             positions[action.payload.item] = action.payload.x;
 
@@ -288,7 +271,6 @@ export default function (state = INITIAL_STATE, action)
          *
          */
         case UPDATE_QUANTITY:
-
             return {
                 ...state,
                 tags: {

@@ -15,7 +15,7 @@ import {
     TOGGLE_SELECTING,
     UPDATE_PERCENT,
     UPDATE_COUNT_REMAINING,
-    UPLOAD_COMPLETE_SUCCESS,
+    UPLOAD_COMPLETE_SUCCESS
 } from '../actions/types';
 
 const INITIAL_STATE = {
@@ -27,15 +27,12 @@ const INITIAL_STATE = {
     uniqueValue: 0
 };
 
-export default function (state = INITIAL_STATE, action)
-{
-    switch(action.type)
-    {
+export default function(state = INITIAL_STATE, action) {
+    switch (action.type) {
         /**
          * The user has manually taken a photo with the Camera
          */
         case ADD_PHOTO:
-
             let photos1 = [...state.photos];
 
             let id = 0;
@@ -63,7 +60,6 @@ export default function (state = INITIAL_STATE, action)
          * Add or update tags object on a gallery image
          */
         case ADD_TAGS_TO_CAMERA_PHOTO:
-
             let photos4 = [...state.photos];
 
             let image = photos4[action.payload.currentIndex];
@@ -74,21 +70,30 @@ export default function (state = INITIAL_STATE, action)
             let quantity = 1;
 
             // if quantity exists, assign it
-            if (action.payload.hasOwnProperty('quantity'))
-            {
+            if (action.payload.hasOwnProperty('quantity')) {
                 quantity = action.payload.quantity;
             }
 
             // Increment quantity from the text filter
             // sometimes (when tag is being added from text-filter, quantity does not exist
             // we check to see if it exists on the object, if so, we can increment it
-            if (newTags.hasOwnProperty(action.payload.tag.category))
-            {
-                if (newTags[action.payload.tag.category].hasOwnProperty(action.payload.tag.title))
-                {
-                    quantity = newTags[action.payload.tag.category][action.payload.tag.title];
+            if (newTags.hasOwnProperty(action.payload.tag.category)) {
+                if (
+                    newTags[action.payload.tag.category].hasOwnProperty(
+                        action.payload.tag.title
+                    )
+                ) {
+                    quantity =
+                        newTags[action.payload.tag.category][
+                            action.payload.tag.title
+                        ];
 
-                    if (newTags[action.payload.tag.category][action.payload.tag.title] === quantity) quantity++;
+                    if (
+                        newTags[action.payload.tag.category][
+                            action.payload.tag.title
+                        ] === quantity
+                    )
+                        quantity++;
                 }
             }
 
@@ -125,7 +130,6 @@ export default function (state = INITIAL_STATE, action)
         //     };
 
         case LOAD_CAMERA_PHOTOS_FROM_ASYNC_STORAGE:
-
             return {
                 ...state,
                 photos: action.payload
@@ -135,7 +139,6 @@ export default function (state = INITIAL_STATE, action)
          * Confirm the tags for a Photo taken from the Camera
          */
         case CONFIRM_SESSION_TAGS:
-
             console.log('confirm_session_tags', action.payload);
 
             let photos = [...state.photos];
@@ -154,7 +157,6 @@ export default function (state = INITIAL_STATE, action)
          * Change selected value on every photo to false
          */
         case DESELECT_ALL_CAMERA_PHOTOS:
-
             let photos3 = [...state.photos];
 
             photos3 = photos3.map(photo => {
@@ -185,7 +187,7 @@ export default function (state = INITIAL_STATE, action)
             };
 
         case LOGOUT:
-            // return INITIAL_STATE;
+        // return INITIAL_STATE;
 
         /**
          * A tag has been pressed
@@ -193,29 +195,27 @@ export default function (state = INITIAL_STATE, action)
          * Bug: Why is this being called from logout? SettingsScreen@logout
          */
         case REMOVE_TAG_FROM_CAMERA_PHOTO:
-
             console.log('remove_tag_from_camera_photo', action.payload);
 
             // For some reason, this is being called on logout.
-            if (action.payload)
-            {
+            if (action.payload) {
                 let untaggedPhotos = [...state.photos];
 
                 let img = untaggedPhotos[action.payload.currentIndex];
                 delete img.tags[action.payload.category][action.payload.tag];
 
                 // Delete the category if empty
-                if (Object.keys(img.tags[action.payload.category]).length === 0)
-                {
+                if (
+                    Object.keys(img.tags[action.payload.category]).length === 0
+                ) {
                     delete img.tags[action.payload.category];
                 }
 
                 return {
                     ...state,
                     photos: untaggedPhotos
-                }
+                };
             }
-
 
         /**
          * When uploading reset x (x / total) to 0
@@ -242,12 +242,11 @@ export default function (state = INITIAL_STATE, action)
          * @param selected = bool
          */
         case TOGGLE_SELECTED_PHOTO:
-
             let photos2 = [...state.photos];
 
             let photo = photos2[action.payload];
 
-            photo.selected = ! photo.selected;
+            photo.selected = !photo.selected;
 
             return {
                 ...state,
@@ -265,14 +264,14 @@ export default function (state = INITIAL_STATE, action)
                     ...state.photos.slice(action.payload + 1)
                 ],
                 // total number of successfully uploaded photos can be incremented
-                totalCameraPhotosUploaded: state.totalCameraPhotosUploaded +1,
+                totalCameraPhotosUploaded: state.totalCameraPhotosUploaded + 1
             };
 
         case TOGGLE_SELECTING:
             // console.log('reducer - toggle selecting');
             return {
                 ...state,
-                isSelecting: ! state.isSelecting,
+                isSelecting: !state.isSelecting,
                 uniqueValue: state.uniqueValue + 1
             };
 
@@ -290,7 +289,7 @@ export default function (state = INITIAL_STATE, action)
 
         case UPLOAD_COMPLETE_SUCCESS:
             return {
-                ...state,
+                ...state
                 // modalVisible: action.payload.modal
             };
 

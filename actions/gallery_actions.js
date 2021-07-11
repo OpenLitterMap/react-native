@@ -1,4 +1,5 @@
-import React from 'react'
+import React from 'react';
+import axios from 'axios';
 
 import {
     ADD_TAGS_TO_GALLERY_IMAGE,
@@ -13,7 +14,7 @@ import {
     RESET_GALLERY_TOTAL_TO_UPLOAD,
     TOGGLE_IMAGE_BROWSER,
     TOGGLE_SELECTED_GALLERY,
-    URL,
+    URL
 } from './types';
 
 /**
@@ -24,17 +25,17 @@ export const addTagsToGalleryImage = tags => {
         type: ADD_TAGS_TO_GALLERY_IMAGE,
         payload: tags
     };
-}
+};
 
 /**
  * Delete selected gallery / camera roll photo
  */
-export const deleteSelectedGallery = (photo) => {
+export const deleteSelectedGallery = photo => {
     return {
         type: DELETE_SELECTED_GALLERY,
         payload: photo
     };
-}
+};
 
 /**
  * Change selected => false on all gallery photos
@@ -43,57 +44,57 @@ export const deselectAllGalleryPhotos = () => {
     return {
         type: DESELECT_ALL_GALLERY_PHOTOS
     };
-}
+};
 
 /**
  * A Gallery Index has been uploaded successfully! - can be deleted.
  */
-export const galleryPhotoUploadedSuccessfully = (index) => {
+export const galleryPhotoUploadedSuccessfully = index => {
     return {
         type: GALLERY_UPLOADED_SUCCESSFULLY,
         payload: index
     };
-}
+};
 
 /**
  * A gallery index has been selected for tagging
  */
-export const galleryIndexChanged = (index) => {
+export const galleryIndexChanged = index => {
     return {
         type: GALLERY_INDEX_CHANGED,
         payload: index
     };
-}
+};
 
 /**
  * Toggle ActivityIndicator when Photo Albums are finished / loading
  */
-export const setImagesLoading = (bool) => {
+export const setImagesLoading = bool => {
     return {
         type: TOGGLE_IMAGES_LOADING,
         payload: bool
     };
-}
+};
 
 /**
  * Add photos from gallery to redux
  */
-export const photosFromGallery = (photos) => {
+export const photosFromGallery = photos => {
     return {
         type: PHOTOS_FROM_GALLERY,
         payload: photos
     };
-}
+};
 
 /**
  * A tag has been selected from a gallery photo
  */
-export const removeTagFromGalleryPhoto = (data) => {
+export const removeTagFromGalleryPhoto = data => {
     return {
         type: REMOVE_TAG_FROM_GALLERY_PHOTO,
         payload: data
     };
-}
+};
 
 /**
  * Open or Close the Gallery Image Picker
@@ -102,7 +103,7 @@ export const toggleImageBrowser = () => {
     return {
         type: TOGGLE_IMAGE_BROWSER
     };
-}
+};
 
 /**
  * When uploading, reset x ( x / total )
@@ -111,15 +112,14 @@ export const resetGalleryToUpload = () => {
     return {
         type: RESET_GALLERY_TOTAL_TO_UPLOAD
     };
-}
+};
 
 /**
  * Toggle the value of a photo.selected
  */
-export const toggleSelectedGallery = (index) => {
+export const toggleSelectedGallery = index => {
     return {
         type: TOGGLE_SELECTED_GALLERY,
         payload: index
     };
-}
-
+};

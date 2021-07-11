@@ -22,30 +22,25 @@ const INITIAL_STATE = {
     galleryUploadProgress: 0
 };
 
-export default function (state = INITIAL_STATE, action)
-{
-    switch (action.type)
-    {
+export default function(state = INITIAL_STATE, action) {
+    switch (action.type) {
         /**
          * Add or update tags object on a gallery image
          */
         case ADD_TAGS_TO_GALLERY_IMAGE:
-
             let images = [...state.gallery];
 
             let image = images[action.payload.currentIndex];
 
             let newTags = Object.assign({}, image.tags);
 
-            try
-            {
+            try {
                 // update tags on image
                 // duplicated by photos_reducer
                 let quantity = 1;
 
                 // if quantity exists, assign it
-                if (action.payload.hasOwnProperty('quantity'))
-                {
+                if (action.payload.hasOwnProperty('quantity')) {
                     quantity = action.payload.quantity;
                 }
 
@@ -55,10 +50,8 @@ export default function (state = INITIAL_STATE, action)
                 // Increment quantity from the text filter
                 // sometimes (when tag is being added from text-filter, quantity does not exist
                 // we check to see if it exists on the object, if so, we can increment it
-                if (newTags.hasOwnProperty(category))
-                {
-                    if (newTags[category].hasOwnProperty(title))
-                    {
+                if (newTags.hasOwnProperty(category)) {
+                    if (newTags[category].hasOwnProperty(title)) {
                         quantity = newTags[category][title];
 
                         if (newTags[category][title] === quantity) quantity++;
@@ -73,9 +66,7 @@ export default function (state = INITIAL_STATE, action)
                         [title]: quantity
                     }
                 };
-            }
-            catch (e)
-            {
+            } catch (e) {
                 console.log({ e });
             }
 
@@ -92,7 +83,7 @@ export default function (state = INITIAL_STATE, action)
         case CHANGE_UPLOAD_PROGRESS:
             return {
                 ...state,
-                galleryUploadProgress: action.payload,
+                galleryUploadProgress: action.payload
             };
 
         /**
@@ -111,7 +102,6 @@ export default function (state = INITIAL_STATE, action)
          * Change selected => false for all photos
          */
         case DESELECT_ALL_GALLERY_PHOTOS:
-
             let photos1 = [...state.gallery];
 
             photos1 = photos1.map(photo => {
@@ -130,7 +120,6 @@ export default function (state = INITIAL_STATE, action)
          * @param int action.payload (index)
          */
         case GALLERY_INDEX_CHANGED:
-
             return {
                 ...state,
                 indexSelected: action.payload
@@ -142,7 +131,6 @@ export default function (state = INITIAL_STATE, action)
          - This can be done with permission 1 at a time... can we get permission for multiple?
          */
         case GALLERY_UPLOADED_SUCCESSFULLY:
-
             return {
                 ...state,
                 gallery: [
@@ -150,7 +138,7 @@ export default function (state = INITIAL_STATE, action)
                     ...state.gallery.slice(action.payload + 1)
                 ],
                 // total number of photos that were successfully uploaded
-                totalGalleryUploaded: state.totalGalleryUploaded +1,
+                totalGalleryUploaded: state.totalGalleryUploaded + 1
             };
 
         /**
@@ -167,7 +155,6 @@ export default function (state = INITIAL_STATE, action)
          * Return the selected photos from the Camera Roll
          */
         case PHOTOS_FROM_GALLERY:
-
             let photos = [...state.gallery];
 
             action.payload.forEach(photo => {
@@ -176,22 +163,20 @@ export default function (state = INITIAL_STATE, action)
 
             return {
                 ...state,
-                gallery: photos,
+                gallery: photos
             };
 
         /**
          * Remove a tag that has been pressed
          */
         case REMOVE_TAG_FROM_GALLERY_PHOTO:
-
             let deletedTagGallery = [...state.gallery];
 
             let img = deletedTagGallery[action.payload.currentIndex];
             delete img.tags[action.payload.category][action.payload.tag];
 
             // Delete the category if empty
-            if (Object.keys(img.tags[action.payload.category]).length === 0)
-            {
+            if (Object.keys(img.tags[action.payload.category]).length === 0) {
                 delete img.tags[action.payload.category];
             }
 
@@ -215,19 +200,18 @@ export default function (state = INITIAL_STATE, action)
         case TOGGLE_IMAGE_BROWSER:
             return {
                 ...state,
-                imageBrowserOpen: ! state.imageBrowserOpen
+                imageBrowserOpen: !state.imageBrowserOpen
             };
 
         /**
          * Toggle the value of photo.selected
          */
         case TOGGLE_SELECTED_GALLERY:
-
             let gallery = [...state.gallery];
 
             let photo = gallery[action.payload];
 
-            photo.selected = ! photo.selected;
+            photo.selected = !photo.selected;
 
             return {
                 ...state,
@@ -237,4 +221,4 @@ export default function (state = INITIAL_STATE, action)
         default:
             return state;
     }
-};
+}

@@ -9,7 +9,11 @@ import {
     TOGGLE_THANK_YOU,
     TOGGLE_UPLOAD,
     UNIQUE_VALUE,
+<<<<<<< HEAD
     UPDATE_COUNT_TOTAL, URL
+=======
+    UPDATE_COUNT_TOTAL
+>>>>>>> 2367e672b620c6944ee02f352b15ffc012948077
 } from './types';
 import axios from "axios";
 
@@ -17,10 +21,10 @@ import axios from "axios";
  * Close the Litter Picker Modal
  */
 export const closeLitterModal = () => {
-   return {
-       type: CLOSE_LITTER_MODAL
-   };
-}
+    return {
+        type: CLOSE_LITTER_MODAL
+    };
+};
 
 /**
  * Decrement the amount of photos selected
@@ -31,7 +35,7 @@ export const decrementSelected = () => {
     return {
         type: DECREMENT_SELECTED
     };
-}
+};
 
 /**
  * Increment the amount of photos selected
@@ -42,27 +46,27 @@ export const incrementSelected = () => {
     return {
         type: INCREMENT_SELECTED
     };
-}
+};
 
- /**
-  * Increment the Unique value to force change state
-  ** todo - probably not this.
-  */
+/**
+ * Increment the Unique value to force change state
+ ** todo - probably not this.
+ */
 export const incrUnique = () => {
     return {
         type: UNIQUE_VALUE
     };
-}
+};
 
 /**
  * Update the total number of photos to be uploaded
  */
-export const updateTotalCount = (count) => {
+export const updateTotalCount = count => {
     return {
         type: UPDATE_COUNT_TOTAL,
         payload: count
     };
-}
+};
 
 /**
  * Upload a photo.
@@ -163,13 +167,13 @@ export const toggleLitter = () => {
     return {
         type: TOGGLE_LITTER
     };
-}
+};
 
 export const toggleThankYou = () => {
     return {
         type: TOGGLE_THANK_YOU
     };
-}
+};
 
 /**
  * Toggle Uploaad content inside modal on / off
@@ -178,7 +182,7 @@ export const toggleUpload = () => {
     return {
         type: TOGGLE_UPLOAD
     };
-}
+};
 
 /**
  * Toggle if the user wnts to Select + Delete a photo
@@ -187,4 +191,4 @@ export const toggleSelecting = () => {
     return {
         type: TOGGLE_SELECTING
     };
-}
+};

@@ -14,10 +14,8 @@ const INITIAL_STATE = {
     indexSelected: 0
 };
 
-export default function(state = INITIAL_STATE, action)
-{
-    switch (action.type)
-    {
+export default function(state = INITIAL_STATE, action) {
+    switch (action.type) {
         /**
          * Apply tags to one of the web images
          */
@@ -73,7 +71,6 @@ export default function(state = INITIAL_STATE, action)
          * At the end of swiping web.photos, load more images
          */
         case LOAD_MORE_WEB_IMAGES:
-
             let web_images = [...state.photos];
 
             action.payload.photos.forEach(photo => {
@@ -83,7 +80,7 @@ export default function(state = INITIAL_STATE, action)
             return {
                 ...state,
                 photos: web_images
-            }
+            };
 
         /**
          * After submitting an image + tags, we filter it from the photos array
@@ -91,8 +88,9 @@ export default function(state = INITIAL_STATE, action)
          * and decrement the count
          */
         case REMOVE_WEB_IMAGE:
-
-            const filtered = state.photos.filter(photo => photo.id !== action.payload);
+            const filtered = state.photos.filter(
+                photo => photo.id !== action.payload
+            );
 
             const count = state.count - 1;
 
@@ -120,7 +118,16 @@ export default function(state = INITIAL_STATE, action)
         /**
          * Images have been uploaded from the web
          */
+<<<<<<< HEAD
         case WEB_IMAGES:
+=======
+        case WEB_CONFIRM:
+            const photos = (state.photos = [
+                ...state.photos.slice(0, 0),
+                ...state.photos.slice(1)
+            ]);
+
+>>>>>>> 2367e672b620c6944ee02f352b15ffc012948077
             return {
                 ...state,
                 count: action.payload.count,

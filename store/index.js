@@ -12,13 +12,8 @@ const config = {
 
 const reducer = persistCombineReducers(config, reducers);
 
-export default function configurationStore (initialState = {})
-{
-    const store = createStore(
-        reducer,
-        initialState,
-        applyMiddleware(thunk)
-    );
+export default function configurationStore(initialState = {}) {
+    const store = createStore(reducer, initialState, applyMiddleware(thunk));
 
     const persistor = persistStore(store);
 

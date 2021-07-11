@@ -1,9 +1,5 @@
 import React, { PureComponent } from 'react';
-import {
-    Dimensions,
-    Platform,
-    View
-} from 'react-native';
+import { Dimensions, Platform, View } from 'react-native';
 import { getTranslation } from 'react-native-translation';
 import { Picker } from '@react-native-community/picker'; // removed from RN-core Apr 2020
 import { connect } from 'react-redux';
@@ -17,12 +13,10 @@ const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 
 class LitterPickerWheels extends PureComponent {
-
     /**
      *
      */
-    _computeContainer ()
-    {
+    _computeContainer() {
         if (Platform.OS === 'android') return styles.pickerViewAndroid;
 
         // if "iPhone 10+", return 17% card height
@@ -36,8 +30,7 @@ class LitterPickerWheels extends PureComponent {
     /**
      *
      */
-    _computePickerWheel ()
-    {
+    _computePickerWheel() {
         if (Platform.OS === 'android') return styles.pickerWheel;
 
         // if "iPhone 10+", return 17% card height
@@ -48,45 +41,40 @@ class LitterPickerWheels extends PureComponent {
         return styles.pickerWheel;
     }
 
-    render ()
-    {
+    render() {
         return (
             <View style={this._computeContainer()}>
                 <Picker
                     itemStyle={this._computePickerWheel()}
                     style={{ width: SCREEN_WIDTH * 0.7 }}
                     selectedValue={this.props.item}
-                    onValueChange={item => this.props.changeItem(item)}
-                >
-                    {
-                        this.props.items.map((item, i) => {
+                    onValueChange={item => this.props.changeItem(item)}>
+                    {this.props.items.map((item, i) => {
+                        const x = getTranslation(
+                            `${this.props.lang}.litter.${
+                                this.props.category.title
+                            }.${item.key}`
+                        );
 
-                            const x = getTranslation(`${this.props.lang}.litter.${this.props.category.title}.${item.key}`);
-
-                            return (
-                                <Picker.Item label={x} value={item.key} key={i}/>
-                            );
-                        })
-                    }
+                        return (
+                            <Picker.Item label={x} value={item.key} key={i} />
+                        );
+                    })}
                 </Picker>
                 <Picker
                     itemStyle={this._computePickerWheel()}
                     style={{ width: SCREEN_WIDTH * 0.3 }}
                     selectedValue={this.props.q}
-                    onValueChange={q => this.props.changeQ(q)}
-                >
-                    {
-                        QUANTITIES.map((q, i) => (
-                            <Picker.Item label={q} value={q} key={i} />
-                        ))
-                    }
+                    onValueChange={q => this.props.changeQ(q)}>
+                    {QUANTITIES.map((q, i) => (
+                        <Picker.Item label={q} value={q} key={i} />
+                    ))}
                 </Picker>
             </View>
         );
     }
 
-    getText (item)
-    {
+    getText(item) {
         return item;
     }
 }
@@ -122,6 +110,9 @@ const styles = {
         opacity: 1,
         alignItems: 'center'
     }
-}
+};
 
-export default connect(null, actions)(LitterPickerWheels);
+export default connect(
+    null,
+    actions
+)(LitterPickerWheels);

@@ -19,13 +19,11 @@ const INITIAL_STATE = {
     thankYouVisible: false,
     totalImagesToUpload: 0,
     uniqueValue: 0,
-    uploadVisible: false,
+    uploadVisible: false
 };
 
 export default function(state = INITIAL_STATE, action) {
-
-    switch (action.type)
-    {
+    switch (action.type) {
         case CLOSE_LITTER_MODAL:
             return {
                 ...state,
@@ -37,14 +35,14 @@ export default function(state = INITIAL_STATE, action) {
             return {
                 ...state,
                 selected: state.selected - 1,
-                uniqueValue: state.uniqueValue +1
+                uniqueValue: state.uniqueValue + 1
             };
 
         case INCREMENT_SELECTED:
             return {
                 ...state,
                 selected: state.selected + 1,
-                uniqueValue: state.uniqueValue +1
+                uniqueValue: state.uniqueValue + 1
             };
 
         // /**
@@ -62,15 +60,15 @@ export default function(state = INITIAL_STATE, action) {
         case TOGGLE_LITTER:
             return {
                 ...state,
-                modalVisible: ! state.modalVisible,
-                litterVisible: ! state.litterVisible
+                modalVisible: !state.modalVisible,
+                litterVisible: !state.litterVisible
             };
 
         case TOGGLE_THANK_YOU:
             return {
                 ...state,
-                modalVisible: ! state.modalVisible,
-                thankYouVisible: ! state.thankYouVisible
+                modalVisible: !state.modalVisible,
+                thankYouVisible: !state.thankYouVisible
             };
 
         /**
@@ -79,8 +77,8 @@ export default function(state = INITIAL_STATE, action) {
         case TOGGLE_UPLOAD:
             return {
                 ...state,
-                modalVisible: ! state.modalVisible,
-                uploadVisible: ! state.uploadVisible
+                modalVisible: !state.modalVisible,
+                uploadVisible: !state.uploadVisible
             };
 
         /**
@@ -90,7 +88,7 @@ export default function(state = INITIAL_STATE, action) {
             return {
                 ...state,
                 selected: 0,
-                isSelecting: ! state.isSelecting
+                isSelecting: !state.isSelecting
                 // uniqueValue: state.uniqueValue + 1
             };
 
@@ -112,4 +110,4 @@ export default function(state = INITIAL_STATE, action) {
         default:
             return state;
     }
-};
+}

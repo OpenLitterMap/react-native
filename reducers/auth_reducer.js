@@ -23,11 +23,11 @@ import {
 // import AsyncStorage from '@react-native-community/async-storage';
 // import { Map, List } from 'immutable';
 
-import * as RNLocalize from "react-native-localize";
+import * as RNLocalize from 'react-native-localize';
 let lang = RNLocalize.getLocales()['languageCode'];
 
 const INITIAL_STATE = {
-    lang: "en",
+    lang: 'en',
     appLoading: true,
     appVersion: '',
     buttonPressed: false,
@@ -47,20 +47,18 @@ const INITIAL_STATE = {
     serverStatusText: ''
 };
 
-export default function (state = INITIAL_STATE, action)
-{
-    switch (action.type)
-    {
+export default function(state = INITIAL_STATE, action) {
+    switch (action.type) {
         /**
          * Status 400 : The user entered the wrong password
          */
         case BAD_PASSWORD:
-
             return {
                 ...state,
                 password: '',
                 token: null,
-                serverStatusText: 'Your password is incorrect. Please try again or reset it.',
+                serverStatusText:
+                    'Your password is incorrect. Please try again or reset it.',
                 isSubmitting: false
             };
 
@@ -74,7 +72,7 @@ export default function (state = INITIAL_STATE, action)
             return {
                 ...state,
                 serverStatusText: action.payload
-            }
+            };
 
         case STORE_CURRENT_APP_VERSION:
             return {
@@ -131,7 +129,6 @@ export default function (state = INITIAL_STATE, action)
          * There was a problem during login
          */
         case LOGIN_FAIL:
-
             return {
                 ...state,
                 password: '',
@@ -186,25 +183,21 @@ export default function (state = INITIAL_STATE, action)
          * When the app loads, we check if the JWT is valid
          */
         case TOKEN_IS_VALID:
-
             return {
                 ...state,
                 tokenIsValid: action.payload
-            }
+            };
 
         case USER_FOUND:
             // console.log('- user found, reducer -');
             // console.log(typeof(action.payload));
             // console.log(action.payload);
             let user;
-            if (action.payload === 'string')
-            {
+            if (action.payload === 'string') {
                 // console.log('Payload is string');
                 // console.log(JSON.parse(action.payload));
                 user = JSON.parse(action.payload);
-            }
-            else
-            {
+            } else {
                 // console.log('Payload is not string');
                 // console.log(action.payload);
                 user = action.payload.userObj;
