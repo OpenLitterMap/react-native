@@ -101,7 +101,7 @@ class LeftPage extends PureComponent
 
     render ()
     {
-        console.log('LeftPage.render');
+        console.log('Rendering: LeftPage');
         if (this.props.imageBrowserOpen)
         {
             // todo- cancel all subscriptions and async tasks in componentWillUnmount

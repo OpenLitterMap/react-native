@@ -91,6 +91,8 @@ class LeftPageImages extends PureComponent
      */
     cameraPhotoPressed (index)
     {
+        console.log('cameraPhotoPressed at index', index);
+
         const image = this.props.photos[index];
 
         if (this.props.isSelecting)
@@ -106,7 +108,7 @@ class LeftPageImages extends PureComponent
             // shared_reducer - Open LitterPicker modal
             this.props.toggleLitter();
 
-            // camera photos.js
+            // photos.js
             this.props.cameraIndexChanged(index);
         }
     }

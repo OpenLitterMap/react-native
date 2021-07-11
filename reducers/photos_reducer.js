@@ -1,7 +1,7 @@
 import {
     ADD_PHOTO,
     ADD_TAGS_TO_CAMERA_PHOTO,
-    CAMERA_INDEX_CHANGED,
+    // CAMERA_INDEX_CHANGED,
     LOAD_CAMERA_PHOTOS_FROM_ASYNC_STORAGE,
     CONFIRM_SESSION_TAGS,
     DELETE_SELECTED_PHOTO,
@@ -21,7 +21,7 @@ import {
 const INITIAL_STATE = {
     photos: [],
     progress: 0,
-    indexSelected: 0,
+    // indexSelected: 0,
     isSelecting: false,
     remainingCount: 0,
     uniqueValue: 0
@@ -110,19 +110,19 @@ export default function (state = INITIAL_STATE, action)
                 photos: photos4
             };
 
-        /**
-         * One of the photos were selected for tagging
-         *
-         * Or, the swiperIndex has changed on LitterPicker
-         *
-         * @param action.payload int (index)
-         */
-        case CAMERA_INDEX_CHANGED:
-
-            return {
-                ...state,
-                indexSelected: action.payload
-            };
+        // /**
+        //  * One of the photos were selected for tagging
+        //  *
+        //  * Or, the swiperIndex has changed on LitterPicker
+        //  *
+        //  * @param action.payload int (index)
+        //  */
+        // case CAMERA_INDEX_CHANGED:
+        //
+        //     return {
+        //         ...state,
+        //         indexSelected: action.payload
+        //     };
 
         case LOAD_CAMERA_PHOTOS_FROM_ASYNC_STORAGE:
 
