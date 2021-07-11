@@ -94,18 +94,21 @@ class LeftPageImages extends PureComponent {
 
         const image = this.props.photos[index];
 
-        if (this.props.isSelecting) {
+        if (this.props.isSelecting)
+        {
             image.selected
                 ? this.props.decrementSelected()
                 : this.props.incrementSelected();
 
             this.props.toggleSelectedPhoto(index);
-        } else {
+        }
+        else
+        {
             // shared_reducer - Open LitterPicker modal
             this.props.toggleLitter();
 
-            // photos.js
-            this.props.cameraIndexChanged(index);
+            // litter.js
+            this.props.swiperIndexChanged(index);
         }
     }
 
@@ -116,21 +119,27 @@ class LeftPageImages extends PureComponent {
      *
      * otherwise, select an image for tagging
      */
-    galleryPhotoPressed(index) {
+    galleryPhotoPressed (index)
+    {
         const image = this.props.gallery[index];
 
-        if (this.props.isSelecting) {
+        if (this.props.isSelecting)
+        {
             image.selected
                 ? this.props.decrementSelected()
                 : this.props.incrementSelected();
 
             this.props.toggleSelectedGallery(index);
-        } else {
+        }
+        else
+        {
             // shared_reducer - Open LitterPicker modal
             this.props.toggleLitter();
 
-            // gallery.js
-            this.props.galleryIndexChanged(index);
+            const globalIndex = this.props.photos.length + index;
+
+            // litter.js
+            this.props.swiperIndexChanged(globalIndex);
         }
     }
 
