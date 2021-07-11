@@ -3,7 +3,6 @@ import {
     CHANGE_UPLOAD_PROGRESS,
     DELETE_SELECTED_GALLERY,
     DESELECT_ALL_GALLERY_PHOTOS,
-    GALLERY_INDEX_CHANGED,
     GALLERY_UPLOADED_SUCCESSFULLY,
     TOGGLE_IMAGES_LOADING,
     PHOTOS_FROM_GALLERY,
@@ -112,17 +111,6 @@ export default function(state = INITIAL_STATE, action) {
             return {
                 ...state,
                 gallery: photos1
-            };
-
-        /**
-         * One of the gallery images has been selected
-         *
-         * @param int action.payload (index)
-         */
-        case GALLERY_INDEX_CHANGED:
-            return {
-                ...state,
-                indexSelected: action.payload
             };
 
         /**

@@ -3,11 +3,8 @@ import axios from 'axios';
 import {
     ADD_PHOTO,
     ADD_TAGS_TO_CAMERA_PHOTO,
-    CAMERA_INDEX_CHANGED,
     LOAD_CAMERA_PHOTOS_FROM_ASYNC_STORAGE,
-    CHANGE_UPLOAD_PROGRESS,
-    CONFIRM_SESSION_TAGS,
-    DELETE_SELECTED_PHOTO, // current session
+    DELETE_SELECTED_PHOTO,
     DESELECT_ALL_CAMERA_PHOTOS,
     RESET_PHOTOS_TOTAL_TO_UPLOAD,
     CAMERA_PHOTO_UPLOADED_SUCCESSFULLY,
@@ -39,20 +36,10 @@ export const addTagsToCameraPhoto = payload => {
 };
 
 /**
- * One of the photos was selected for tagging
- */
-export const cameraIndexChanged = index => {
-    return {
-        type: CAMERA_INDEX_CHANGED,
-        payload: index
-    };
-};
-
-/**
  * Check & get an image uploaded on web that is ready for tagging
  */
-export const checkForWebUpload = (token) => {
-    return (dispatch) => {
+export const checkForWebUpload = token => {
+    return dispatch => {
         return axios({
             method: 'get',
             url: URL + '/api/check',
@@ -76,16 +63,6 @@ export const loadCameraPhotosFromAsyncStorage = photos => {
     return {
         type: LOAD_CAMERA_PHOTOS_FROM_ASYNC_STORAGE,
         payload: photos
-    };
-};
-
-/**
- * Confirm Button Pressed on LitterPicker
- */
-export const confirmSessionTags = data => {
-    return {
-        type: CONFIRM_SESSION_TAGS,
-        payload: data
     };
 };
 

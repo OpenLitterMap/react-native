@@ -8,31 +8,29 @@ import {
     TouchableOpacity,
     View
 } from 'react-native';
-import { TransText } from "react-native-translation";
-import { Icon } from 'react-native-elements'
-import Swiper from 'react-native-swiper'
-import { connect } from 'react-redux'
-import * as actions from '../../actions'
+import { TransText } from 'react-native-translation';
+import { Icon } from 'react-native-elements';
+import Swiper from 'react-native-swiper';
+import { connect } from 'react-redux';
+import * as actions from '../../actions';
 
-import CATEGORIES from './data/categories'
+import CATEGORIES from './data/categories';
 
-import LitterCategories from './components/LitterCategories'
-import LitterImage from './components/LitterImage'
-import LitterPickerWheels from './components/LitterPickerWheels'
-import LitterTags from './components/LitterTags'
-import LitterBottomSearch from './components/LitterBottomSearch'
+import LitterCategories from './components/LitterCategories';
+import LitterImage from './components/LitterImage';
+import LitterPickerWheels from './components/LitterPickerWheels';
+import LitterTags from './components/LitterTags';
+import LitterBottomSearch from './components/LitterBottomSearch';
 
-const SCREEN_WIDTH = Dimensions.get('window').width
-const SCREEN_HEIGHT = Dimensions.get('window').height
+const SCREEN_WIDTH = Dimensions.get('window').width;
+const SCREEN_HEIGHT = Dimensions.get('window').height;
 
-import DeviceInfo from 'react-native-device-info'
-import LITTERKEYS from "./data/litterkeys";
-const cloneDeep = require('clone-deep')
+import DeviceInfo from 'react-native-device-info';
+import LITTERKEYS from './data/litterkeys';
+const cloneDeep = require('clone-deep');
 
-class AddTags extends PureComponent
-{
-    constructor (props)
-    {
+class AddTags extends PureComponent {
+    constructor(props) {
         super(props);
 
         this.state = {
@@ -64,13 +62,16 @@ class AddTags extends PureComponent
      *
      * @photo_actions.js
      */
-    async componentDidMount() {
+    async componentDidMount ()
+    {
         // this is necessary to allow the user to click on text input because of a bug with keyboardAvoidingView on Android
-        if (Platform.OS === 'android')
-            await this.setState({ height: SCREEN_HEIGHT * 0.1 });
+        if (Platform.OS === 'android') {
+            await this.setState({height: SCREEN_HEIGHT * 0.1});
+        }
 
-        if (this.state.loading)
+        if (this.state.loading) {
             await this.props.checkForWebUpload(this.props.token);
+        }
 
         this.keyboardDidShowListener = Keyboard.addListener(
             'keyboardDidShow',
@@ -140,7 +141,9 @@ class AddTags extends PureComponent
         let height = 0;
 
         // this is necessary to allow the user to click on text input because of a bug with keyboardAvoidingView on Android
-        if (Platform.OS === 'android') height = SCREEN_HEIGHT * 0.1;
+        if (Platform.OS === 'android') {
+            height = SCREEN_HEIGHT * 0.1;
+        }
 
         // we need to reset item for currently selected category
         if (this.props.category.hasOwnProperty('title')) {
@@ -204,8 +207,7 @@ class AddTags extends PureComponent
     /**
      * The LitterPicker component
      */
-    render ()
-    {
+    render() {
         console.log('Rendering: AddTags');
 
         const { lang, swiperIndex } = this.props;
@@ -360,16 +362,22 @@ class AddTags extends PureComponent
      *
      * @hide on Android when keyboard is open
      */
-    _computePickerWheelsContainer() {
-        if (this.state.keyboardOpen) return styles.hide;
+    _computePickerWheelsContainer ()
+    {
+        if (this.state.keyboardOpen) {
+            return styles.hide;
+        }
 
-        if (Platform.OS === 'android') return styles.pickerWheelsContainer;
+        if (Platform.OS === 'android') {
+            return styles.pickerWheelsContainer;
+        }
 
         // if "iPhone 10+", return 17% card height
         let x = DeviceInfo.getModel().split(' ')[1];
 
-        if (x.includes('X') || parseInt(x) >= 10)
+        if (x.includes('X') || parseInt(x) >= 10) {
             return styles.iPickerWheelsContainer;
+        }
 
         return styles.pickerWheelsContainer;
     }
@@ -381,16 +389,22 @@ class AddTags extends PureComponent
      *
      * @hide on Android when keyboard is open
      */
-    _computeButtonsContainer() {
-        if (this.state.keyboardOpen) return styles.hide;
+    _computeButtonsContainer ()
+    {
+        if (this.state.keyboardOpen) {
+            return styles.hide;
+        }
 
-        if (Platform.OS === 'android') return styles.buttonsContainer;
+        if (Platform.OS === 'android') {
+            return styles.buttonsContainer;
+        }
 
         // if iPhone 10+, return 17% card height
         let x = DeviceInfo.getModel().split(' ')[1];
 
-        if (x.includes('X') || parseInt(x) >= 10)
+        if (x.includes('X') || parseInt(x) >= 10) {
             return styles.iButtonsContainer;
+        }
 
         return styles.buttonsContainer;
     }
@@ -446,35 +460,11 @@ class AddTags extends PureComponent
      *
      * @param newGlobalIndex (int): the global index across all photo types.
      */
-    swiperIndexChanged = (newGlobalIndex) => {
-
+    swiperIndexChanged = newGlobalIndex => {
         console.log('swiperIndexChanged', newGlobalIndex);
-
-        // todo - save these globally
-        const photosLength = this.props.photos.length;
-        const galleryLength = this.props.gallery.length;
 
         // Without this, we get "cannot update a component from within the function body of another component"
         setTimeout(() => {
-
-            if (newGlobalIndex < photosLength)
-            {
-                this.props.cameraIndexChanged(newGlobalIndex);
-            }
-            else if (newGlobalIndex < (galleryLength + photosLength))
-            {
-                const galleryIndex = newGlobalIndex - photosLength;
-
-                this.props.galleryIndexChanged(galleryIndex);
-            }
-            else
-            {
-                const webIndex = (newGlobalIndex - this.props.photos.length - this.props.gallery.length);
-
-                this.props.webIndexChanged(webIndex);
-            }
-
-            // This was necessary to avoid error
             // litter.js swiperIndex
             this.props.swiperIndexChanged(newGlobalIndex);
 
@@ -496,26 +486,24 @@ class AddTags extends PureComponent
     /**
      * Return the tags for an image at a specific index
      */
-    getTags ()
-    {
+    getTags() {
         const currentGlobalIndex = this.props.swiperIndex;
 
-        console.log('Rendering: getTags at currentGlobalIndex: ', currentGlobalIndex);
+        console.log(
+            'Rendering: getTags at currentGlobalIndex: ',
+            currentGlobalIndex
+        );
 
         const photosLength = this.props.photos.length;
         const galleryLength = this.props.gallery.length;
 
-        if (currentGlobalIndex < photosLength)
-        {
-            return this.props.photos[currentGlobalIndex].tags
-        }
-        else if (currentGlobalIndex < (galleryLength + photosLength))
-        {
+        if (currentGlobalIndex < photosLength) {
+            return this.props.photos[currentGlobalIndex].tags;
+        } else if (currentGlobalIndex < galleryLength + photosLength) {
             return this.props.gallery[currentGlobalIndex - photosLength].tags;
-        }
-        else
-        {
-            const webIndex = currentGlobalIndex - (photosLength + galleryLength);
+        } else {
+            const webIndex =
+                currentGlobalIndex - (photosLength + galleryLength);
 
             return this.props.webPhotos[webIndex].tags;
         }
@@ -530,8 +518,7 @@ class AddTags extends PureComponent
      * this.props.gallery are selected from the users photo album
      * this.props.webPhotos were uploaded to web and in the app for tagging
      */
-    _renderLitterImage = () =>
-    {
+    _renderLitterImage = () => {
         console.log('renderLitterImage index:', this.props.swiperIndex);
 
         // Put all the data we want to display into an array
@@ -554,129 +541,6 @@ class AddTags extends PureComponent
             return <View key={photos.length} />;
         });
     };
-
-    //     /**
-    //      * Confirm this data is ready for upload
-    //      *
-    //      * this.props.photos are from the in-app camera
-    //      * this.props.gallery are selected from the users photo album
-    //      * this.props.webPhotos were uploaded to web and in the app for tagging
-    //      *
-    //      * some users have settings.previous_tags true
-    //      */
-    //     _confirmData ()
-    //     {
-    //         const swiperIndex = this.props.swiperIndex;
-    //
-    //         // Some users want to copy the tags onto the next image, so we need to clone them
-    //         const tags = cloneDeep(this.props.tags);
-    //
-    //         // The user can only confirm if tags exist
-    //         if (Object.keys(this.props.tags).length > 0)
-    //         {
-    //             if (this.props.photoType === 'web')
-    //             {
-    //                 // Turn on spinner
-    //                 this.setState({ webLoading: true });
-    //
-    //                 // Show the modal
-    //                 this.props.setLitterPickerModal(true);
-    //
-    //                 // Submit data to the server, web_actions.js
-    //                 this.props.confirmWebPhoto({
-    //                     id: this.props.photoSelected.id,
-    //                     tags,
-    //                     presence: this.props.presence,
-    //                     token: this.props.token
-    //                 });
-    // r
-    //                 // web.js - filter out the current image by ID and decrement web.count
-    //                 // this.props.photoSelected needs to be updated
-    //                 this.props.removeWebImage(this.props.photoSelected.id);
-    //
-    //                 // update this.props.photoSelected with the next image
-    //                 if (this.props.webPhotos.length > 0)
-    //                 {
-    //                     const nextWebPhoto = this.props.webPhotos[0];
-    //
-    //                     if (nextWebPhoto)
-    //                     {
-    //                         this.props.photoSelectedForTagging({
-    //                             swiperIndex,
-    //                             image: nextWebPhoto
-    //                         });
-    //
-    //                         if (this.props.previous_tags)
-    //                         {
-    //                             this.props.updateTags(tags);
-    //                         }
-    //                         else
-    //                         {
-    //                             this.props.resetTags();
-    //                         }
-    //
-    //                         return;
-    //                     }
-    //                 }
-    //             }
-    //             else if (this.props.photoType === 'gallery')
-    //             {
-    //                 console.log('confirm gallery');
-    //                 const galleryIndex = swiperIndex - this.props.photos.length;
-    //
-    //                 // gallery_actions, gallery_reducer
-    //                 this.props.confirmGalleryTags({
-    //                     index: galleryIndex,
-    //                     tags,
-    //                     picked_up: this.props.presence
-    //                 });
-    //             }
-    //             else if (this.props.photoType === 'camera')
-    //             {
-    //                 console.log('confirm camera');
-    //                 // photo_actions, photos_reducer
-    //                 this.props.confirmSessionTags({
-    //                     index: swiperIndex,
-    //                     tags,
-    //                     picked_up: this.props.presence
-    //                 });
-    //             }
-    //         }
-    //
-    //         // Store remaining images in-case app closes or crashes
-    //         // setTimeout(() => {
-    //         //     AsyncStorage.setItem('openlittermap-photos', JSON.stringify(this.props.photos));
-    //         //     AsyncStorage.setItem('openlittermap-gallery', JSON.stringify(this.props.gallery));
-    //         // }, 1000);
-    //
-    //         console.log('done', tags);
-    //
-    //         // // swipe in the next image
-    //         // const imageCount = this.props.photos.length + this.props.gallery.length + this.props.webPhotos.length;
-    //         //
-    //         // if (imageCount === 0 || this.props.swiperIndex + 1 === imageCount)
-    //         // {
-    //         //     // litter_reducer
-    //         //     this.props.resetLitterTags();
-    //         //
-    //         //     // shared_reducer
-    //         //     this.props.closeLitterModal();
-    //         // }
-    //         // else
-    //         // {
-    //         //     this.refs.imageSwiper.scrollTo(this.props.swiperIndex + 1, true);
-    //         //
-    //         //     // Some users want to apply the same tags to the next image
-    //         //     // this.props.previous_tags is a setting saved to the user
-    //         //     // probably a better way to do this...
-    //         //     if (this.props.previous_tags)
-    //         //     {
-    //         //         setTimeout(() => {
-    //         //             this.props.updateTags(tags);
-    //         //         }, 500);
-    //         //     }
-    //         // }
-    //     };
 
     /**
      * Add or Update Tags

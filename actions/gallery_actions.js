@@ -1,12 +1,10 @@
 import React from 'react';
-import axios from 'axios';
 
 import {
     ADD_TAGS_TO_GALLERY_IMAGE,
     CHANGE_UPLOAD_PROGRESS,
     DELETE_SELECTED_GALLERY,
     DESELECT_ALL_GALLERY_PHOTOS,
-    GALLERY_INDEX_CHANGED,
     GALLERY_UPLOADED_SUCCESSFULLY,
     TOGGLE_IMAGES_LOADING,
     PHOTOS_FROM_GALLERY,
@@ -52,16 +50,6 @@ export const deselectAllGalleryPhotos = () => {
 export const galleryPhotoUploadedSuccessfully = index => {
     return {
         type: GALLERY_UPLOADED_SUCCESSFULLY,
-        payload: index
-    };
-};
-
-/**
- * A gallery index has been selected for tagging
- */
-export const galleryIndexChanged = index => {
-    return {
-        type: GALLERY_INDEX_CHANGED,
         payload: index
     };
 };

@@ -90,8 +90,6 @@ class LeftPageImages extends PureComponent {
      */
     cameraPhotoPressed (index)
     {
-        console.log('cameraPhotoPressed at index', index);
-
         const image = this.props.photos[index];
 
         if (this.props.isSelecting)
@@ -329,9 +327,8 @@ class LeftPageImages extends PureComponent {
      *
      * @returns {JSX.Element}
      */
-    render() {
-        // console.log('LeftPageImages.render');
-
+    render ()
+    {
         if (
             this.props.photos.length === 0 &&
             this.props.gallery.length === 0 &&

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Provider } from 'react-redux';
 // import SplashScreen from 'react-native-splash-screen'
 import { PersistGate } from 'redux-persist/es/integration/react';

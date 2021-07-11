@@ -136,8 +136,7 @@ class CameraPage extends React.Component {
     /**
      * Render Camera
      */
-    renderCamera ()
-    {
+    renderCamera() {
         return (
             <>
                 <RNCamera

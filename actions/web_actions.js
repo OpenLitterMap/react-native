@@ -1,10 +1,8 @@
-import React from 'react';
 import {
     ADD_TAGS_TO_WEB_IMAGE,
     LOAD_MORE_WEB_IMAGES,
     REMOVE_WEB_IMAGE,
     WEB_CONFIRM,
-    WEB_INDEX_CHANGED,
     WEB_IMAGES,
     URL
 } from './types';
@@ -13,12 +11,12 @@ import axios from 'axios';
 /**
  * Apply these tags to one of the web images
  */
-export const addTagsToWebImage = (data) => {
+export const addTagsToWebImage = data => {
     return {
         type: ADD_TAGS_TO_WEB_IMAGE,
         payload: data
     };
-}
+};
 
 /**
  * When LeftPage didMount, check web for any images
@@ -39,31 +37,31 @@ export const checkForImagesOnWeb = token => {
                 Authorization: 'Bearer ' + token
             }
         })
-        .then(resp => {
-            // console.log('images_from_web', resp.data.photos);
+            .then(resp => {
+                // console.log('images_from_web', resp.data.photos);
 
-            if (resp.data.photos) {
-                // Todo - load Tags: {} with the data
-                let photos = resp.data.photos ? resp.data.photos : null;
+                if (resp.data.photos) {
+                    // Todo - load Tags: {} with the data
+                    let photos = resp.data.photos ? resp.data.photos : null;
 
-                photos = photos.map(photo => {
-                    photo.tags = {};
-                    return photo;
-                });
+                    photos = photos.map(photo => {
+                        photo.tags = {};
+                        return photo;
+                    });
 
-                // if photos is null, pass empty array
-                dispatch({
-                    type: WEB_IMAGES,
-                    payload: {
-                        count: resp.data.count,
-                        photos
-                    }
-                });
-            }
-        })
-        .catch(err => {
-            console.log('checkForImagesOnWeb', err.response.data);
-        });
+                    // if photos is null, pass empty array
+                    dispatch({
+                        type: WEB_IMAGES,
+                        payload: {
+                            count: resp.data.count,
+                            photos
+                        }
+                    });
+                }
+            })
+            .catch(err => {
+                console.log('checkForImagesOnWeb', err.response.data);
+            });
     };
 };
 
@@ -118,7 +116,7 @@ export const toggleWebImageSuccess = bool => {
     return {
         type: WEB_CONFIRM,
         payload: bool
-    }
+    };
 };
 
 /**
@@ -139,25 +137,15 @@ export const uploadTagsForWebPhoto = data => {
                 litter: data.tags
             }
         })
-        .then(response => {
-            console.log('confirmWebPhoto', response.data);
+            .then(response => {
+                console.log('confirmWebPhoto', response.data);
 
-            if (response.data.success) {
-                // ...
-            }
-        })
-        .catch(err => {
-            console.log('ERROR: uploadTagsForWebPhoto', err.response.data);
-        });
-    }
-}
-
-/**
- * The first web photo has been selected for tagging
- */
-export const webIndexChanged = index => {
-    return {
-        type: WEB_INDEX_CHANGED,
-        payload: index
+                if (response.data.success) {
+                    // ...
+                }
+            })
+            .catch(err => {
+                console.log('ERROR: uploadTagsForWebPhoto', err.response.data);
+            });
     };
 };
