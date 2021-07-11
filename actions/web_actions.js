@@ -118,34 +118,3 @@ export const toggleWebImageSuccess = bool => {
         payload: bool
     };
 };
-
-/**
- * User has clicked Confirm on AddTags
- *
- * Post to server and return 200
- */
-export const uploadTagsForWebPhoto = data => {
-    return dispatch => {
-        return axios({
-            url: URL + '/api/photos/update',
-            method: 'POST',
-            headers: {
-                Authorization: 'Bearer ' + data.token
-            },
-            data: {
-                photo_id: data.id,
-                litter: data.tags
-            }
-        })
-            .then(response => {
-                console.log('confirmWebPhoto', response.data);
-
-                if (response.data.success) {
-                    // ...
-                }
-            })
-            .catch(err => {
-                console.log('ERROR: uploadTagsForWebPhoto', err.response.data);
-            });
-    };
-};

@@ -115,8 +115,6 @@ export default function(state = INITIAL_STATE, action) {
 
         /**
          * Gallery Photo + Data has been uploaded successfully
-         - todo, give the user the ability to delete the image from their device
-         - This can be done with permission 1 at a time... can we get permission for multiple?
          */
         case GALLERY_UPLOADED_SUCCESSFULLY:
             return {

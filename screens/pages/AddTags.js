@@ -62,11 +62,10 @@ class AddTags extends PureComponent {
      *
      * @photo_actions.js
      */
-    async componentDidMount ()
-    {
+    async componentDidMount() {
         // this is necessary to allow the user to click on text input because of a bug with keyboardAvoidingView on Android
         if (Platform.OS === 'android') {
-            await this.setState({height: SCREEN_HEIGHT * 0.1});
+            await this.setState({ height: SCREEN_HEIGHT * 0.1 });
         }
 
         if (this.state.loading) {
@@ -362,8 +361,7 @@ class AddTags extends PureComponent {
      *
      * @hide on Android when keyboard is open
      */
-    _computePickerWheelsContainer ()
-    {
+    _computePickerWheelsContainer() {
         if (this.state.keyboardOpen) {
             return styles.hide;
         }
@@ -389,8 +387,7 @@ class AddTags extends PureComponent {
      *
      * @hide on Android when keyboard is open
      */
-    _computeButtonsContainer ()
-    {
+    _computeButtonsContainer() {
         if (this.state.keyboardOpen) {
             return styles.hide;
         }

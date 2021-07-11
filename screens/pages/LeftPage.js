@@ -32,7 +32,7 @@ const equalWidth = SCREEN_WIDTH / 3;
 // Components
 import LeftPageImages from './components/LeftPageImages';
 // import Stats from './components/Stats'
-import AddTags from './AddTags'
+import AddTags from './AddTags';
 
 import moment from 'moment';
 
@@ -89,12 +89,10 @@ class LeftPage extends PureComponent {
         // cancel pending uploads
     }
 
-    render ()
-    {
+    render() {
         console.log('Rendering: LeftPage');
 
-        if (this.props.imageBrowserOpen)
-        {
+        if (this.props.imageBrowserOpen) {
             // todo- cancel all subscriptions and async tasks in componentWillUnmount
             return <AlbumList navigation={this.props.navigation} />;
         }
@@ -142,13 +140,11 @@ class LeftPage extends PureComponent {
                         )}
 
                         {/* Tag Litter to Images */}
-                        {
-                            this.props.litterVisible && (
-                                <View style={styles.litterModal}>
-                                    <AddTags />
-                                </View>
-                            )
-                        }
+                        {this.props.litterVisible && (
+                            <View style={styles.litterModal}>
+                                <AddTags />
+                            </View>
+                        )}
 
                         {/* Thank you modal */}
                         {this.props.thankYouVisible && (
@@ -349,13 +345,13 @@ class LeftPage extends PureComponent {
      *
      * ... if images exist and at least 1 image has a tag
      */
-    renderUploadButton ()
-    {
+    renderUploadButton() {
         if (
-               this.props.photos.length === 0
-            && this.props.gallery.length === 0
-            && this.props.webPhotos.length === 0
-        ) return;
+            this.props.photos.length === 0 &&
+            this.props.gallery.length === 0 &&
+            this.props.webPhotos.length === 0
+        )
+            return;
 
         let tagged = 0;
 
@@ -523,9 +519,10 @@ class LeftPage extends PureComponent {
 
         this.props.webPhotos.map(item => {
             if (Object.keys(item.tags).length > 0) webTaggedCount++;
-        })
+        });
 
-        const totalCount = galleryTaggedCount + cameraPhotosTaggedCount + webTaggedCount;
+        const totalCount =
+            galleryTaggedCount + cameraPhotosTaggedCount + webTaggedCount;
 
         // shared.js
         this.props.updateTotalCount(totalCount); // this.props.totalImagesToUpload
@@ -533,8 +530,7 @@ class LeftPage extends PureComponent {
         // shared.js
         this.props.toggleUpload();
 
-        if (galleryTaggedCount > 0)
-        {
+        if (galleryTaggedCount > 0) {
             // async loop
             // upload gallery photos
             for (const img of this.props.gallery) {
@@ -565,16 +561,17 @@ class LeftPage extends PureComponent {
                         galleryToUpload
                     );
 
-                    if (response.success)
-                    {
+                    if (response.success) {
                         // shared_actions.js
                         const resp = await this.props.uploadTags(
                             this.props.token,
-                            img.tags
+                            img.tags,
+                            response.photo_id
                         );
 
                         if (resp.success) {
                             // Remove the image
+                            // totalGalleryUploaded++
                             this.props.galleryPhotoUploadedSuccessfully(
                                 myIndex
                             );
@@ -584,8 +581,7 @@ class LeftPage extends PureComponent {
             }
         }
 
-        if (cameraPhotosTaggedCount > 0)
-        {
+        if (cameraPhotosTaggedCount > 0) {
             // upload olm-camera photos
             // async loop
             for (const img of this.props.photos) {
@@ -612,15 +608,17 @@ class LeftPage extends PureComponent {
                         cameraPhoto
                     );
 
-                    if (response.success)
-                    {
+                    if (response.success) {
                         // shared_actions
                         const resp = await this.props.uploadTags(
                             this.props.token,
-                            img.tags
+                            img.tags,
+                            response.photo_id
                         );
 
                         if (resp.success) {
+                            // Remove the image
+                            // totalCameraPhotosUploaded++
                             this.props.cameraPhotoUploadedSuccessfully(myIndex);
                         }
                     }
@@ -628,19 +626,20 @@ class LeftPage extends PureComponent {
             }
         }
 
-        if (webTaggedCount > 0)
-        {
+        if (webTaggedCount > 0) {
             // upload olm-camera photos
             // async loop
-            for (const img of this.props.webPhotos)
-            {
-                if (Object.keys(img.tags).length > 0)
-                {
-                    const response = await this.props.uploadTagsForWebPhoto(
+            for (const img of this.props.webPhotos) {
+                if (Object.keys(img.tags).length > 0) {
+                    const response = await this.props.uploadTags(
                         this.props.token,
-                        img.id,
-                        img.tags
+                        img.tags,
+                        img.id
                     );
+
+                    if (response.success) {
+                        this.props.removeWebImage(img.id);
+                    }
                 }
             }
         }
@@ -655,8 +654,14 @@ class LeftPage extends PureComponent {
         }
 
         setTimeout(() => {
-            AsyncStorage.setItem('openlittermap-photos', JSON.stringify(this.props.photos));
-            AsyncStorage.setItem('openlittermap-gallery', JSON.stringify(this.props.gallery));
+            AsyncStorage.setItem(
+                'openlittermap-photos',
+                JSON.stringify(this.props.photos)
+            );
+            AsyncStorage.setItem(
+                'openlittermap-gallery',
+                JSON.stringify(this.props.gallery)
+            );
         }, 1000);
     };
 
