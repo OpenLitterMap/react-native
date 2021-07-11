@@ -118,16 +118,13 @@ export default function(state = INITIAL_STATE, action) {
         /**
          * Images have been uploaded from the web
          */
-<<<<<<< HEAD
         case WEB_IMAGES:
-=======
-        case WEB_CONFIRM:
+
             const photos = (state.photos = [
                 ...state.photos.slice(0, 0),
                 ...state.photos.slice(1)
             ]);
 
->>>>>>> 2367e672b620c6944ee02f352b15ffc012948077
             return {
                 ...state,
                 count: action.payload.count,

@@ -9,11 +9,7 @@ import {
     TOGGLE_THANK_YOU,
     TOGGLE_UPLOAD,
     UNIQUE_VALUE,
-<<<<<<< HEAD
-    UPDATE_COUNT_TOTAL, URL
-=======
-    UPDATE_COUNT_TOTAL
->>>>>>> 2367e672b620c6944ee02f352b15ffc012948077
+    URL
 } from './types';
 import axios from "axios";
 

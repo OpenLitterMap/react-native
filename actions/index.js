@@ -1,19 +1,8 @@
-<<<<<<< HEAD
-export * from './auth_actions'
-export * from './photos_actions'
-export * from './camera_actions'
-export * from './gallery_actions'
-export * from './litter_actions'
-export * from './shared_actions'
-export * from './settings_actions'
-export * from './web_actions'
-=======
 export * from './auth_actions';
-export * from './photo_actions';
+export * from './photos_actions';
 export * from './camera_actions';
 export * from './gallery_actions';
 export * from './litter_actions';
 export * from './shared_actions';
 export * from './settings_actions';
 export * from './web_actions';
->>>>>>> 2367e672b620c6944ee02f352b15ffc012948077
