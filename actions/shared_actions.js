@@ -3,13 +3,10 @@ import {
     CLOSE_LITTER_MODAL,
     INCREMENT_SELECTED,
     DECREMENT_SELECTED,
-    INCREMENT_SUCCESSFUL_UPLOADS,
-    RESET_SUCCESSFULLY_UPLOADED,
     TOGGLE_LITTER,
     TOGGLE_SELECTING,
     TOGGLE_THANK_YOU,
     TOGGLE_UPLOAD,
-    TOTAL_PHOTOS_TO_BE_UPLOADED,
     URL
 } from './types';
 import axios from 'axios';
@@ -42,36 +39,6 @@ export const decrementSelected = () => {
 export const incrementSelected = () => {
     return {
         type: INCREMENT_SELECTED
-    };
-};
-
-/**
- * Any kind of Photo + Tags uploaded successfully
- */
-export const incrementSuccessfulUploads = () => {
-    return {
-        type: INCREMENT_SUCCESSFUL_UPLOADS
-    };
-};
-
-/**
- * When beginning to upload,
- *
- * Reset the totalSuccessfulCount to 0
- */
-export const resetSucsessfullyUploaded = () => {
-    return {
-        type: RESET_SUCCESSFULLY_UPLOADED
-    };
-};
-
-/**
- * Update the total number of photos to be uploaded
- */
-export const totalPhotosToBeUploaded = count => {
-    return {
-        type: TOTAL_PHOTOS_TO_BE_UPLOADED,
-        payload: count
     };
 };
 

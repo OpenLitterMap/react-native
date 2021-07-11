@@ -39,13 +39,14 @@ import moment from 'moment';
 class LeftPage extends PureComponent {
     constructor(props) {
         super(props);
+
+        this.state = {
+            totalToBeUploaded: 0,
+            uploaded: 0
+        };
+
         // Bind any functions that call props
         this.toggleSelecting = this.toggleSelecting.bind(this);
-        // this.renderDeleteButton = this.renderDeleteButton.bind(this);
-        // this.renderGalleryItem = this.renderGalleryItem.bind(this);
-        // this.galleryItemPressed = this.galleryItemPressed.bind(this);
-
-        // If the app is below a certain version, delete stored data.
 
         // Photos selected from the Photos Album
         AsyncStorage.getItem('openlittermap-gallery').then(gallery => {
@@ -91,6 +92,7 @@ class LeftPage extends PureComponent {
 
     render() {
         console.log('Rendering: LeftPage');
+        console.log('uploaded', this.state.uploaded);
 
         if (this.props.imageBrowserOpen) {
             // todo- cancel all subscriptions and async tasks in componentWillUnmount
@@ -120,7 +122,7 @@ class LeftPage extends PureComponent {
                                 />
 
                                 <Text style={styles.uploadCount}>
-                                    {this._getRemainingUploadCount()} /{' '}
+                                    {this.props.uploaded} /{' '}
                                     {this.props.totalImagesToUpload}
                                 </Text>
 
@@ -481,18 +483,6 @@ class LeftPage extends PureComponent {
     }
 
     /**
-     * Show remaining tagged photos count to upload
-     * Reset to 0 when press upload
-     */
-    _getRemainingUploadCount() {
-        return (
-            this.props.totalGalleryUploaded +
-            this.props.totalCameraPhotosUploaded +
-            this.props.totalWebImagesUpdated
-        );
-    }
-
-    /**
      * Upload photos, 1 photo per request
      *
      * - status - images being sent across
@@ -500,36 +490,41 @@ class LeftPage extends PureComponent {
      * - Consider: Auto-upload any tagged images in the background once the user has pressed Confirm
      */
     uploadPhotos = async () => {
-        this.props.resetSucsessfullyUploaded();
-
-        let galleryTaggedCount = 0;
-        let cameraPhotosTaggedCount = 0;
-        let webTaggedCount = 0;
+        // Reset upload count
+        this.setState({
+            uploaded: 0
+        });
 
         const model = this.props.model;
 
+        let galleryCount = 0;
+        let photosCount = 0;
+        let webCount = 0;
+
         this.props.gallery.map(item => {
-            if (Object.keys(item.tags).length > 0) galleryTaggedCount++;
+            if (Object.keys(item.tags).length > 0) galleryCount++;
         });
 
         this.props.photos.map(item => {
-            if (Object.keys(item.tags).length > 0) cameraPhotosTaggedCount++;
+            if (Object.keys(item.tags).length > 0) photosCount++;
         });
 
         this.props.webPhotos.map(item => {
-            if (Object.keys(item.tags).length > 0) webTaggedCount++;
+            if (Object.keys(item.tags).length > 0) webCount++;
         });
 
-        const totalCount =
-            galleryTaggedCount + cameraPhotosTaggedCount + webTaggedCount;
+        const totalToBeUploaded = galleryCount + photosCount + webCount;
 
-        // shared.js
-        this.props.totalPhotosToBeUploaded(totalCount); // this.props.totalImagesToUpload
+        console.log({ totalToBeUploaded });
+
+        this.setState({
+            totalToBeUploaded
+        });
 
         // shared.js
         this.props.toggleUpload();
 
-        if (galleryTaggedCount > 0) {
+        if (galleryCount > 0) {
             // async loop
             for (const img of this.props.gallery) {
                 if (Object.keys(img.tags).length > 0) {
@@ -573,14 +568,16 @@ class LeftPage extends PureComponent {
                                 myIndex
                             );
 
-                            this.props.incrementSuccessfulUploads();
+                            this.setState({
+                                uploaded: this.state.uploaded + 1
+                            });
                         }
                     }
                 }
             }
         }
 
-        if (cameraPhotosTaggedCount > 0) {
+        if (photosCount > 0) {
             // async loop
             for (const img of this.props.photos) {
                 if (Object.keys(img.tags).length > 0) {
@@ -618,14 +615,16 @@ class LeftPage extends PureComponent {
                             // Remove the image
                             this.props.cameraPhotoUploadedSuccessfully(myIndex);
 
-                            this.props.incrementSuccessfulUploads();
+                            this.setState({
+                                uploaded: this.state.uploaded + 1
+                            });
                         }
                     }
                 }
             }
         }
 
-        if (webTaggedCount > 0) {
+        if (webCount > 0) {
             // async loop
             for (const img of this.props.webPhotos) {
                 if (Object.keys(img.tags).length > 0) {
@@ -635,21 +634,19 @@ class LeftPage extends PureComponent {
                         img.id
                     );
 
-                    console.log('web.uploadTags.response', response);
-
                     if (response.success) {
                         this.props.removeWebImage(img.id);
 
-                        this.props.incrementSuccessfulUploads();
+                        this.setState({
+                            uploaded: this.state.uploaded + 1
+                        });
                     }
                 }
             }
         }
 
         //  Last step - if all photos have been deleted, close modal
-        if (
-            this._getRemainingUploadCount() === this.props.totalImagesToUpload
-        ) {
+        if (this.props.uploaded === this.props.totalImagesToUpload) {
             // shared_actions, reducer
             this.props.toggleUpload();
             this.props.toggleThankYou();
