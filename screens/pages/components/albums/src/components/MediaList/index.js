@@ -1,31 +1,35 @@
 import React, { Component } from 'react';
-import { FlatList, ActivityIndicator, View, TouchableOpacity, Text, Image } from 'react-native';
+import {
+    FlatList,
+    ActivityIndicator,
+    View,
+    TouchableOpacity,
+    Text,
+    Image
+} from 'react-native';
 import _ from 'lodash';
 import moment from 'moment';
 import MediaItem from '../MediaItem';
 import styles from './styles';
 import { existsInArray, placeInTime } from '../../utils';
 import { connect } from 'react-redux';
-import * as actions from '../../../../../../../actions'
+import * as actions from '../../../../../../../actions';
 
 const arrow = require('../../assets/images/next-arrow.png');
 
-class MediaList extends Component
-{
-    constructor (props)
-    {
+class MediaList extends Component {
+    constructor(props) {
         super(props);
 
         this.state = {
             finishedLoading: false,
             rows: [],
             rowsSorted: {},
-            selected: [],
+            selected: []
         };
     }
 
-    componentDidMount ()
-    {
+    componentDidMount() {
         this.setState({
             rows: this.splitIntoRows(this.props.images, this.props.itemsPerRow)
         });
@@ -37,13 +41,11 @@ class MediaList extends Component
      * @param itemsPerRow
      * @return {Array}
      */
-    splitIntoRows (images, itemsPerRow)
-    {
+    splitIntoRows(images, itemsPerRow) {
         let result = {};
         let temp = {};
 
-        for (let i = 0; i < images.length; i++)
-        {
+        for (let i = 0; i < images.length; i++) {
             if (!images[i]) continue;
 
             const timestampOfImage = images[i].timestamp * 1000;
@@ -55,7 +57,10 @@ class MediaList extends Component
 
             temp[placeInTimeOfImage].push(images[i]);
 
-            if (temp[placeInTimeOfImage].length > 0 && temp[placeInTimeOfImage].length % itemsPerRow === 0) {
+            if (
+                temp[placeInTimeOfImage].length > 0 &&
+                temp[placeInTimeOfImage].length % itemsPerRow === 0
+            ) {
                 if (result[placeInTimeOfImage] === undefined) {
                     result[placeInTimeOfImage] = [];
                 }
@@ -87,9 +92,13 @@ class MediaList extends Component
             return prop;
         });
 
-        let allMonths = allTimeTags.filter(prop => Number.isInteger(prop) && prop < 12);
+        let allMonths = allTimeTags.filter(
+            prop => Number.isInteger(prop) && prop < 12
+        );
         allMonths = _.reverse(_.sortBy(allMonths));
-        let allYears = allTimeTags.filter(prop => Number.isInteger(prop) && !allMonths.includes(prop));
+        let allYears = allTimeTags.filter(
+            prop => Number.isInteger(prop) && !allMonths.includes(prop)
+        );
         allYears = _.reverse(_.sortBy(allYears));
 
         order = _.concat(order, allMonths, allYears);
@@ -107,7 +116,7 @@ class MediaList extends Component
         return final;
     }
 
-    onEndReached () {
+    onEndReached() {
         if (!this.state.finishedLoading) {
             this.setState({ finishedLoading: true });
         }
@@ -117,23 +126,24 @@ class MediaList extends Component
      * @description Select media file function
      * @param item
      */
-    selectMediaFile (item)
-    {
-        let { maximumSelectedFiles, itemsPerRow, callback, selectSingleItem } = this.props;
+    selectMediaFile(item) {
+        let {
+            maximumSelectedFiles,
+            itemsPerRow,
+            callback,
+            selectSingleItem
+        } = this.props;
         let selected = this.state.selected;
         let index = existsInArray(selected, 'uri', item.uri);
 
-        if (index >= 0)
-        {
-            selected.splice( index, 1 );
-        }
-        else
-        {
+        if (index >= 0) {
+            selected.splice(index, 1);
+        } else {
             if (selectSingleItem) {
-                selected.splice( 0, selected.length );
+                selected.splice(0, selected.length);
             }
             if (selected.length < maximumSelectedFiles) {
-                selected.push( item );
+                selected.push(item);
             }
         }
 
@@ -142,8 +152,7 @@ class MediaList extends Component
         callback(selected, item);
     }
 
-    backToAlbums ()
-    {
+    backToAlbums() {
         this.setState({
             selected: []
         });
@@ -157,8 +166,7 @@ class MediaList extends Component
      * @param item
      * @return {XML}
      */
-    renderMediaItem (item, index)
-    {
+    renderMediaItem(item, index) {
         let {
             selected,
             imageMargin,
@@ -169,7 +177,7 @@ class MediaList extends Component
         } = this.props;
 
         let uri = item.uri;
-        let isSelected = (existsInArray(selected, 'uri', uri) >= 0);
+        let isSelected = existsInArray(selected, 'uri', uri) >= 0;
 
         return (
             <MediaItem
@@ -186,8 +194,7 @@ class MediaList extends Component
         );
     }
 
-    renderRowHeader (rowData)
-    {
+    renderRowHeader(rowData) {
         let headerTitle = placeInTime(rowData[0].timestamp * 1000);
 
         if (this.state.rowsSorted[headerTitle].indexOf(rowData) > 0) {
@@ -207,7 +214,7 @@ class MediaList extends Component
         }
 
         if (headerTitle === 'month') {
-            headerTitle = 'This Month'
+            headerTitle = 'This Month';
         }
 
         return (
@@ -220,7 +227,9 @@ class MediaList extends Component
                         textAlign: 'center',
                         marginVertical: 7,
                         color: '#aaaaaa'
-                    }}>{headerTitle}</Text>
+                    }}>
+                    {headerTitle}
+                </Text>
             </View>
         );
     }
@@ -230,9 +239,8 @@ class MediaList extends Component
      * @param rowData
      * @return {XML}
      */
-    renderRow (rowData, index)
-    {
-        let items = rowData.map((item) => {
+    renderRow(rowData, index) {
+        let items = rowData.map(item => {
             if (item === null) return null;
 
             return this.renderMediaItem(item, index);
@@ -241,9 +249,7 @@ class MediaList extends Component
         return (
             <View style={{}}>
                 {this.renderRowHeader(rowData)}
-                <View style={styles.row}>
-                    {items}
-                </View>
+                <View style={styles.row}>{items}</View>
             </View>
         );
     }
@@ -252,12 +258,12 @@ class MediaList extends Component
      * @description Render footer loader when more files are fetching
      * @return {*}
      */
-    renderFooterLoader ()
-    {
+    renderFooterLoader() {
         console.log('renderLoaderFooter', this.state.finishedLoading);
-        if (!this.state.finishedLoading)
-        {
-            return <ActivityIndicator color={this.props.activityIndicatorColor}/>;
+        if (!this.state.finishedLoading) {
+            return (
+                <ActivityIndicator color={this.props.activityIndicatorColor} />
+            );
         }
 
         return null;
@@ -290,15 +296,19 @@ class MediaList extends Component
     //   );
     // }
 
-    renderList () {
+    renderList() {
         return (
-            <View style={{flex: 14}}>
+            <View style={{ flex: 14 }}>
                 <FlatList
                     ListFooterComponent={this.renderFooterLoader.bind(this)}
                     initialNumToRender={this.props.batchSize}
                     onEndReached={this.onEndReached.bind(this)}
-                    renderItem={({item, index}) => this.renderRow(item, index)}
-                    keyExtractor={(item, index) => item[0].uri + item[0].timestamp + index}
+                    renderItem={({ item, index }) =>
+                        this.renderRow(item, index)
+                    }
+                    keyExtractor={(item, index) =>
+                        item[0].uri + item[0].timestamp + index
+                    }
                     data={this.state.rows}
                     extraData={this.props.selected}
                 />
@@ -306,14 +316,17 @@ class MediaList extends Component
         );
     }
 
-    render () {
+    render() {
         return (
             <View style={{ flex: 1, alignItems: 'center' }}>
-                { /* this.renderBackToAlbumsButton() */}
+                {/* this.renderBackToAlbumsButton() */}
                 {this.renderList()}
             </View>
         );
     }
 }
 
-export default connect(null, actions)(MediaList);
+export default connect(
+    null,
+    actions
+)(MediaList);

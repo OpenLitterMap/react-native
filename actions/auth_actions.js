@@ -18,7 +18,7 @@ import {
     TOGGLE_USERNAME_MODAL,
     STORE_CURRENT_APP_VERSION,
     ON_SEEN_FEATURE_TOUR,
-    URL,
+    URL
 } from './types';
 import axios from 'axios';
 
@@ -27,7 +27,7 @@ export const changeLang = lang => {
         type: CHANGE_LANG,
         payload: lang
     };
-}
+};
 
 /**
  * Check if the token is valid
@@ -43,31 +43,35 @@ export const checkValidToken = token => {
             method: 'POST',
             headers: {
                 Authorization: 'Bearer ' + token,
-                'Accept': 'application/json'
+                Accept: 'application/json'
             }
         })
-        .then(response => {
-            console.log('checkValidToken.response', response.data);
+            .then(response => {
+                console.log('checkValidToken.response', response.data);
 
-            if (response.data.hasOwnProperty('message') && response.data.message === 'valid')
-            {
-                dispatch({
-                    type: 'TOKEN_IS_VALID',
-                    payload: true
-                });
-            }
-        })
-        .catch(error => {
-            console.log('auth_actions.checkValidToken', error.response.data);
+                if (
+                    response.data.hasOwnProperty('message') &&
+                    response.data.message === 'valid'
+                ) {
+                    dispatch({
+                        type: 'TOKEN_IS_VALID',
+                        payload: true
+                    });
+                }
+            })
+            .catch(error => {
+                console.log(
+                    'auth_actions.checkValidToken',
+                    error.response.data
+                );
 
-            if (error.response.data.message === "Unauthenticated.")
-            {
-                dispatch({
-                    type: 'TOKEN_IS_VALID',
-                    payload: false
-                });
-            }
-        });
+                if (error.response.data.message === 'Unauthenticated.') {
+                    dispatch({
+                        type: 'TOKEN_IS_VALID',
+                        payload: false
+                    });
+                }
+            });
     };
 };
 
@@ -89,26 +93,24 @@ export const onSeenFeatureTour = text => {
  *** CHECK IF TOKEN EXISTS - log in
  **  - fired on AuthScreen componentDidMount
  */
-export const checkForToken = () =>
+export const checkForToken = () => async dispatch => {
+    // console.log('auth_action - does token exist ?');
+    let jwt;
 
-    async dispatch => {
-        // console.log('auth_action - does token exist ?');
-        let jwt;
+    try {
+        jwt = await AsyncStorage.getItem('jwt');
+    } catch (e) {
+        // console.log('Error getting token - check for token');
+    }
 
-        try {
-            jwt = await AsyncStorage.getItem('jwt');
-        } catch (e) {
-            // console.log('Error getting token - check for token');
-        }
-
-        if (jwt) {
-            // console.log('auth_action - token exists');
-            // Dispatch an action, login success
-            await dispatch({type: LOGIN_SUCCESS, payload: jwt});
-        } else {
-            return null;
-        }
-    };
+    if (jwt) {
+        // console.log('auth_action - token exists');
+        // Dispatch an action, login success
+        await dispatch({ type: LOGIN_SUCCESS, payload: jwt });
+    } else {
+        return null;
+    }
+};
 
 /**
  * Create an Account
@@ -131,58 +133,61 @@ export const createAccount = data => {
                 username: data.username
             })
         })
-        .then(response => {
-            // console.log('Response!');
-            const responseJson = response
-                .text() // returns a promise
-                .then(async responseJson => {
-                    // console.log('=== create account - responseJson ===');
+            .then(response => {
+                // console.log('Response!');
+                const responseJson = response
+                    .text() // returns a promise
+                    .then(async responseJson => {
+                        // console.log('=== create account - responseJson ===');
 
-                    const jsonObj = JSON.parse(responseJson);
-                    // console.log('-- parsed response --');
-                    // console.log(jsonObj);
+                        const jsonObj = JSON.parse(responseJson);
+                        // console.log('-- parsed response --');
+                        // console.log(jsonObj);
 
-                    // TODO refactor returned errors to be simple text messages with status codes
-                    if (jsonObj.errors) {
-                        let payload;
-                        if (jsonObj.errors.email) {
-                            payload = jsonObj.errors.email;
+                        // TODO refactor returned errors to be simple text messages with status codes
+                        if (jsonObj.errors) {
+                            let payload;
+                            if (jsonObj.errors.email) {
+                                payload = jsonObj.errors.email;
+                            }
+                            if (jsonObj.errors.password) {
+                                payload = jsonObj.errors.password;
+                            }
+                            if (jsonObj.errors.username) {
+                                payload = jsonObj.errors.username;
+                            }
+
+                            dispatch({
+                                type: SERVER_STATUS,
+                                payload: payload
+                            });
                         }
-                        if (jsonObj.errors.password) {
-                            payload = jsonObj.errors.password;
+
+                        if (jsonObj.success) {
+                            dispatch({
+                                type: ACCOUNT_CREATED,
+                                payload: jsonObj.success
+                            });
+
+                            var login = {
+                                email: data.email,
+                                password: data.password
+                            };
+
+                            // Log the user in
+                            dispatch(serverLogin(login));
                         }
-                        if (jsonObj.errors.username) {
-                            payload = jsonObj.errors.username;
-                        }
-
-                        dispatch({
-                            type: SERVER_STATUS,
-                            payload: payload
-                        });
-                    }
-
-                    if (jsonObj.success) {
-                        dispatch({ type: ACCOUNT_CREATED, payload: jsonObj.success });
-
-                        var login = {
-                            email: data.email,
-                            password: data.password
-                        };
-
-                        // Log the user in
-                        dispatch(serverLogin(login));
-                    }
-                })
-                .catch(err => {
-                    // console.log('Error 2');
-                    // console.log(err);
-                });
-            // } // response status 200
-        })
-        .catch(error => {
-            // console.log('Error!');
-            // console.log(error);
-        });
+                    })
+                    .catch(err => {
+                        // console.log('Error 2');
+                        // console.log(err);
+                    });
+                // } // response status 200
+            })
+            .catch(error => {
+                // console.log('Error!');
+                // console.log(error);
+            });
     };
 };
 
@@ -222,7 +227,7 @@ export const changeServerStatusText = text => {
         type: CHANGE_SERVER_STATUS_TEXT,
         payload: text
     };
-}
+};
 
 /**
  * The user forgot their password and is submitting their email address to request a link
@@ -230,21 +235,23 @@ export const changeServerStatusText = text => {
 export const sendResetPasswordRequest = email => {
     return dispatch => {
         return axios(URL + '/api/password/email', {
-                method: "POST",
-                data: {
-                    email: email,
-                    api: true // we need this to override the response
-                },
-                headers: {
-                    Accept: 'application/json',
-                    'Content-Type': 'application/json'
-                }
-            })
+            method: 'POST',
+            data: {
+                email: email,
+                api: true // we need this to override the response
+            },
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json'
+            }
+        })
             .then(response => {
                 console.log('sendResetPasswordRequest', response.data);
 
-                if (response.data.message === "We have emailed your password reset link!")
-                {
+                if (
+                    response.data.message ===
+                    'We have emailed your password reset link!'
+                ) {
                     return {
                         success: true
                     };
@@ -253,19 +260,21 @@ export const sendResetPasswordRequest = email => {
             .catch(error => {
                 console.log('sendResetPasswordRequest', error.response.data);
 
-                if (error.response.data.message === "The given data was invalid.")
-                {
+                if (
+                    error.response.data.message ===
+                    'The given data was invalid.'
+                ) {
                     return {
                         success: false,
                         msg: error.response.data.errors.email // We can't find a user with that email address
-                    }
+                    };
                 }
 
                 return {
                     success: false,
                     msg: 'error'
                 };
-        });
+            });
     };
 };
 
@@ -273,8 +282,7 @@ export const sendResetPasswordRequest = email => {
  * A user is trying to login with email and password
  */
 export const serverLogin = data => {
-
-    return async (dispatch) => {
+    return async dispatch => {
         dispatch({ type: SUBMIT_START });
 
         return await axios(URL + '/oauth/token', {
@@ -291,46 +299,38 @@ export const serverLogin = data => {
                 password: data.password
             }
         })
-        .then(response => {
-            console.log('serverLogin', response);
+            .then(response => {
+                console.log('serverLogin', response);
 
-            if (response.status === 200)
-            {
-                const token = response.data.access_token;
+                if (response.status === 200) {
+                    const token = response.data.access_token;
 
-                try
-                {
-                    AsyncStorage.setItem('jwt', token);
-                }
-                catch (err)
-                {
-                    console.log('serverLogin.saveJWT', err);
-                }
+                    try {
+                        AsyncStorage.setItem('jwt', token);
+                    } catch (err) {
+                        console.log('serverLogin.saveJWT', err);
+                    }
 
-                dispatch({ type: LOGIN_SUCCESS, payload: token });
-                dispatch(fetchUser(token));
-            }
-            else
-            {
-                dispatch({ type: LOGIN_FAIL });
-            }
-        })
-        .catch(error => {
-            console.log('serverLogin.error', error.response.data);
-            console.log('status', error.response.status)
-
-            switch (error.response.status)
-            {
-                case 400:
-                    dispatch({ type: BAD_PASSWORD });
-                    break;
-
-                default:
+                    dispatch({ type: LOGIN_SUCCESS, payload: token });
+                    dispatch(fetchUser(token));
+                } else {
                     dispatch({ type: LOGIN_FAIL });
-                    break;
-            }
+                }
+            })
+            .catch(error => {
+                console.log('serverLogin.error', error.response.data);
+                console.log('status', error.response.status);
 
-        });
+                switch (error.response.status) {
+                    case 400:
+                        dispatch({ type: BAD_PASSWORD });
+                        break;
+
+                    default:
+                        dispatch({ type: LOGIN_FAIL });
+                        break;
+                }
+            });
     };
 };
 
@@ -353,43 +353,51 @@ export const fetchUser = token => {
                 Authorization: 'Bearer ' + token
             }
         })
-        .then(response => {
-            // console.log(response);
-            // console.log(response.data);
-            if (response.status === 200) {
-                // console.log("=== fetchUser - 200 ===");
-                const responseJson = response
-                    .text() // returns a promise
-                    .then(async responseJson => {
-                        // console.log('=== fetchUser - responseJson1 ===');
-                        // console.log(typeof(responseJson));
-                        // console.log(responseJson);
-                        const userObj = JSON.parse(responseJson);
-                        // console.log("User object ...", userObj);
+            .then(response => {
+                // console.log(response);
+                // console.log(response.data);
+                if (response.status === 200) {
+                    // console.log("=== fetchUser - 200 ===");
+                    const responseJson = response
+                        .text() // returns a promise
+                        .then(async responseJson => {
+                            // console.log('=== fetchUser - responseJson1 ===');
+                            // console.log(typeof(responseJson));
+                            // console.log(responseJson);
+                            const userObj = JSON.parse(responseJson);
+                            // console.log("User object ...", userObj);
 
-                        await AsyncStorage.setItem('user', JSON.stringify(userObj));
+                            await AsyncStorage.setItem(
+                                'user',
+                                JSON.stringify(userObj)
+                            );
 
-                        dispatch({ type: USER_FOUND, payload: { userObj, token } });
+                            dispatch({
+                                type: USER_FOUND,
+                                payload: { userObj, token }
+                            });
 
-                        this.props.navigation.navigate(userToken ? 'App' : 'Auth');
-                    })
-                    .catch(error => {
-                        // console.log('fetch user - error 2');
-                        // console.log(error);
+                            this.props.navigation.navigate(
+                                userToken ? 'App' : 'Auth'
+                            );
+                        })
+                        .catch(error => {
+                            // console.log('fetch user - error 2');
+                            // console.log(error);
+                        });
+                } else {
+                    // response.status not 200
+                    const errorJson = response.text().then(async errorJson => {
+                        const errorObj = JSON.parse(errorJson);
+                        // console.log('Error object');
+                        // console.log(errorObj);
                     });
-            } else {
-                // response.status not 200
-                const errorJson = response.text().then(async errorJson => {
-                    const errorObj = JSON.parse(errorJson);
-                    // console.log('Error object');
-                    // console.log(errorObj);
-                });
-            }
-        })
-        .catch(err => {
-            // console.log('error 1');
-            // console.log(err);
-        });
+                }
+            })
+            .catch(err => {
+                // console.log('error 1');
+                // console.log(err);
+            });
     };
 };
 

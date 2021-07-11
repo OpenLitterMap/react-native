@@ -11,8 +11,7 @@ import { connect } from 'react-redux';
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 
-class LitterImage extends PureComponent
-{
+class LitterImage extends PureComponent {
     // ScrollView Image Props
     static defaultProps = {
         doAnimateZoomReset: false,
@@ -22,13 +21,12 @@ class LitterImage extends PureComponent
         zoomWidth: SCREEN_WIDTH
     };
 
-    constructor (props)
-    {
+    constructor(props) {
         super(props);
 
         this.state = {
             imageLoaded: false
-        }
+        };
     }
 
     // ScrollView Image - Reset Zoom
@@ -58,15 +56,13 @@ class LitterImage extends PureComponent
      * Else
      *   return uri
      */
-    _getFilenameOrUri ()
-    {
-        return (this.props.photoSelected.type === 'web')
+    _getFilenameOrUri() {
+        return this.props.photoSelected.type === 'web'
             ? this.props.photoSelected.filename
             : this.props.photoSelected.uri;
     }
 
-    _imageLoaded ()
-    {
+    _imageLoaded() {
         this.setState({ imageLoaded: true });
     }
 
@@ -77,8 +73,7 @@ class LitterImage extends PureComponent
      *
      * and again when imageLoaded is true
      */
-    render ()
-    {
+    render() {
         console.log('LitterImage', this.props.photoSelected);
         return (
             <View>
@@ -93,8 +88,7 @@ class LitterImage extends PureComponent
                     showsVerticalScrollIndicator={false}
                     ref={this.setZoomRef}
                     scrollEnabled={true}
-                    style={{ overflow: 'hidden' }}
-                >
+                    style={{ overflow: 'hidden' }}>
                     <Image
                         resizeMode="cover"
                         source={{ uri: this._getFilenameOrUri() }}
@@ -104,7 +98,7 @@ class LitterImage extends PureComponent
 
                     <ActivityIndicator
                         style={styles.activityIndicator}
-                        animating={! this.state.imageLoaded}
+                        animating={!this.state.imageLoaded}
                     />
                 </ScrollView>
             </View>
@@ -118,7 +112,7 @@ const styles = {
         left: 0,
         right: 0,
         top: 0,
-        bottom: 0,
+        bottom: 0
     },
     box: {
         width: SCREEN_WIDTH,
@@ -141,6 +135,9 @@ const styles = {
         width: SCREEN_WIDTH,
         height: SCREEN_HEIGHT * 0.8
     }
-}
+};
 
-export default connect(null, actions)(LitterImage);
+export default connect(
+    null,
+    actions
+)(LitterImage);

@@ -7,8 +7,9 @@
     "ios": "react-native run-ios",
     "start": "react-native start",
     "test": "jest",
-    "lint": "eslint .",
-    "devtools": "react-devtools"
+    "lint": "eslint --ext '.js,.ts,.tsx' .",
+    "devtools": "react-devtools",
+    "prepare": "husky install"
   },
   "dependencies": {
     "@around25/react-native-gallery-media-picker": "^0.2.0",
@@ -70,9 +71,12 @@
   "devDependencies": {
     "@babel/core": "7.9.0",
     "@babel/runtime": "7.9.0",
+    "@commitlint/cli": "^12.1.4",
+    "@commitlint/config-conventional": "^12.1.4",
     "@react-native-community/eslint-config": "0.0.5",
     "babel-jest": "24.9.0",
     "eslint": "6.8.0",
+    "husky": "^7.0.0",
     "jest": "24.9.0",
     "metro-react-native-babel-preset": "0.56.4",
     "react-devtools": "^4.13.2",
@@ -81,4 +85,5 @@
   "jest": {
     "preset": "react-native"
   }
+
 }

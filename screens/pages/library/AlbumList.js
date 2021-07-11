@@ -19,9 +19,7 @@ const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
 class AlbumList extends PureComponent {
-
-    constructor(props)
-    {
+    constructor(props) {
         super(props);
 
         this.state = {
@@ -32,41 +30,33 @@ class AlbumList extends PureComponent {
         };
     }
 
-    componentDidMount ()
-    {
+    componentDidMount() {
         this.requestCameraPermission();
     }
 
-    async requestCameraPermission ()
-    {
-        if (Platform.OS === 'ios')
-        {
-            request(PERMISSIONS.IOS.PHOTO_LIBRARY)
-                .then(result => {
-                    if (result === 'granted')
-                    {
-                        this.setState({ hasPermission: true, loading: false });
-                    }
+    async requestCameraPermission() {
+        if (Platform.OS === 'ios') {
+            request(PERMISSIONS.IOS.PHOTO_LIBRARY).then(result => {
+                if (result === 'granted') {
+                    this.setState({ hasPermission: true, loading: false });
+                }
             });
         }
 
-        if (Platform.OS === 'android')
-        {
+        if (Platform.OS === 'android') {
             let hasPermission = false;
 
-            request(PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE)
-                .then(result => {
-                    if (result === 'granted')
-                    {
-                        hasPermission = true;
-                    }
+            request(PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE).then(result => {
+                if (result === 'granted') {
+                    hasPermission = true;
+                }
 
-                PermissionsAndroid.request("android.permission.ACCESS_MEDIA_LOCATION")
-                    .then(result => {
-                        if (result === PermissionsAndroid.RESULTS.DENIED)
-                        {
-                            hasPermission = false;
-                        }
+                PermissionsAndroid.request(
+                    'android.permission.ACCESS_MEDIA_LOCATION'
+                ).then(result => {
+                    if (result === PermissionsAndroid.RESULTS.DENIED) {
+                        hasPermission = false;
+                    }
 
                     this.setState({ hasPermission, loading: false });
                 });
@@ -79,18 +69,17 @@ class AlbumList extends PureComponent {
      *
      * This should probably be replaced with SafeAreaView
      */
-    container ()
-    {
-        return Platform.OS === 'android' ? styles.androidContainer : styles.iOSContainer;
+    container() {
+        return Platform.OS === 'android'
+            ? styles.androidContainer
+            : styles.iOSContainer;
     }
 
-    getSelectedFiles (files, current)
-    {
+    getSelectedFiles(files, current) {
         this.setState({ totalFiles: files.length, selected: files });
     }
 
-    renderCenterTitle ()
-    {
+    renderCenterTitle() {
         // Todo - switch between albums
         return <Text style={{ fontSize: SCREEN_HEIGHT * 0.025 }}>Photos</Text>;
     }
@@ -98,24 +87,24 @@ class AlbumList extends PureComponent {
     /**
      * Choose Images for Tagging
      */
-    _chooseImages ()
-    {
+    _chooseImages() {
         this.props.photosFromGallery(this.state.selected);
         this.props.toggleImageBrowser();
 
         // async-storage set gallery
-        AsyncStorage.setItem('openlittermap-gallery', JSON.stringify(this.state.selected));
+        AsyncStorage.setItem(
+            'openlittermap-gallery',
+            JSON.stringify(this.state.selected)
+        );
     }
 
-    _getDoneText ()
-    {
+    _getDoneText() {
         return this.props.totalGallerySelected === 0
             ? 'Done'
             : 'Done (' + this.props.totalGallerySelected + ')';
     }
 
-    render ()
-    {
+    render() {
         return (
             /* This should probably be wrapped in SafeAreaView? */
             <View style={this.container()}>
@@ -124,7 +113,10 @@ class AlbumList extends PureComponent {
                     outerContainerStyles={{ height: SCREEN_HEIGHT * 0.1 }}
                     leftComponent={{
                         text: 'Cancel',
-                        style: { color: '#2089dc', fontSize: SCREEN_HEIGHT * 0.025 },
+                        style: {
+                            color: '#2089dc',
+                            fontSize: SCREEN_HEIGHT * 0.025
+                        },
                         size: SCREEN_HEIGHT * 0.03,
                         onPress: () => {
                             this.props.toggleImageBrowser(false);
@@ -147,24 +139,22 @@ class AlbumList extends PureComponent {
                     }}
                 />
 
-                {
-                    this.state.hasPermission && (
-                        <GalleryMediaPicker
-                            groupTypes="All"
-                            assetType="Photos"
-                            // markIcon={marker}
-                            // customSelectMarker={this.renderSelectMarker()}
-                            batchSize={1}
-                            emptyGalleryText={'There are no photos or video'}
-                            maximumSelectedFiles={100}
-                            selected={this.state.selected}
-                            itemsPerRow={3}
-                            imageMargin={3}
-                            customLoader={<ActivityIndicator />}
-                            callback={this.getSelectedFiles.bind(this)}
-                        />
-                    )
-                }
+                {this.state.hasPermission && (
+                    <GalleryMediaPicker
+                        groupTypes="All"
+                        assetType="Photos"
+                        // markIcon={marker}
+                        // customSelectMarker={this.renderSelectMarker()}
+                        batchSize={1}
+                        emptyGalleryText={'There are no photos or video'}
+                        maximumSelectedFiles={100}
+                        selected={this.state.selected}
+                        itemsPerRow={3}
+                        imageMargin={3}
+                        customLoader={<ActivityIndicator />}
+                        callback={this.getSelectedFiles.bind(this)}
+                    />
+                )}
             </View>
         );
     }

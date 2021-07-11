@@ -1,20 +1,17 @@
-import React from 'react'
-import {
-    createAppContainer,
-    createSwitchNavigator
-} from 'react-navigation'
+import React from 'react';
+import { createAppContainer, createSwitchNavigator } from 'react-navigation';
 
-import { createBottomTabNavigator } from 'react-navigation-tabs'
+import { createBottomTabNavigator } from 'react-navigation-tabs';
 
-import AuthLoadingScreen from './auth/AuthLoadingScreen'
-import AuthScreen from './auth/AuthScreen'
-import WelcomeScreen from './auth/WelcomeScreen'
-import SwipeScreen from './SwipeScreen'
-import SettingsScreen from './SettingsScreen'
+import AuthLoadingScreen from './auth/AuthLoadingScreen';
+import AuthScreen from './auth/AuthScreen';
+import WelcomeScreen from './auth/WelcomeScreen';
+import SwipeScreen from './SwipeScreen';
+import SettingsScreen from './SettingsScreen';
 
 // change default colour cursor
-import { TextInput } from 'react-native'
-TextInput.defaultProps.selectionColor = 'white'
+import { TextInput } from 'react-native';
+TextInput.defaultProps.selectionColor = 'white';
 
 const AuthStack = createBottomTabNavigator(
     {

@@ -9,38 +9,36 @@ import {
     TouchableOpacity,
     TouchableWithoutFeedback,
     View
-} from 'react-native'
+} from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
 
-import { TransText } from 'react-native-translation'
+import { TransText } from 'react-native-translation';
 
-import { request, PERMISSIONS } from 'react-native-permissions'
+import { request, PERMISSIONS } from 'react-native-permissions';
 
-import { Button, Header, Icon, SearchBar } from 'react-native-elements'
+import { Button, Header, Icon, SearchBar } from 'react-native-elements';
 // import * as Progress from 'react-native-progress'
 
-import { connect } from 'react-redux'
-import * as actions from '../../actions'
+import { connect } from 'react-redux';
+import * as actions from '../../actions';
 
-import AlbumList from './library/AlbumList'
+import AlbumList from './library/AlbumList';
 
-const SCREEN_WIDTH = Dimensions.get('window').width
-const SCREEN_HEIGHT = Dimensions.get('window').height
+const SCREEN_WIDTH = Dimensions.get('window').width;
+const SCREEN_HEIGHT = Dimensions.get('window').height;
 
-const equalWidth = SCREEN_WIDTH / 3
+const equalWidth = SCREEN_WIDTH / 3;
 
 // Components
-import LeftPageImages from './components/LeftPageImages'
+import LeftPageImages from './components/LeftPageImages';
 // import Stats from './components/Stats'
 import AddTags from './AddTags'
 
-import moment from 'moment'
+import moment from 'moment';
 
-class LeftPage extends PureComponent
-{
-    constructor (props)
-    {
-        super (props);
+class LeftPage extends PureComponent {
+    constructor(props) {
+        super(props);
         // Bind any functions that call props
         this.toggleSelecting = this.toggleSelecting.bind(this);
         // this.renderDeleteButton = this.renderDeleteButton.bind(this);
@@ -50,30 +48,24 @@ class LeftPage extends PureComponent
         // If the app is below a certain version, delete stored data.
 
         // Photos selected from the Photos Album
-        AsyncStorage.getItem('openlittermap-gallery')
-            .then((gallery) => {
-                if (gallery && gallery !== "[]") {
-                    this.props.photosFromGallery(JSON.parse(gallery));
-                }
+        AsyncStorage.getItem('openlittermap-gallery').then(gallery => {
+            if (gallery && gallery !== '[]') {
+                this.props.photosFromGallery(JSON.parse(gallery));
             }
-        );
+        });
 
         // Photos taken from the OLM Camera
-        AsyncStorage.getItem('openlittermap-photos')
-            .then((photos) => {
-                if (photos && photos !== "[]") {
-                    this.props.loadCameraPhotosFromAsyncStorage(JSON.parse(photos));
-                }
+        AsyncStorage.getItem('openlittermap-photos').then(photos => {
+            if (photos && photos !== '[]') {
+                this.props.loadCameraPhotosFromAsyncStorage(JSON.parse(photos));
             }
-        );
+        });
     }
 
-    UNSAFE_componentWillReceiveProps (nextProps)
-    {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         // console.log('Next props - left page.gallery', nextProps.gallery);
         // If the user does not exist, the user has logged out.
-        if (! nextProps.user)
-        {
+        if (!nextProps.user) {
             // console.log('left page- user does not exist');
             this.props.navigation.navigate('Auth');
             return;
@@ -83,8 +75,7 @@ class LeftPage extends PureComponent
     /**
      * Check for images on the web app when this page loads
      */
-    async componentDidMount ()
-    {
+    async componentDidMount() {
         // web_actions, web_reducer
         await this.props.checkForImagesOnWeb(this.props.token);
     }
@@ -92,8 +83,7 @@ class LeftPage extends PureComponent
     /**
      *
      */
-    _toggleUpload ()
-    {
+    _toggleUpload() {
         this.props.toggleUpload();
 
         // cancel pending uploads
@@ -102,6 +92,7 @@ class LeftPage extends PureComponent
     render ()
     {
         console.log('Rendering: LeftPage');
+
         if (this.props.imageBrowserOpen)
         {
             // todo- cancel all subscriptions and async tasks in componentWillUnmount
@@ -114,40 +105,41 @@ class LeftPage extends PureComponent
             <>
                 <SafeAreaView style={{ flex: 0, backgroundColor: '#2189dc' }} />
                 <SafeAreaView style={styles.container}>
-
                     <Modal
                         animationType="slide"
                         transparent={true}
-                        visible={this.props.modalVisible}
-                    >
+                        visible={this.props.modalVisible}>
                         {/* Upload Photos */}
-                        {
-                            this.props.uploadVisible && (
-                                <View style={styles.modal}>
-                                    <TransText
-                                        style={styles.uploadText}
-                                        dictionary={`${lang}.leftpage.please-wait-uploading`}
-                                    />
+                        {this.props.uploadVisible && (
+                            <View style={styles.modal}>
+                                <TransText
+                                    style={styles.uploadText}
+                                    dictionary={`${lang}.leftpage.please-wait-uploading`}
+                                />
 
-                                    <ActivityIndicator style={{ marginBottom: 10 }} />
+                                <ActivityIndicator
+                                    style={{ marginBottom: 10 }}
+                                />
 
-                                    <Text style={styles.uploadCount}>
-                                        {this._getRemainingUploadCount()} /{' '}
-                                        {this.props.totalImagesToUpload}
-                                    </Text>
+                                <Text style={styles.uploadCount}>
+                                    {this._getRemainingUploadCount()} /{' '}
+                                    {this.props.totalImagesToUpload}
+                                </Text>
 
-                                    {/* <Progress.Circle
+                                {/* <Progress.Circle
                                       progress={this.props.galleryUploadProgress}
                                       showsText={true}
                                       size={100}
                                       style={{ marginBottom: 30 }}
                                     /> */}
-                                    {/* Todo - translate cancel */}
+                                {/* Todo - translate cancel */}
 
-                                    <Button onPress={this._toggleUpload.bind(this)} title="Cancel" />
-                                </View>
-                            )
-                        }
+                                <Button
+                                    onPress={this._toggleUpload.bind(this)}
+                                    title="Cancel"
+                                />
+                            </View>
+                        )}
 
                         {/* Tag Litter to Images */}
                         {
@@ -159,41 +151,54 @@ class LeftPage extends PureComponent
                         }
 
                         {/* Thank you modal */}
-                        {
-                            this.props.thankYouVisible && (
-                                <View style={styles.modal}>
-                                    <View style={styles.thankYouModalInner}>
-                                        <TransText
-                                            style={{ fontSize: SCREEN_HEIGHT * 0.02, marginBottom: 5 }}
-                                            dictionary={`${lang}.leftpage.thank-you`}
-                                        />
+                        {this.props.thankYouVisible && (
+                            <View style={styles.modal}>
+                                <View style={styles.thankYouModalInner}>
+                                    <TransText
+                                        style={{
+                                            fontSize: SCREEN_HEIGHT * 0.02,
+                                            marginBottom: 5
+                                        }}
+                                        dictionary={`${lang}.leftpage.thank-you`}
+                                    />
 
-                                        <TransText
-                                            style={{ fontSize: SCREEN_HEIGHT * 0.02, marginBottom: 5 }}
-                                            dictionary={`${lang}.leftpage.you-have-uploaded`}
-                                            values={{ "count": this.props.totalImagesToUpload }}
-                                        />
+                                    <TransText
+                                        style={{
+                                            fontSize: SCREEN_HEIGHT * 0.02,
+                                            marginBottom: 5
+                                        }}
+                                        dictionary={`${lang}.leftpage.you-have-uploaded`}
+                                        values={{
+                                            count: this.props
+                                                .totalImagesToUpload
+                                        }}
+                                    />
 
-                                        <View style={{ flexDirection: 'row' }}>
-                                            <TouchableWithoutFeedback
-                                                onPress={this._toggleThankYou.bind(this)}
-                                            >
-                                                <View style={styles.thankYouButton}>
-                                                   <TransText
-                                                       style={styles.normalWhiteText}
-                                                       dictionary={`${lang}.leftpage.close`}
-                                                   />
-                                                </View>
-                                            </TouchableWithoutFeedback>
-                                        </View>
+                                    <View style={{ flexDirection: 'row' }}>
+                                        <TouchableWithoutFeedback
+                                            onPress={this._toggleThankYou.bind(
+                                                this
+                                            )}>
+                                            <View style={styles.thankYouButton}>
+                                                <TransText
+                                                    style={
+                                                        styles.normalWhiteText
+                                                    }
+                                                    dictionary={`${lang}.leftpage.close`}
+                                                />
+                                            </View>
+                                        </TouchableWithoutFeedback>
                                     </View>
                                 </View>
-                            )
-                        }
+                            </View>
+                        )}
                     </Modal>
 
                     <Header
-                        containerStyle={{ paddingTop: 0, height: SCREEN_HEIGHT * 0.1 }}
+                        containerStyle={{
+                            paddingTop: 0,
+                            height: SCREEN_HEIGHT * 0.1
+                        }}
                         leftComponent={{
                             icon: 'menu',
                             color: '#fff',
@@ -217,7 +222,9 @@ class LeftPage extends PureComponent
                         webPhotos={this.props.webPhotos}
                     />
 
-                    <View style={styles.bottomContainer}>{this.renderBottomTabBar()}</View>
+                    <View style={styles.bottomContainer}>
+                        {this.renderBottomTabBar()}
+                    </View>
                 </SafeAreaView>
                 <SafeAreaView style={{ flex: 0, backgroundColor: 'white' }} />
             </>
@@ -230,19 +237,14 @@ class LeftPage extends PureComponent
      * other loops returning bugs when deleting multiple indexes
      */
     deleteSelectedImages = () => {
-
-        for (let i = this.props.photos.length - 1; i >= 0; --i)
-        {
-            if (this.props.photos[i]['selected'])
-            {
+        for (let i = this.props.photos.length - 1; i >= 0; --i) {
+            if (this.props.photos[i]['selected']) {
                 this.props.deleteSelectedPhoto(i);
             }
         }
 
-        for (let i = this.props.gallery.length - 1; i >= 0; --i)
-        {
-            if (this.props.gallery[i]['selected'])
-            {
+        for (let i = this.props.gallery.length - 1; i >= 0; --i) {
+            if (this.props.gallery[i]['selected']) {
                 this.props.deleteSelectedGallery(i);
             }
         }
@@ -252,8 +254,14 @@ class LeftPage extends PureComponent
 
         // async-storage photos & gallery set
         setTimeout(() => {
-            AsyncStorage.setItem('openlittermap-photos', JSON.stringify(this.props.photos));
-            AsyncStorage.setItem('openlittermap-gallery', JSON.stringify(this.props.gallery));
+            AsyncStorage.setItem(
+                'openlittermap-photos',
+                JSON.stringify(this.props.photos)
+            );
+            AsyncStorage.setItem(
+                'openlittermap-gallery',
+                JSON.stringify(this.props.gallery)
+            );
         }, 1000);
     };
 
@@ -264,11 +272,11 @@ class LeftPage extends PureComponent
     loadGallery = async () => {
         this.props.setImagesLoading(true);
 
-        let p = Platform.OS === 'android' ? PERMISSIONS.ANDROID : PERMISSIONS.IOS;
+        let p =
+            Platform.OS === 'android' ? PERMISSIONS.ANDROID : PERMISSIONS.IOS;
 
         request(p.CAMERA).then(result => {
-            if (result === 'granted')
-            {
+            if (result === 'granted') {
                 this.props.toggleImageBrowser(true);
             }
         });
@@ -277,12 +285,9 @@ class LeftPage extends PureComponent
     /**
      * Render Bottom Tab Bar = A || B
      */
-    renderBottomTabBar ()
-    {
-        if (this.props.isSelecting)
-        {
-            if (this.props.selected > 0)
-            {
+    renderBottomTabBar() {
+        if (this.props.isSelecting) {
+            if (this.props.selected > 0) {
                 return (
                     <View
                         style={{
@@ -292,19 +297,29 @@ class LeftPage extends PureComponent
                             alignItems: 'center',
                             width: '100%'
                         }}>
-                        <TouchableOpacity onPress={() => this.deleteSelectedImages()}>
+                        <TouchableOpacity
+                            onPress={() => this.deleteSelectedImages()}>
                             <Icon
                                 name="delete-sweep"
                                 size={SCREEN_HEIGHT * 0.04}
                                 color="#00aced"
                             />
-                            <TransText style={styles.normalText} dictionary={`${this.props.lang}.leftpage.delete`} />
+                            <TransText
+                                style={styles.normalText}
+                                dictionary={`${
+                                    this.props.lang
+                                }.leftpage.delete`}
+                            />
                         </TouchableOpacity>
                     </View>
                 );
             }
 
-            return <TransText dictionary={`${this.props.lang}.leftpage.select-to-delete`} />;
+            return (
+                <TransText
+                    dictionary={`${this.props.lang}.leftpage.select-to-delete`}
+                />
+            );
         }
         return (
             <View style={styles.bottomBarContainer}>
@@ -316,7 +331,10 @@ class LeftPage extends PureComponent
                             size={SCREEN_HEIGHT * 0.04}
                             color="#00aced"
                         />
-                        <TransText style={styles.normalText} dictionary={`${this.props.lang}.leftpage.photos`} />
+                        <TransText
+                            style={styles.normalText}
+                            dictionary={`${this.props.lang}.leftpage.photos`}
+                        />
                     </View>
                 </TouchableWithoutFeedback>
 
@@ -358,8 +376,15 @@ class LeftPage extends PureComponent
         return (
             <TouchableWithoutFeedback onPress={this.uploadPhotos}>
                 <View style={styles.iconPadding}>
-                    <Icon name="backup" size={SCREEN_HEIGHT * 0.04} color="#00aced" />
-                    <TransText style={styles.normalText} dictionary={`${this.props.lang}.leftpage.upload`} />
+                    <Icon
+                        name="backup"
+                        size={SCREEN_HEIGHT * 0.04}
+                        color="#00aced"
+                    />
+                    <TransText
+                        style={styles.normalText}
+                        dictionary={`${this.props.lang}.leftpage.upload`}
+                    />
                 </View>
             </TouchableWithoutFeedback>
         );
@@ -368,10 +393,8 @@ class LeftPage extends PureComponent
     /**
      * Render Delete / Cancel Header Button
      */
-    renderDeleteButton ()
-    {
-        if (this.props.isSelecting)
-        {
+    renderDeleteButton() {
+        if (this.props.isSelecting) {
             return (
                 <TransText
                     style={styles.normalWhiteText}
@@ -381,8 +404,7 @@ class LeftPage extends PureComponent
             );
         }
 
-        if (this.props.photos.length > 0 || this.props.gallery.length > 0)
-        {
+        if (this.props.photos.length > 0 || this.props.gallery.length > 0) {
             return (
                 <TransText
                     style={styles.normalText}
@@ -400,53 +422,61 @@ class LeftPage extends PureComponent
      *
      * My Account || x photos selected
      */
-    renderCenterTitle ()
-    {
-        if (this.props.isSelecting)
-        {
+    renderCenterTitle() {
+        if (this.props.isSelecting) {
             return (
                 <TransText
                     dictionary={`${this.props.lang}.leftpage.selected`}
-                    values={{ 'photos': this.props.selected }}
+                    values={{ photos: this.props.selected }}
                 />
             );
         }
 
-        if (this.props.gallery.length > 0 || this.props.photos.length > 0)
-        {
-            for (let i = 0; i < this.props.gallery.length; i++)
-            {
-                if (this.props.gallery[i].hasOwnProperty('litter'))
-                {
-                    return <TransText style={styles.normalText} dictionary={`${this.props.lang}.leftpage.press-upload`} />;
+        if (this.props.gallery.length > 0 || this.props.photos.length > 0) {
+            for (let i = 0; i < this.props.gallery.length; i++) {
+                if (this.props.gallery[i].hasOwnProperty('litter')) {
+                    return (
+                        <TransText
+                            style={styles.normalText}
+                            dictionary={`${
+                                this.props.lang
+                            }.leftpage.press-upload`}
+                        />
+                    );
                 }
             }
 
-            for (let i = 0; i < this.props.photos.length; i++)
-            {
-                if (this.props.photos[i].hasOwnProperty('litter'))
-                {
-                    return <TransText style={styles.normalText} dictionary={`${this.props.lang}.leftpage.press-upload`} />;
+            for (let i = 0; i < this.props.photos.length; i++) {
+                if (this.props.photos[i].hasOwnProperty('litter')) {
+                    return (
+                        <TransText
+                            style={styles.normalText}
+                            dictionary={`${
+                                this.props.lang
+                            }.leftpage.press-upload`}
+                        />
+                    );
                 }
             }
 
-            return <TransText style={styles.normalText} dictionary={`${this.props.lang}.leftpage.select-a-photo`} />;
+            return (
+                <TransText
+                    style={styles.normalText}
+                    dictionary={`${this.props.lang}.leftpage.select-a-photo`}
+                />
+            );
         }
     }
 
     /**
      * Toggle Selecting - header right
      */
-    toggleSelecting ()
-    {
-        if (this.props.isSelecting)
-        {
-            if (this.props.photos.length > 0)
-            {
+    toggleSelecting() {
+        if (this.props.isSelecting) {
+            if (this.props.photos.length > 0) {
                 this.props.deselectAllCameraPhotos();
             }
-            if (this.props.gallery.length > 0)
-            {
+            if (this.props.gallery.length > 0) {
                 this.props.deselectAllGalleryPhotos();
             }
         }
@@ -458,9 +488,11 @@ class LeftPage extends PureComponent
      * Show remaining tagged photos count to upload
      * Reset to 0 when press upload
      */
-    _getRemainingUploadCount ()
-    {
-        return this.props.totalGalleryUploaded + this.props.totalCameraPhotosUploaded;
+    _getRemainingUploadCount() {
+        return (
+            this.props.totalGalleryUploaded +
+            this.props.totalCameraPhotosUploaded
+        );
     }
 
     /**
@@ -471,7 +503,6 @@ class LeftPage extends PureComponent
      * - Consider: Auto-upload any tagged images in the background once the user has pressed Confirm
      */
     uploadPhotos = async () => {
-
         this.props.resetGalleryToUpload(); // gallery.totalTaggedGalleryCount
         this.props.resetPhotosToUpload(); // photos.totalCameraPhotosUploaded
         // resetWebToUpload?
@@ -506,10 +537,8 @@ class LeftPage extends PureComponent
         {
             // async loop
             // upload gallery photos
-            for (const img of this.props.gallery)
-            {
-                if (Object.keys(img.tags).length > 0)
-                {
+            for (const img of this.props.gallery) {
+                if (Object.keys(img.tags).length > 0) {
                     let galleryToUpload = new FormData();
 
                     galleryToUpload.append('photo', {
@@ -518,7 +547,9 @@ class LeftPage extends PureComponent
                         uri: img.uri
                     });
 
-                    const date = moment.unix(img.timestamp).format('YYYY:MM:DD HH:mm:ss');
+                    const date = moment
+                        .unix(img.timestamp)
+                        .format('YYYY:MM:DD HH:mm:ss');
 
                     galleryToUpload.append('lat', img.lat);
                     galleryToUpload.append('lon', img.lon);
@@ -531,7 +562,7 @@ class LeftPage extends PureComponent
                     // shared_actions.js
                     const response = await this.props.uploadPhoto(
                         this.props.token,
-                        galleryToUpload,
+                        galleryToUpload
                     );
 
                     if (response.success)
@@ -540,12 +571,13 @@ class LeftPage extends PureComponent
                         const resp = await this.props.uploadTags(
                             this.props.token,
                             img.tags
-                        )
+                        );
 
-                        if (resp.success)
-                        {
+                        if (resp.success) {
                             // Remove the image
-                            this.props.galleryPhotoUploadedSuccessfully(myIndex);
+                            this.props.galleryPhotoUploadedSuccessfully(
+                                myIndex
+                            );
                         }
                     }
                 }
@@ -556,10 +588,8 @@ class LeftPage extends PureComponent
         {
             // upload olm-camera photos
             // async loop
-            for (const img of this.props.photos)
-            {
-                if (Object.keys(img.tags).length > 0)
-                {
+            for (const img of this.props.photos) {
+                if (Object.keys(img.tags).length > 0) {
                     let cameraPhoto = new FormData();
 
                     cameraPhoto.append('photo', {
@@ -579,7 +609,7 @@ class LeftPage extends PureComponent
                     // shared_actions
                     const response = await this.props.uploadPhoto(
                         this.props.token,
-                        cameraPhoto,
+                        cameraPhoto
                     );
 
                     if (response.success)
@@ -590,8 +620,7 @@ class LeftPage extends PureComponent
                             img.tags
                         );
 
-                        if (resp.success)
-                        {
+                        if (resp.success) {
                             this.props.cameraPhotoUploadedSuccessfully(myIndex);
                         }
                     }
@@ -617,8 +646,9 @@ class LeftPage extends PureComponent
         }
 
         //  Last step - if all photos have been deleted, close modal
-        if (this._getRemainingUploadCount() === this.props.totalImagesToUpload)
-        {
+        if (
+            this._getRemainingUploadCount() === this.props.totalImagesToUpload
+        ) {
             // shared_actions, reducer
             this.props.toggleUpload();
             this.props.toggleThankYou();
@@ -633,11 +663,9 @@ class LeftPage extends PureComponent
     /**
      *
      */
-    _toggleThankYou ()
-    {
+    _toggleThankYou() {
         this.props.toggleThankYou();
     }
-
 }
 
 const styles = {

@@ -24,10 +24,8 @@ const INITIAL_STATE = {
     updatingSettings: false
 };
 
-export default function (state = INITIAL_STATE, action) {
-
-    switch (action.type)
-    {
+export default function(state = INITIAL_STATE, action) {
+    switch (action.type) {
         case CLOSE_ALL_SETTINGS_MODALS:
             return {
                 ...state,
@@ -36,7 +34,7 @@ export default function (state = INITIAL_STATE, action) {
                 // activity indicator
                 updatingSettings: false,
                 // editing modal
-                secondSettingsModalVisible: false,
+                secondSettingsModalVisible: false
 
                 // Settings Modal
                 // settingsModalVisible: false,
@@ -53,7 +51,7 @@ export default function (state = INITIAL_STATE, action) {
                 // activity indicator
                 updatingSettings: false,
                 // editing modal
-                secondSettingsModalVisible: false,
+                secondSettingsModalVisible: false
             };
 
         // case SAVE_SETTING:
@@ -87,7 +85,7 @@ export default function (state = INITIAL_STATE, action) {
         case SETTINGS_UPDATE_SUCCESS:
             return {
                 ...state,
-                updateSettingsSuccess: ! state.updateSettingsSuccess
+                updateSettingsSuccess: !state.updateSettingsSuccess
             };
 
         /**
@@ -96,8 +94,8 @@ export default function (state = INITIAL_STATE, action) {
         case START_UPDATING_SETTINGS:
             return {
                 ...state,
-                secondSettingsModalVisible: ! state.secondSettingsModalVisible,
-                updatingSettings: ! state.updatingSettings
+                secondSettingsModalVisible: !state.secondSettingsModalVisible,
+                updatingSettings: !state.updatingSettings
             };
 
         /**
@@ -108,8 +106,8 @@ export default function (state = INITIAL_STATE, action) {
             // const data = Object.assign({}, action.payload);
             return {
                 ...state,
-                settingsModalVisible: ! state.settingsModalVisible,
-                settingsEdit: ! state.settingsEdit,
+                settingsModalVisible: !state.settingsModalVisible,
+                settingsEdit: !state.settingsEdit,
                 dataToEdit: action.payload
             };
 
@@ -119,10 +117,9 @@ export default function (state = INITIAL_STATE, action) {
         case TOGGLE_SETTINGS_WAIT:
             return {
                 ...state,
-                wait: ! state.wait,
-                settingsModalVisible: ! state.settingsModalVisible
+                wait: !state.wait,
+                settingsModalVisible: !state.settingsModalVisible
             };
-
 
         /**
          * User wants to change text in SettingsComponent
@@ -139,4 +136,4 @@ export default function (state = INITIAL_STATE, action) {
         default:
             return state;
     }
-};
+}

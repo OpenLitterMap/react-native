@@ -9,10 +9,8 @@ import * as actions from '../../../../../actions';
 import styles from './styles';
 
 // forked from https://github.com/Around25/react-native-gallery-media-picker
-class GalleryMediaPicker extends Component
-{
-    constructor(props)
-    {
+class GalleryMediaPicker extends Component {
+    constructor(props) {
         super(props);
 
         this.state = {
@@ -39,13 +37,11 @@ class GalleryMediaPicker extends Component
         };
     }
 
-    componentDidMount ()
-    {
+    componentDidMount() {
         this.getFiles();
     }
 
-    UNSAFE_componentWillReceiveProps(nextProps)
-    {
+    UNSAFE_componentWillReceiveProps(nextProps) {
         // console.log('Gallery will receive props');
         this.setState({ selected: nextProps.selected });
     }
@@ -53,10 +49,8 @@ class GalleryMediaPicker extends Component
     /**
      * @description Get files from camera roll
      */
-    getFiles ()
-    {
-        if (!this.state.loadingMore)
-        {
+    getFiles() {
+        if (!this.state.loadingMore) {
             this.setState({ loadingMore: true }, () => {
                 this.getCameraRollFiles();
             });
@@ -66,8 +60,7 @@ class GalleryMediaPicker extends Component
     /**
      * @description Fetch camera roll files
      */
-    getCameraRollFiles ()
-    {
+    getCameraRollFiles() {
         // console.log('getCameraRollFiles');
         let { groupTypes, assetType, firstLimit } = this.props;
 
@@ -81,24 +74,20 @@ class GalleryMediaPicker extends Component
         //   delete fetchParams.groupTypes;
         // }
 
-        if (this.state.lastCursor)
-        {
+        if (this.state.lastCursor) {
             fetchParams.after = this.state.lastCursor;
         }
 
-        CameraRoll.getPhotos(fetchParams)
-            .then(data => {
-                this.appendFiles(data), e => console.error(e);
-            }
-        );
+        CameraRoll.getPhotos(fetchParams).then(data => {
+            this.appendFiles(data), e => console.error(e);
+        });
     }
 
     /**
      * @description This function is sorting files and put them on the state
      * @param data
      */
-    appendFiles (data)
-    {
+    appendFiles(data) {
         let assets = data.edges;
 
         this.extract(assets);
@@ -108,13 +97,11 @@ class GalleryMediaPicker extends Component
             fetching: false
         };
 
-        if (! data.page_info.has_next_page)
-        {
+        if (!data.page_info.has_next_page) {
             newState.noMoreFiles = true;
         }
 
-        if (assets.length > 0)
-        {
+        if (assets.length > 0) {
             newState.lastCursor = data.page_info.end_cursor;
             newState.images = this.state.images.concat(assets);
         }
@@ -131,25 +118,22 @@ class GalleryMediaPicker extends Component
      * Filter out images that do not have geotags
      * Todo - Filter out images that have already been selected if the gallery has been opened a second time
      */
-    extract (items)
-    {
+    extract(items) {
         const platform = Platform.OS;
 
         const galleryLength = this.props.gallery.length;
 
         // 0, or +1 from the last id
-        let id = (galleryLength === 0)
-            ? 0
-            : this.props.gallery[galleryLength -1].id + 1;
+        let id =
+            galleryLength === 0
+                ? 0
+                : this.props.gallery[galleryLength - 1].id + 1;
 
         const geotagged = items.map(item => {
-
             id++;
 
-            if (platform === 'ios')
-            {
-                if (Object.keys(item.node.location).length > 0)
-                {
+            if (platform === 'ios') {
+                if (Object.keys(item.node.location).length > 0) {
                     return {
                         id,
                         filename: item.node.image.filename, // this will get hashed on the backend
@@ -166,12 +150,9 @@ class GalleryMediaPicker extends Component
                         type: 'gallery'
                     };
                 }
-            }
-            else
-            {
+            } else {
                 // android
-                if (item.node.hasOwnProperty('location'))
-                {
+                if (item.node.hasOwnProperty('location')) {
                     return {
                         id,
                         filename: item.node.image.filename, // don't use this
@@ -215,18 +196,15 @@ class GalleryMediaPicker extends Component
     //     this.setState({ albums });
     // }
 
-    selectAlbum (albumName)
-    {
+    selectAlbum(albumName) {
         this.setState({ albumSelected: albumName });
     }
 
-    deselectAlbum ()
-    {
+    deselectAlbum() {
         this.setState({ albumSelected: '' });
     }
 
-    getAlbumImages (selectedAlbumName)
-    {
+    getAlbumImages(selectedAlbumName) {
         const selectedAlbum = this.state.albums
             .filter(album => album.albumName === selectedAlbumName)
             .pop();
@@ -238,8 +216,7 @@ class GalleryMediaPicker extends Component
      * @description Render background color for the container
      * @return {string}
      */
-    renderBackgroundColor ()
-    {
+    renderBackgroundColor() {
         return this.props.backgroundColor !== undefined
             ? this.props.backgroundColor
             : this.state.backgroundColor;
@@ -249,8 +226,7 @@ class GalleryMediaPicker extends Component
      * @description Render default loader style
      * @return {{color: string, size: string}}
      */
-    renderLoaderStyle ()
-    {
+    renderLoaderStyle() {
         let props = this.props;
 
         return {
@@ -269,18 +245,14 @@ class GalleryMediaPicker extends Component
     /**
      * @description On list end reached , load more files if there are any
      */
-    onEndReached ()
-    {
-        if (!this.state.noMoreFiles)
-        {
+    onEndReached() {
+        if (!this.state.noMoreFiles) {
             this.getFiles();
         }
     }
 
-    renderMedia ()
-    {
-        if (this.props.imagesLoading)
-        {
+    renderMedia() {
+        if (this.props.imagesLoading) {
             return (
                 <View style={{ flex: 1, justifyContent: 'center' }}>
                     <ActivityIndicator />
@@ -288,14 +260,17 @@ class GalleryMediaPicker extends Component
             );
         }
 
-        if (this.state.albumSelected)
-        {
+        if (this.state.albumSelected) {
             const images = this.getAlbumImages(this.state.albumSelected);
 
-            if (images[0] === undefined)
-            {
+            if (images[0] === undefined) {
                 return (
-                    <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+                    <View
+                        style={{
+                            flex: 1,
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        }}>
                         <Text>No geotagged photos found</Text>
                     </View>
                 );
@@ -315,15 +290,12 @@ class GalleryMediaPicker extends Component
                     customSelectMarker={this.props.customSelectMarker}
                     activityIndicatorColor={this.state.activityIndicatorColor}
                     maximumSelectedFiles={
-                        this.props.maximumSelectedFiles || this.state.maximumSelectedFiles
+                        this.props.maximumSelectedFiles ||
+                        this.state.maximumSelectedFiles
                     }
                 />
             );
-        }
-        else
-        {
-
-
+        } else {
             return (
                 <AlbumsList
                     albums={this.state.albums}
@@ -333,13 +305,8 @@ class GalleryMediaPicker extends Component
         }
     }
 
-    render ()
-    {
-        return (
-            <View style={styles.base}>
-                { this.renderMedia() }
-            </View>
-        );
+    render() {
+        return <View style={styles.base}>{this.renderMedia()}</View>;
     }
 }
 

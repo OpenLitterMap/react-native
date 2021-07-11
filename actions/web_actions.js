@@ -30,8 +30,7 @@ export const addTagsToWebImage = (data) => {
  *
  * @return [id, filename]
  */
-export const checkForImagesOnWeb = (token) => {
-
+export const checkForImagesOnWeb = token => {
     return dispatch => {
         return axios({
             url: URL + '/api/v2/photos/web/index',
@@ -43,12 +42,9 @@ export const checkForImagesOnWeb = (token) => {
         .then(resp => {
             // console.log('images_from_web', resp.data.photos);
 
-            if (resp.data.photos)
-            {
+            if (resp.data.photos) {
                 // Todo - load Tags: {} with the data
-                let photos = (resp.data.photos)
-                    ? resp.data.photos
-                    : null;
+                let photos = resp.data.photos ? resp.data.photos : null;
 
                 photos = photos.map(photo => {
                     photo.tags = {};
@@ -56,17 +52,20 @@ export const checkForImagesOnWeb = (token) => {
                 });
 
                 // if photos is null, pass empty array
-                dispatch({ type: WEB_IMAGES, payload: {
-                    count: resp.data.count,
-                    photos
-                }});
+                dispatch({
+                    type: WEB_IMAGES,
+                    payload: {
+                        count: resp.data.count,
+                        photos
+                    }
+                });
             }
         })
         .catch(err => {
             console.log('checkForImagesOnWeb', err.response.data);
         });
-    }
-}
+    };
+};
 
 /**
  * Load the next 10 images on the web
@@ -83,30 +82,29 @@ export const loadMoreWebImages = (token, photo_id) => {
             },
             params: { photo_id }
         })
-        .then(resp => {
-            console.log('load_more_web_images', resp.data);
+            .then(resp => {
+                console.log('load_more_web_images', resp.data);
 
-            if (resp.data)
-            {
-                let photos = resp.data;
+                if (resp.data) {
+                    let photos = resp.data;
 
-                photos = photos.map(photo => {
-                    photo.tags = null;
-                    return photo;
-                });
+                    photos = photos.map(photo => {
+                        photo.tags = null;
+                        return photo;
+                    });
 
-                dispatch({
-                    type: LOAD_MORE_WEB_IMAGES,
-                    payload: {
-                        photos
-                    }
-                });
-            }
-        })
-        .catch(err => {
-            console.log('load_more_web_images', err.response.data);
-        });
-    }
+                    dispatch({
+                        type: LOAD_MORE_WEB_IMAGES,
+                        payload: {
+                            photos
+                        }
+                    });
+                }
+            })
+            .catch(err => {
+                console.log('load_more_web_images', err.response.data);
+            });
+    };
 };
 
 export const removeWebImage = id => {
@@ -144,8 +142,7 @@ export const uploadTagsForWebPhoto = data => {
         .then(response => {
             console.log('confirmWebPhoto', response.data);
 
-            if (response.data.success)
-            {
+            if (response.data.success) {
                 // ...
             }
         })
@@ -163,4 +160,4 @@ export const webIndexChanged = index => {
         type: WEB_INDEX_CHANGED,
         payload: index
     };
-}
+};

@@ -1,4 +1,4 @@
-import React from 'react'
+import React from 'react';
 
 import {
     CHANGE_CATEGORY,
@@ -16,50 +16,50 @@ import {
     TOGGLE_SWITCH,
     UPDATE_TAGS,
     UPDATE_TAGS_X_POS,
-    UPDATE_QUANTITY,
+    UPDATE_QUANTITY
 } from './types';
 
 /**
  * Change the category of litter eg Smoking, Alcohol
  */
-export const changeCategory = (id) => {
+export const changeCategory = id => {
     return {
         type: CHANGE_CATEGORY,
         payload: id
     };
-}
+};
 
 /**
  * Change the item of litter in a category eg butts, lighters
  */
-export const changeItem = (item) => {
+export const changeItem = item => {
     return {
         type: CHANGE_ITEM,
         payload: item
     };
-}
+};
 
 /**
  * Change the type of photo being selected for tagging
  *
  * @param payload string : "camera", "gallery", or "web".
  */
-export const changePhotoType = (payload) => {
+export const changePhotoType = payload => {
     return {
         type: CHANGE_PHOTO_TYPE,
         action: payload
     };
-}
+};
 
 /**
  * Change Quantity of litter
  */
-export const changeQ = (q) => {
+export const changeQ = q => {
     return {
         type: CHANGE_Q,
         payload: q
     };
-}
+};
 
 /**
  * Change the index of the swiper
@@ -71,12 +71,12 @@ export const swiperIndexChanged = index => {
         type: CHANGE_SWIPER_INDEX,
         payload: index
     };
-}
+};
 
 /**
  * Text to suggest tags by
  */
-export const suggestTags = (data) => {
+export const suggestTags = data => {
     return {
         type: SUGGEST_TAGS,
         payload: {
@@ -84,7 +84,7 @@ export const suggestTags = (data) => {
             lang: data.lang
         }
     };
-}
+};
 
 /**
  * Remove a tag and its quantity
@@ -94,7 +94,7 @@ export const removeTag = tags => {
         type: REMOVE_TAG,
         payload: tags
     };
-}
+};
 
 /**
  * Reset the tags only
@@ -105,7 +105,7 @@ export const resetTags = () => {
     return {
         type: RESET_TAGS
     };
-}
+};
 
 /**
  * Reset the state
@@ -114,7 +114,7 @@ export const resetLitterTags = () => {
     return {
         type: RESET_LITTER_STATE
     };
-}
+};
 
 /**
  * User.previous_tags is true
@@ -124,7 +124,7 @@ export const updateTags = tags => {
         type: UPDATE_TAGS,
         payload: tags
     };
-}
+};
 
 /**
  * Content to show in LitterPicker modal
@@ -135,17 +135,17 @@ export const showAllTags = bool => {
         type: SHOW_ALL_TAGS,
         payload: bool
     };
-}
+};
 
 /**
  * Open / Close the modal on LitterPicker.js
  */
-export const setLitterPickerModal = (bool) => {
+export const setLitterPickerModal = bool => {
     return {
         type: SHOW_INNER_MODAL,
         payload: bool
     };
-}
+};
 
 /**
  * Is the litter still there, or has it been picked up?
@@ -154,17 +154,17 @@ export const toggleSwitch = () => {
     return {
         type: TOGGLE_SWITCH
     };
-}
+};
 
 /**
  * Change the quantity of an existing piece of litter
  */
-export const updateLitterQuantity = (tags) => {
+export const updateLitterQuantity = tags => {
     return {
         type: UPDATE_QUANTITY,
         payload: tags
     };
-}
+};
 
 /**
  *
@@ -174,14 +174,14 @@ export const updatePreviousTags = tags => {
         type: UPDATE_PREVIOUS_TAGS,
         payload: tags
     };
-}
+};
 
 /**
  * Capture the X positions of the tags when they are added / change
  */
-export const updateTagXPosition = (data) => {
+export const updateTagXPosition = data => {
     return {
         type: UPDATE_TAGS_X_POS,
         payload: data
     };
-}
+};

@@ -18,7 +18,6 @@ import { connect } from 'react-redux';
 import * as actions from '../../../actions';
 
 class ImageBrowser extends React.Component {
-
     _isMounted = false;
 
     constructor(props) {
@@ -29,12 +28,12 @@ class ImageBrowser extends React.Component {
             selected: {},
             after: null,
             has_next_page: true
-        }
+        };
     }
 
     componentDidMount() {
         this._isMounted = true;
-        console.log("Image Browser mounted");
+        console.log('Image Browser mounted');
     }
 
     componentWillUnmount() {
@@ -51,10 +50,11 @@ class ImageBrowser extends React.Component {
     }
 
     renderHeader = () => {
-        console.log("... render header ....");
+        console.log('... render header ....');
         let selectedCount = Object.keys(this.state.selected).length;
         let headerText = selectedCount + ' Selected';
-        if (selectedCount === this.state.max) headerText = headerText + ' (Max)';
+        if (selectedCount === this.state.max)
+            headerText = headerText + ' (Max)';
         return (
             <View style={styles.header}>
                 <Button
@@ -68,24 +68,24 @@ class ImageBrowser extends React.Component {
                 <Button
                     title="Choose"
                     onPress={() => {
-                        this.chooseImages()
+                        this.chooseImages();
                     }}
                     // onPress={() => this.prepareCallback()}
                 />
             </View>
         );
-    }
+    };
 
     /**
      * Select Selected Photos
      * @return this.props.gallery = [];
      */
-    chooseImages = async() => {
+    chooseImages = async () => {
         let { selected, photos } = this.state;
-        let selectedPhotos = photos.filter((item, index)=> {
+        let selectedPhotos = photos.filter((item, index) => {
             // console.log(index);
             // console.log(item);
-            return (selected[index]);
+            return selected[index];
         });
         // console.log(selectedPhotos);
         try {
@@ -96,19 +96,23 @@ class ImageBrowser extends React.Component {
         } catch (e) {
             console.log(e);
         }
-    }
+    };
     // end <Header />
 
     renderImages() {
-        {this.getPhotos()}
+        {
+            this.getPhotos();
+        }
 
         return (
             <FlatList
                 data={this.state.photos}
                 numColumns={4}
                 renderItem={this.renderImageTile}
-                keyExtractor={(_,index) => index}
-                onEndReached={()=> {this.getPhotos()}}
+                keyExtractor={(_, index) => index}
+                onEndReached={() => {
+                    this.getPhotos();
+                }}
                 onEndReachedThreshold={0.5}
                 ListEmptyComponent={<Text>Loading...</Text>}
                 initialNumToRender={24}
@@ -125,14 +129,12 @@ class ImageBrowser extends React.Component {
             groupTypes: 'All',
             groupName: 'Recent'
         };
-        if (this.state.after) params.after = this.state.after
-        if (!this.state.has_next_page) return
-        CameraRoll
-            .getPhotos(params)
-            .then(this.processPhotos)
-    }
+        if (this.state.after) params.after = this.state.after;
+        if (!this.state.has_next_page) return;
+        CameraRoll.getPhotos(params).then(this.processPhotos);
+    };
 
-    processPhotos = (r) => {
+    processPhotos = r => {
         // console.log("-- available photos --");
         // console.log(r);
 
@@ -141,27 +143,29 @@ class ImageBrowser extends React.Component {
         let notGeotagged = 0;
         let geotagged = 0;
 
-        r.edges.map(i => i.node).map(a => {
-            // console.log(a);
-            if (_.isEmpty(a["location"])) {
-                notGeotagged++;
-            } else {
-                geotagged++;
-                // console.log("Index", geotagged);
-                // console.log("Image", a);
-                let fn = a.image.uri.substring(5, 41) + ".png";
-                console.log("Filename", fn);
-                photoData.push({
-                    filename: fn, // was filename
-                    uri: a.image.uri,
-                    lat: a.location.latitude,
-                    lon: a.location.longitude,
-                    index: geotagged,
-                    timestamp: a.timestamp,
-                    type: 'gallery'
-                });
-            }
-        });
+        r.edges
+            .map(i => i.node)
+            .map(a => {
+                // console.log(a);
+                if (_.isEmpty(a['location'])) {
+                    notGeotagged++;
+                } else {
+                    geotagged++;
+                    // console.log("Index", geotagged);
+                    // console.log("Image", a);
+                    let fn = a.image.uri.substring(5, 41) + '.png';
+                    console.log('Filename', fn);
+                    photoData.push({
+                        filename: fn, // was filename
+                        uri: a.image.uri,
+                        lat: a.location.latitude,
+                        lon: a.location.longitude,
+                        index: geotagged,
+                        timestamp: a.timestamp,
+                        type: 'gallery'
+                    });
+                }
+            });
 
         // console.log('Not geotagged: ' + notGeotagged);
         // console.log('Geotagged: ' + geotagged);
@@ -171,19 +175,22 @@ class ImageBrowser extends React.Component {
         // let uris = myPhotos.map(i=> i.image).map(i=>i.uri)
 
         if (this._isMounted) {
-            this.setState({
-                photos: [...this.state.photos, ...photoData],
-                after: r.page_info.end_cursor,
-                has_next_page: r.page_info.has_next_page
-            }, function() {
-                // console.log("--- state has been set ---");
-                // console.log(this.state);
-            });
+            this.setState(
+                {
+                    photos: [...this.state.photos, ...photoData],
+                    after: r.page_info.end_cursor,
+                    has_next_page: r.page_info.has_next_page
+                },
+                function() {
+                    // console.log("--- state has been set ---");
+                    // console.log(this.state);
+                }
+            );
         }
-    }
+    };
 
-    selectImage = (index) => {
-        let newSelected = {...this.state.selected};
+    selectImage = index => {
+        let newSelected = { ...this.state.selected };
         if (newSelected[index]) {
             delete newSelected[index];
         } else {
@@ -191,14 +198,14 @@ class ImageBrowser extends React.Component {
         }
         if (Object.keys(newSelected).length > this.state.max) return;
         if (!newSelected) newSelected = {};
-        this.setState({ selected: newSelected })
-    }
+        this.setState({ selected: newSelected });
+    };
 
     //
-    getItemLayout = (data,index) => {
-        let length = width/4;
-        return { length, offset: length * index, index }
-    }
+    getItemLayout = (data, index) => {
+        let length = width / 4;
+        return { length, offset: length * index, index };
+    };
 
     // Moved this to Redux this.chooseImages()
     // prepareCallback() {
@@ -223,9 +230,9 @@ class ImageBrowser extends React.Component {
     // }
 
     //
-    renderImageTile = ({item, index}) => {
+    renderImageTile = ({ item, index }) => {
         // console.log("-- render image tile --", index );
-        let selected = this.state.selected[index] ? true : false
+        let selected = this.state.selected[index] ? true : false;
         return (
             <ImageTile
                 item={item.uri}
@@ -234,12 +241,12 @@ class ImageBrowser extends React.Component {
                 selectImage={this.selectImage}
             />
         );
-    }
+    };
 }
 
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
+        flex: 1
     },
     header: {
         height: 40,
@@ -248,7 +255,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         marginTop: 20
-    },
+    }
 });
 
 const mapStateToProps = state => {
@@ -258,6 +265,9 @@ const mapStateToProps = state => {
         after: state.gallery.after,
         has_next_page: state.gallery.has_next_page
     };
-}
+};
 
-export default connect(mapStateToProps, actions)(ImageBrowser);
+export default connect(
+    mapStateToProps,
+    actions
+)(ImageBrowser);

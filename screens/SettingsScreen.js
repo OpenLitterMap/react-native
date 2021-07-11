@@ -11,7 +11,7 @@ import {
     TouchableHighlight,
     View
 } from 'react-native';
-import { getTranslation, TransText } from "react-native-translation";
+import { getTranslation, TransText } from 'react-native-translation';
 import { Header } from 'react-native-elements';
 import * as actions from '../actions';
 import { connect } from 'react-redux';
@@ -22,13 +22,11 @@ const SCREEN_HEIGHT = Dimensions.get('window').height;
 import SettingsComponent from './pages/SettingsComponent';
 
 class SettingsScreen extends Component {
-
     constructor(props) {
         super(props);
     }
 
-    render ()
-    {
+    render() {
         const lang = this.props.lang;
         const settings = getTranslation(`${lang}.settings.settings`);
         const logout = getTranslation(`${lang}.settings.logout`);
@@ -40,32 +38,39 @@ class SettingsScreen extends Component {
                     <Modal
                         animationType="slide"
                         transparent={true}
-                        visible={this.props.settingsModalVisible}
-                    >
-                        {
-                            this.props.wait &&
-                                <View style={styles.waitModal}>
-                                    <ActivityIndicator />
-                                </View>
-                            }
-                        {
-                            this.props.settingsEdit &&
-                                <View style={styles.modal}>
-                                    <SettingsComponent />
-                                </View>
-                        }
+                        visible={this.props.settingsModalVisible}>
+                        {this.props.wait && (
+                            <View style={styles.waitModal}>
+                                <ActivityIndicator />
+                            </View>
+                        )}
+                        {this.props.settingsEdit && (
+                            <View style={styles.modal}>
+                                <SettingsComponent />
+                            </View>
+                        )}
                     </Modal>
 
                     <Header
-                        containerStyle={{ paddingTop: 0, height: SCREEN_HEIGHT * 0.1 }}
+                        containerStyle={{
+                            paddingTop: 0,
+                            height: SCREEN_HEIGHT * 0.1
+                        }}
                         outerContainerStyles={{ height: SCREEN_HEIGHT * 0.1 }}
                         leftComponent={{
                             icon: 'keyboard-arrow-left',
                             color: '#fff',
-                            onPress: () => this.props.navigation.navigate('swipe'),
+                            onPress: () =>
+                                this.props.navigation.navigate('swipe'),
                             size: SCREEN_HEIGHT * 0.03
                         }}
-                        centerComponent={{ text: settings, style: { color: '#fff', fontSize: SCREEN_HEIGHT * 0.02 } }}
+                        centerComponent={{
+                            text: settings,
+                            style: {
+                                color: '#fff',
+                                fontSize: SCREEN_HEIGHT * 0.02
+                            }
+                        }}
                         rightComponent={{
                             text: logout,
                             onPress: () => this.props.logout(),
@@ -75,71 +80,76 @@ class SettingsScreen extends Component {
                     <View style={styles.container}>
                         <SectionList
                             stickySectionHeadersEnabled={false}
-                            renderSectionHeader={({ section: { title }}) => (
-                                <TransText style={styles.sectionHeaderTitle} dictionary={`${lang}.${title}`} />
+                            renderSectionHeader={({ section: { title } }) => (
+                                <TransText
+                                    style={styles.sectionHeaderTitle}
+                                    dictionary={`${lang}.${title}`}
+                                />
                             )}
-                            sections={
-                                [
-                                    {
-                                        title: 'settings.my-account',
-                                        data: [
-                                            {
-                                                id: 1,
-                                                key: 'name',
-                                                title: 'settings.name'
-                                            },
-                                            {
-                                                id: 2,
-                                                key: 'username',
-                                                title: 'settings.username'
-                                            },
-                                            {
-                                                id: 3,
-                                                key: 'email',
-                                                title: 'settings.email'
-                                            }
-                                        ]
-                                    },
-                                    {
-                                        title: 'settings.privacy',
-                                        data: [
-                                            {
-                                                id: 4,
-                                                title: 'settings.show-name-maps'
-                                            },
-                                            {
-                                                id: 5,
-                                                title: 'settings.show-username-maps'
-                                            },
-                                            {
-                                                id: 6,
-                                                title: 'settings.show-name-leaderboards'
-                                            },
-                                            {
-                                                id: 7,
-                                                title: 'settings.show-username-leaderboards'
-                                            },
-                                            {
-                                                id: 8,
-                                                title: 'settings.show-name-createdby'
-                                            },
-                                            {
-                                                id: 9,
-                                                title: 'settings.show-username-createdby'
-                                            }
-                                        ]
-                                    },
-                                    {
-                                        title: 'settings.tags',
-                                        data: [
-                                            {
-                                                id: 10,
-                                                title: 'settings.show-previous-tags'
-                                            }
-                                        ]
-                                    }
-                                ]
-                            }
+                            sections={[
+                                {
+                                    title: 'settings.my-account',
+                                    data: [
+                                        {
+                                            id: 1,
+                                            key: 'name',
+                                            title: 'settings.name'
+                                        },
+                                        {
+                                            id: 2,
+                                            key: 'username',
+                                            title: 'settings.username'
+                                        },
+                                        {
+                                            id: 3,
+                                            key: 'email',
+                                            title: 'settings.email'
+                                        }
+                                    ]
+                                },
+                                {
+                                    title: 'settings.privacy',
+                                    data: [
+                                        {
+                                            id: 4,
+                                            title: 'settings.show-name-maps'
+                                        },
+                                        {
+                                            id: 5,
+                                            title: 'settings.show-username-maps'
+                                        },
+                                        {
+                                            id: 6,
+                                            title:
+                                                'settings.show-name-leaderboards'
+                                        },
+                                        {
+                                            id: 7,
+                                            title:
+                                                'settings.show-username-leaderboards'
+                                        },
+                                        {
+                                            id: 8,
+                                            title:
+                                                'settings.show-name-createdby'
+                                        },
+                                        {
+                                            id: 9,
+                                            title:
+                                                'settings.show-username-createdby'
+                                        }
+                                    ]
+                                },
+                                {
+                                    title: 'settings.tags',
+                                    data: [
+                                        {
+                                            id: 10,
+                                            title: 'settings.show-previous-tags'
+                                        }
+                                    ]
+                                }
+                            ]}
                             renderItem={({ item, index, section }) => (
                                 <View style={styles.sectionRow} key={index}>
                                     {this._renderRow(item)}
@@ -157,33 +167,35 @@ class SettingsScreen extends Component {
     /**
      * Custom Functions
      */
-    _renderRow (item)
-    {
+    _renderRow(item) {
         // name, username, email
-        if (item.id <= 3)
-        {
+        if (item.id <= 3) {
             return (
                 <TouchableHighlight
                     underlayColor={'#95a5a6'}
                     style={{ flex: 1, padding: 10 }}
-                    onPress={() => this._rowPressed(item.id, item.title, item.key)}
-                >
+                    onPress={() =>
+                        this._rowPressed(item.id, item.title, item.key)
+                    }>
                     <View style={{ flexDirection: 'row' }}>
                         <TransText
                             style={{ flex: 1, fontSize: SCREEN_HEIGHT * 0.02 }}
                             dictionary={`${this.props.lang}.${item.title}`}
                         />
-                        <Text style={{ fontSize: SCREEN_HEIGHT * 0.02}}>{ this._getRowData(item.id) }</Text>
+                        <Text style={{ fontSize: SCREEN_HEIGHT * 0.02 }}>
+                            {this._getRowData(item.id)}
+                        </Text>
                     </View>
                 </TouchableHighlight>
             );
-        }
-        else
-        {
+        } else {
             return (
                 <View style={styles.switchRow}>
-                    <TransText style={{ flex: 1, fontSize: SCREEN_HEIGHT * 0.02 }} dictionary={`${this.props.lang}.${item.title}`} />
-                    { this._getRowData(item.id) }
+                    <TransText
+                        style={{ flex: 1, fontSize: SCREEN_HEIGHT * 0.02 }}
+                        dictionary={`${this.props.lang}.${item.title}`}
+                    />
+                    {this._getRowData(item.id)}
                 </View>
             );
         }
@@ -192,24 +204,15 @@ class SettingsScreen extends Component {
     /**
      * Return the value for each row
      */
-    _getRowData (id)
-    {
-        if (this.props.user)
-        {
-            if (id === 1)
-            {
+    _getRowData(id) {
+        if (this.props.user) {
+            if (id === 1) {
                 return this.props.user.name;
-            }
-            else if (id === 2)
-            {
+            } else if (id === 2) {
                 return this.props.user.username;
-            }
-            else if (id === 3)
-            {
+            } else if (id === 3) {
                 return this.props.user.email;
-            }
-            else
-            {
+            } else {
                 return (
                     <Switch
                         onValueChange={() => this._toggleSwitch(id)}
@@ -223,58 +226,63 @@ class SettingsScreen extends Component {
     /**
      * Toggle the Switch - Send post request to database
      */
-    _toggleSwitch (id)
-    {
+    _toggleSwitch(id) {
         const lang = this.props.lang;
 
         const alert = getTranslation(`${lang}.settings.alert`);
-        const info = getTranslation(`${lang}.settings.do-you-really-want-to-change`);
+        const info = getTranslation(
+            `${lang}.settings.do-you-really-want-to-change`
+        );
         const ok = getTranslation(`${lang}.settings.ok`);
         const cancel = getTranslation(`${lang}.settings.cancel`);
 
-        Alert.alert(alert, info,
+        Alert.alert(
+            alert,
+            info,
             [
-                { text: ok, onPress: () => this.props.toggleSettingsSwitch(id, this.props.token) },
-                { text: cancel, onPress: () => console.log("cancel pressed")}
+                {
+                    text: ok,
+                    onPress: () =>
+                        this.props.toggleSettingsSwitch(id, this.props.token)
+                },
+                { text: cancel, onPress: () => console.log('cancel pressed') }
             ],
             { cancelable: true }
-        )
+        );
     }
 
     /**
      * A Row was pressed - open onTextChange
      */
-    _rowPressed (id, title, key = '')
-    {
+    _rowPressed(id, title, key = '') {
         this.props.toggleSettingsModal(id, title, key);
     }
 
     /**
      * Get the True or False value for a Switch
      */
-    _getSwitchValue (id)
-    {
+    _getSwitchValue(id) {
         if (id === 4) {
-            return (this.props.user.show_name_maps);
+            return this.props.user.show_name_maps;
         } else if (id === 5) {
-            return (this.props.user.show_username_maps);
+            return this.props.user.show_username_maps;
         } else if (id === 6) {
-            return (this.props.user.show_name);
+            return this.props.user.show_name;
         } else if (id === 7) {
-            return (this.props.user.show_username);
+            return this.props.user.show_username;
         } else if (id === 8) {
-            return (this.props.user.show_name_createdby);
+            return this.props.user.show_name_createdby;
         } else if (id === 9) {
-            return (this.props.user.show_username_createdby);
+            return this.props.user.show_username_createdby;
         } else if (id === 10) {
-            return (this.props.user.previous_tag);
+            return this.props.user.previous_tag;
         }
     }
 }
 
 const styles = {
     bottomImageContainer: {
-        backgroundColor: "#ccc",
+        backgroundColor: '#ccc',
         flex: 1,
         flexDirection: 'row',
         justifyContent: 'center'
@@ -289,7 +297,7 @@ const styles = {
         borderRadius: 6
     },
     imageContainer: {
-        backgroundColor: "blue",
+        backgroundColor: 'blue',
         width: SCREEN_WIDTH * 0.3,
         height: SCREEN_HEIGHT * 0.1,
         alignItems: 'center',
@@ -302,7 +310,7 @@ const styles = {
         flexDirection: 'row'
     },
     modal: {
-        backgroundColor:'rgba(255,255,255,1)',
+        backgroundColor: 'rgba(255,255,255,1)',
         flex: 1
     },
     // row: {
@@ -344,7 +352,7 @@ const styles = {
         alignItems: 'center',
         justifyContent: 'center'
     }
-}
+};
 
 const mapStateToProps = state => {
     return {
@@ -355,6 +363,9 @@ const mapStateToProps = state => {
         wait: state.settings.wait,
         settingsEdit: state.settings.settingsEdit
     };
-}
+};
 
-export default connect(mapStateToProps, actions)(SettingsScreen);
+export default connect(
+    mapStateToProps,
+    actions
+)(SettingsScreen);

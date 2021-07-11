@@ -9,7 +9,7 @@ import {
     TouchableHighlight,
     View
 } from 'react-native';
-import { getTranslation, TransText } from "react-native-translation";
+import { getTranslation, TransText } from 'react-native-translation';
 import { Header } from 'react-native-elements';
 import { connect } from 'react-redux';
 import * as actions from '../../actions';
@@ -18,16 +18,13 @@ const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 
 class SettingsComponent extends Component {
-
-    constructor (props)
-    {
+    constructor(props) {
         super(props);
 
         this._getTextInputValue();
     }
 
-    render ()
-    {
+    render() {
         const { lang } = this.props;
 
         return (
@@ -37,30 +34,40 @@ class SettingsComponent extends Component {
                     <Modal
                         animationType="slide"
                         transparent={true}
-                        visible={this.props.secondSettingsModalVisible}
-                    >
+                        visible={this.props.secondSettingsModalVisible}>
                         <View style={styles.modalContainer}>
-                            {
-                                this.props.updateSettingsSuccess &&
-                                    <View style={styles.innerModalSuccess}>
-                                        <TransText style={styles.innerModalHeader} dictionary={`${lang}.settings.success`} />
-                                        <TransText dictionary={`${lang}.settings.value-updated`} />
-                                        <TouchableHighlight
-                                            style={styles.successButton}
-                                            onPress={() => this._goBack()}
-                                        >
-                                            <TransText style={styles.buttonText} dictionary={`${lang}.settings.go-back`} />
-                                        </TouchableHighlight>
-                                    </View>
-                            }
+                            {this.props.updateSettingsSuccess && (
+                                <View style={styles.innerModalSuccess}>
+                                    <TransText
+                                        style={styles.innerModalHeader}
+                                        dictionary={`${lang}.settings.success`}
+                                    />
+                                    <TransText
+                                        dictionary={`${lang}.settings.value-updated`}
+                                    />
+                                    <TouchableHighlight
+                                        style={styles.successButton}
+                                        onPress={() => this._goBack()}>
+                                        <TransText
+                                            style={styles.buttonText}
+                                            dictionary={`${lang}.settings.go-back`}
+                                        />
+                                    </TouchableHighlight>
+                                </View>
+                            )}
 
-                            { this.props.updatingSettings && <ActivityIndicator /> }
+                            {this.props.updatingSettings && (
+                                <ActivityIndicator />
+                            )}
                         </View>
                     </Modal>
 
-                    { /* outerContainerStyles={{ height: SCREEN_HEIGHT * 0.1 }} */ }
+                    {/* outerContainerStyles={{ height: SCREEN_HEIGHT * 0.1 }} */}
                     <Header
-                        containerStyle={{ paddingTop: 0, height: SCREEN_HEIGHT * 0.1 }}
+                        containerStyle={{
+                            paddingTop: 0,
+                            height: SCREEN_HEIGHT * 0.1
+                        }}
                         leftComponent={{
                             icon: 'close',
                             color: '#fff',
@@ -69,14 +76,19 @@ class SettingsComponent extends Component {
                         }}
                         centerComponent={{
                             text: this._getHeaderName(),
-                            style: { color: '#fff', fontSize: SCREEN_HEIGHT * 0.02 }
+                            style: {
+                                color: '#fff',
+                                fontSize: SCREEN_HEIGHT * 0.02
+                            }
                         }}
                         rightComponent={
                             <TouchableHighlight
-                                onPress={() => this._saveSettings() }
-                            >
+                                onPress={() => this._saveSettings()}>
                                 <TransText
-                                    style={{ color: '#fff', fontSize: SCREEN_HEIGHT * 0.02 }}
+                                    style={{
+                                        color: '#fff',
+                                        fontSize: SCREEN_HEIGHT * 0.02
+                                    }}
                                     dictionary={`${lang}.settings.save`}
                                 />
                             </TouchableHighlight>
@@ -85,9 +97,16 @@ class SettingsComponent extends Component {
 
                     <View style={styles.container}>
                         <View style={styles.row}>
-                            <TransText style={styles.title} dictionary={`${lang}.${this.props.dataToEdit.title}`} />
+                            <TransText
+                                style={styles.title}
+                                dictionary={`${lang}.${
+                                    this.props.dataToEdit.title
+                                }`}
+                            />
                             <TextInput
-                                onChangeText={(text) => this.props.updateSettingsProp({text})}
+                                onChangeText={text =>
+                                    this.props.updateSettingsProp({ text })
+                                }
                                 style={styles.content}
                                 value={this.props.settingsEditProp}
                             />
@@ -101,8 +120,7 @@ class SettingsComponent extends Component {
     /**
      * Custom Functions
      */
-    _closeModal ()
-    {
+    _closeModal() {
         this.props.toggleSettingsModal();
     }
 
@@ -111,13 +129,14 @@ class SettingsComponent extends Component {
      *
      * eg Edit Name
      */
-    _getHeaderName ()
-    {
-        const text = getTranslation(`${this.props.lang}.${this.props.dataToEdit.title}`);
+    _getHeaderName() {
+        const text = getTranslation(
+            `${this.props.lang}.${this.props.dataToEdit.title}`
+        );
 
         const edit = getTranslation(`${this.props.lang}.settings.edit`);
 
-        return edit + " " + text;
+        return edit + ' ' + text;
     }
 
     /**
@@ -125,17 +144,15 @@ class SettingsComponent extends Component {
      *
      * settings_actions.js
      */
-    _saveSettings ()
-    {
+    _saveSettings() {
         this.props.saveSettings(
             this.props.dataToEdit,
             this.props.settingsEditProp,
-            this.props.token,
+            this.props.token
         );
     }
 
-    _goBack ()
-    {
+    _goBack() {
         this.props.closeSecondSettingModal();
 
         // Parent modal only closes with timeout
@@ -147,21 +164,15 @@ class SettingsComponent extends Component {
     /**
      * Initialize Settings Value to edit / update
      */
-    _getTextInputValue ()
-    {
-        if (this.props.dataToEdit.id === 1)
-        {
+    _getTextInputValue() {
+        if (this.props.dataToEdit.id === 1) {
             return this.props.initalizeSettingsValue(this.props.user.name);
-        }
-
-        else if (this.props.dataToEdit.id === 2)
-        {
+        } else if (this.props.dataToEdit.id === 2) {
             return this.props.initalizeSettingsValue(this.props.user.username);
         }
 
         return this.props.initalizeSettingsValue(this.props.user.email);
     }
-
 }
 
 const styles = {
@@ -172,7 +183,7 @@ const styles = {
     container: {
         flex: 1,
         paddingTop: SCREEN_HEIGHT * 0.02,
-        backgroundColor: "#ccc"
+        backgroundColor: '#ccc'
     },
     content: {
         paddingRight: 10,
@@ -217,7 +228,7 @@ const styles = {
         fontSize: SCREEN_HEIGHT * 0.02,
         width: SCREEN_WIDTH * 0.25
     }
-}
+};
 
 const mapStateToProps = state => {
     return {
@@ -228,8 +239,11 @@ const mapStateToProps = state => {
         token: state.auth.token,
         updatingSettings: state.settings.updatingSettings,
         updateSettingsSuccess: state.settings.updateSettingsSuccess,
-        user: state.auth.user,
+        user: state.auth.user
     };
-}
+};
 
-export default connect(mapStateToProps, actions)(SettingsComponent);
+export default connect(
+    mapStateToProps,
+    actions
+)(SettingsComponent);
