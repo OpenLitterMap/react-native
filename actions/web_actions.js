@@ -1,8 +1,8 @@
 import {
     ADD_TAGS_TO_WEB_IMAGE,
     LOAD_MORE_WEB_IMAGES,
+    INCREMENT_WEB_IMAGES_UPLOADED,
     REMOVE_WEB_IMAGE,
-    WEB_CONFIRM,
     WEB_IMAGES,
     URL
 } from './types';
@@ -105,16 +105,22 @@ export const loadMoreWebImages = (token, photo_id) => {
     };
 };
 
+/**
+ * When the tags for a web image have been uploaded
+ *
+ * We increment this to update the counter that shows when uploading images
+ *
+ * @returns {{payload, type: string}}
+ */
+export const incrementWebImagesUploaded = () => {
+    return {
+        type: INCREMENT_WEB_IMAGES_UPLOADED
+    };
+};
+
 export const removeWebImage = id => {
     return {
         type: REMOVE_WEB_IMAGE,
         payload: id
-    };
-};
-
-export const toggleWebImageSuccess = bool => {
-    return {
-        type: WEB_CONFIRM,
-        payload: bool
     };
 };

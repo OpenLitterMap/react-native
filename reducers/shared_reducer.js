@@ -2,11 +2,14 @@ import {
     CLOSE_LITTER_MODAL,
     DECREMENT_SELECTED,
     INCREMENT_SELECTED,
+    INCREMENT_SUCCESSFUL_UPLOADS,
+    RESET_SUCCESSFULLY_UPLOADED,
     // TOGGLE_MODAL,
     TOGGLE_LITTER,
     TOGGLE_SELECTING,
     TOGGLE_THANK_YOU,
     TOGGLE_UPLOAD,
+    TOTAL_PHOTOS_TO_BE_UPLOADED,
     UNIQUE_VALUE,
     UPDATE_COUNT_TOTAL
 } from '../actions/types';
@@ -16,6 +19,7 @@ const INITIAL_STATE = {
     isSelecting: false,
     litterVisible: false, // show LitterPicker
     modalVisible: false,
+    successfullyUploaded: 0,
     thankYouVisible: false,
     totalImagesToUpload: 0,
     uniqueValue: 0,
@@ -43,6 +47,26 @@ export default function(state = INITIAL_STATE, action) {
                 ...state,
                 selected: state.selected + 1,
                 uniqueValue: state.uniqueValue + 1
+            };
+
+        /**
+         * One of the image types and its tags has been uploaded successfully
+         */
+        case INCREMENT_SUCCESSFUL_UPLOADS:
+            return {
+                ...state,
+                successfullyUploaded: state.successfullyUploaded++
+            };
+
+        /**
+         * When beginning to upload,
+         *
+         * Reset successfullyUploaded
+         */
+        case RESET_SUCCESSFULLY_UPLOADED:
+            return {
+                ...state,
+                successfullyUploaded: 0
             };
 
         // /**
@@ -92,19 +116,19 @@ export default function(state = INITIAL_STATE, action) {
                 // uniqueValue: state.uniqueValue + 1
             };
 
+        /**
+         * Total number of photos to be uploaded across all photo types
+         */
+        case TOTAL_PHOTOS_TO_BE_UPLOADED:
+            return {
+                ...state,
+                totalImagesToUpload: action.payload
+            };
+
         case UNIQUE_VALUE:
             return {
                 ...state,
                 uniqueValue: state.uniqueValue + 1
-            };
-
-        /**
-         * Total number of images to be uploaded from camera_photos and gallery_photos
-         */
-        case UPDATE_COUNT_TOTAL:
-            return {
-                ...state,
-                totalImagesToUpload: action.payload
             };
 
         default:

@@ -7,7 +7,6 @@ import {
     TOGGLE_IMAGES_LOADING,
     PHOTOS_FROM_GALLERY,
     REMOVE_TAG_FROM_GALLERY_PHOTO,
-    RESET_GALLERY_TOTAL_TO_UPLOAD,
     TOGGLE_IMAGE_BROWSER,
     TOGGLE_SELECTED_GALLERY
 } from '../actions/types';
@@ -16,8 +15,6 @@ const INITIAL_STATE = {
     gallery: [], // array of selected images
     imageBrowserOpen: false,
     imagesLoading: true,
-    indexSelected: 0,
-    totalGalleryUploaded: 0,
     galleryUploadProgress: 0
 };
 
@@ -122,9 +119,7 @@ export default function(state = INITIAL_STATE, action) {
                 gallery: [
                     ...state.gallery.slice(0, action.payload),
                     ...state.gallery.slice(action.payload + 1)
-                ],
-                // total number of photos that were successfully uploaded
-                totalGalleryUploaded: state.totalGalleryUploaded + 1
+                ]
             };
 
         /**
@@ -169,15 +164,6 @@ export default function(state = INITIAL_STATE, action) {
             return {
                 ...state,
                 gallery: deletedTagGallery
-            };
-
-        /**
-         * When uploading, reset x / total -> x = 0
-         */
-        case RESET_GALLERY_TOTAL_TO_UPLOAD:
-            return {
-                ...state,
-                totalGalleryUploaded: 0
             };
 
         /**

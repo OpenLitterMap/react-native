@@ -8,7 +8,6 @@ import {
     TOGGLE_IMAGES_LOADING,
     PHOTOS_FROM_GALLERY,
     REMOVE_TAG_FROM_GALLERY_PHOTO,
-    RESET_GALLERY_TOTAL_TO_UPLOAD,
     TOGGLE_IMAGE_BROWSER,
     TOGGLE_SELECTED_GALLERY
 } from './types';
@@ -88,15 +87,6 @@ export const removeTagFromGalleryPhoto = data => {
 export const toggleImageBrowser = () => {
     return {
         type: TOGGLE_IMAGE_BROWSER
-    };
-};
-
-/**
- * When uploading, reset x ( x / total )
- */
-export const resetGalleryToUpload = () => {
-    return {
-        type: RESET_GALLERY_TOTAL_TO_UPLOAD
     };
 };
 

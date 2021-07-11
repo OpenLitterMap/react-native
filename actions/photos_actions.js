@@ -6,7 +6,6 @@ import {
     LOAD_CAMERA_PHOTOS_FROM_ASYNC_STORAGE,
     DELETE_SELECTED_PHOTO,
     DESELECT_ALL_CAMERA_PHOTOS,
-    RESET_PHOTOS_TOTAL_TO_UPLOAD,
     CAMERA_PHOTO_UPLOADED_SUCCESSFULLY,
     REMOVE_TAG_FROM_CAMERA_PHOTO,
     TOGGLE_SELECTED_PHOTO,
@@ -44,7 +43,7 @@ export const checkForWebUpload = token => {
             method: 'get',
             url: URL + '/api/check',
             headers: {
-                'Authorization': 'Bearer ' + token
+                Authorization: 'Bearer ' + token
             }
         })
             .then(resp => {
@@ -53,8 +52,8 @@ export const checkForWebUpload = token => {
             .catch(err => {
                 console.log(err);
             });
-    }
-}
+    };
+};
 
 /**
  * When the app loads, if any camera photos exist, load them here
@@ -93,15 +92,6 @@ export const removeTagFromCameraPhoto = data => {
     return {
         type: REMOVE_TAG_FROM_CAMERA_PHOTO,
         payload: data
-    };
-};
-
-/**
- * When uploading, reset x (x / total) to 0
- */
-export const resetPhotosToUpload = () => {
-    return {
-        type: RESET_PHOTOS_TOTAL_TO_UPLOAD
     };
 };
 

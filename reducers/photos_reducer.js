@@ -6,7 +6,6 @@ import {
     DESELECT_ALL_CAMERA_PHOTOS,
     LOGOUT,
     INCREMENT,
-    RESET_PHOTOS_TOTAL_TO_UPLOAD,
     REMOVE_TAG_FROM_CAMERA_PHOTO,
     CAMERA_PHOTO_UPLOADED_SUCCESSFULLY,
     TOGGLE_SELECTED_PHOTO,
@@ -24,10 +23,8 @@ const INITIAL_STATE = {
     uniqueValue: 0
 };
 
-export default function(state = INITIAL_STATE, action)
-{
-    switch (action.type)
-    {
+export default function(state = INITIAL_STATE, action) {
+    switch (action.type) {
         /**
          * The user has manually taken a photo with the Camera
          */
@@ -187,24 +184,6 @@ export default function(state = INITIAL_STATE, action)
             }
 
         /**
-         * When uploading reset x (x / total) to 0
-         */
-        case RESET_PHOTOS_TOTAL_TO_UPLOAD:
-            return {
-                ...state,
-                totalCameraPhotosUploaded: 0
-            };
-
-        // /**
-        //  * Reset session count to 0 when all items uploaded successfully
-        //  */
-        // case RESET_SESSION_COUNT:
-        //     return {
-        //         ...state,
-        //         totalTaggedSessionCount: 0
-        //     };
-
-        /**
          * Change the selected value of a photo
          *
          * @payload action.payload = index
@@ -231,9 +210,7 @@ export default function(state = INITIAL_STATE, action)
                 photos: [
                     ...state.photos.slice(0, action.payload),
                     ...state.photos.slice(action.payload + 1)
-                ],
-                // total number of successfully uploaded photos can be incremented
-                totalCameraPhotosUploaded: state.totalCameraPhotosUploaded + 1
+                ]
             };
 
         case TOGGLE_SELECTING:

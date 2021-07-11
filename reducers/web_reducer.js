@@ -2,7 +2,6 @@ import {
     ADD_TAGS_TO_WEB_IMAGE,
     LOAD_MORE_WEB_IMAGES,
     REMOVE_WEB_IMAGE,
-    WEB_CONFIRM,
     WEB_IMAGES
 } from '../actions/types';
 
@@ -105,21 +104,6 @@ export default function(state = INITIAL_STATE, action) {
                 photos: filtered,
                 count
             };
-
-        // /**
-        //  * Toggle webImageSuccess to show modal content on LitterPicker
-        //  */
-        // case WEB_CONFIRM:
-        //
-        //     const photos = state.photos = [
-        //         ...state.photos.slice(0, 0),
-        //         ...state.photos.slice(1)
-        //     ];
-        //
-        //     return {
-        //         ...state,
-        //         photos
-        //     };
 
         /**
          * Images have been uploaded from the web
