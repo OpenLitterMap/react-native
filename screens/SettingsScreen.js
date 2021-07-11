@@ -139,16 +139,17 @@ class SettingsScreen extends Component {
                                                 'settings.show-username-createdby'
                                         }
                                     ]
-                                },
-                                {
-                                    title: 'settings.tags',
-                                    data: [
-                                        {
-                                            id: 10,
-                                            title: 'settings.show-previous-tags'
-                                        }
-                                    ]
                                 }
+                                // Temp commented out. This feature will be fixed in a future release.
+                                // {
+                                //     title: 'settings.tags',
+                                //     data: [
+                                //         {
+                                //             id: 10,
+                                //             title: 'settings.show-previous-tags'
+                                //         }
+                                //     ]
+                                // }
                             ]}
                             renderItem={({ item, index, section }) => (
                                 <View style={styles.sectionRow} key={index}>

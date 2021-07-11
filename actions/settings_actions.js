@@ -145,12 +145,12 @@ export const toggleSettingsSwitch = (id, token) => {
     if (id === 9) endUrl = 'createdby/username';
     if (id === 10) endUrl = 'toggle-previous-tags';
 
-    return dispatch => {
+    return async dispatch => {
         dispatch({
             type: TOGGLE_SETTINGS_WAIT
         });
 
-        axios(URL + '/api/settings/privacy/' + endUrl, {
+        await axios(URL + '/api/settings/privacy/' + endUrl, {
             method: 'POST',
             headers: {
                 Authorization: 'Bearer ' + token,
@@ -158,14 +158,14 @@ export const toggleSettingsSwitch = (id, token) => {
             }
         })
             .then(async response => {
-                // console.log('toggle_settings', response);
+                console.log('Response: toggleSettingsSwitch', response.data);
+
                 if (response.status === 200) {
                     const key = Object.keys(response.data)[0];
                     const value = Object.values(response.data)[0];
 
-                    // console.log("Grabbing user from AsyncStorage...");
                     let user = await AsyncStorage.getItem('user');
-                    // console.log("User found");
+
                     // transform user json string into an object
                     user = JSON.parse(user);
 
@@ -184,7 +184,7 @@ export const toggleSettingsSwitch = (id, token) => {
                 }
             })
             .catch(error => {
-                console.log(error);
+                console.log('Error: toggleSettingsSwitch', error);
             });
     };
 };

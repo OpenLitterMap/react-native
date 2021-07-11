@@ -152,7 +152,7 @@ export default function(state = INITIAL_STATE, action) {
                 remainingCount: state.remainingCount + 1 // todo make immutable
             };
 
-        case LOGOUT:
+        // case LOGOUT:
         // return INITIAL_STATE;
 
         /**
@@ -182,6 +182,8 @@ export default function(state = INITIAL_STATE, action) {
                     photos: untaggedPhotos
                 };
             }
+
+            break;
 
         /**
          * Change the selected value of a photo

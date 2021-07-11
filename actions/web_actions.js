@@ -38,7 +38,7 @@ export const checkForImagesOnWeb = token => {
             }
         })
             .then(resp => {
-                // console.log('images_from_web', resp.data.photos);
+                console.log('RESPONSE: checkForImagesOnWeb', resp.data.photos);
 
                 if (resp.data.photos) {
                     // Todo - load Tags: {} with the data

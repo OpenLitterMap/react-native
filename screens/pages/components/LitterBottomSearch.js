@@ -229,8 +229,6 @@ class LitterBottomSearch extends PureComponent {
         const lang = this.props.lang;
         const suggest = getTranslation(`${lang}.litter.tags.type-to-suggest`);
 
-        console.log('keyboard-view', this.props.keyboardOpen);
-
         return (
             <KeyboardAvoidingView
                 style={{
@@ -242,7 +240,7 @@ class LitterBottomSearch extends PureComponent {
                 }}
                 behavior={'padding'}>
                 <View style={this._container()}>
-                    <TouchableHighlight
+                    <TouchableOpacity
                         onPress={this.closeLitterPicker.bind(this)}
                         style={
                             this.props.keyboardOpen ? styles.hide : styles.icon
@@ -253,7 +251,7 @@ class LitterBottomSearch extends PureComponent {
                             name="replay"
                             size={SCREEN_HEIGHT * 0.05}
                         />
-                    </TouchableHighlight>
+                    </TouchableOpacity>
 
                     <TextInput
                         style={this.filterStyle()}
