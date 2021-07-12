@@ -149,6 +149,8 @@ class GalleryMediaPicker extends Component {
                         tags: {},
                         type: 'gallery'
                     };
+                } else {
+                    return null;
                 }
             } else {
                 // android
@@ -168,9 +170,14 @@ class GalleryMediaPicker extends Component {
                         tags: {},
                         type: 'gallery'
                     };
+                } else {
+                    return null;
                 }
             }
         });
+
+        // console.log('geotagged[0]', geotagged[0]);
+        // console.log({ geotagged });
 
         let albums = [{ albumName: 'Geotagged', images: geotagged }];
 
@@ -208,6 +215,8 @@ class GalleryMediaPicker extends Component {
         const selectedAlbum = this.state.albums
             .filter(album => album.albumName === selectedAlbumName)
             .pop();
+
+        console.log({ selectedAlbum });
 
         return selectedAlbum.images;
     }
@@ -253,6 +262,7 @@ class GalleryMediaPicker extends Component {
 
     renderMedia() {
         if (this.props.imagesLoading) {
+            console.log('imagesLoading true');
             return (
                 <View style={{ flex: 1, justifyContent: 'center' }}>
                     <ActivityIndicator />
@@ -261,7 +271,10 @@ class GalleryMediaPicker extends Component {
         }
 
         if (this.state.albumSelected) {
+            console.log('albumSelected', this.state.albumSelected);
             const images = this.getAlbumImages(this.state.albumSelected);
+
+            console.log({ images });
 
             if (images[0] === undefined) {
                 return (

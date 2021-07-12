@@ -14,7 +14,7 @@ import {
 const INITIAL_STATE = {
     gallery: [], // array of selected images
     imageBrowserOpen: false,
-    imagesLoading: true,
+    imagesLoading: true, // inside the photo gallery, turn on to show spinner
     galleryUploadProgress: 0
 };
 
