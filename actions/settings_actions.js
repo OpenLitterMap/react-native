@@ -67,22 +67,32 @@ export const saveSettings = (data, value, token) => {
         });
 
         let dataToSend = {};
-        dataToSend[data.key] = value;
-
-        await axios(URL + '/api/settings/update/', {
+        let key = '';
+        switch (data.key) {
+            case 'name':
+                key = 'Name';
+                break;
+            case 'username':
+                key = 'Username';
+                break;
+            case 'email':
+                key = 'Email';
+                break;
+        }
+        dataToSend[key] = value;
+        await axios(URL + `/api/settings/update/${key}`, {
             method: 'POST',
             headers: {
                 Authorization: 'Bearer ' + token,
                 'content-type': 'application/json'
             },
-            params: {
-                dataToSend
-            }
+            data: dataToSend
         })
             .then(async response => {
                 console.log('saveSettings', response.data.success);
 
-                if (response.data.success) {
+                console.log(response.data);
+                if (response.data) {
                     // Get user and parse json to Object
                     let user = await AsyncStorage.getItem('user');
                     user = JSON.parse(user);
