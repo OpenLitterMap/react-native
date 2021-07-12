@@ -109,6 +109,7 @@ class SettingsComponent extends Component {
                                 }
                                 style={styles.content}
                                 value={this.props.settingsEditProp}
+                                autoCapitalize="none"
                             />
                         </View>
                     </View>

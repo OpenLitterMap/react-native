@@ -60,13 +60,10 @@ export const setModel = model => {
  */
 export const saveSettings = (data, value, token) => {
     return async dispatch => {
-        // turn on loading symbol for second inner modal
-        // type: TOGGLE_SECOND_SETINGS_MODAL
         dispatch({
             type: START_UPDATING_SETTINGS
         });
 
-        let dataToSend = {};
         let key = '';
         switch (data.key) {
             case 'name':
@@ -79,20 +76,22 @@ export const saveSettings = (data, value, token) => {
                 key = 'Email';
                 break;
         }
-        dataToSend[key] = value;
-        await axios(URL + `/api/settings/update/${key}`, {
+
+        await axios(URL + '/api/settings/update/', {
             method: 'POST',
             headers: {
                 Authorization: 'Bearer ' + token,
                 'content-type': 'application/json'
             },
-            data: dataToSend
+            data: {
+                key,
+                value
+            }
         })
             .then(async response => {
-                console.log('saveSettings', response.data.success);
+                console.log('saveSettings', response.data);
 
-                console.log(response.data);
-                if (response.data) {
+                if (response.data.success) {
                     // Get user and parse json to Object
                     let user = await AsyncStorage.getItem('user');
                     user = JSON.parse(user);
@@ -108,7 +107,6 @@ export const saveSettings = (data, value, token) => {
                     });
 
                     // then show success message
-                    // console.log("Show success message - another modal???");
                     dispatch({
                         type: SETTINGS_UPDATE_SUCCESS
                     });
