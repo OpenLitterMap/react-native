@@ -150,6 +150,8 @@ class SettingsComponent extends Component {
             this.props.settingsEditProp,
             this.props.token
         );
+
+        this._goBack();
     }
 
     _goBack() {
