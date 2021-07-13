@@ -3,16 +3,16 @@
 // We will set up a staging server later that will give others access to a shared online server
 
 // PRODUCTION KEYS
-// import { SECRET_CLIENT } from "@env";
-// import { ID_CLIENT } from "@env";
-// import { OLM_ENDPOINT } from "@env"; // https://openlittermap.com
+import { SECRET_CLIENT } from '@env';
+import { ID_CLIENT } from '@env';
+import { OLM_ENDPOINT } from '@env'; // https://openlittermap.com
 
-export const IS_PRODUCTION = false; // change this when working locally to disable Sentry
+export const IS_PRODUCTION = true; // change this when working locally to disable Sentry
 
 // LOCAL DEVELOPMENT
-const SECRET_CLIENT = 'rnMHOS4OICXatHuNMbXeAucBP9Q3CkXkkjl9sdp8';
-const ID_CLIENT = 2;
-const OLM_ENDPOINT = 'http://olm.test';
+// const SECRET_CLIENT = 'rnMHOS4OICXatHuNMbXeAucBP9Q3CkXkkjl9sdp8';
+// const ID_CLIENT = 2;
+// const OLM_ENDPOINT = 'http://olm.test';
 
 export const CLIENT_SECRET = SECRET_CLIENT;
 export const URL = OLM_ENDPOINT;

@@ -551,10 +551,6 @@ class AddTags extends PureComponent {
             quantity: parseInt(this.props.q)
         };
 
-        // this.props.tagLitter(tag);
-        // this._confirmData();
-
-        // const photoType = this.props.photoType;
         const photosLength = this.props.photos.length;
         const galleryLength = this.props.gallery.length;
         const webLength = this.props.webPhotos.length;

@@ -48,10 +48,40 @@ class LitterBottomSearch extends PureComponent {
         // update selected tag to execute scrollTo
         this.props.changeItem(tag.key);
 
-        this.props.tagLitter({
+        const newTag = {
             category: tag.category,
             title: tag.key
-        });
+        };
+
+        const photosLength = this.props.photosLength;
+        const galleryLength = this.props.galleryLength;
+        const webLength = this.props.webLength;
+
+        // currentGlobalIndex
+        const currentIndex = this.props.swiperIndex;
+
+        // Add tag to image
+        if (currentIndex < photosLength) {
+            // photo_actions
+            this.props.addTagsToCameraPhoto({
+                tag: newTag,
+                currentIndex
+            });
+        } else if (currentIndex < photosLength + galleryLength) {
+            // gallery_actions
+            this.props.addTagsToGalleryImage({
+                tag: newTag,
+                currentIndex: currentIndex - photosLength
+            });
+        } else if (currentIndex < photosLength + galleryLength + webLength) {
+            // web_actions
+            this.props.addTagsToWebImage({
+                tag: newTag,
+                currentIndex: currentIndex - photosLength - galleryLength
+            });
+        } else {
+            console.log('problem@addTag');
+        }
     }
 
     /**
