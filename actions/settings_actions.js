@@ -64,18 +64,8 @@ export const saveSettings = (data, value, token) => {
             type: START_UPDATING_SETTINGS
         });
 
-        let key = '';
-        switch (data.key) {
-            case 'name':
-                key = 'Name';
-                break;
-            case 'username':
-                key = 'Username';
-                break;
-            case 'email':
-                key = 'Email';
-                break;
-        }
+        let dataToSend = {};
+        dataToSend[data.key] = value;
 
         await axios(URL + '/api/settings/update/', {
             method: 'POST',
@@ -83,10 +73,7 @@ export const saveSettings = (data, value, token) => {
                 Authorization: 'Bearer ' + token,
                 'content-type': 'application/json'
             },
-            data: {
-                key,
-                value
-            }
+            data: { dataToSend: JSON.stringify(dataToSend) }
         })
             .then(async response => {
                 console.log('saveSettings', response.data);
