@@ -117,14 +117,16 @@ export const saveSettings = (data, value, token) => {
                         'ERROR updating settings. Todo - inform the user'
                     );
 
-                    // Todo - Change this to a failure message
                     dispatch({
-                        type: SETTINGS_UPDATE_SUCCESS
+                        type: SETTINGS_UPDATE_ERROR
                     });
                 }
             })
             .catch(error => {
                 console.log('saveSettings', error);
+                dispatch({
+                    type: SETTINGS_UPDATE_ERROR
+                });
             });
     };
 };

@@ -10,7 +10,7 @@ import {
     View
 } from 'react-native';
 import { getTranslation, TransText } from 'react-native-translation';
-import { Header } from 'react-native-elements';
+import { Header, Icon } from 'react-native-elements';
 import { connect } from 'react-redux';
 import * as actions from '../../actions';
 
@@ -36,8 +36,15 @@ class SettingsComponent extends Component {
                         transparent={true}
                         visible={this.props.secondSettingsModalVisible}>
                         <View style={styles.modalContainer}>
-                            {this.props.updateSettingsSuccess && (
+                            {this.props.updateSettingsSuccess ? (
                                 <View style={styles.innerModalSuccess}>
+                                    <Icon
+                                        reverse
+                                        name="done"
+                                        color="#2ecc71"
+                                        size={40}
+                                        containerStyle={styles.iconContainer}
+                                    />
                                     <TransText
                                         style={styles.innerModalHeader}
                                         dictionary={`${lang}.settings.success`}
@@ -47,6 +54,35 @@ class SettingsComponent extends Component {
                                     />
                                     <TouchableHighlight
                                         style={styles.successButton}
+                                        activeOpacity={0.9}
+                                        underlayColor="#00aced"
+                                        onPress={() => this._goBack()}>
+                                        <TransText
+                                            style={styles.buttonText}
+                                            dictionary={`${lang}.settings.go-back`}
+                                        />
+                                    </TouchableHighlight>
+                                </View>
+                            ) : (
+                                <View style={styles.innerModalSuccess}>
+                                    <Icon
+                                        reverse
+                                        name="close"
+                                        color="#E25B69"
+                                        size={40}
+                                        containerStyle={styles.iconContainer}
+                                    />
+                                    <TransText
+                                        style={styles.innerModalHeader}
+                                        dictionary={`${lang}.settings.error`}
+                                    />
+                                    <TransText
+                                        dictionary={`${lang}.settings.value-not-updated`}
+                                    />
+                                    <TouchableHighlight
+                                        style={styles.successButton}
+                                        activeOpacity={0.9}
+                                        underlayColor="#00aced"
                                         onPress={() => this._goBack()}>
                                         <TransText
                                             style={styles.buttonText}
@@ -152,7 +188,7 @@ class SettingsComponent extends Component {
             this.props.token
         );
 
-        this._goBack();
+        // this._goBack();
     }
 
     _goBack() {
@@ -181,7 +217,8 @@ class SettingsComponent extends Component {
 const styles = {
     buttonText: {
         alignItems: 'center',
-        justifyContent: 'center'
+        justifyContent: 'center',
+        color: '#fff'
     },
     container: {
         flex: 1,
@@ -207,7 +244,8 @@ const styles = {
         justifyContent: 'center'
     },
     innerModalSuccess: {
-        height: SCREEN_HEIGHT * 0.2,
+        // height: SCREEN_HEIGHT * 0.2,
+        paddingVertical: 20,
         justifyContent: 'center',
         alignItems: 'center',
         backgroundColor: 'white',
@@ -215,15 +253,20 @@ const styles = {
     },
     innerModalHeader: {
         textAlign: 'center',
-        fontSize: 16
+        fontSize: 28,
+        marginBottom: 10
+    },
+    iconContainer: {
+        marginTop: -60
     },
     successButton: {
         alignItems: 'center',
         justifyContent: 'center',
         borderRadius: 6,
-        backgroundColor: '#2ecc71',
+        backgroundColor: '#2189dc',
+        // backgroundColor: '#2ecc71',
         height: SCREEN_HEIGHT * 0.05,
-        marginTop: 10,
+        marginTop: 20,
         width: '80%'
     },
     title: {

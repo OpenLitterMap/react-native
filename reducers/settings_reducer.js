@@ -5,6 +5,7 @@ import {
     SET_MODEL,
     SETTINGS_INIT,
     SETTINGS_UPDATE_SUCCESS,
+    SETTINGS_UPDATE_ERROR,
     START_UPDATING_SETTINGS,
     TOGGLE_SETTINGS_MODAL,
     TOGGLE_SECOND_SETINGS_MODAL,
@@ -86,6 +87,15 @@ export default function(state = INITIAL_STATE, action) {
             return {
                 ...state,
                 updateSettingsSuccess: !state.updateSettingsSuccess
+            };
+
+        /**
+         * Settings update was not successful - show error message
+         */
+        case SETTINGS_UPDATE_ERROR:
+            return {
+                ...state,
+                updateSettingsSuccess: false
             };
 
         /**
