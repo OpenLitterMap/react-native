@@ -120,9 +120,14 @@ class CameraPage extends React.Component {
      * Render the camera page
      */
     render() {
-        if (this.state.loading) {
+        if (this.state.loading || this.props.index === 0) {
             return (
-                <View style={{ flex: 1, justifyContent: 'center' }}>
+                <View
+                    style={{
+                        flex: 1,
+                        justifyContent: 'center',
+                        backgroundColor: 'black'
+                    }}>
                     <ActivityIndicator />
                 </View>
             );
@@ -137,6 +142,7 @@ class CameraPage extends React.Component {
      * Render Camera
      */
     renderCamera() {
+        // console.log('CAMERA');
         return (
             <>
                 <RNCamera
