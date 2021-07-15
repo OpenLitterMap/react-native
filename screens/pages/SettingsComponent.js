@@ -32,69 +32,17 @@ class SettingsComponent extends Component {
                 <SafeAreaView style={{ flex: 0, backgroundColor: '#2189dc' }} />
                 <SafeAreaView style={{ flex: 1 }}>
                     <Modal
-                        animationType="fade"
+                        animationType="slide"
                         transparent={true}
                         visible={this.props.secondSettingsModalVisible}>
                         <View style={styles.modalContainer}>
-                            {this.props.updateSettingsSuccess ? (
-                                <View style={styles.innerModalSuccess}>
-                                    <Icon
-                                        reverse
-                                        name="done"
-                                        color="#2ecc71"
-                                        size={40}
-                                        containerStyle={styles.iconContainer}
-                                    />
-                                    <TransText
-                                        style={styles.innerModalHeader}
-                                        dictionary={`${lang}.settings.success`}
-                                    />
-                                    <TransText
-                                        dictionary={`${lang}.settings.value-updated`}
-                                    />
-                                    <TouchableHighlight
-                                        style={styles.successButton}
-                                        activeOpacity={0.9}
-                                        underlayColor="#00aced"
-                                        onPress={() => this._goBack()}>
-                                        <TransText
-                                            style={styles.buttonText}
-                                            dictionary={`${lang}.settings.go-back`}
-                                        />
-                                    </TouchableHighlight>
-                                </View>
-                            ) : (
-                                <View style={styles.innerModalSuccess}>
-                                    <Icon
-                                        reverse
-                                        name="close"
-                                        color="#E25B69"
-                                        size={40}
-                                        containerStyle={styles.iconContainer}
-                                    />
-                                    <TransText
-                                        style={styles.innerModalHeader}
-                                        dictionary={`${lang}.settings.error`}
-                                    />
-                                    <TransText
-                                        dictionary={`${lang}.settings.value-not-updated`}
-                                    />
-                                    <TouchableHighlight
-                                        style={styles.successButton}
-                                        activeOpacity={0.9}
-                                        underlayColor="#00aced"
-                                        onPress={() => this._goBack()}>
-                                        <TransText
-                                            style={styles.buttonText}
-                                            dictionary={`${lang}.settings.go-back`}
-                                        />
-                                    </TouchableHighlight>
-                                </View>
+                            {this.renderStatusMessage(
+                                this.props.updateSettingsStatusMessage,
+                                lang
                             )}
-
-                            {this.props.updatingSettings && (
-                                <ActivityIndicator />
-                            )}
+                            {this.props.updatingSettings &&
+                                this.props.updateSettingsStatusMessage ===
+                                    '' && <ActivityIndicator />}
                         </View>
                     </Modal>
 
@@ -152,6 +100,55 @@ class SettingsComponent extends Component {
                 </SafeAreaView>
             </>
         );
+    }
+
+    /**
+     * render modal messages based on vale of updateSettingsStatusMessage
+     * ERROR || SUCCESS
+     */
+
+    renderStatusMessage(status, lang) {
+        let success = status === 'SUCCESS';
+        let error = status === 'ERROR';
+        if (success || error) {
+            return (
+                <View style={styles.innerModalSuccess}>
+                    <Icon
+                        reverse
+                        name={success ? 'done' : 'close'}
+                        color={success ? '#2ecc71' : '#E25B69'}
+                        size={40}
+                        containerStyle={styles.iconContainer}
+                    />
+                    <TransText
+                        style={styles.innerModalHeader}
+                        dictionary={
+                            success
+                                ? `${lang}.settings.success`
+                                : `${lang}.settings.error`
+                        }
+                    />
+                    <TransText
+                        dictionary={
+                            success
+                                ? `${lang}.settings.value-updated`
+                                : `${lang}.settings.value-not-updated`
+                        }
+                    />
+                    <TouchableHighlight
+                        style={styles.successButton}
+                        activeOpacity={0.9}
+                        underlayColor="#00aced"
+                        onPress={() => this._goBack()}>
+                        <TransText
+                            style={styles.buttonText}
+                            dictionary={`${lang}.settings.go-back`}
+                        />
+                    </TouchableHighlight>
+                </View>
+            );
+        }
+        return <></>;
     }
 
     /**
@@ -284,7 +281,7 @@ const mapStateToProps = state => {
         settingsEditProp: state.settings.settingsEditProp,
         token: state.auth.token,
         updatingSettings: state.settings.updatingSettings,
-        updateSettingsSuccess: state.settings.updateSettingsSuccess,
+        updateSettingsStatusMessage: state.settings.updateSettingsStatusMessage,
         user: state.auth.user
     };
 };

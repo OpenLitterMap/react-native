@@ -3,16 +3,16 @@
 // We will set up a staging server later that will give others access to a shared online server
 
 // PRODUCTION KEYS
-import { SECRET_CLIENT } from '@env';
-import { ID_CLIENT } from '@env';
-import { OLM_ENDPOINT } from '@env'; // https://openlittermap.com
+// import { SECRET_CLIENT } from '@env';
+// import { ID_CLIENT } from '@env';
+// import { OLM_ENDPOINT } from '@env'; // https://openlittermap.com
 
-export const IS_PRODUCTION = true; // change this when working locally to disable Sentry
+export const IS_PRODUCTION = false; // change this when working locally to disable Sentry
 
 // LOCAL DEVELOPMENT
-// const SECRET_CLIENT = 'rnMHOS4OICXatHuNMbXeAucBP9Q3CkXkkjl9sdp8';
-// const ID_CLIENT = 2;
-// const OLM_ENDPOINT = 'http://olm.test';
+const SECRET_CLIENT = '1XEkA6xeguJLvy8mcozxYyuiTlFjqgw0sqrDfi0b';
+const ID_CLIENT = 4;
+const OLM_ENDPOINT = 'http://olm.test';
 
 export const CLIENT_SECRET = SECRET_CLIENT;
 export const URL = OLM_ENDPOINT;
@@ -123,7 +123,9 @@ export const CLOSE_SECOND_SETTING_MODAL = 'CLOSE_SECOND_SETTING_MODAL';
 export const SAVE_SETTING = 'SAVE_SETTING';
 export const SET_MODEL = 'SET_MODEL';
 export const SETTINGS_INIT = 'SETTINGS_INIT';
-export const SETTINGS_UPDATE_SUCCESS = 'SETTINGS_UPDATE_SUCCESS';
+// export const SETTINGS_UPDATE_SUCCESS = 'SETTINGS_UPDATE_SUCCESS'; // not used
+// export const SETTINGS_UPDATE_ERROR = 'SETTINGS_UPDATE_ERROR'; // not used
+export const SETTINGS_UPDATE_STATUS_MESSAGE = 'SETTINGS_UPDATE_STATUS_MESSAGE';
 export const START_UPDATING_SETTINGS = 'START_UPDATING_SETTINGS';
 export const TOGGLE_SETTINGS_MODAL = 'TOGGLE_SETTINGS_MODAL';
 export const TOGGLE_SETTINGS_SWITCH = 'TOGGLE_SETTINGS_SWITCH';

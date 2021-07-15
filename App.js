@@ -14,16 +14,15 @@ let lang = RNLocalize.getLocales()['languageCode'];
 if (!langs[lang]) lang = 'en';
 
 import * as Sentry from '@sentry/react-native';
-// import { SENTRY_DSN } from "@env";
+import { SENTRY_DSN } from '@env';
 import { IS_PRODUCTION } from './actions/types';
 
 const App = () => {
-    // if (IS_PRODUCTION)
-    // {
-    //     Sentry.init({
-    //         dsn: SENTRY_DSN,
-    //     });
-    // }
+    if (IS_PRODUCTION) {
+        Sentry.init({
+            dsn: SENTRY_DSN
+        });
+    }
 
     const { persistor, store } = configureStore();
 
