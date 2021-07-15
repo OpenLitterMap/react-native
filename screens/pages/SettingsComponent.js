@@ -254,7 +254,7 @@ const styles = {
         marginBottom: 10
     },
     iconContainer: {
-        marginTop: -60
+        marginTop: -70
     },
     successButton: {
         alignItems: 'center',
