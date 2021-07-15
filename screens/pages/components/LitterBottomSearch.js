@@ -120,6 +120,9 @@ class LitterBottomSearch extends PureComponent {
                 {
                     text: 'OK',
                     onPress: () => {
+                        this.props.swiperIndexChanged(
+                            currentIndex > 0 ? currentIndex - 1 : 0
+                        );
                         if (currentIndex < photosLength) {
                             this.props.deleteSelectedPhoto(currentIndex);
                         } else if (
@@ -150,8 +153,8 @@ class LitterBottomSearch extends PureComponent {
                                 'openlittermap-gallery',
                                 JSON.stringify(this.props.gallery)
                             );
-                            this.closeLitterPicker();
                         }, 500);
+                        this.closeLitterPicker();
                     }
                 },
                 {

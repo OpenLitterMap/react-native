@@ -483,6 +483,7 @@ class AddTags extends PureComponent {
     /**
      * Return the tags for an image at a specific index
      */
+
     getTags() {
         const currentGlobalIndex = this.props.swiperIndex;
 
@@ -493,16 +494,21 @@ class AddTags extends PureComponent {
 
         const photosLength = this.props.photos.length;
         const galleryLength = this.props.gallery.length;
+        const webLength = this.props.webPhotos.length;
 
         if (currentGlobalIndex < photosLength) {
-            return this.props.photos[currentGlobalIndex].tags;
+            return this.props.photos[currentGlobalIndex]?.tags;
         } else if (currentGlobalIndex < galleryLength + photosLength) {
-            return this.props.gallery[currentGlobalIndex - photosLength].tags;
-        } else {
+            return this.props.gallery[currentGlobalIndex - photosLength]?.tags;
+        } else if (
+            currentGlobalIndex >= galleryLength + photosLength &&
+            webLength !== 0
+        ) {
             const webIndex =
                 currentGlobalIndex - (photosLength + galleryLength);
-
-            return this.props.webPhotos[webIndex].tags;
+            return this.props.webPhotos[webIndex]?.tags;
+        } else {
+            return {};
         }
     }
 
