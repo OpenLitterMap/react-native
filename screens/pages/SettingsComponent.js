@@ -32,7 +32,7 @@ class SettingsComponent extends Component {
                 <SafeAreaView style={{ flex: 0, backgroundColor: '#2189dc' }} />
                 <SafeAreaView style={{ flex: 1 }}>
                     <Modal
-                        animationType="slide"
+                        animationType="fade"
                         transparent={true}
                         visible={this.props.secondSettingsModalVisible}>
                         <View style={styles.modalContainer}>
