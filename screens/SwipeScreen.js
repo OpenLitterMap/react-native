@@ -42,6 +42,7 @@ class SwipeScreen extends Component {
                 <LeftPage
                     navigation={this.props.navigation}
                     swiper={this.refs.swiper}
+                    swipe={value => this.jumpToSlide(value)}
                 />
                 {/*
                     <Swiper
