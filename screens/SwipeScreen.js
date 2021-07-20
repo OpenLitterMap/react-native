@@ -6,6 +6,12 @@ import LeftPage from './pages/LeftPage';
 // import RightPage from './pages/RightPage'
 
 class SwipeScreen extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            pageIndex: 1
+        };
+    }
     static navigationOptions = {
         tabBarVisible: false
     };
@@ -29,10 +35,14 @@ class SwipeScreen extends Component {
                 loop={false}
                 showsPagination={false}
                 ref="swiper"
+                onIndexChanged={index => {
+                    this.setState({ pageIndex: index });
+                }}
                 keyboardShouldPersistTaps="handled">
                 <LeftPage
                     navigation={this.props.navigation}
                     swiper={this.refs.swiper}
+                    swipe={value => this.jumpToSlide(value)}
                 />
                 {/*
                     <Swiper
@@ -44,7 +54,10 @@ class SwipeScreen extends Component {
                           <TitleText label="Top" />
                           </View>
                       */}
-                <CameraPage swipe={value => this.jumpToSlide(value)} />
+                <CameraPage
+                    index={this.state.pageIndex}
+                    swipe={value => this.jumpToSlide(value)}
+                />
                 {/*
                     <View style={this.viewStyle()}>
                       <TitleText label="Bottom - Verify Images Page." />

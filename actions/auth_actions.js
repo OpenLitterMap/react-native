@@ -94,20 +94,21 @@ export const onSeenFeatureTour = text => {
  **  - fired on AuthScreen componentDidMount
  */
 export const checkForToken = () => async dispatch => {
-    // console.log('auth_action - does token exist ?');
+    console.log('auth_actions - checkForToken');
     let jwt;
 
     try {
         jwt = await AsyncStorage.getItem('jwt');
     } catch (e) {
-        // console.log('Error getting token - check for token');
+        console.log('Error getting token - check for token');
     }
 
     if (jwt) {
-        // console.log('auth_action - token exists');
+        console.log('auth_actions - token exists');
         // Dispatch an action, login success
         await dispatch({ type: LOGIN_SUCCESS, payload: jwt });
     } else {
+        console.log('auth_actions - token not found');
         return null;
     }
 };
@@ -318,8 +319,7 @@ export const serverLogin = data => {
                 }
             })
             .catch(error => {
-                console.log('serverLogin.error', error.response.data);
-                console.log('status', error.response.status);
+                console.log('serverLogin.error', error);
 
                 switch (error.response.status) {
                     case 400:

@@ -4,7 +4,7 @@ import {
     SAVE_SETTING,
     SET_MODEL,
     SETTINGS_INIT,
-    SETTINGS_UPDATE_SUCCESS,
+    SETTINGS_UPDATE_STATUS_MESSAGE,
     START_UPDATING_SETTINGS,
     TOGGLE_SETTINGS_MODAL,
     TOGGLE_SECOND_SETINGS_MODAL,
@@ -20,7 +20,7 @@ const INITIAL_STATE = {
     settingsEditProp: '',
     wait: false,
     dataToEdit: null,
-    updateSettingsSuccess: false,
+    updateSettingsStatusMessage: '',
     updatingSettings: false
 };
 
@@ -30,7 +30,7 @@ export default function(state = INITIAL_STATE, action) {
             return {
                 ...state,
                 // success message
-                updateSettingsSuccess: false,
+                updateSettingsStatusMessage: '',
                 // activity indicator
                 updatingSettings: false,
                 // editing modal
@@ -47,7 +47,7 @@ export default function(state = INITIAL_STATE, action) {
             return {
                 ...state,
                 // success message
-                updateSettingsSuccess: false,
+                updateSettingsStatusMessage: '',
                 // activity indicator
                 updatingSettings: false,
                 // editing modal
@@ -82,12 +82,26 @@ export default function(state = INITIAL_STATE, action) {
         /**
          * Settings have been updated successfully - show success message
          */
-        case SETTINGS_UPDATE_SUCCESS:
+        // case SETTINGS_UPDATE_SUCCESS:
+        //     return {
+        //         ...state,
+        //         updateSettingsSuccess: !state.updateSettingsSuccess
+        //     };
+
+        /**
+         * Settings update was not successful - show error message
+         */
+        // case SETTINGS_UPDATE_ERROR:
+        //     return {
+        //         ...state,
+        //         updateSettingsSuccess: false
+        //     };
+
+        case SETTINGS_UPDATE_STATUS_MESSAGE:
             return {
                 ...state,
-                updateSettingsSuccess: !state.updateSettingsSuccess
+                updateSettingsStatusMessage: action.payload
             };
-
         /**
          * There is a second modal in a modal to wait for POST request to complete
          */

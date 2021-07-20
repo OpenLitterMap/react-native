@@ -5,7 +5,7 @@ import {
     SAVE_SETTING,
     SETTINGS_INIT,
     SET_MODEL,
-    SETTINGS_UPDATE_SUCCESS,
+    SETTINGS_UPDATE_STATUS_MESSAGE,
     START_UPDATING_SETTINGS,
     TOGGLE_SETTINGS_MODAL,
     TOGGLE_SECOND_SETINGS_MODAL,
@@ -105,10 +105,11 @@ export const saveSettings = (data, value, token) => {
                         type: UPDATE_USER_OBJECT,
                         payload: user
                     });
-
                     // then show success message
+
                     dispatch({
-                        type: SETTINGS_UPDATE_SUCCESS
+                        type: SETTINGS_UPDATE_STATUS_MESSAGE,
+                        payload: 'SUCCESS'
                     });
 
                     // close modals - done from settings update success
@@ -117,14 +118,20 @@ export const saveSettings = (data, value, token) => {
                         'ERROR updating settings. Todo - inform the user'
                     );
 
-                    // Todo - Change this to a failure message
+                    // show error message
                     dispatch({
-                        type: SETTINGS_UPDATE_SUCCESS
+                        type: SETTINGS_UPDATE_STATUS_MESSAGE,
+                        payload: 'ERROR'
                     });
                 }
             })
             .catch(error => {
                 console.log('saveSettings', error);
+                // show error message
+                dispatch({
+                    type: SETTINGS_UPDATE_STATUS_MESSAGE,
+                    payload: 'ERROR'
+                });
             });
     };
 };

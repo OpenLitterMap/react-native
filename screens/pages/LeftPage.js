@@ -335,6 +335,22 @@ class LeftPage extends PureComponent {
 
                 {/* Icon 2 - Upload Photos & Data */}
                 {this.renderUploadButton()}
+
+                {/* Icon -3 slide back to camera page  */}
+                <TouchableWithoutFeedback
+                    onPress={this.changeView.bind(this, 1)}>
+                    <View style={styles.iconPadding}>
+                        <Icon
+                            name="camera-alt"
+                            size={SCREEN_HEIGHT * 0.04}
+                            color="#00aced"
+                        />
+                        <TransText
+                            style={styles.normalText}
+                            dictionary={`${this.props.lang}.leftpage.camera`}
+                        />
+                    </View>
+                </TouchableWithoutFeedback>
             </View>
         );
     }
@@ -667,6 +683,13 @@ class LeftPage extends PureComponent {
     _toggleThankYou() {
         console.log('toggleThankYou');
         this.props.toggleThankYou();
+    }
+
+    /**
+     * Slide to value, passed to Parent Slides.js
+     */
+    changeView(value) {
+        this.props.swipe(value);
     }
 }
 

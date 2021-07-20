@@ -10,7 +10,7 @@ import {
     View
 } from 'react-native';
 import { getTranslation, TransText } from 'react-native-translation';
-import { Header } from 'react-native-elements';
+import { Header, Icon } from 'react-native-elements';
 import { connect } from 'react-redux';
 import * as actions from '../../actions';
 
@@ -36,29 +36,13 @@ class SettingsComponent extends Component {
                         transparent={true}
                         visible={this.props.secondSettingsModalVisible}>
                         <View style={styles.modalContainer}>
-                            {this.props.updateSettingsSuccess && (
-                                <View style={styles.innerModalSuccess}>
-                                    <TransText
-                                        style={styles.innerModalHeader}
-                                        dictionary={`${lang}.settings.success`}
-                                    />
-                                    <TransText
-                                        dictionary={`${lang}.settings.value-updated`}
-                                    />
-                                    <TouchableHighlight
-                                        style={styles.successButton}
-                                        onPress={() => this._goBack()}>
-                                        <TransText
-                                            style={styles.buttonText}
-                                            dictionary={`${lang}.settings.go-back`}
-                                        />
-                                    </TouchableHighlight>
-                                </View>
+                            {this.renderStatusMessage(
+                                this.props.updateSettingsStatusMessage,
+                                lang
                             )}
-
-                            {this.props.updatingSettings && (
-                                <ActivityIndicator />
-                            )}
+                            {this.props.updatingSettings &&
+                                this.props.updateSettingsStatusMessage ===
+                                    '' && <ActivityIndicator />}
                         </View>
                     </Modal>
 
@@ -119,6 +103,55 @@ class SettingsComponent extends Component {
     }
 
     /**
+     * render modal messages based on vale of updateSettingsStatusMessage
+     * ERROR || SUCCESS
+     */
+
+    renderStatusMessage(status, lang) {
+        let success = status === 'SUCCESS';
+        let error = status === 'ERROR';
+        if (success || error) {
+            return (
+                <View style={styles.innerModalSuccess}>
+                    <Icon
+                        reverse
+                        name={success ? 'done' : 'close'}
+                        color={success ? '#2ecc71' : '#E25B69'}
+                        size={40}
+                        containerStyle={styles.iconContainer}
+                    />
+                    <TransText
+                        style={styles.innerModalHeader}
+                        dictionary={
+                            success
+                                ? `${lang}.settings.success`
+                                : `${lang}.settings.error`
+                        }
+                    />
+                    <TransText
+                        dictionary={
+                            success
+                                ? `${lang}.settings.value-updated`
+                                : `${lang}.settings.value-not-updated`
+                        }
+                    />
+                    <TouchableHighlight
+                        style={styles.successButton}
+                        activeOpacity={0.9}
+                        underlayColor="#00aced"
+                        onPress={() => this._goBack()}>
+                        <TransText
+                            style={styles.buttonText}
+                            dictionary={`${lang}.settings.go-back`}
+                        />
+                    </TouchableHighlight>
+                </View>
+            );
+        }
+        return <></>;
+    }
+
+    /**
      * Custom Functions
      */
     _closeModal() {
@@ -152,7 +185,7 @@ class SettingsComponent extends Component {
             this.props.token
         );
 
-        this._goBack();
+        // this._goBack();
     }
 
     _goBack() {
@@ -181,7 +214,8 @@ class SettingsComponent extends Component {
 const styles = {
     buttonText: {
         alignItems: 'center',
-        justifyContent: 'center'
+        justifyContent: 'center',
+        color: '#fff'
     },
     container: {
         flex: 1,
@@ -207,7 +241,8 @@ const styles = {
         justifyContent: 'center'
     },
     innerModalSuccess: {
-        height: SCREEN_HEIGHT * 0.2,
+        // height: SCREEN_HEIGHT * 0.2,
+        paddingVertical: 20,
         justifyContent: 'center',
         alignItems: 'center',
         backgroundColor: 'white',
@@ -215,15 +250,20 @@ const styles = {
     },
     innerModalHeader: {
         textAlign: 'center',
-        fontSize: 16
+        fontSize: 28,
+        marginBottom: 10
+    },
+    iconContainer: {
+        marginTop: -70
     },
     successButton: {
         alignItems: 'center',
         justifyContent: 'center',
         borderRadius: 6,
-        backgroundColor: '#2ecc71',
+        backgroundColor: '#2189dc',
+        // backgroundColor: '#2ecc71',
         height: SCREEN_HEIGHT * 0.05,
-        marginTop: 10,
+        marginTop: 20,
         width: '80%'
     },
     title: {
@@ -241,7 +281,7 @@ const mapStateToProps = state => {
         settingsEditProp: state.settings.settingsEditProp,
         token: state.auth.token,
         updatingSettings: state.settings.updatingSettings,
-        updateSettingsSuccess: state.settings.updateSettingsSuccess,
+        updateSettingsStatusMessage: state.settings.updateSettingsStatusMessage,
         user: state.auth.user
     };
 };
