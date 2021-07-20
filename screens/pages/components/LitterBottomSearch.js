@@ -82,6 +82,8 @@ class LitterBottomSearch extends PureComponent {
         } else {
             console.log('problem@addTag');
         }
+        // clears text filed after one tag is selected
+        this.setState({ text: '' });
     }
 
     /**
@@ -290,6 +292,7 @@ class LitterBottomSearch extends PureComponent {
                         onChangeText={text => this.updateText(text)}
                         selectionColor="black"
                         blurOnSubmit={false}
+                        clearButtonMode="always"
                         value={this.state.text}
                     />
 
