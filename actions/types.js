@@ -6,6 +6,10 @@ import { OLM_ENDPOINT } from '@env';
 
 export const IS_PRODUCTION = false; // change this when working locally to disable Sentry
 
+console.log({ SECRET_CLIENT });
+console.log({ ID_CLIENT });
+console.log({ OLM_ENDPOINT });
+
 export const CLIENT_SECRET = SECRET_CLIENT;
 export const URL = ID_CLIENT;
 export const CLIENT_ID = OLM_ENDPOINT;
