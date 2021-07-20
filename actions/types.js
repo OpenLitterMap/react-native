@@ -1,22 +1,14 @@
-// You need to import keys here that your app can interact with
+// Import keys to authenticate with your Laravel backend
 // See https://laravel.com/docs/8.x/passport#the-passportclient-command
-// We will set up a staging server later that will give others access to a shared online server
-
-// PRODUCTION KEYS
-// import { SECRET_CLIENT } from '@env';
-// import { ID_CLIENT } from '@env';
-// import { OLM_ENDPOINT } from '@env'; // https://openlittermap.com
+import { SECRET_CLIENT } from '@env';
+import { ID_CLIENT } from '@env';
+import { OLM_ENDPOINT } from '@env';
 
 export const IS_PRODUCTION = false; // change this when working locally to disable Sentry
 
-// LOCAL DEVELOPMENT
-const SECRET_CLIENT = '1XEkA6xeguJLvy8mcozxYyuiTlFjqgw0sqrDfi0b';
-const ID_CLIENT = 4;
-const OLM_ENDPOINT = 'http://olm.test';
-
 export const CLIENT_SECRET = SECRET_CLIENT;
-export const URL = OLM_ENDPOINT;
-export const CLIENT_ID = ID_CLIENT;
+export const URL = ID_CLIENT;
+export const CLIENT_ID = OLM_ENDPOINT;
 
 export const TOGGLE_ACTIVITY_INDICATOR = 'TOGGLE_ACTIVITY_INDICATOR';
 
