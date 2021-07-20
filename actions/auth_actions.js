@@ -320,8 +320,6 @@ export const serverLogin = data => {
             })
             .catch(error => {
                 console.log('serverLogin.error', error);
-                console.log('serverLogin.error', error.response.data);
-                console.log('status', error.response.status);
 
                 switch (error.response.status) {
                     case 400:
