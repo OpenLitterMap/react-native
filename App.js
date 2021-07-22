@@ -7,7 +7,7 @@ import configureStore from './store';
 
 // navigation container
 import { NavigationContainer } from '@react-navigation/native';
-
+import { MainRoutes } from './routes';
 // import RootContainer from './screens/RootContainer';
 
 import { LanguageProvider } from 'react-native-translation';
@@ -41,6 +41,7 @@ const App = () => {
                         defaultLanguage={'en'}
                         translations={langs}>
                         {/* <RootContainer /> */}
+                        <MainRoutes />
                     </LanguageProvider>
                 </PersistGate>
             </Provider>

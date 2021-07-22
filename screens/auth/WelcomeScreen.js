@@ -45,7 +45,7 @@ class WelcomeScreen extends Component {
     }
 
     goToAuth(auth) {
-        this.props.navigation.navigate('auth', { auth });
+        this.props.navigation.navigate('AUTH');
     }
 
     /**

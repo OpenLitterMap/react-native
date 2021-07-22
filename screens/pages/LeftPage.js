@@ -63,12 +63,13 @@ class LeftPage extends PureComponent {
         });
     }
 
+    // FIXME: Remove this function
     UNSAFE_componentWillReceiveProps(nextProps) {
         // console.log('Next props - left page.gallery', nextProps.gallery);
         // If the user does not exist, the user has logged out.
         if (!nextProps.user) {
             // console.log('left page- user does not exist');
-            this.props.navigation.navigate('Auth');
+            // this.props.navigation.navigate('AUTH_HOME');
             return;
         }
     }
