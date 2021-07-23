@@ -181,6 +181,7 @@ class CameraPage extends React.Component {
                         {/* Bottom Left */}
                         <TouchableOpacity
                             // onPress={this.changeView.bind(this, -1)}
+                            // FIXME: remove this logout -- only for dev testing
                             onPress={() => this.props.logout()}
                             style={styles.bottomLeftIcon}>
                             <Icon
