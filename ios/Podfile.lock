@@ -388,8 +388,8 @@ PODS:
   - RNSentry (2.5.2):
     - React-Core
     - Sentry (= 7.0.0)
-  - RNVectorIcons (6.6.0):
-    - React
+  - RNVectorIcons (8.1.0):
+    - React-Core
   - RSKImageCropper (3.0.2)
   - Sentry (7.0.0):
     - Sentry/Core (= 7.0.0)
@@ -648,7 +648,7 @@ SPEC CHECKSUMS:
   RNReanimated: d9da990fc90123f4ffbfdda93d00fc15174863a8
   RNScreens: 21b73c94c9117e1110a79ee0ee80c93ccefed8ce
   RNSentry: bfa1e2776c7413570e790cbbf79d2060dd0a565b
-  RNVectorIcons: 0bb4def82230be1333ddaeee9fcba45f0b288ed4
+  RNVectorIcons: 31cebfcf94e8cf8686eb5303ae0357da64d7a5a4
   RSKImageCropper: 1ac71e9a82e3f41eea3eedfff8eacb0d3821c9ec
   Sentry: 89d26e036063b9cb9caa59b6951dd2f8277aa13b
   Yoga: 4bd86afe9883422a7c4028c00e34790f560923d6
