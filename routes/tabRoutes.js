@@ -1,8 +1,9 @@
 import React from 'react';
+import { View } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-// import { Icon } from 'react-native-elements';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { HomeScreen } from '../screens';
+import { HomeScreen, StatsScreen, TeamScreen, RankingScreen } from '../screens';
+import LeftPage from '../screens/pages/LeftPage';
 
 const Tab = createBottomTabNavigator();
 
@@ -29,16 +30,23 @@ const TabRoutes = () => (
                         : 'ios-cloud-upload-outline';
                 }
 
-                // You can return any component that you like here!
-
                 return (
-                    // @ts-ignore
-                    <Icon name={iconName} size={24} color={color} />
+                    <View
+                        style={{
+                            backgroundColor: focused ? '#396afc11' : 'white',
+                            width: 50,
+                            height: 50,
+                            borderRadius: 100,
+                            justifyContent: 'center',
+                            alignItems: 'center'
+                        }}>
+                        <Icon name={iconName} size={24} color={color} />
+                    </View>
                 );
             }
         })}
         tabBarOptions={{
-            activeTintColor: 'black',
+            activeTintColor: '#396AFC',
             inactiveTintColor: 'gray',
             showLabel: false,
             style: {
@@ -49,10 +57,10 @@ const TabRoutes = () => (
             }
         }}>
         <Tab.Screen name="HOME" component={HomeScreen} />
-        <Tab.Screen name="STATS" component={HomeScreen} />
-        <Tab.Screen name="TEAM" component={HomeScreen} />
-        <Tab.Screen name="RANKING" component={HomeScreen} />
-        <Tab.Screen name="UPLOAD" component={HomeScreen} />
+        <Tab.Screen name="STATS" component={StatsScreen} />
+        <Tab.Screen name="TEAM" component={TeamScreen} />
+        <Tab.Screen name="RANKING" component={RankingScreen} />
+        <Tab.Screen name="UPLOAD" component={LeftPage} />
     </Tab.Navigator>
 );
 
