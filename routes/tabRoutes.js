@@ -4,11 +4,11 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { HomeScreen, StatsScreen, TeamScreen, RankingScreen } from '../screens';
 import LeftPage from '../screens/pages/LeftPage';
-import Fab from '../screens/components/Fab';
+import { Fab } from '../screens/components';
 
 const Tab = createBottomTabNavigator();
 
-const TabRoutes = () => (
+const TabRoutes = ({ navigation }) => (
     <>
         <Tab.Navigator
             initialRouteName="HOME"
@@ -71,7 +71,7 @@ const TabRoutes = () => (
             <Tab.Screen name="UPLOAD" component={LeftPage} />
         </Tab.Navigator>
         {/* fab will be shown on all screens which shows bottom tabbar */}
-        <Fab />
+        <Fab navigation={navigation} />
     </>
 );
 

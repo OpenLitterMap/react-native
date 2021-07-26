@@ -1,11 +1,12 @@
 import React from 'react';
-import { View, Text } from 'react-native';
+import { View, Pressable } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 
-const Fab = () => {
+const Fab = ({ navigation }) => {
     return (
         <View>
-            <View
+            <Pressable
+                onPress={() => navigation.navigate('CAMERA')}
                 style={{
                     position: 'absolute',
                     bottom: 100,
@@ -18,7 +19,7 @@ const Fab = () => {
                     alignItems: 'center'
                 }}>
                 <Icon name="camera-outline" color="white" size={32} />
-            </View>
+            </Pressable>
         </View>
     );
 };

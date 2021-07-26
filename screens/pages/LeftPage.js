@@ -195,14 +195,14 @@ class LeftPage extends PureComponent {
                             paddingTop: 0,
                             height: SCREEN_HEIGHT * 0.1
                         }}
-                        leftComponent={{
-                            icon: 'menu',
-                            color: '#fff',
-                            size: SCREEN_HEIGHT * 0.035,
-                            onPress: () => {
-                                this.props.navigation.navigate('settings');
-                            }
-                        }}
+                        // leftComponent={{
+                        //     icon: 'menu',
+                        //     color: '#fff',
+                        //     size: SCREEN_HEIGHT * 0.035,
+                        //     onPress: () => {
+                        //         this.props.navigation.navigate('settings');
+                        //     }
+                        // }}
                         centerComponent={this.renderCenterTitle()}
                         rightComponent={this.renderDeleteButton()}
                     />

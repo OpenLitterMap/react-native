@@ -5,10 +5,9 @@ import { createStackNavigator } from '@react-navigation/stack';
 import AsyncStorage from '@react-native-community/async-storage';
 import * as actions from '../actions';
 import AuthStack from './authRoutes';
-import AppStack from './appRoutes';
 import TabRoutes from './tabRoutes';
-import { WelcomeScreen, AuthScreen } from '../screens/auth';
-import SwipeScreen from '../screens/SwipeScreen';
+import CameraPage from '../screens/pages/CameraPage';
+import { SettingScreen } from '../screens';
 
 const Stack = createStackNavigator();
 
@@ -77,7 +76,17 @@ class MainRoutes extends Component {
                     {this.props.token === null ? (
                         <Stack.Screen name="AUTH_HOME" component={AuthStack} />
                     ) : (
-                        <Stack.Screen name="APP" component={TabRoutes} />
+                        <>
+                            <Stack.Screen name="APP" component={TabRoutes} />
+                            <Stack.Screen
+                                name="CAMERA"
+                                component={CameraPage}
+                            />
+                            <Stack.Screen
+                                name="SETTING"
+                                component={SettingScreen}
+                            />
+                        </>
                     )}
                 </Stack.Navigator>
             );
