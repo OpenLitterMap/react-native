@@ -51,6 +51,8 @@
 		E31828097BED41E4BC69588C /* dice2.png in Resources */ = {isa = PBXBuildFile; fileRef = F3F4C393E05E4A018705E7EE /* dice2.png */; };
 		E9D45CBC8C41429FB0B9A6C1 /* new-logo.png in Resources */ = {isa = PBXBuildFile; fileRef = 0B23CA850B6947128C23F8E2 /* new-logo.png */; };
 		EB7674F4703B4AA790A42000 /* briefcase.png in Resources */ = {isa = PBXBuildFile; fileRef = 729C7C139EFE4C3C88D965A8 /* briefcase.png */; };
+		2FE0F54C1E7844D39A769731 /* Feather.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 095FA57ADEF74FD6BE5A2369 /* Feather.ttf */; };
+		58E230C52F934681A0B13839 /* MaterialCommunityIcons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F98DBEAD521B4144ADDE71AB /* MaterialCommunityIcons.ttf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -153,6 +155,8 @@
 		F3F4C393E05E4A018705E7EE /* dice2.png */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = dice2.png; path = ../assets/icons/dice2.png; sourceTree = "<group>"; };
 		F661E32CDDDA148D0247766D /* Pods-openlittermap-tvOS.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-openlittermap-tvOS.release.xcconfig"; path = "Target Support Files/Pods-openlittermap-tvOS/Pods-openlittermap-tvOS.release.xcconfig"; sourceTree = "<group>"; };
 		F892184894DC4ABD82174289 /* softdrinks.png */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = softdrinks.png; path = ../assets/icons/softdrinks.png; sourceTree = "<group>"; };
+		095FA57ADEF74FD6BE5A2369 /* Feather.ttf */ = {isa = PBXFileReference; name = "Feather.ttf"; path = "../node_modules/react-native-vector-icons/Fonts/Feather.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		F98DBEAD521B4144ADDE71AB /* MaterialCommunityIcons.ttf */ = {isa = PBXFileReference; name = "MaterialCommunityIcons.ttf"; path = "../node_modules/react-native-vector-icons/Fonts/MaterialCommunityIcons.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -335,6 +339,8 @@
 				0B23CA850B6947128C23F8E2 /* new-logo.png */,
 				DF090B2E8F9D4F809CEC3495 /* rank.png */,
 				E7CA2CBBB6914618B0262DF3 /* check.png */,
+				095FA57ADEF74FD6BE5A2369 /* Feather.ttf */,
+				F98DBEAD521B4144ADDE71AB /* MaterialCommunityIcons.ttf */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -523,6 +529,8 @@
 				E9D45CBC8C41429FB0B9A6C1 /* new-logo.png in Resources */,
 				6FDDBBCC260F4BA884826484 /* rank.png in Resources */,
 				16EB09CCEADA414D82659826 /* check.png in Resources */,
+				2FE0F54C1E7844D39A769731 /* Feather.ttf in Resources */,
+				58E230C52F934681A0B13839 /* MaterialCommunityIcons.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
