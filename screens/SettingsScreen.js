@@ -196,7 +196,7 @@ class SettingsScreen extends Component {
                         style={{ flex: 1, fontSize: SCREEN_HEIGHT * 0.02 }}
                         dictionary={`${this.props.lang}.${item.title}`}
                     />
-                    <Body color="accent">Hello</Body>
+
                     {this._getRowData(item.id)}
                 </View>
             );
