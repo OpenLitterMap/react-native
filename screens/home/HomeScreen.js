@@ -12,15 +12,16 @@ class HomeScreen extends Component {
         return (
             <>
                 <Header
+                    containerStyle={{ backgroundColor: 'white' }}
                     centerComponent={{
                         text: 'Dummy home',
-                        style: { color: '#fff' }
+                        style: { color: '#000' }
                     }}
                     rightComponent={
                         <Pressable>
                             <Icon
                                 name="ios-settings-outline"
-                                color="white"
+                                color="#000"
                                 size={24}
                                 onPress={() => {
                                     this.props.navigation.navigate('SETTING');
@@ -41,7 +42,8 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         justifyContent: 'center',
-        alignItems: 'center'
+        alignItems: 'center',
+        backgroundColor: 'white'
     }
 });
 
