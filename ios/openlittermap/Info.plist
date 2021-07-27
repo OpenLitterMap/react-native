@@ -52,10 +52,14 @@
 	<key>UIAppFonts</key>
 	<array>
 		<string>Avenir-Black.ttf</string>
-		<string>MaterialDesignIcons.ttf</string>
+		<string>Poppins-Thin.ttf</string>
+		<string>Poppins-SemiBold.ttf</string>
+		<string>Poppins-Regular.ttf</string>
+		<string>Poppins-Medium.ttf</string>
+		<string>Poppins-Light.ttf</string>
+		<string>Poppins-Bold.ttf</string>
 		<string>MaterialIcons.ttf</string>
 		<string>Ionicons.ttf</string>
-		<string>Feather.ttf</string>
 	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>

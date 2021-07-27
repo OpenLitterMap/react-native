@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { StyleSheet, Text } from 'react-native';
 import { TransText } from 'react-native-translation';
-import { Colors, ColorType } from '../../theme';
+import { Colors, ColorType, FontType, Fonts } from '../theme';
 
 const StyledText = ({
     family = 'semiBold',
@@ -13,24 +13,27 @@ const StyledText = ({
     ...rest
 }) => {
     const textColor = Colors[`${color}`];
+    const font = Fonts[`${family}`];
     if (dictionary) {
         return (
             <TransText
                 dictionary={dictionary}
-                style={[styles.text, { color: textColor }, style]}
+                style={[styles.text, { color: textColor }, font, style]}
             />
         );
     }
     return (
-        <Text {...rest} style={[styles.text, { color: textColor }, style]}>
+        <Text
+            {...rest}
+            style={[styles.text, { color: textColor }, font, style]}>
             {children}
         </Text>
     );
 };
 
 StyledText.propTypes = {
-    family: PropTypes.string,
-    style: PropTypes.object,
+    family: PropTypes.oneOf(FontType),
+    style: PropTypes.any,
     color: PropTypes.oneOf(ColorType),
     children: PropTypes.node,
     dictionary: PropTypes.string

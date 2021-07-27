@@ -15,6 +15,7 @@ import { getTranslation, TransText } from 'react-native-translation';
 import { Header } from 'react-native-elements';
 import * as actions from '../actions';
 import { connect } from 'react-redux';
+import Body from './components/typography/Body';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
@@ -195,6 +196,7 @@ class SettingsScreen extends Component {
                         style={{ flex: 1, fontSize: SCREEN_HEIGHT * 0.02 }}
                         dictionary={`${this.props.lang}.${item.title}`}
                     />
+                    <Body color="accent">Hello</Body>
                     {this._getRowData(item.id)}
                 </View>
             );

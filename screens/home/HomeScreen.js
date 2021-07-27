@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { Text, StyleSheet, View, Pressable } from 'react-native';
 import { Header } from 'react-native-elements';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { Body, Title, SubTitle } from '../components';
 
 class HomeScreen extends Component {
     constructor(props) {
@@ -31,7 +32,9 @@ class HomeScreen extends Component {
                     }
                 />
                 <View style={styles.container}>
-                    <Text> Home screen </Text>
+                    <Body color="accent">Home</Body>
+                    <Title color="accent">Home</Title>
+                    <SubTitle color="accent">Home</SubTitle>
                 </View>
             </>
         );
