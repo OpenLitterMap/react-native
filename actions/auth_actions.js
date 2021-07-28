@@ -60,6 +60,7 @@ export const checkValidToken = token => {
                 }
             })
             .catch(error => {
+                console.log(error);
                 console.log(
                     'auth_actions.checkValidToken',
                     error?.response?.data
