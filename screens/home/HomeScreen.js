@@ -1,5 +1,13 @@
 import React, { Component } from 'react';
-import { Text, StyleSheet, View, ScrollView, Pressable } from 'react-native';
+import {
+    Text,
+    StyleSheet,
+    View,
+    ScrollView,
+    Pressable,
+    Image,
+    FlatList
+} from 'react-native';
 import * as actions from '../../actions';
 import { connect } from 'react-redux';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -11,7 +19,7 @@ import {
     AnimatedCircle,
     Header
 } from '../components';
-import { StatsCard } from './_components';
+import { StatsCard, RewardsList } from './_components';
 
 class HomeScreen extends Component {
     constructor(props) {
@@ -27,8 +35,8 @@ class HomeScreen extends Component {
                 <Header
                     leftContent={
                         <View>
-                            <SubTitle>Welcome</SubTitle>
-                            <Caption>{user.username}</Caption>
+                            <Title>Welcome</Title>
+                            <Body color="muted">{user.username}</Body>
                         </View>
                     }
                     rightContent={
@@ -45,17 +53,19 @@ class HomeScreen extends Component {
                     }
                 />
                 <ScrollView
+                    contentContainerStyle={{ paddingBottom: 100 }}
                     style={styles.container}
                     showsVerticalScrollIndicator={false}
                     alwaysBounceVertical={false}>
                     <AnimatedCircle
                         strokeWidth={30}
                         percentage={50}
-                        color="#2C45FF"
+                        color="#ffa304"
                         value={4}
                         delay={500}
                         radius={150}
                     />
+
                     <View style={styles.statsContainer}>
                         <View style={styles.statsRow}>
                             <StatsCard
@@ -79,13 +89,32 @@ class HomeScreen extends Component {
                                 fontColor="#2C45FF"
                             />
                             <StatsCard
-                                value="105"
+                                value={`${
+                                    user?.littercoin_owed !== null
+                                        ? user?.littercoin_owed
+                                        : 0
+                                }`}
                                 title="Littercoins"
                                 backgroundColor="#DEFFF8"
                                 fontColor="#1F6E5D"
                             />
                         </View>
                     </View>
+                    {/* ======= */}
+                    {/* latest reward container */}
+                    <View style={[styles.statsContainer, { padding: 20 }]}>
+                        <View
+                            style={{
+                                flexDirection: 'row',
+                                justifyContent: 'space-between'
+                            }}>
+                            <SubTitle>Latest Rewards</SubTitle>
+                            <Caption>View All</Caption>
+                        </View>
+                        <RewardsList />
+                    </View>
+
+                    {/* ======= */}
                 </ScrollView>
             </>
         );
@@ -95,8 +124,7 @@ class HomeScreen extends Component {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        // justifyContent: 'center',
-        // alignItems: 'center',
+
         backgroundColor: 'white'
     },
     statsContainer: {

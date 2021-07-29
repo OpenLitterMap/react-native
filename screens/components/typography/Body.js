@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Text, TextStyle } from 'react-native';
 import StyledText from './StyledText';
 import { ColorType, FontType } from '../theme';
 
@@ -25,7 +25,7 @@ const Body = ({
 
 Body.propTypes = {
     family: PropTypes.oneOf(FontType),
-    style: PropTypes.any,
+    style: PropTypes.Text,
     color: PropTypes.oneOf(ColorType),
     children: PropTypes.node,
     dictionary: PropTypes.string

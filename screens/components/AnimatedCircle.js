@@ -20,7 +20,7 @@ const AnimatedCircle = ({
     duration = 500,
     color = '#396AFC',
     delay = 0,
-    textColor = '#396AFC',
+    textColor,
     value = 10,
     max = 100
 }) => {
@@ -136,7 +136,12 @@ const AnimatedCircle = ({
                     defaultValue="0"
                     style={[{ color: textColor ?? color }, styles.text]}
                 />
-                <Body color="accent" style={{ textAlign: 'center' }}>
+                <Body
+                    style={{
+                        textAlign: 'center',
+                        color: textColor ?? color,
+                        marginTop: -16
+                    }}>
                     Level
                 </Body>
             </View>
