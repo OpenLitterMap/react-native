@@ -49,22 +49,41 @@ class HomeScreen extends Component {
                     showsVerticalScrollIndicator={false}
                     alwaysBounceVertical={false}>
                     <AnimatedCircle
-                        strokeWidth={25}
-                        size={300}
-                        value="8"
-                        title="Level"
+                        strokeWidth={30}
+                        percentage={50}
+                        color="#2C45FF"
+                        value={4}
+                        delay={500}
+                        radius={150}
                     />
                     <View style={styles.statsContainer}>
                         <View style={styles.statsRow}>
-                            <StatsCard value={`${user?.xp}`} title="XP" />
-                            <StatsCard value={`${user?.level}`} title="Level" />
+                            <StatsCard
+                                value={`${user?.xp}`}
+                                title="XP"
+                                backgroundColor="#FDE5E5"
+                                fontColor="#E12F2E"
+                            />
+                            <StatsCard
+                                value={`${user?.level}`}
+                                title="Level"
+                                backgroundColor="#FDF2D3"
+                                fontColor="#997028"
+                            />
                         </View>
                         <View style={styles.statsRow}>
                             <StatsCard
                                 value={`${user?.total_images}`}
                                 title="Photos"
+                                backgroundColor="#ECEEFF"
+                                fontColor="#2C45FF"
                             />
-                            <StatsCard value="105" title="Littercoins" />
+                            <StatsCard
+                                value="105"
+                                title="Littercoins"
+                                backgroundColor="#DEFFF8"
+                                fontColor="#1F6E5D"
+                            />
                         </View>
                     </View>
                 </ScrollView>
