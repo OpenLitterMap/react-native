@@ -68,6 +68,7 @@ class HomeScreen extends Component {
                         value={4}
                         delay={500}
                         radius={150}
+                        tagline="Level"
                     />
 
                     <View style={styles.statsContainer}>

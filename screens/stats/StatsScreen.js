@@ -33,6 +33,8 @@ class StatsScreen extends Component {
                         value={29.3}
                         delay={500}
                         radius={150}
+                        tagline="Next Target 500K"
+                        valueSuffix="%"
                     />
 
                     <View style={styles.statsContainer}>
