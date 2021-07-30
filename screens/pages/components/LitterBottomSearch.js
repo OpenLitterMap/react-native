@@ -12,6 +12,8 @@ import {
     View,
     Alert
 } from 'react-native';
+import AsyncStorage from '@react-native-community/async-storage';
+
 import { getTranslation, TransText } from 'react-native-translation';
 import DeviceInfo from 'react-native-device-info';
 import { connect } from 'react-redux';
@@ -120,6 +122,9 @@ class LitterBottomSearch extends PureComponent {
                 {
                     text: 'OK',
                     onPress: () => {
+                        this.props.swiperIndexChanged(
+                            currentIndex > 0 ? currentIndex - 1 : 0
+                        );
                         if (currentIndex < photosLength) {
                             this.props.deleteSelectedPhoto(currentIndex);
                         } else if (
@@ -140,6 +145,17 @@ class LitterBottomSearch extends PureComponent {
                             return {};
                         }
 
+                        // async-storage photos & gallery set
+                        setTimeout(() => {
+                            AsyncStorage.setItem(
+                                'openlittermap-photos',
+                                JSON.stringify(this.props.photos)
+                            );
+                            AsyncStorage.setItem(
+                                'openlittermap-gallery',
+                                JSON.stringify(this.props.gallery)
+                            );
+                        }, 500);
                         this.closeLitterPicker();
                     }
                 },
