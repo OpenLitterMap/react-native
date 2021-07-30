@@ -23,7 +23,10 @@ const IconStatsCard = ({
                 },
                 style
             ]}>
-            {imageContent}
+            {imageContent && (
+                <View style={{ marginBottom: 20 }}>{imageContent}</View>
+            )}
+
             <Title
                 style={[
                     contentCenter && { textAlign: 'center' },

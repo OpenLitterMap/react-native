@@ -40,11 +40,13 @@ class StatsScreen extends Component {
                     <View style={styles.statsContainer}>
                         <View style={styles.statsRow}>
                             <IconStatsCard
-                                // imageContent={
-                                //     <Image
-                                //         source={require('../../assets/icons/bin.png')}
-                                //     />
-                                // }
+                                imageContent={
+                                    <Icon
+                                        name="ios-trash-outline"
+                                        size={36}
+                                        color="#E12F2E"
+                                    />
+                                }
                                 value="324,786"
                                 title="Total Litter"
                                 contentCenter
@@ -52,6 +54,13 @@ class StatsScreen extends Component {
                                 fontColor="#E12F2E"
                             />
                             <IconStatsCard
+                                imageContent={
+                                    <Icon
+                                        name="ios-images-outline"
+                                        size={36}
+                                        color="#997028"
+                                    />
+                                }
                                 contentCenter
                                 value="181,477"
                                 title="Total Photos"
@@ -61,11 +70,13 @@ class StatsScreen extends Component {
                         </View>
                         <View style={styles.statsRow}>
                             <IconStatsCard
-                                // imageContent={
-                                //     <Image
-                                //         source={require('../../assets/icons/bin.png')}
-                                //     />
-                                // }
+                                imageContent={
+                                    <Icon
+                                        name="ios-server-outline"
+                                        size={36}
+                                        color="#2C45FF"
+                                    />
+                                }
                                 value="26,743"
                                 title="Total Littercoins"
                                 contentCenter
@@ -73,6 +84,13 @@ class StatsScreen extends Component {
                                 fontColor="#2C45FF"
                             />
                             <IconStatsCard
+                                imageContent={
+                                    <Icon
+                                        name="ios-people-outline"
+                                        size={36}
+                                        color="#1F6E5D"
+                                    />
+                                }
                                 contentCenter
                                 value="4,748"
                                 title="Total Users"
