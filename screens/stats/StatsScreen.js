@@ -1,10 +1,20 @@
 import React, { Component } from 'react';
-import { Text, View, StyleSheet, ScrollView, Image } from 'react-native';
+import { Text, View, StyleSheet, ScrollView, Pressable } from 'react-native';
 import { Header, Title, Colors, AnimatedCircle } from '../components';
 import { IconStatsCard } from './_components';
+import * as actions from '../../actions';
+import { connect } from 'react-redux';
 import Icon from 'react-native-vector-icons/Ionicons';
 
 class StatsScreen extends Component {
+    constructor(props) {
+        super(props);
+    }
+
+    componentDidMount() {
+        this.props.getStats();
+    }
+
     render() {
         return (
             <>
@@ -32,6 +42,7 @@ class StatsScreen extends Component {
                         color={`${Colors.accent}`}
                         value={29.3}
                         delay={500}
+                        duration={2000}
                         radius={150}
                         tagline="Next Target 500K"
                         valueSuffix="%"
@@ -47,7 +58,7 @@ class StatsScreen extends Component {
                                         color="#E12F2E"
                                     />
                                 }
-                                value="324,786"
+                                value={`${this.props.totalLitter.toLocaleString()}`}
                                 title="Total Litter"
                                 contentCenter
                                 backgroundColor="#FDE5E5"
@@ -62,7 +73,7 @@ class StatsScreen extends Component {
                                     />
                                 }
                                 contentCenter
-                                value="181,477"
+                                value={`${this.props.totalPhotos.toLocaleString()}`}
                                 title="Total Photos"
                                 backgroundColor="#FDF2D3"
                                 fontColor="#997028"
@@ -77,7 +88,7 @@ class StatsScreen extends Component {
                                         color="#2C45FF"
                                     />
                                 }
-                                value="26,743"
+                                value={`${this.props.totalLittercoin.toLocaleString()}`}
                                 title="Total Littercoins"
                                 contentCenter
                                 backgroundColor="#ECEEFF"
@@ -120,4 +131,15 @@ const styles = StyleSheet.create({
     }
 });
 
-export default StatsScreen;
+const mapStateToProps = state => {
+    return {
+        totalLitter: state.stats.totalLitter,
+        totalPhotos: state.stats.totalPhotos,
+        totalLittercoin: state.stats.totalLittercoin
+    };
+};
+
+export default connect(
+    mapStateToProps,
+    actions
+)(StatsScreen);

@@ -8,10 +8,10 @@ const IconStatsCard = ({
     style,
     value,
     title,
-    fontColor,
+    fontColor = Colors.accent,
     imageContent,
     contentCenter,
-    backgroundColor = Colors.accent
+    backgroundColor = Colors.accentLight
 }) => {
     return (
         <View
@@ -60,7 +60,6 @@ IconStatsCard.propTypes = {
 
 const styles = StyleSheet.create({
     container: {
-        backgroundColor: '#cbd8ff',
         justifyContent: 'center',
         padding: 20,
         borderRadius: 12,

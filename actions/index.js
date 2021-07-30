@@ -5,4 +5,5 @@ export * from './gallery_actions';
 export * from './litter_actions';
 export * from './shared_actions';
 export * from './settings_actions';
+export * from './stats_action';
 export * from './web_actions';
