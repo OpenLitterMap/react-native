@@ -1,12 +1,10 @@
 import React, { Component } from 'react';
 import {
-    Text,
     StyleSheet,
     View,
     ScrollView,
     Pressable,
-    Image,
-    FlatList
+    ActivityIndicator
 } from 'react-native';
 import * as actions from '../../actions';
 import { connect } from 'react-redux';
@@ -25,19 +23,32 @@ import { StatsCard, RewardsList } from './_components';
 class HomeScreen extends Component {
     constructor(props) {
         super(props);
-        console.log(JSON.stringify(this.props.user, null, '\t'));
+        // console.log(JSON.stringify(this.props.user, null, '\t'));
     }
 
     render() {
         const user = this.props.user;
 
+        // TODO: add a better loading screen add Skeleton Loading screen
+        if (user === null || user === undefined) {
+            return (
+                <View
+                    style={{
+                        flex: 1,
+                        justifyContent: 'center',
+                        alignItems: 'center'
+                    }}>
+                    <ActivityIndicator size="small" color={Colors.accent} />
+                </View>
+            );
+        }
         return (
             <>
                 <Header
                     leftContent={
                         <View>
                             <Title color="white">Welcome</Title>
-                            <Body color="white">{user.username}</Body>
+                            <Body color="white">{user?.username}</Body>
                         </View>
                     }
                     rightContent={
