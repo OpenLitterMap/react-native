@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, View, ScrollView, Image } from 'react-native';
-import { Body, Caption } from '../../components';
+import { Body, Caption, Colors } from '../../components';
 
 const RewardCard = () => {
     return (
@@ -14,7 +14,7 @@ const RewardCard = () => {
             </View>
 
             <View style={{ marginLeft: 20 }}>
-                <Caption>3 days ago</Caption>
+                <Caption color="accent">3 days ago</Caption>
                 <Body>First Littercoin</Body>
             </View>
         </View>
@@ -39,7 +39,7 @@ const styles = StyleSheet.create({
     cardContainer: {
         padding: 20,
         borderRadius: 12,
-        backgroundColor: '#FDF2D3',
+        backgroundColor: `${Colors.accentLight}`,
         flexDirection: 'row',
         alignItems: 'center',
         marginRight: 20

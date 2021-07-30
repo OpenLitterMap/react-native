@@ -2,20 +2,26 @@ import React from 'react';
 import { View, Pressable } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { Colors } from './theme';
 
 const Fab = ({ navigation }) => {
     return (
         <View>
             <Pressable onPress={() => navigation.navigate('CAMERA')} style={{}}>
                 <LinearGradient
-                    colors={['#85a4ff', '#396AFC', '#2258fa']}
+                    colors={[
+                        `${Colors.accentLight}`,
+                        `${Colors.accent}`,
+                        `${Colors.accent}`
+                    ]}
+                    useAngle={true}
+                    angle={145}
                     style={{
                         position: 'absolute',
                         bottom: 100,
                         right: 30,
                         width: 80,
                         height: 80,
-                        // backgroundColor: '#396AFC',
                         borderRadius: 100,
                         justifyContent: 'center',
                         alignItems: 'center'

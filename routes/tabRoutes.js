@@ -4,7 +4,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { HomeScreen, StatsScreen, TeamScreen, RankingScreen } from '../screens';
 import LeftPage from '../screens/pages/LeftPage';
-import { Fab } from '../screens/components';
+import { Fab, Colors } from '../screens/components';
 
 const Tab = createBottomTabNavigator();
 
@@ -40,7 +40,7 @@ const TabRoutes = ({ navigation }) => (
                         <View
                             style={{
                                 backgroundColor: focused
-                                    ? '#396afc11'
+                                    ? `${Colors.accentLight}`
                                     : 'white',
                                 width: 50,
                                 height: 50,
@@ -54,7 +54,7 @@ const TabRoutes = ({ navigation }) => (
                 }
             })}
             tabBarOptions={{
-                activeTintColor: '#396AFC',
+                activeTintColor: `${Colors.accent}`,
                 inactiveTintColor: 'gray',
                 showLabel: false,
                 style: {

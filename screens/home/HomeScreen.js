@@ -17,7 +17,8 @@ import {
     SubTitle,
     Caption,
     AnimatedCircle,
-    Header
+    Header,
+    Colors
 } from '../components';
 import { StatsCard, RewardsList } from './_components';
 
@@ -35,15 +36,15 @@ class HomeScreen extends Component {
                 <Header
                     leftContent={
                         <View>
-                            <Title>Welcome</Title>
-                            <Body color="muted">{user.username}</Body>
+                            <Title color="white">Welcome</Title>
+                            <Body color="white">{user.username}</Body>
                         </View>
                     }
                     rightContent={
                         <Pressable>
                             <Icon
                                 name="ios-settings-outline"
-                                color="#000"
+                                color="white"
                                 size={24}
                                 onPress={() => {
                                     this.props.navigation.navigate('SETTING');
@@ -53,14 +54,17 @@ class HomeScreen extends Component {
                     }
                 />
                 <ScrollView
-                    contentContainerStyle={{ paddingBottom: 100 }}
+                    contentContainerStyle={{
+                        paddingBottom: 100,
+                        paddingTop: 20
+                    }}
                     style={styles.container}
                     showsVerticalScrollIndicator={false}
                     alwaysBounceVertical={false}>
                     <AnimatedCircle
                         strokeWidth={30}
                         percentage={50}
-                        color="#ffa304"
+                        color={`${Colors.accent}`}
                         value={4}
                         delay={500}
                         radius={150}
@@ -124,7 +128,6 @@ class HomeScreen extends Component {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-
         backgroundColor: 'white'
     },
     statsContainer: {

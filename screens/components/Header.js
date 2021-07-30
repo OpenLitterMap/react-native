@@ -1,5 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, View, StatusBar, SafeAreaView } from 'react-native';
+import PropTypes from 'prop-types';
+import { Colors } from './theme';
 
 const Header = ({
     leftContent,
@@ -9,7 +11,12 @@ const Header = ({
 }) => {
     return (
         <>
-            <StatusBar translucent={true} backgroundColor="#fff" />
+            <StatusBar
+                translucent
+                // hidden
+                barStyle="light-content"
+                backgroundColor={`${Colors.accent}`}
+            />
             <SafeAreaView
                 edges={['left', 'top', 'right']}
                 style={styles.headerSafeView}>
@@ -28,6 +35,13 @@ const Header = ({
     );
 };
 
+Header.propTypes = {
+    leftContent: PropTypes.element,
+    rightContent: PropTypes.element,
+    centerContent: PropTypes.element,
+    containerStyle: PropTypes.oneOfType([PropTypes.object, PropTypes.array])
+};
+
 export default Header;
 
 const styles = StyleSheet.create({
@@ -37,9 +51,9 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
         paddingVertical: 12,
         alignItems: 'center',
-        backgroundColor: '#fff'
+        backgroundColor: `${Colors.accent}`
     },
     headerSafeView: {
-        backgroundColor: '#fff'
+        backgroundColor: `${Colors.accent}`
     }
 });
