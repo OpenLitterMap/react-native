@@ -35,8 +35,8 @@ const AnimatedCircle = ({
             delay: delay,
             toValue,
             duration,
-            useNativeDriver: true,
-            easing: Easing.out(Easing.ease)
+            useNativeDriver: true
+            // easing: Easing.out(Easing.ease)
         }).start();
     };
     // animation fn for text value
@@ -45,8 +45,8 @@ const AnimatedCircle = ({
             delay: delay,
             toValue,
             duration,
-            useNativeDriver: true,
-            easing: Easing.out(Easing.ease)
+            useNativeDriver: true
+            // easing: Easing.out(Easing.ease)
         }).start();
     };
 
@@ -81,6 +81,8 @@ const AnimatedCircle = ({
                 const maxPerc = (100 * v.value) / max;
                 const strokeDashoffset =
                     circumference - (circumference * maxPerc) / 100;
+
+                // console.log(strokeDashoffset);
                 if (circleRef?.current) {
                     circleRef.current.setNativeProps({
                         strokeDashoffset

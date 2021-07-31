@@ -9,12 +9,25 @@ import Icon from 'react-native-vector-icons/Ionicons';
 class StatsScreen extends Component {
     constructor(props) {
         super(props);
+        this.state = {
+            percentage: 0
+        };
     }
 
-    componentDidMount() {
-        this.props.getStats();
+    async componentDidMount() {
+        await this.props.getStats();
+        this._getPercentage(
+            this.props.totalLitter,
+            this.props.litterTarget.previousTarget,
+            this.props.litterTarget.nextTarget
+        );
     }
 
+    _getPercentage = (current, previousTarget, nextTarget) => {
+        const percentage =
+            ((current - previousTarget) / (nextTarget - previousTarget)) * 100;
+        this.setState({ percentage });
+    };
     render() {
         const {
             totalLitter,
@@ -23,12 +36,6 @@ class StatsScreen extends Component {
             litterTarget
         } = this.props;
 
-        _getPercentage = (current, previousTarget, nextTarget) => {
-            return (
-                ((current - previousTarget) / (nextTarget - previousTarget)) *
-                100
-            );
-        };
         return (
             <>
                 <Header
@@ -62,13 +69,9 @@ class StatsScreen extends Component {
                         alwaysBounceVertical={false}>
                         <AnimatedCircle
                             strokeWidth={30}
-                            percentage={50}
+                            percentage={this.state.percentage}
                             color={`${Colors.accent}`}
-                            value={_getPercentage(
-                                totalLitter,
-                                litterTarget.previousTarget,
-                                litterTarget.nextTarget
-                            )}
+                            value={this.state.percentage}
                             delay={500}
                             duration={1000}
                             radius={150}
