@@ -23,11 +23,20 @@ class StatsScreen extends Component {
         );
     }
 
+    /**
+     * fn to calculate % and set percentage to state
+     *
+     * @param {number} current - current litter data - props.totalLitter
+     * @param {number} previousTarget - previous litter target - props.litterTarget.previousTarget
+     * @param {number} nextTarget - next litter target - props.litterTarget.nextTarget
+     */
+
     _getPercentage = (current, previousTarget, nextTarget) => {
         const percentage =
             ((current - previousTarget) / (nextTarget - previousTarget)) * 100;
         this.setState({ percentage });
     };
+
     render() {
         const {
             totalLitter,

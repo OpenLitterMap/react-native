@@ -381,9 +381,6 @@ export const fetchUser = token => {
                                 payload: { userObj, token }
                             });
                             // INFO: no need to manually navigate -- handled in mainRoutes.js
-                            // this.props.navigation.navigate(
-                            //     userToken ? 'App' : 'Auth'
-                            // );
                         })
                         .catch(error => {
                             // console.log('fetch user - error 2');
