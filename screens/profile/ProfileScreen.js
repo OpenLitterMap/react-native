@@ -20,7 +20,7 @@ import {
 } from '../components';
 import { StatsCard, RewardsList } from './_components';
 
-class HomeScreen extends Component {
+class ProfileScreen extends Component {
     constructor(props) {
         super(props);
         // console.log(JSON.stringify(this.props.user, null, '\t'));
@@ -118,7 +118,7 @@ class HomeScreen extends Component {
                     </View>
                     {/* ======= */}
                     {/* latest reward container */}
-                    <View style={[styles.statsContainer, { padding: 20 }]}>
+                    {/* <View style={[styles.statsContainer, { padding: 20 }]}>
                         <View
                             style={{
                                 flexDirection: 'row',
@@ -128,7 +128,7 @@ class HomeScreen extends Component {
                             <Caption>View All</Caption>
                         </View>
                         <RewardsList />
-                    </View>
+                    </View> */}
 
                     {/* ======= */}
                 </ScrollView>
@@ -163,4 +163,4 @@ const mapStateToProps = state => {
 export default connect(
     mapStateToProps,
     actions
-)(HomeScreen);
+)(ProfileScreen);
