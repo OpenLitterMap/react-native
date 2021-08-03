@@ -16,7 +16,7 @@ import { TransText } from 'react-native-translation';
 import { request, PERMISSIONS } from 'react-native-permissions';
 
 import { Button, Icon, SearchBar } from 'react-native-elements';
-import { Header } from '../components';
+import { Header, Title } from '../components';
 // import * as Progress from 'react-native-progress'
 
 import { connect } from 'react-redux';
@@ -30,7 +30,7 @@ const SCREEN_HEIGHT = Dimensions.get('window').height;
 const equalWidth = SCREEN_WIDTH / 3;
 
 // Components
-import LeftPageImages from '../pages/components/LeftPageImages';
+import { UploadImagesGrid, HomeFab } from './_components';
 // import Stats from './components/Stats'
 import AddTags from '../pages/AddTags';
 
@@ -65,6 +65,8 @@ class LeftPage extends PureComponent {
 
     /**
      * Check for images on the web app when this page loads
+     * INFO: these are images that were uploaded on website
+     * but were not tagged and submitted
      */
     async componentDidMount() {
         // web_actions, web_reducer
@@ -81,7 +83,7 @@ class LeftPage extends PureComponent {
     }
 
     render() {
-        console.log('Rendering: LeftPage');
+        // console.log('Rendering: LeftPage');
 
         if (this.props.imageBrowserOpen) {
             // todo- cancel all subscriptions and async tasks in componentWillUnmount
@@ -93,8 +95,8 @@ class LeftPage extends PureComponent {
         return (
             <>
                 <Header
-                    // leftContent={<Title color="white">Stats</Title>}
-                    centerContent={this.renderCenterTitle()}
+                    leftContent={<Title color="white">Upload</Title>}
+                    // centerContent={this.renderCenterTitle()}
                     rightContent={this.renderDeleteButton()}
                 />
                 <View style={styles.container}>
@@ -201,7 +203,7 @@ class LeftPage extends PureComponent {
                         rightComponent={this.renderDeleteButton()}
                     /> */}
 
-                    <LeftPageImages
+                    <UploadImagesGrid
                         gallery={this.props.gallery}
                         photos={this.props.photos}
                         lang={this.props.lang}
@@ -216,6 +218,8 @@ class LeftPage extends PureComponent {
                         {this.renderBottomTabBar()}
                     </View>
                 </View>
+
+                <HomeFab />
             </>
         );
     }
