@@ -2,7 +2,6 @@ import React, { PureComponent } from 'react';
 import {
     ActivityIndicator,
     Dimensions,
-    Fragment,
     Modal,
     SafeAreaView,
     Text,
@@ -16,13 +15,14 @@ import { TransText } from 'react-native-translation';
 
 import { request, PERMISSIONS } from 'react-native-permissions';
 
-import { Button, Header, Icon, SearchBar } from 'react-native-elements';
+import { Button, Icon, SearchBar } from 'react-native-elements';
+import { Header } from '../components';
 // import * as Progress from 'react-native-progress'
 
 import { connect } from 'react-redux';
 import * as actions from '../../actions';
 
-import AlbumList from './library/AlbumList';
+import AlbumList from '../pages/library/AlbumList';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
@@ -30,9 +30,9 @@ const SCREEN_HEIGHT = Dimensions.get('window').height;
 const equalWidth = SCREEN_WIDTH / 3;
 
 // Components
-import LeftPageImages from './components/LeftPageImages';
+import LeftPageImages from '../pages/components/LeftPageImages';
 // import Stats from './components/Stats'
-import AddTags from './AddTags';
+import AddTags from '../pages/AddTags';
 
 import moment from 'moment';
 
@@ -61,17 +61,6 @@ class LeftPage extends PureComponent {
                 this.props.loadCameraPhotosFromAsyncStorage(JSON.parse(photos));
             }
         });
-    }
-
-    // FIXME: Remove this function
-    UNSAFE_componentWillReceiveProps(nextProps) {
-        // console.log('Next props - left page.gallery', nextProps.gallery);
-        // If the user does not exist, the user has logged out.
-        if (!nextProps.user) {
-            // console.log('left page- user does not exist');
-            // this.props.navigation.navigate('AUTH_HOME');
-            return;
-        }
     }
 
     /**
@@ -103,8 +92,13 @@ class LeftPage extends PureComponent {
 
         return (
             <>
-                <SafeAreaView style={{ flex: 0, backgroundColor: '#2189dc' }} />
-                <SafeAreaView style={styles.container}>
+                <Header
+                    // leftContent={<Title color="white">Stats</Title>}
+                    centerContent={this.renderCenterTitle()}
+                    rightContent={this.renderDeleteButton()}
+                />
+                <View style={styles.container}>
+                    {/* INFO: modal thats shown during image upload */}
                     <Modal
                         animationType="slide"
                         transparent={true}
@@ -190,7 +184,7 @@ class LeftPage extends PureComponent {
                         )}
                     </Modal>
 
-                    <Header
+                    {/* <Header
                         containerStyle={{
                             paddingTop: 0,
                             height: SCREEN_HEIGHT * 0.1
@@ -205,7 +199,7 @@ class LeftPage extends PureComponent {
                         // }}
                         centerComponent={this.renderCenterTitle()}
                         rightComponent={this.renderDeleteButton()}
-                    />
+                    /> */}
 
                     <LeftPageImages
                         gallery={this.props.gallery}
@@ -221,8 +215,7 @@ class LeftPage extends PureComponent {
                     <View style={styles.bottomContainer}>
                         {this.renderBottomTabBar()}
                     </View>
-                </SafeAreaView>
-                <SafeAreaView style={{ flex: 0, backgroundColor: 'white' }} />
+                </View>
             </>
         );
     }
@@ -715,7 +708,7 @@ const styles = {
     },
     container: {
         flex: 1,
-        backgroundColor: '#2ecc71'
+        backgroundColor: '#fff'
     },
     iconPadding: {
         paddingLeft: 20,

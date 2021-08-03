@@ -181,7 +181,7 @@ class CameraPage extends React.Component {
                         {/* Bottom Left */}
                         <TouchableOpacity
                             onPress={() =>
-                                this.props.navigation.navigate('UPLOAD')
+                                this.props.navigation.navigate('HOME')
                             }
                             style={styles.bottomLeftIcon}>
                             <Icon

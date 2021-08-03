@@ -5,11 +5,11 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import {
     ProfileScreen,
     StatsScreen,
+    HomeScreen,
     TeamScreen,
     RankingScreen
 } from '../screens';
 import { CameraPage } from '../screens/pages';
-import LeftPage from '../screens/pages/LeftPage';
 import { Fab, Colors } from '../screens/components';
 
 const Tab = createBottomTabNavigator();
@@ -85,7 +85,7 @@ const TabRoutes = ({ navigation }) => (
                     paddingTop: 10
                 }
             }}>
-            <Tab.Screen name="HOME" component={LeftPage} />
+            <Tab.Screen name="HOME" component={HomeScreen} />
             <Tab.Screen name="STATS" component={StatsScreen} />
             <Tab.Screen
                 name="CAMERA"
