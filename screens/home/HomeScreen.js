@@ -71,18 +71,8 @@ class LeftPage extends PureComponent {
     async componentDidMount() {
         // web_actions, web_reducer
         await this.props.checkForImagesOnWeb(this.props.token);
-        this._fabStatus();
     }
 
-    componentDidUpdate(prevProps) {
-        if (
-            this.props.photos.length !== prevProps.photos.length ||
-            this.props.gallery.length !== prevProps.gallery.length ||
-            this.props.webPhotos.length !== prevProps.webPhotos.length
-        ) {
-            this._fabStatus();
-        }
-    }
     /**
      *
      */
@@ -211,9 +201,8 @@ class LeftPage extends PureComponent {
                         {this.renderHelperMessage()}
                     </View>
                 </View>
-                {this._fabStatus()}
+                {this.renderFabButton()}
                 {this.renderUploadButton()}
-                {/* <HomeFab status={this.state.fabStatus} /> */}
             </>
         );
     }
@@ -270,7 +259,7 @@ class LeftPage extends PureComponent {
     };
 
     /**
-     * Render Bottom Tab Bar = A || B
+     * Render helper text when delete button is clicked
      */
     renderHelperMessage() {
         if (this.props.isSelecting) {
@@ -615,7 +604,7 @@ class LeftPage extends PureComponent {
      * fn to determine the state of FAB
      */
 
-    _fabStatus() {
+    renderFabButton() {
         let status = 'NO_IMAGES';
         let fabFunction = this.loadGallery;
         if (
@@ -654,24 +643,9 @@ const styles = {
         justifyContent: 'center',
         alignItems: 'center'
     },
-    bottomBarContainer: {
-        flexDirection: 'row',
-        flex: 1,
-        justifyContent: 'space-around',
-        alignItems: 'center',
-        width: '100%'
-    },
     container: {
         flex: 1,
         backgroundColor: '#fff'
-    },
-    iconPadding: {
-        paddingLeft: 20,
-        paddingRight: 20,
-        paddingTop: 5,
-        paddingBottom: 5,
-        alignItems: 'center',
-        justifyContent: 'center'
     },
     normalText: {
         fontSize: SCREEN_HEIGHT * 0.02
