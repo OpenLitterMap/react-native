@@ -3,7 +3,6 @@ import {
     ActivityIndicator,
     Dimensions,
     Modal,
-    SafeAreaView,
     Text,
     TouchableOpacity,
     TouchableWithoutFeedback,
@@ -15,7 +14,7 @@ import { TransText } from 'react-native-translation';
 
 import { request, PERMISSIONS } from 'react-native-permissions';
 
-import { Button, Icon, SearchBar } from 'react-native-elements';
+import { Button, Icon } from 'react-native-elements';
 import { Header, Title } from '../components';
 // import * as Progress from 'react-native-progress'
 
@@ -30,8 +29,7 @@ const SCREEN_HEIGHT = Dimensions.get('window').height;
 const equalWidth = SCREEN_WIDTH / 3;
 
 // Components
-import { UploadImagesGrid, HomeFab } from './_components';
-// import Stats from './components/Stats'
+import { UploadImagesGrid, HomeFab, UploadButton } from './_components';
 import AddTags from '../pages/AddTags';
 
 import moment from 'moment';
@@ -42,7 +40,8 @@ class LeftPage extends PureComponent {
 
         this.state = {
             total: 0, // total number of images with tags to upload
-            uploaded: 0 // total number of tagged images uploaded
+            uploaded: 0, // total number of tagged images uploaded
+            fabStatus: 'NO_IMAGES'
         };
 
         // Bind any functions that call props
@@ -71,8 +70,18 @@ class LeftPage extends PureComponent {
     async componentDidMount() {
         // web_actions, web_reducer
         await this.props.checkForImagesOnWeb(this.props.token);
+        this._fabStatus();
     }
 
+    componentDidUpdate(prevProps) {
+        if (
+            this.props.photos.length !== prevProps.photos.length ||
+            this.props.gallery.length !== prevProps.gallery.length ||
+            this.props.webPhotos.length !== prevProps.webPhotos.length
+        ) {
+            this._fabStatus();
+        }
+    }
     /**
      *
      */
@@ -186,23 +195,6 @@ class LeftPage extends PureComponent {
                         )}
                     </Modal>
 
-                    {/* <Header
-                        containerStyle={{
-                            paddingTop: 0,
-                            height: SCREEN_HEIGHT * 0.1
-                        }}
-                        // leftComponent={{
-                        //     icon: 'menu',
-                        //     color: '#fff',
-                        //     size: SCREEN_HEIGHT * 0.035,
-                        //     onPress: () => {
-                        //         this.props.navigation.navigate('settings');
-                        //     }
-                        // }}
-                        centerComponent={this.renderCenterTitle()}
-                        rightComponent={this.renderDeleteButton()}
-                    /> */}
-
                     <UploadImagesGrid
                         gallery={this.props.gallery}
                         photos={this.props.photos}
@@ -215,11 +207,12 @@ class LeftPage extends PureComponent {
                     />
 
                     <View style={styles.bottomContainer}>
-                        {this.renderBottomTabBar()}
+                        {/* {this.renderBottomTabBar()} */}
                     </View>
                 </View>
-
-                <HomeFab />
+                {this._fabStatus()}
+                {this.renderUploadButton()}
+                {/* <HomeFab status={this.state.fabStatus} /> */}
             </>
         );
     }
@@ -335,8 +328,7 @@ class LeftPage extends PureComponent {
                 {this.renderUploadButton()}
 
                 {/* Icon -3 slide back to camera page  */}
-                <TouchableWithoutFeedback
-                    onPress={this.changeView.bind(this, 1)}>
+                <TouchableWithoutFeedback>
                     <View style={styles.iconPadding}>
                         <Icon
                             name="camera-alt"
@@ -382,21 +374,7 @@ class LeftPage extends PureComponent {
 
         if (tagged === 0) return;
 
-        return (
-            <TouchableWithoutFeedback onPress={this.uploadPhotos}>
-                <View style={styles.iconPadding}>
-                    <Icon
-                        name="backup"
-                        size={SCREEN_HEIGHT * 0.04}
-                        color="#00aced"
-                    />
-                    <TransText
-                        style={styles.normalText}
-                        dictionary={`${this.props.lang}.leftpage.upload`}
-                    />
-                </View>
-            </TouchableWithoutFeedback>
-        );
+        return <UploadButton onPress={this.uploadPhotos} />;
     }
 
     /**
@@ -416,7 +394,7 @@ class LeftPage extends PureComponent {
         if (this.props.photos.length > 0 || this.props.gallery.length > 0) {
             return (
                 <TransText
-                    style={styles.normalText}
+                    style={styles.normalWhiteText}
                     onPress={this.toggleSelecting}
                     dictionary={`${this.props.lang}.leftpage.delete`}
                 />
@@ -684,10 +662,29 @@ class LeftPage extends PureComponent {
     }
 
     /**
-     * Slide to value, passed to Parent Slides.js
+     * fn to determine the state of FAB
      */
-    changeView(value) {
-        this.props.swipe(value);
+
+    _fabStatus() {
+        let status = 'NO_IMAGES';
+        let fabFunction = this.loadGallery;
+        if (
+            this.props.photos.length === 0 &&
+            this.props.gallery.length === 0 &&
+            this.props.webImagesCount === 0
+        ) {
+            status = 'NO_IMAGES';
+            fabFunction = this.loadGallery;
+        }
+        if (this.props.isSelecting) {
+            status = 'SELECTING';
+            if (this.props.selected > 0) {
+                status = 'SELECTED';
+                fabFunction = this.deleteSelectedImages;
+            }
+        }
+
+        return <HomeFab status={status} onPress={fabFunction} />;
     }
 }
 

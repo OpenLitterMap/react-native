@@ -1,35 +1,65 @@
 import React from 'react';
-import { View, Pressable } from 'react-native';
+import { View, Pressable, StyleSheet } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { Colors } from '../../components';
+import { Colors, Body } from '../../components';
 
-const HomeFab = ({ navigation }) => {
+const HomeFab = ({ navigation, status, onPress }) => {
+    let iconName;
+    const disabled = status === 'SELECTING' ? true : false;
+    switch (status) {
+        case 'NO_IMAGES':
+            iconName = 'ios-images-outline';
+            break;
+        case 'SELECTING':
+            iconName = 'ios-trash-outline';
+            break;
+        case 'SELECTED':
+            iconName = 'ios-trash-outline';
+            break;
+        default:
+            iconName = 'camera-outline';
+            break;
+    }
     return (
         <View>
-            <Pressable onPress={() => navigation.navigate('CAMERA')} style={{}}>
+            <Pressable disabled={disabled} onPress={() => onPress()} style={{}}>
                 <LinearGradient
-                    colors={[
-                        `${Colors.accentLight}`,
-                        `${Colors.accent}`,
-                        `${Colors.accent}`
-                    ]}
+                    colors={
+                        disabled
+                            ? [`${Colors.muted}`, `${Colors.muted}`]
+                            : [
+                                  `${Colors.accentLight}`,
+                                  `${Colors.accent}`,
+                                  `${Colors.accent}`
+                              ]
+                    }
                     useAngle={true}
                     angle={145}
-                    style={{
-                        position: 'absolute',
-                        bottom: 30,
-                        right: 30,
-                        width: 80,
-                        height: 80,
-                        borderRadius: 100,
-                        justifyContent: 'center',
-                        alignItems: 'center'
-                    }}>
-                    <Icon name="camera-outline" color="white" size={32} />
+                    style={[
+                        styles.buttonStyle,
+                        {
+                            opacity: disabled ? 0.3 : 1
+                        }
+                    ]}>
+                    {/* <Body>{status}</Body> */}
+                    <Icon name={iconName} color="white" size={32} />
                 </LinearGradient>
             </Pressable>
         </View>
     );
 };
 export default HomeFab;
+
+const styles = StyleSheet.create({
+    buttonStyle: {
+        position: 'absolute',
+        bottom: 30,
+        right: 30,
+        width: 80,
+        height: 80,
+        borderRadius: 100,
+        justifyContent: 'center',
+        alignItems: 'center'
+    }
+});
