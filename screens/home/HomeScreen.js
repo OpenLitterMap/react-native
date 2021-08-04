@@ -96,7 +96,6 @@ class LeftPage extends PureComponent {
             <>
                 <Header
                     leftContent={<Title color="white">Upload</Title>}
-                    // centerContent={this.renderCenterTitle()}
                     rightContent={this.renderDeleteButton()}
                 />
                 <View style={styles.container}>
