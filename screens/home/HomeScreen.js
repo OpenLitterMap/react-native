@@ -14,8 +14,9 @@ import { TransText } from 'react-native-translation';
 
 import { request, PERMISSIONS } from 'react-native-permissions';
 
-import { Button, Icon } from 'react-native-elements';
-import { Header, Title } from '../components';
+import { Button } from 'react-native-elements';
+import Icon from 'react-native-vector-icons/Ionicons';
+import { Header, Title, Body, Colors } from '../components';
 // import * as Progress from 'react-native-progress'
 
 import { connect } from 'react-redux';
@@ -207,7 +208,7 @@ class LeftPage extends PureComponent {
                     />
 
                     <View style={styles.bottomContainer}>
-                        {/* {this.renderBottomTabBar()} */}
+                        {this.renderHelperMessage()}
                     </View>
                 </View>
                 {this._fabStatus()}
@@ -271,78 +272,27 @@ class LeftPage extends PureComponent {
     /**
      * Render Bottom Tab Bar = A || B
      */
-    renderBottomTabBar() {
+    renderHelperMessage() {
         if (this.props.isSelecting) {
-            if (this.props.selected > 0) {
+            if (this.props.selected === 0) {
                 return (
-                    <View
-                        style={{
-                            flexDirection: 'row',
-                            flex: 1,
-                            justifyContent: 'space-around',
-                            alignItems: 'center',
-                            width: '100%'
-                        }}>
-                        <TouchableOpacity
-                            onPress={() => this.deleteSelectedImages()}>
-                            <Icon
-                                name="delete-sweep"
-                                size={SCREEN_HEIGHT * 0.04}
-                                color="#00aced"
-                            />
-                            <TransText
-                                style={styles.normalText}
-                                dictionary={`${
-                                    this.props.lang
-                                }.leftpage.delete`}
-                            />
-                        </TouchableOpacity>
+                    <View style={styles.helperContainer}>
+                        <Icon
+                            color={Colors.muted}
+                            name="ios-information-circle-outline"
+                            size={32}
+                        />
+                        <Body
+                            style={{ marginLeft: 10 }}
+                            color="muted"
+                            dictionary={`${
+                                this.props.lang
+                            }.leftpage.select-to-delete`}
+                        />
                     </View>
                 );
             }
-
-            return (
-                <TransText
-                    dictionary={`${this.props.lang}.leftpage.select-to-delete`}
-                />
-            );
         }
-        return (
-            <View style={styles.bottomBarContainer}>
-                {/* Icon 1 - Load Photos  */}
-                <TouchableWithoutFeedback onPress={this.loadGallery}>
-                    <View style={styles.iconPadding}>
-                        <Icon
-                            name="perm-media"
-                            size={SCREEN_HEIGHT * 0.04}
-                            color="#00aced"
-                        />
-                        <TransText
-                            style={styles.normalText}
-                            dictionary={`${this.props.lang}.leftpage.photos`}
-                        />
-                    </View>
-                </TouchableWithoutFeedback>
-
-                {/* Icon 2 - Upload Photos & Data */}
-                {this.renderUploadButton()}
-
-                {/* Icon -3 slide back to camera page  */}
-                <TouchableWithoutFeedback>
-                    <View style={styles.iconPadding}>
-                        <Icon
-                            name="camera-alt"
-                            size={SCREEN_HEIGHT * 0.04}
-                            color="#00aced"
-                        />
-                        <TransText
-                            style={styles.normalText}
-                            dictionary={`${this.props.lang}.leftpage.camera`}
-                        />
-                    </View>
-                </TouchableWithoutFeedback>
-            </View>
-        );
     }
 
     /**
@@ -692,11 +642,15 @@ const styles = {
     bottomContainer: {
         position: 'absolute',
         bottom: 0,
-        left: 0,
-        right: 0,
-        backgroundColor: 'white',
-        flex: 1,
-        height: SCREEN_HEIGHT * 0.1,
+        left: 20
+    },
+    helperContainer: {
+        position: 'relative',
+        bottom: 30,
+        width: SCREEN_WIDTH - 150,
+        height: 80,
+        flexDirection: 'row',
+        paddingHorizontal: 10,
         justifyContent: 'center',
         alignItems: 'center'
     },

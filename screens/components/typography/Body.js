@@ -17,6 +17,7 @@ const Body = ({
             style={[styles.text, style]}
             family={family}
             color={color}
+            dictionary={dictionary}
             {...rest}>
             {children}
         </StyledText>
