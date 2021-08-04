@@ -105,12 +105,9 @@ class ProfileScreen extends Component {
                                 fontColor="#2C45FF"
                             />
                             <StatsCard
-                                value={`${
-                                    user?.littercoin_owed !== null
-                                        ? user?.littercoin_owed
-                                        : 0
-                                }`}
-                                title="Littercoins"
+                                value={`${user?.total_brands +
+                                    user?.total_tags}`}
+                                title="Tags"
                                 backgroundColor="#DEFFF8"
                                 fontColor="#1F6E5D"
                             />
