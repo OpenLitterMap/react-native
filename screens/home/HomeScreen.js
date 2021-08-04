@@ -32,7 +32,7 @@ const equalWidth = SCREEN_WIDTH / 3;
 // Components
 import { UploadImagesGrid, HomeFab, UploadButton } from './_components';
 import AddTags from '../pages/AddTags';
-
+import DeviceInfo from 'react-native-device-info';
 import moment from 'moment';
 
 class LeftPage extends PureComponent {
@@ -61,6 +61,11 @@ class LeftPage extends PureComponent {
                 this.props.loadCameraPhotosFromAsyncStorage(JSON.parse(photos));
             }
         });
+
+        const model = DeviceInfo.getModel();
+
+        // settings_actions, settings_reducer
+        this.props.setModel(model);
     }
 
     /**
