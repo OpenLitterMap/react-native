@@ -19,7 +19,7 @@ import {
     SERVER_STATUS,
     SUBMIT_START
 } from '../actions/types';
-
+import { XPLEVEL } from '../screens/pages/data/xpLevel';
 // import AsyncStorage from '@react-native-community/async-storage';
 // import { Map, List } from 'immutable';
 
@@ -190,21 +190,21 @@ export default function(state = INITIAL_STATE, action) {
             };
 
         case USER_FOUND:
-            // console.log('- user found, reducer -');
-            // console.log(typeof(action.payload));
-            // console.log(action.payload);
             let user;
             if (action.payload === 'string') {
-                // console.log('Payload is string');
-                // console.log(JSON.parse(action.payload));
                 user = JSON.parse(action.payload);
             } else {
-                // console.log('Payload is not string');
-                // console.log(action.payload);
                 user = action.payload.userObj;
-                // console.log(user);
             }
-            // console.log(action.payload.token);
+            // console.log(JSON.stringify(user, null, '\t'));
+            const level = XPLEVEL.findIndex(xp => xp > user.xp);
+            const xpRequired = XPLEVEL[level] - user.xp;
+
+            const targetPercentage = (user.xp / XPLEVEL[level]) * 100;
+            user.level = level;
+            user.xpRequired = xpRequired;
+            user.targetPercentage = targetPercentage;
+
             return {
                 ...state,
                 user

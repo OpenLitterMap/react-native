@@ -41,8 +41,7 @@ class LeftPage extends PureComponent {
 
         this.state = {
             total: 0, // total number of images with tags to upload
-            uploaded: 0, // total number of tagged images uploaded
-            fabStatus: 'NO_IMAGES'
+            uploaded: 0 // total number of tagged images uploaded
         };
 
         // Bind any functions that call props
@@ -205,7 +204,7 @@ class LeftPage extends PureComponent {
                         {this.renderHelperMessage()}
                     </View>
                 </View>
-                {this.renderFabButton()}
+                {this.RenderFabButton()}
                 {this.renderUploadButton()}
             </>
         );
@@ -608,7 +607,7 @@ class LeftPage extends PureComponent {
      * fn to determine the state of FAB
      */
 
-    renderFabButton() {
+    RenderFabButton() {
         let status = 'NO_IMAGES';
         let fabFunction = this.loadGallery;
         if (
