@@ -1,8 +1,15 @@
 import React from 'react';
-import { StyleSheet, Text, View, StatusBar, SafeAreaView } from 'react-native';
+import {
+    StyleSheet,
+    Text,
+    View,
+    StatusBar,
+    SafeAreaView,
+    Dimensions
+} from 'react-native';
 import PropTypes from 'prop-types';
 import { Colors } from './theme';
-
+const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 const Header = ({
     leftContent,
     centerContent,
@@ -49,9 +56,11 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         paddingHorizontal: 20,
-        paddingVertical: 12,
+        // paddingVertical: 12,
+        paddingTop: 30,
         alignItems: 'center',
-        backgroundColor: `${Colors.accent}`
+        backgroundColor: `${Colors.accent}`,
+        minHeight: SCREEN_HEIGHT * 0.1
     },
     headerSafeView: {
         backgroundColor: `${Colors.accent}`

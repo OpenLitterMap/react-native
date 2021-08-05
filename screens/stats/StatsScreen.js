@@ -63,7 +63,7 @@ class StatsScreen extends Component {
                             delay={500}
                             duration={1000}
                             radius={150}
-                            tagline={`Next Target \n ${litterTarget.nextTarget.toLocaleString()} Litter`}
+                            tagline={`Next Target\n${litterTarget.nextTarget.toLocaleString()} Litter`}
                             valueSuffix="%"
                         />
 
