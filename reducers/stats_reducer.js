@@ -23,13 +23,18 @@ export default function(state = INITIAL_STATE, action) {
                 previousTarget: action.payload.previousXp,
                 nextTarget: action.payload.nextXp
             };
+            const targetPercentage =
+                ((totalLitter - litterTarget.previousTarget) /
+                    (litterTarget.nextTarget - litterTarget.previousTarget)) *
+                100;
             return {
                 ...state,
                 globalLeaders,
                 totalLitter,
                 totalPhotos,
                 totalLittercoin,
-                litterTarget
+                litterTarget,
+                targetPercentage
             };
 
         default:
