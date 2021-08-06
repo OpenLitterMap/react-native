@@ -5,6 +5,7 @@ import {
     View,
     StatusBar,
     SafeAreaView,
+    Platform,
     Dimensions
 } from 'react-native';
 import PropTypes from 'prop-types';
@@ -56,11 +57,10 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         paddingHorizontal: 20,
-        // paddingVertical: 12,
-        paddingTop: 30,
+        paddingTop: StatusBar.currentHeight,
         alignItems: 'center',
         backgroundColor: `${Colors.accent}`,
-        minHeight: SCREEN_HEIGHT * 0.1
+        minHeight: Platform.OS === 'ios' ? 60 : 80
     },
     headerSafeView: {
         backgroundColor: `${Colors.accent}`

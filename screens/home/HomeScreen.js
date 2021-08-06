@@ -295,9 +295,10 @@ class LeftPage extends PureComponent {
      */
     renderUploadButton() {
         if (
-            this.props.photos.length === 0 &&
-            this.props.gallery.length === 0 &&
-            this.props.webPhotos.length === 0
+            (this.props.photos.length === 0 &&
+                this.props.gallery.length === 0 &&
+                this.props.webPhotos.length === 0) ||
+            this.props.isSelecting
         )
             return;
 

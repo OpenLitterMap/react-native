@@ -46,7 +46,11 @@ const HomeFab = ({ navigation, status, onPress }) => {
                         }
                     ]}>
                     {/* <Body>{status}</Body> */}
-                    <Icon name={iconName} color="white" size={32} />
+                    <Icon
+                        name={iconName}
+                        color={disabled ? Colors.muted : 'white'}
+                        size={32}
+                    />
                 </LinearGradient>
             </Pressable>
         </View>
@@ -56,7 +60,6 @@ export default HomeFab;
 
 const styles = StyleSheet.create({
     containerStyle: {
-        backgroundColor: 'red',
         position: 'absolute',
         bottom: 30,
         right: 30,
