@@ -1,12 +1,26 @@
 import React, { Component } from 'react';
 import { Text, View, StyleSheet } from 'react-native';
+import { Header, Title, Colors } from '../components';
+import Icon from 'react-native-vector-icons/Ionicons';
 
 class StatsScreen extends Component {
     render() {
         return (
-            <View style={styles.container}>
-                <Text> Stats screen </Text>
-            </View>
+            <>
+                <Header
+                    leftContent={<Title>Stats</Title>}
+                    rightContent={
+                        <Icon
+                            name="ios-share-outline"
+                            size={24}
+                            color={Colors.text}
+                        />
+                    }
+                />
+                <View style={styles.container}>
+                    <Text> Stats screen </Text>
+                </View>
+            </>
         );
     }
 }
