@@ -63,12 +63,13 @@ class LeftPage extends PureComponent {
         });
     }
 
+    // FIXME: Remove this function
     UNSAFE_componentWillReceiveProps(nextProps) {
         // console.log('Next props - left page.gallery', nextProps.gallery);
         // If the user does not exist, the user has logged out.
         if (!nextProps.user) {
             // console.log('left page- user does not exist');
-            this.props.navigation.navigate('Auth');
+            // this.props.navigation.navigate('AUTH_HOME');
             return;
         }
     }
@@ -194,14 +195,14 @@ class LeftPage extends PureComponent {
                             paddingTop: 0,
                             height: SCREEN_HEIGHT * 0.1
                         }}
-                        leftComponent={{
-                            icon: 'menu',
-                            color: '#fff',
-                            size: SCREEN_HEIGHT * 0.035,
-                            onPress: () => {
-                                this.props.navigation.navigate('settings');
-                            }
-                        }}
+                        // leftComponent={{
+                        //     icon: 'menu',
+                        //     color: '#fff',
+                        //     size: SCREEN_HEIGHT * 0.035,
+                        //     onPress: () => {
+                        //         this.props.navigation.navigate('settings');
+                        //     }
+                        // }}
                         centerComponent={this.renderCenterTitle()}
                         rightComponent={this.renderDeleteButton()}
                     />

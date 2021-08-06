@@ -132,7 +132,9 @@ class AuthScreen extends Component {
     };
 
     navigationToDashboard = () => {
-        this.props.navigation.navigate('App');
+        // no need to manually navigate in react navigation 5 auth flow
+        // TODO: remove this function in future
+        // this.props.navigation.navigate('App');
     };
 
     keyboardWillShow = event => {
@@ -164,13 +166,16 @@ class AuthScreen extends Component {
      */
     componentDidMount() {
         this.updateSizeVariables();
+        // FIXME: check this getParam is not defined in 5x
+        // if (this.props.navigation.getParam('auth') === 'login') {
+        //     this.setState({
+        //         formMode: formModes.LOGIN
+        //     });
+        // }
 
-        if (this.props.navigation.getParam('auth') === 'login') {
-            this.setState({
-                formMode: formModes.LOGIN
-            });
-        }
-
+        this.setState({
+            formMode: formModes.LOGIN
+        });
         if (Platform.OS === 'ios') {
             this.keyboardWillShowSub = Keyboard.addListener(
                 'keyboardWillShow',
@@ -191,16 +196,18 @@ class AuthScreen extends Component {
             );
         }
 
-        this.focusListner = this.props.navigation.addListener(
-            'didFocus',
-            () => {
-                this.props.loginOrSignupReset();
-            }
-        );
+        // FIXME: convert this feature to react navigation 5 -- commenting code for now
+        // this.focusListner = this.props.navigation.addListener(
+        //     'didFocus',
+        //     () => {
+        //         this.props.loginOrSignupReset();
+        //     }
+        // );
     }
 
     componentWillUnmount() {
-        this.focusListner.remove();
+        // FIXME: convert this feature to react navigation 5 -- commenting code for now
+        // this.focusListner.remove();
         this.keyboardWillShowSub.remove();
         this.keyboardWillHideSub.remove();
     }
@@ -252,7 +259,7 @@ class AuthScreen extends Component {
             serverStatusText: ''
         });
 
-        this.props.changeServerStatusText('');
+        // this.props.changeServerStatusText('');
 
         // Client side validation..
         const isValidClientSide = this.validateFields();

@@ -54,6 +54,8 @@
 		<string>Avenir-Black.ttf</string>
 		<string>MaterialDesignIcons.ttf</string>
 		<string>MaterialIcons.ttf</string>
+		<string>Ionicons.ttf</string>
+		<string>Feather.ttf</string>
 	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>

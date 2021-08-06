@@ -93,6 +93,9 @@ export const onSeenFeatureTour = text => {
  *** CHECK IF TOKEN EXISTS - log in
  **  - fired on AuthScreen componentDidMount
  */
+
+// TODO: check for this actions use
+
 export const checkForToken = () => async dispatch => {
     console.log('auth_actions - checkForToken');
     let jwt;
@@ -376,10 +379,10 @@ export const fetchUser = token => {
                                 type: USER_FOUND,
                                 payload: { userObj, token }
                             });
-
-                            this.props.navigation.navigate(
-                                userToken ? 'App' : 'Auth'
-                            );
+                            // INFO: no need to manually navigate -- handled in mainRoutes.js
+                            // this.props.navigation.navigate(
+                            //     userToken ? 'App' : 'Auth'
+                            // );
                         })
                         .catch(error => {
                             // console.log('fetch user - error 2');

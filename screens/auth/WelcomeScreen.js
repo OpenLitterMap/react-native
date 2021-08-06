@@ -35,17 +35,10 @@ const SLIDE_DATA = [
 class WelcomeScreen extends Component {
     constructor(props) {
         super(props);
-
-        // Check if the user is authenticated
-        props.checkForToken();
-    }
-
-    componentDidMount() {
-        this.props.checkForToken();
     }
 
     goToAuth(auth) {
-        this.props.navigation.navigate('auth', { auth });
+        this.props.navigation.navigate('AUTH');
     }
 
     /**

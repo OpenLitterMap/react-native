@@ -180,7 +180,9 @@ class CameraPage extends React.Component {
                     <View style={styles.bottomRow}>
                         {/* Bottom Left */}
                         <TouchableOpacity
-                            onPress={this.changeView.bind(this, -1)}
+                            // onPress={this.changeView.bind(this, -1)}
+                            // FIXME: remove this logout -- only for dev testing
+                            onPress={() => this.props.logout()}
                             style={styles.bottomLeftIcon}>
                             <Icon
                                 color="white"
