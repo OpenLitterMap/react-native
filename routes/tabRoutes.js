@@ -2,8 +2,14 @@ import React from 'react';
 import { View } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { HomeScreen, StatsScreen, TeamScreen, RankingScreen } from '../screens';
-import LeftPage from '../screens/pages/LeftPage';
+import {
+    ProfileScreen,
+    StatsScreen,
+    HomeScreen,
+    TeamScreen,
+    RankingScreen
+} from '../screens';
+import { CameraPage } from '../screens/pages';
 import { Fab, Colors } from '../screens/components';
 
 const Tab = createBottomTabNavigator();
@@ -16,24 +22,39 @@ const TabRoutes = ({ navigation }) => (
                 tabBarIcon: ({ focused, color, size }) => {
                     let iconName;
 
-                    if (route.name === 'HOME') {
-                        iconName = focused ? 'ios-home' : 'ios-home-outline';
-                    } else if (route.name === 'STATS') {
-                        iconName = focused
-                            ? 'ios-trending-up'
-                            : 'ios-trending-up-outline';
-                    } else if (route.name === 'TEAM') {
-                        iconName = focused
-                            ? 'ios-people'
-                            : 'ios-people-outline';
-                    } else if (route.name === 'RANKING') {
-                        iconName = focused
-                            ? 'ios-trophy'
-                            : 'ios-trophy-outline';
-                    } else if (route.name === 'UPLOAD') {
-                        iconName = focused
-                            ? 'ios-cloud-upload'
-                            : 'ios-cloud-upload-outline';
+                    switch (route.name) {
+                        case 'HOME':
+                            iconName = focused
+                                ? 'ios-home'
+                                : 'ios-home-outline';
+                            break;
+                        case 'STATS':
+                            iconName = focused
+                                ? 'ios-trending-up'
+                                : 'ios-trending-up-outline';
+                            break;
+                        // case 'TEAM':
+                        //     iconName = focused
+                        //         ? 'ios-people'
+                        //         : 'ios-people-outline';
+                        //     break;
+                        // case 'RANKING':
+                        //     iconName = focused
+                        //         ? 'ios-trophy'
+                        //         : 'ios-trophy-outline';
+                        //     break;
+                        case 'CAMERA':
+                            iconName = focused
+                                ? 'ios-camera'
+                                : 'ios-camera-outline';
+                            break;
+                        case 'PROFILE':
+                            iconName = focused
+                                ? 'ios-person'
+                                : 'ios-person-outline';
+                            break;
+                        default:
+                            break;
                     }
 
                     return (
@@ -66,12 +87,20 @@ const TabRoutes = ({ navigation }) => (
             }}>
             <Tab.Screen name="HOME" component={HomeScreen} />
             <Tab.Screen name="STATS" component={StatsScreen} />
-            <Tab.Screen name="TEAM" component={TeamScreen} />
-            <Tab.Screen name="RANKING" component={RankingScreen} />
-            <Tab.Screen name="UPLOAD" component={LeftPage} />
+            <Tab.Screen
+                name="CAMERA"
+                component={CameraPage}
+                options={{ tabBarVisible: false }}
+            />
+            {/* <Tab.Screen name="TEAM" component={TeamScreen} /> */}
+            {/* <Tab.Screen name="RANKING" component={RankingScreen} /> */}
+            <Tab.Screen name="PROFILE" component={ProfileScreen} />
         </Tab.Navigator>
-        {/* fab will be shown on all screens which shows bottom tabbar */}
-        <Fab navigation={navigation} />
+
+        {/* INFO: fab will be shown on all screens which shows bottom tabbar
+        Not used for now
+         */}
+        {/* <Fab navigation={navigation} /> */}
     </>
 );
 

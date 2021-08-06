@@ -1,15 +1,9 @@
 import * as React from 'react';
-import {
-    Easing,
-    TextInput,
-    Animated,
-    Text,
-    View,
-    StyleSheet
-} from 'react-native';
+import { Easing, TextInput, Animated, View, StyleSheet } from 'react-native';
 import PropTypes from 'prop-types';
 import Svg, { G, Circle } from 'react-native-svg';
-import { Body } from './typography';
+import { Caption } from './typography';
+import { Colors } from './theme';
 
 const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
 
@@ -18,11 +12,15 @@ const AnimatedCircle = ({
     radius = 150,
     strokeWidth = 10,
     duration = 500,
-    color = '#396AFC',
+    color = Colors.accent,
     delay = 0,
     textColor,
-    value = 10,
-    max = 100
+    value = 0,
+    valueSuffix,
+    valueStyles,
+    max = 100,
+    tagline,
+    taglineStyles
 }) => {
     const animated = React.useRef(new Animated.Value(0)).current;
     const textAnimated = React.useRef(new Animated.Value(0)).current;
@@ -31,23 +29,24 @@ const AnimatedCircle = ({
     const circumference = 2 * Math.PI * radius;
     const halfCircle = radius + strokeWidth;
 
+    // animation fn for svg circle
     const animation = toValue => {
         return Animated.timing(animated, {
             delay: delay,
             toValue,
             duration,
-            useNativeDriver: true,
-            easing: Easing.out(Easing.ease)
+            useNativeDriver: true
+            // easing: Easing.out(Easing.ease)
         }).start();
     };
-
+    // animation fn for text value
     const textAnimation = toValue => {
         return Animated.timing(textAnimated, {
             delay: delay,
             toValue,
             duration,
-            useNativeDriver: true,
-            easing: Easing.out(Easing.ease)
+            useNativeDriver: true
+            // easing: Easing.out(Easing.ease)
         }).start();
     };
 
@@ -58,8 +57,19 @@ const AnimatedCircle = ({
         textAnimated.addListener(
             v => {
                 if (inputRef?.current) {
+                    const suffix =
+                        valueSuffix !== undefined ? `${valueSuffix}` : '';
+                    // if value(props) is decimal then return value with decimal
+                    // else return v.value without decimal
+                    // decimal used for stats page
+
+                    const text =
+                        value === Math.floor(value)
+                            ? `${Math.floor(v.value)}${suffix}`
+                            : `${v.value.toFixed(1)}${suffix}`;
+
                     inputRef.current.setNativeProps({
-                        text: `${Math.round(v.value)}`
+                        text
                     });
                 }
             },
@@ -71,6 +81,8 @@ const AnimatedCircle = ({
                 const maxPerc = (100 * v.value) / max;
                 const strokeDashoffset =
                     circumference - (circumference * maxPerc) / 100;
+
+                // console.log(strokeDashoffset);
                 if (circleRef?.current) {
                     circleRef.current.setNativeProps({
                         strokeDashoffset
@@ -134,16 +146,21 @@ const AnimatedCircle = ({
                     underlineColorAndroid="transparent"
                     editable={false}
                     defaultValue="0"
-                    style={[{ color: textColor ?? color }, styles.text]}
+                    style={[
+                        { color: textColor ?? color },
+                        styles.value,
+                        valueStyles
+                    ]}
                 />
-                <Body
-                    style={{
-                        textAlign: 'center',
-                        color: textColor ?? color,
-                        marginTop: -16
-                    }}>
-                    Level
-                </Body>
+
+                <Caption
+                    style={[
+                        { color: textColor ?? color },
+                        styles.tagline,
+                        taglineStyles
+                    ]}>
+                    {tagline}
+                </Caption>
             </View>
         </View>
     );
@@ -157,15 +174,23 @@ AnimatedCircle.proptypes = {
     color: PropTypes.string,
     delay: PropTypes.number,
     textColor: PropTypes.string,
-    value: PropTypes.number
+    value: PropTypes.number,
+    valueSuffix: PropTypes.string,
+    valueStyles: PropTypes.oneOfType([PropTypes.array, PropTypes.object]),
+    tagline: PropTypes.string,
+    taglineStyles: PropTypes.oneOfType([PropTypes.array, PropTypes.object])
 };
 
 const styles = StyleSheet.create({
-    text: {
+    value: {
         textAlign: 'center',
         fontSize: 62,
         fontFamily: 'Poppins-Medium',
         textAlignVertical: 'center'
+    },
+    tagline: {
+        textAlign: 'center',
+        marginTop: -16
     }
 });
 
