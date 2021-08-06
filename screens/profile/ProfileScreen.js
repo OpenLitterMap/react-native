@@ -74,14 +74,16 @@ class ProfileScreen extends Component {
                     alwaysBounceVertical={false}>
                     <AnimatedCircle
                         strokeWidth={30}
-                        percentage={50}
+                        percentage={user.targetPercentage}
                         color={`${Colors.accent}`}
-                        value={4}
+                        value={user.level}
                         delay={500}
                         radius={150}
                         tagline="Level"
                     />
-
+                    <Body color="accent" style={{ textAlign: 'center' }}>
+                        {user.xpRequired}XP more to level up
+                    </Body>
                     <View style={styles.statsContainer}>
                         <View style={styles.statsRow}>
                             <StatsCard
@@ -105,12 +107,9 @@ class ProfileScreen extends Component {
                                 fontColor="#2C45FF"
                             />
                             <StatsCard
-                                value={`${
-                                    user?.littercoin_owed !== null
-                                        ? user?.littercoin_owed
-                                        : 0
-                                }`}
-                                title="Littercoins"
+                                value={`${user?.total_brands +
+                                    user?.total_tags}`}
+                                title="Tags"
                                 backgroundColor="#DEFFF8"
                                 fontColor="#1F6E5D"
                             />

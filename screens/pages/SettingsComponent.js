@@ -7,11 +7,14 @@ import {
     Text,
     TextInput,
     TouchableHighlight,
+    Pressable,
     View
 } from 'react-native';
 import { getTranslation, TransText } from 'react-native-translation';
-import { Header, Icon } from 'react-native-elements';
+import { Icon as ElementIcon } from 'react-native-elements';
 import { connect } from 'react-redux';
+import { Header, SubTitle, Body } from '../components';
+import Icon from 'react-native-vector-icons/Ionicons';
 import * as actions from '../../actions';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -29,8 +32,31 @@ class SettingsComponent extends Component {
 
         return (
             <>
-                <SafeAreaView style={{ flex: 0, backgroundColor: '#2189dc' }} />
-                <SafeAreaView style={{ flex: 1 }}>
+                <Header
+                    leftContent={
+                        <Pressable onPress={() => this._closeModal()}>
+                            <Icon
+                                name="ios-close-outline"
+                                size={32}
+                                color="white"
+                            />
+                        </Pressable>
+                    }
+                    centerContent={
+                        <SubTitle color="white">
+                            {this._getHeaderName()}
+                        </SubTitle>
+                    }
+                    rightContent={
+                        <Pressable onPress={() => this._saveSettings()}>
+                            <Body
+                                color="white"
+                                dictionary={`${lang}.settings.save`}
+                            />
+                        </Pressable>
+                    }
+                />
+                <SafeAreaView style={{ flex: 1, backgroundColor: '#f7f7f7' }}>
                     <Modal
                         animationType="slide"
                         transparent={true}
@@ -47,37 +73,6 @@ class SettingsComponent extends Component {
                     </Modal>
 
                     {/* outerContainerStyles={{ height: SCREEN_HEIGHT * 0.1 }} */}
-                    <Header
-                        containerStyle={{
-                            paddingTop: 0,
-                            height: SCREEN_HEIGHT * 0.1
-                        }}
-                        leftComponent={{
-                            icon: 'close',
-                            color: '#fff',
-                            onPress: () => this._closeModal(),
-                            size: SCREEN_HEIGHT * 0.03
-                        }}
-                        centerComponent={{
-                            text: this._getHeaderName(),
-                            style: {
-                                color: '#fff',
-                                fontSize: SCREEN_HEIGHT * 0.02
-                            }
-                        }}
-                        rightComponent={
-                            <TouchableHighlight
-                                onPress={() => this._saveSettings()}>
-                                <TransText
-                                    style={{
-                                        color: '#fff',
-                                        fontSize: SCREEN_HEIGHT * 0.02
-                                    }}
-                                    dictionary={`${lang}.settings.save`}
-                                />
-                            </TouchableHighlight>
-                        }
-                    />
 
                     <View style={styles.container}>
                         <View style={styles.row}>
@@ -113,7 +108,7 @@ class SettingsComponent extends Component {
         if (success || error) {
             return (
                 <View style={styles.innerModalSuccess}>
-                    <Icon
+                    <ElementIcon
                         reverse
                         name={success ? 'done' : 'close'}
                         color={success ? '#2ecc71' : '#E25B69'}
@@ -220,7 +215,7 @@ const styles = {
     container: {
         flex: 1,
         paddingTop: SCREEN_HEIGHT * 0.02,
-        backgroundColor: '#ccc'
+        backgroundColor: '#f7f7f7'
     },
     content: {
         paddingRight: 10,

@@ -42,12 +42,13 @@ class MainRoutes extends Component {
             // Check if the token is valid
             await this.props.checkValidToken(userToken);
 
-            // console.log('tokenIsValid', this.props.tokenIsValid);
+            console.log('tokenIsValid', this.props.tokenIsValid);
 
             if (this.props.tokenIsValid) {
-                if (!this.props.user) {
-                    await this.props.fetchUser(userToken);
-                }
+                await this.props.fetchUser(userToken);
+                // if (!this.props.user) {
+                //     await this.props.fetchUser(userToken);
+                // }
                 this.setState({ isLoading: false });
             }
         } else {

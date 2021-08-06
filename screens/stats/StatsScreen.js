@@ -9,40 +9,19 @@ import Icon from 'react-native-vector-icons/Ionicons';
 class StatsScreen extends Component {
     constructor(props) {
         super(props);
-        this.state = {
-            percentage: 0
-        };
     }
 
-    async componentDidMount() {
-        await this.props.getStats();
-        this._getPercentage(
-            this.props.totalLitter,
-            this.props.litterTarget.previousTarget,
-            this.props.litterTarget.nextTarget
-        );
+    componentDidMount() {
+        this.props.getStats();
     }
-
-    /**
-     * fn to calculate % and set percentage to state
-     *
-     * @param {number} current - current litter data - props.totalLitter
-     * @param {number} previousTarget - previous litter target - props.litterTarget.previousTarget
-     * @param {number} nextTarget - next litter target - props.litterTarget.nextTarget
-     */
-
-    _getPercentage = (current, previousTarget, nextTarget) => {
-        const percentage =
-            ((current - previousTarget) / (nextTarget - previousTarget)) * 100;
-        this.setState({ percentage });
-    };
 
     render() {
         const {
             totalLitter,
             totalPhotos,
             totalLittercoin,
-            litterTarget
+            litterTarget,
+            targetPercentage
         } = this.props;
 
         return (
@@ -78,13 +57,13 @@ class StatsScreen extends Component {
                         alwaysBounceVertical={false}>
                         <AnimatedCircle
                             strokeWidth={30}
-                            percentage={this.state.percentage}
+                            percentage={targetPercentage}
                             color={`${Colors.accent}`}
-                            value={this.state.percentage}
+                            value={targetPercentage}
                             delay={500}
                             duration={1000}
                             radius={150}
-                            tagline={`Next Target \n ${litterTarget.nextTarget.toLocaleString()} Litter`}
+                            tagline={`Next Target\n${litterTarget.nextTarget.toLocaleString()} Litter`}
                             valueSuffix="%"
                         />
 
@@ -177,7 +156,8 @@ const mapStateToProps = state => {
         totalLitter: state.stats.totalLitter,
         totalPhotos: state.stats.totalPhotos,
         totalLittercoin: state.stats.totalLittercoin,
-        litterTarget: state.stats.litterTarget
+        litterTarget: state.stats.litterTarget,
+        targetPercentage: state.stats.targetPercentage
     };
 };
 

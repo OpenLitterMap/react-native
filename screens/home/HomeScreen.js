@@ -3,7 +3,6 @@ import {
     ActivityIndicator,
     Dimensions,
     Modal,
-    SafeAreaView,
     Text,
     TouchableOpacity,
     TouchableWithoutFeedback,
@@ -15,8 +14,9 @@ import { TransText } from 'react-native-translation';
 
 import { request, PERMISSIONS } from 'react-native-permissions';
 
-import { Button, Icon, SearchBar } from 'react-native-elements';
-import { Header } from '../components';
+import { Button } from 'react-native-elements';
+import Icon from 'react-native-vector-icons/Ionicons';
+import { Header, Title, Body, Colors } from '../components';
 // import * as Progress from 'react-native-progress'
 
 import { connect } from 'react-redux';
@@ -30,10 +30,9 @@ const SCREEN_HEIGHT = Dimensions.get('window').height;
 const equalWidth = SCREEN_WIDTH / 3;
 
 // Components
-import LeftPageImages from '../pages/components/LeftPageImages';
-// import Stats from './components/Stats'
+import { UploadImagesGrid, HomeFab, UploadButton } from './_components';
 import AddTags from '../pages/AddTags';
-
+import DeviceInfo from 'react-native-device-info';
 import moment from 'moment';
 
 class LeftPage extends PureComponent {
@@ -61,10 +60,17 @@ class LeftPage extends PureComponent {
                 this.props.loadCameraPhotosFromAsyncStorage(JSON.parse(photos));
             }
         });
+
+        const model = DeviceInfo.getModel();
+
+        // settings_actions, settings_reducer
+        this.props.setModel(model);
     }
 
     /**
      * Check for images on the web app when this page loads
+     * INFO: these are images that were uploaded on website
+     * but were not tagged and submitted
      */
     async componentDidMount() {
         // web_actions, web_reducer
@@ -81,7 +87,7 @@ class LeftPage extends PureComponent {
     }
 
     render() {
-        console.log('Rendering: LeftPage');
+        // console.log('Rendering: LeftPage');
 
         if (this.props.imageBrowserOpen) {
             // todo- cancel all subscriptions and async tasks in componentWillUnmount
@@ -93,8 +99,7 @@ class LeftPage extends PureComponent {
         return (
             <>
                 <Header
-                    // leftContent={<Title color="white">Stats</Title>}
-                    centerContent={this.renderCenterTitle()}
+                    leftContent={<Title color="white">Upload</Title>}
                     rightContent={this.renderDeleteButton()}
                 />
                 <View style={styles.container}>
@@ -184,24 +189,7 @@ class LeftPage extends PureComponent {
                         )}
                     </Modal>
 
-                    {/* <Header
-                        containerStyle={{
-                            paddingTop: 0,
-                            height: SCREEN_HEIGHT * 0.1
-                        }}
-                        // leftComponent={{
-                        //     icon: 'menu',
-                        //     color: '#fff',
-                        //     size: SCREEN_HEIGHT * 0.035,
-                        //     onPress: () => {
-                        //         this.props.navigation.navigate('settings');
-                        //     }
-                        // }}
-                        centerComponent={this.renderCenterTitle()}
-                        rightComponent={this.renderDeleteButton()}
-                    /> */}
-
-                    <LeftPageImages
+                    <UploadImagesGrid
                         gallery={this.props.gallery}
                         photos={this.props.photos}
                         lang={this.props.lang}
@@ -213,9 +201,12 @@ class LeftPage extends PureComponent {
                     />
 
                     <View style={styles.bottomContainer}>
-                        {this.renderBottomTabBar()}
+                        {this.renderHelperMessage()}
                     </View>
                 </View>
+                {this.renderFabButton()}
+
+                {this.renderUploadButton()}
             </>
         );
     }
@@ -272,81 +263,29 @@ class LeftPage extends PureComponent {
     };
 
     /**
-     * Render Bottom Tab Bar = A || B
+     * Render helper text when delete button is clicked
      */
-    renderBottomTabBar() {
+    renderHelperMessage() {
         if (this.props.isSelecting) {
-            if (this.props.selected > 0) {
+            if (this.props.selected === 0) {
                 return (
-                    <View
-                        style={{
-                            flexDirection: 'row',
-                            flex: 1,
-                            justifyContent: 'space-around',
-                            alignItems: 'center',
-                            width: '100%'
-                        }}>
-                        <TouchableOpacity
-                            onPress={() => this.deleteSelectedImages()}>
-                            <Icon
-                                name="delete-sweep"
-                                size={SCREEN_HEIGHT * 0.04}
-                                color="#00aced"
-                            />
-                            <TransText
-                                style={styles.normalText}
-                                dictionary={`${
-                                    this.props.lang
-                                }.leftpage.delete`}
-                            />
-                        </TouchableOpacity>
+                    <View style={styles.helperContainer}>
+                        <Icon
+                            color={Colors.muted}
+                            name="ios-information-circle-outline"
+                            size={32}
+                        />
+                        <Body
+                            style={{ marginLeft: 10 }}
+                            color="muted"
+                            dictionary={`${
+                                this.props.lang
+                            }.leftpage.select-to-delete`}
+                        />
                     </View>
                 );
             }
-
-            return (
-                <TransText
-                    dictionary={`${this.props.lang}.leftpage.select-to-delete`}
-                />
-            );
         }
-        return (
-            <View style={styles.bottomBarContainer}>
-                {/* Icon 1 - Load Photos  */}
-                <TouchableWithoutFeedback onPress={this.loadGallery}>
-                    <View style={styles.iconPadding}>
-                        <Icon
-                            name="perm-media"
-                            size={SCREEN_HEIGHT * 0.04}
-                            color="#00aced"
-                        />
-                        <TransText
-                            style={styles.normalText}
-                            dictionary={`${this.props.lang}.leftpage.photos`}
-                        />
-                    </View>
-                </TouchableWithoutFeedback>
-
-                {/* Icon 2 - Upload Photos & Data */}
-                {this.renderUploadButton()}
-
-                {/* Icon -3 slide back to camera page  */}
-                <TouchableWithoutFeedback
-                    onPress={this.changeView.bind(this, 1)}>
-                    <View style={styles.iconPadding}>
-                        <Icon
-                            name="camera-alt"
-                            size={SCREEN_HEIGHT * 0.04}
-                            color="#00aced"
-                        />
-                        <TransText
-                            style={styles.normalText}
-                            dictionary={`${this.props.lang}.leftpage.camera`}
-                        />
-                    </View>
-                </TouchableWithoutFeedback>
-            </View>
-        );
     }
 
     /**
@@ -356,9 +295,10 @@ class LeftPage extends PureComponent {
      */
     renderUploadButton() {
         if (
-            this.props.photos.length === 0 &&
-            this.props.gallery.length === 0 &&
-            this.props.webPhotos.length === 0
+            (this.props.photos.length === 0 &&
+                this.props.gallery.length === 0 &&
+                this.props.webPhotos.length === 0) ||
+            this.props.isSelecting
         )
             return;
 
@@ -378,21 +318,7 @@ class LeftPage extends PureComponent {
 
         if (tagged === 0) return;
 
-        return (
-            <TouchableWithoutFeedback onPress={this.uploadPhotos}>
-                <View style={styles.iconPadding}>
-                    <Icon
-                        name="backup"
-                        size={SCREEN_HEIGHT * 0.04}
-                        color="#00aced"
-                    />
-                    <TransText
-                        style={styles.normalText}
-                        dictionary={`${this.props.lang}.leftpage.upload`}
-                    />
-                </View>
-            </TouchableWithoutFeedback>
-        );
+        return <UploadButton onPress={this.uploadPhotos} />;
     }
 
     /**
@@ -412,7 +338,7 @@ class LeftPage extends PureComponent {
         if (this.props.photos.length > 0 || this.props.gallery.length > 0) {
             return (
                 <TransText
-                    style={styles.normalText}
+                    style={styles.normalWhiteText}
                     onPress={this.toggleSelecting}
                     dictionary={`${this.props.lang}.leftpage.delete`}
                 />
@@ -680,10 +606,29 @@ class LeftPage extends PureComponent {
     }
 
     /**
-     * Slide to value, passed to Parent Slides.js
+     * fn to determine the state of FAB
      */
-    changeView(value) {
-        this.props.swipe(value);
+
+    renderFabButton() {
+        let status = 'NO_IMAGES';
+        let fabFunction = this.loadGallery;
+        if (
+            this.props.photos.length === 0 &&
+            this.props.gallery.length === 0 &&
+            this.props.webImagesCount === 0
+        ) {
+            status = 'NO_IMAGES';
+            fabFunction = this.loadGallery;
+        }
+        if (this.props.isSelecting) {
+            status = 'SELECTING';
+            if (this.props.selected > 0) {
+                status = 'SELECTED';
+                fabFunction = this.deleteSelectedImages;
+            }
+        }
+
+        return <HomeFab status={status} onPress={fabFunction} />;
     }
 }
 
@@ -691,32 +636,21 @@ const styles = {
     bottomContainer: {
         position: 'absolute',
         bottom: 0,
-        left: 0,
-        right: 0,
-        backgroundColor: 'white',
-        flex: 1,
-        height: SCREEN_HEIGHT * 0.1,
+        left: 20
+    },
+    helperContainer: {
+        position: 'relative',
+        bottom: 30,
+        width: SCREEN_WIDTH - 150,
+        height: 80,
+        flexDirection: 'row',
+        paddingHorizontal: 10,
         justifyContent: 'center',
         alignItems: 'center'
-    },
-    bottomBarContainer: {
-        flexDirection: 'row',
-        flex: 1,
-        justifyContent: 'space-around',
-        alignItems: 'center',
-        width: '100%'
     },
     container: {
         flex: 1,
         backgroundColor: '#fff'
-    },
-    iconPadding: {
-        paddingLeft: 20,
-        paddingRight: 20,
-        paddingTop: 5,
-        paddingBottom: 5,
-        alignItems: 'center',
-        justifyContent: 'center'
     },
     normalText: {
         fontSize: SCREEN_HEIGHT * 0.02

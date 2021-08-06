@@ -15,11 +15,11 @@ import DeviceInfo from 'react-native-device-info';
 
 import { connect } from 'react-redux';
 import * as actions from '../../../actions';
+import { Body, SubTitle } from '../../components';
 
-const SCREEN_WIDTH = Dimensions.get('window').width;
-const SCREEN_HEIGHT = Dimensions.get('window').height;
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
-class LeftPageImages extends PureComponent {
+class UploadImagesGrid extends PureComponent {
     /**
      * Camera photo data
      *
@@ -65,16 +65,15 @@ class LeftPageImages extends PureComponent {
      *
      * Load the first web image
      */
-    _webImagePressed ()
-    {
-        if (!this.props.isSelecting)
-        {
+    _webImagePressed() {
+        if (!this.props.isSelecting) {
             // shared.js
             this.props.toggleLitter();
 
             // get the index of web_photos[0];
             // The order of the photos is camera_photos -> gallery_photos -> web_photos
-            const globalIndex = this.props.photos.length + this.props.gallery.length;
+            const globalIndex =
+                this.props.photos.length + this.props.gallery.length;
 
             // litter.js
             this.props.swiperIndexChanged(globalIndex);
@@ -88,20 +87,16 @@ class LeftPageImages extends PureComponent {
      *
      * otherwise, open an image for tagging
      */
-    cameraPhotoPressed (index)
-    {
+    cameraPhotoPressed(index) {
         const image = this.props.photos[index];
 
-        if (this.props.isSelecting)
-        {
+        if (this.props.isSelecting) {
             image.selected
                 ? this.props.decrementSelected()
                 : this.props.incrementSelected();
 
             this.props.toggleSelectedPhoto(index);
-        }
-        else
-        {
+        } else {
             // shared_reducer - Open LitterPicker modal
             this.props.toggleLitter();
 
@@ -117,20 +112,16 @@ class LeftPageImages extends PureComponent {
      *
      * otherwise, select an image for tagging
      */
-    galleryPhotoPressed (index)
-    {
+    galleryPhotoPressed(index) {
         const image = this.props.gallery[index];
 
-        if (this.props.isSelecting)
-        {
+        if (this.props.isSelecting) {
             image.selected
                 ? this.props.decrementSelected()
                 : this.props.incrementSelected();
 
             this.props.toggleSelectedGallery(index);
-        }
-        else
-        {
+        } else {
             // shared_reducer - Open LitterPicker modal
             this.props.toggleLitter();
 
@@ -327,8 +318,7 @@ class LeftPageImages extends PureComponent {
      *
      * @returns {JSX.Element}
      */
-    render ()
-    {
+    render() {
         if (
             this.props.photos.length === 0 &&
             this.props.gallery.length === 0 &&
@@ -341,10 +331,23 @@ class LeftPageImages extends PureComponent {
                         justifyContent: 'center',
                         flex: 0.75
                     }}>
-                    <TransText
+                    <Image
+                        style={{
+                            width: SCREEN_WIDTH / 2,
+                            height: SCREEN_WIDTH / 2
+                        }}
+                        source={require('../../../assets/illustrations/empty_image.png')}
+                    />
+                    <SubTitle style={styles.exptyStateText}>
+                        No images to upload
+                    </SubTitle>
+                    <Body style={styles.exptyStateText}>
+                        Click images or select from gallery
+                    </Body>
+                    {/* <TransText
                         style={{ fontSize: SCREEN_HEIGHT * 0.02 }}
                         dictionary={`${this.props.lang}.leftpage.get-started`}
-                    />
+                    /> */}
                 </View>
             );
         }
@@ -478,10 +481,15 @@ const styles = {
         position: 'absolute',
         left: SCREEN_WIDTH * 0.03,
         bottom: SCREEN_HEIGHT * 0.01
+    },
+    exptyStateText: {
+        textAlign: 'center',
+        marginTop: 20,
+        paddingHorizontal: 20
     }
 };
 
 export default connect(
     null,
     actions
-)(LeftPageImages);
+)(UploadImagesGrid);
