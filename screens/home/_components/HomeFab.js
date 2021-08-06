@@ -23,7 +23,10 @@ const HomeFab = ({ navigation, status, onPress }) => {
     }
     return (
         <View>
-            <Pressable disabled={disabled} onPress={() => onPress()} style={{}}>
+            <Pressable
+                disabled={disabled}
+                onPress={() => onPress()}
+                style={styles.containerStyle}>
                 <LinearGradient
                     colors={
                         disabled
@@ -52,11 +55,16 @@ const HomeFab = ({ navigation, status, onPress }) => {
 export default HomeFab;
 
 const styles = StyleSheet.create({
-    buttonStyle: {
+    containerStyle: {
+        backgroundColor: 'red',
         position: 'absolute',
         bottom: 30,
         right: 30,
         width: 80,
+        height: 80,
+        borderRadius: 100
+    },
+    buttonStyle: {
         height: 80,
         borderRadius: 100,
         justifyContent: 'center',

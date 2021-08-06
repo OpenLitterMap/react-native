@@ -81,8 +81,7 @@ const TabRoutes = ({ navigation }) => (
                 style: {
                     backgroundColor: 'white',
                     borderTopWidth: 0,
-                    height: 80,
-                    paddingTop: 10
+                    height: 60
                 }
             }}>
             <Tab.Screen name="HOME" component={HomeScreen} />

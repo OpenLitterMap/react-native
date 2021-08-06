@@ -204,7 +204,8 @@ class LeftPage extends PureComponent {
                         {this.renderHelperMessage()}
                     </View>
                 </View>
-                {this.RenderFabButton()}
+                {this.renderFabButton()}
+
                 {this.renderUploadButton()}
             </>
         );
@@ -607,7 +608,7 @@ class LeftPage extends PureComponent {
      * fn to determine the state of FAB
      */
 
-    RenderFabButton() {
+    renderFabButton() {
         let status = 'NO_IMAGES';
         let fabFunction = this.loadGallery;
         if (
