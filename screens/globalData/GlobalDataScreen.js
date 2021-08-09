@@ -6,7 +6,7 @@ import * as actions from '../../actions';
 import { connect } from 'react-redux';
 import Icon from 'react-native-vector-icons/Ionicons';
 
-class StatsScreen extends Component {
+class GlobalDataScreen extends Component {
     constructor(props) {
         super(props);
     }
@@ -164,4 +164,4 @@ const mapStateToProps = state => {
 export default connect(
     mapStateToProps,
     actions
-)(StatsScreen);
+)(GlobalDataScreen);

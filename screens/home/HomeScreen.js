@@ -35,7 +35,7 @@ import AddTags from '../pages/AddTags';
 import DeviceInfo from 'react-native-device-info';
 import moment from 'moment';
 
-class LeftPage extends PureComponent {
+class HomeScreen extends PureComponent {
     constructor(props) {
         super(props);
 
@@ -87,7 +87,7 @@ class LeftPage extends PureComponent {
     }
 
     render() {
-        // console.log('Rendering: LeftPage');
+        // console.log('Rendering: HomeScreen');
 
         if (this.props.imageBrowserOpen) {
             // todo- cancel all subscriptions and async tasks in componentWillUnmount
@@ -761,4 +761,4 @@ const mapStateToProps = state => {
 export default connect(
     mapStateToProps,
     actions
-)(LeftPage);
+)(HomeScreen);

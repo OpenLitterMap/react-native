@@ -6,7 +6,6 @@ import AsyncStorage from '@react-native-community/async-storage';
 import * as actions from '../actions';
 import AuthStack from './authRoutes';
 import TabRoutes from './tabRoutes';
-import CameraPage from '../screens/pages/CameraPage';
 import { SettingScreen } from '../screens';
 
 const Stack = createStackNavigator();
@@ -79,10 +78,7 @@ class MainRoutes extends Component {
                     ) : (
                         <>
                             <Stack.Screen name="APP" component={TabRoutes} />
-                            <Stack.Screen
-                                name="CAMERA"
-                                component={CameraPage}
-                            />
+
                             <Stack.Screen
                                 name="SETTING"
                                 component={SettingScreen}

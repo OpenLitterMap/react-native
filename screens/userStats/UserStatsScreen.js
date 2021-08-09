@@ -20,7 +20,7 @@ import {
 } from '../components';
 import { StatsCard, RewardsList } from './_components';
 
-class ProfileScreen extends Component {
+class UserStatsScreen extends Component {
     constructor(props) {
         super(props);
         // console.log(JSON.stringify(this.props.user, null, '\t'));
@@ -162,4 +162,4 @@ const mapStateToProps = state => {
 export default connect(
     mapStateToProps,
     actions
-)(ProfileScreen);
+)(UserStatsScreen);

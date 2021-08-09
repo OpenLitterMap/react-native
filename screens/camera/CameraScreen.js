@@ -31,7 +31,7 @@ import base64 from 'react-native-base64';
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
-class CameraPage extends React.Component {
+class CameraScreen extends React.Component {
     constructor(props) {
         super(props);
 
@@ -125,7 +125,6 @@ class CameraPage extends React.Component {
      * Render the camera page
      */
     render() {
-        console.log('render camera');
         if (this.state.loading || this.props.index === 0) {
             return (
                 <View
@@ -415,4 +414,4 @@ const mapStateToProps = state => {
 export default connect(
     mapStateToProps,
     actions
-)(CameraPage);
+)(CameraScreen);
