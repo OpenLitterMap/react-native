@@ -28,13 +28,6 @@ class GlobalDataScreen extends Component {
             <>
                 <Header
                     leftContent={<Title color="white">Global Data</Title>}
-                    rightContent={
-                        <Icon
-                            name="ios-share-outline"
-                            size={24}
-                            color={Colors.white}
-                        />
-                    }
                 />
                 {totalLitter === 0 || totalPhotos === 0 ? (
                     <View
