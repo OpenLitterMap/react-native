@@ -78,7 +78,7 @@ class UserStatsScreen extends Component {
                         value={user.level}
                         delay={500}
                         duration={5000}
-                        radius={150}
+                        radius={160}
                         tagline="Level"
                     />
                     <Body color="accent" style={{ textAlign: 'center' }}>

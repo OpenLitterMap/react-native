@@ -1,7 +1,8 @@
 import React from 'react';
 import { StyleSheet, View, Dimensions } from 'react-native';
 import PropTypes from 'prop-types';
-import { Colors, Title, Caption } from '../../components';
+import { Title, Caption } from '../typography';
+import { Colors } from '../theme';
 const { width } = Dimensions.get('window');
 
 const IconStatsCard = ({

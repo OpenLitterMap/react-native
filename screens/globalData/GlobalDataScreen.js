@@ -1,7 +1,12 @@
 import React, { Component } from 'react';
 import { View, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
-import { Header, Title, Colors, AnimatedCircle } from '../components';
-import { IconStatsCard } from './_components';
+import {
+    Header,
+    Title,
+    Colors,
+    AnimatedCircle,
+    StatsGrid
+} from '../components';
 import * as actions from '../../actions';
 import { connect } from 'react-redux';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -24,6 +29,36 @@ class GlobalDataScreen extends Component {
             targetPercentage
         } = this.props;
 
+        const statsData = [
+            {
+                value: `${totalLitter.toLocaleString()}`,
+                title: 'Total Litter',
+                icon: 'ios-trash-outline',
+                color: '#14B8A6',
+                bgColor: '#CCFBF1'
+            },
+            {
+                value: `${totalPhotos.toLocaleString()}`,
+                title: 'Total Photos',
+                icon: 'ios-images-outline',
+                color: '#A855F7',
+                bgColor: '#F3E8FF'
+            },
+            {
+                value: `${totalLittercoin.toLocaleString()}`,
+                title: 'Total Littercoin',
+                icon: 'ios-server-outline',
+                color: '#F59E0B',
+                bgColor: '#FEF9C3'
+            },
+            {
+                value: '4,748',
+                title: 'Total Users',
+                icon: 'ios-people-outline',
+                color: '#0EA5E9',
+                bgColor: '#E0F2FE'
+            }
+        ];
         return (
             <>
                 <Header
@@ -54,12 +89,12 @@ class GlobalDataScreen extends Component {
                             value={targetPercentage}
                             delay={500}
                             duration={5000}
-                            radius={150}
+                            radius={160}
                             tagline={`Next Target\n${litterTarget.nextTarget.toLocaleString()} Litter`}
                             valueSuffix="%"
                         />
-
-                        <View style={styles.statsContainer}>
+                        <StatsGrid statsData={statsData} />
+                        {/* <View style={styles.statsContainer}>
                             <View style={styles.statsRow}>
                                 <IconStatsCard
                                     imageContent={
@@ -120,7 +155,7 @@ class GlobalDataScreen extends Component {
                                     fontColor="#1F6E5D"
                                 />
                             </View>
-                        </View>
+                        </View> */}
                     </ScrollView>
                 )}
             </>
