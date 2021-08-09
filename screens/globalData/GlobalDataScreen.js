@@ -9,7 +9,6 @@ import {
 } from '../components';
 import * as actions from '../../actions';
 import { connect } from 'react-redux';
-import Icon from 'react-native-vector-icons/Ionicons';
 
 class GlobalDataScreen extends Component {
     constructor(props) {

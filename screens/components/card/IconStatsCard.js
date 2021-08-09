@@ -25,7 +25,7 @@ const IconStatsCard = ({
                 style
             ]}>
             {imageContent && (
-                <View style={{ marginBottom: 20 }}>{imageContent}</View>
+                <View style={{ marginBottom: 10 }}>{imageContent}</View>
             )}
 
             <Title

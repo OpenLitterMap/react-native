@@ -16,18 +16,51 @@ import {
     Caption,
     AnimatedCircle,
     Header,
-    Colors
+    Colors,
+    StatsGrid
 } from '../components';
-import { StatsCard, RewardsList } from './_components';
 
 class UserStatsScreen extends Component {
     constructor(props) {
         super(props);
-        // console.log(JSON.stringify(this.props.user, null, '\t'));
+        console.log(JSON.stringify(this.props.user, null, '\t'));
     }
 
     render() {
         const user = this.props.user;
+
+        const statsData = [
+            {
+                value: `${user?.xp.toLocaleString()}`,
+                title: 'XP',
+                icon: 'ios-medal-outline',
+                color: '#14B8A6',
+                bgColor: '#CCFBF1'
+            },
+            {
+                value: `${user?.level.toLocaleString()}`,
+                title: 'Level',
+                icon: 'ios-podium-outline',
+                color: '#A855F7',
+                bgColor: '#F3E8FF'
+            },
+            {
+                value: `${user?.total_images.toLocaleString()}`,
+                title: 'Photos',
+                icon: 'ios-images-outline',
+                color: '#F59E0B',
+                bgColor: '#FEF9C3'
+            },
+            {
+                value: `${(
+                    user?.total_brands + user?.total_tags
+                ).toLocaleString()}`,
+                title: 'Tags',
+                icon: 'ios-pricetags-outline',
+                color: '#0EA5E9',
+                bgColor: '#E0F2FE'
+            }
+        ];
 
         // TODO: add a better loading screen add Skeleton Loading screen
         if (user === null || user === undefined) {
@@ -84,52 +117,7 @@ class UserStatsScreen extends Component {
                     <Body color="accent" style={{ textAlign: 'center' }}>
                         {user.xpRequired}XP more to level up
                     </Body>
-                    <View style={styles.statsContainer}>
-                        <View style={styles.statsRow}>
-                            <StatsCard
-                                value={`${user?.xp}`}
-                                title="XP"
-                                backgroundColor="#FDE5E5"
-                                fontColor="#E12F2E"
-                            />
-                            <StatsCard
-                                value={`${user?.level}`}
-                                title="Level"
-                                backgroundColor="#FDF2D3"
-                                fontColor="#997028"
-                            />
-                        </View>
-                        <View style={styles.statsRow}>
-                            <StatsCard
-                                value={`${user?.total_images}`}
-                                title="Photos"
-                                backgroundColor="#ECEEFF"
-                                fontColor="#2C45FF"
-                            />
-                            <StatsCard
-                                value={`${user?.total_brands +
-                                    user?.total_tags}`}
-                                title="Tags"
-                                backgroundColor="#DEFFF8"
-                                fontColor="#1F6E5D"
-                            />
-                        </View>
-                    </View>
-                    {/* ======= */}
-                    {/* latest reward container */}
-                    {/* <View style={[styles.statsContainer, { padding: 20 }]}>
-                        <View
-                            style={{
-                                flexDirection: 'row',
-                                justifyContent: 'space-between'
-                            }}>
-                            <SubTitle>Latest Rewards</SubTitle>
-                            <Caption>View All</Caption>
-                        </View>
-                        <RewardsList />
-                    </View> */}
-
-                    {/* ======= */}
+                    <StatsGrid statsData={statsData} />
                 </ScrollView>
             </>
         );
