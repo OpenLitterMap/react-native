@@ -66,7 +66,6 @@ class UserStatsScreen extends Component {
                 />
                 <ScrollView
                     contentContainerStyle={{
-                        paddingBottom: 100,
                         paddingTop: 20
                     }}
                     style={styles.container}
@@ -78,6 +77,7 @@ class UserStatsScreen extends Component {
                         color={`${Colors.accent}`}
                         value={user.level}
                         delay={500}
+                        duration={5000}
                         radius={150}
                         tagline="Level"
                     />

@@ -13,4 +13,4 @@ const COLORS = {
     modalBackground: 'rgba(0,0,0,0.6)'
 };
 
-export default COLORS;
+// export default COLORS;

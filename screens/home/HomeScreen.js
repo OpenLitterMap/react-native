@@ -650,7 +650,7 @@ const styles = {
     },
     container: {
         flex: 1,
-        backgroundColor: '#fff'
+        backgroundColor: Colors.accentLight
     },
     normalText: {
         fontSize: SCREEN_HEIGHT * 0.02

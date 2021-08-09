@@ -49,7 +49,6 @@ class GlobalDataScreen extends Component {
                 ) : (
                     <ScrollView
                         contentContainerStyle={{
-                            paddingBottom: 100,
                             paddingTop: 20
                         }}
                         style={styles.container}
@@ -61,7 +60,7 @@ class GlobalDataScreen extends Component {
                             color={`${Colors.accent}`}
                             value={targetPercentage}
                             delay={500}
-                            duration={1000}
+                            duration={5000}
                             radius={150}
                             tagline={`Next Target\n${litterTarget.nextTarget.toLocaleString()} Litter`}
                             valueSuffix="%"
