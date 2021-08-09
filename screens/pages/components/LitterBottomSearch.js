@@ -273,14 +273,14 @@ class LitterBottomSearch extends PureComponent {
                 behavior={'padding'}>
                 <View style={this._container()}>
                     <TouchableOpacity
-                        onPress={this.closeLitterPicker.bind(this)}
+                        onPress={this.deleteImage.bind(this)}
                         style={
                             this.props.keyboardOpen ? styles.hide : styles.icon
                         }
                         disabled={this._checkForPhotos}>
                         <Icon
-                            color="grey"
-                            name="replay"
+                            color="red"
+                            name="close"
                             size={SCREEN_HEIGHT * 0.05}
                         />
                     </TouchableOpacity>
@@ -297,14 +297,14 @@ class LitterBottomSearch extends PureComponent {
                     />
 
                     <TouchableOpacity
-                        onPress={this.deleteImage.bind(this)}
+                        onPress={this.closeLitterPicker.bind(this)}
                         style={
                             this.props.keyboardOpen ? styles.hide : styles.icon
                         }
                         disabled={this._checkForPhotos}>
                         <Icon
-                            color="red"
-                            name="close"
+                            color="green"
+                            name="done"
                             size={SCREEN_HEIGHT * 0.05}
                         />
                     </TouchableOpacity>

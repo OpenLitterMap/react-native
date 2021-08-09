@@ -4,7 +4,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { Colors, Body } from '../../components';
 
-const HomeFab = ({ navigation, status, onPress }) => {
+const ActionButton = ({ navigation, status, onPress }) => {
     let iconName;
     const disabled = status === 'SELECTING' ? true : false;
     switch (status) {
@@ -46,17 +46,13 @@ const HomeFab = ({ navigation, status, onPress }) => {
                         }
                     ]}>
                     {/* <Body>{status}</Body> */}
-                    <Icon
-                        name={iconName}
-                        color={disabled ? Colors.muted : 'white'}
-                        size={32}
-                    />
+                    <Icon name={iconName} color={'white'} size={32} />
                 </LinearGradient>
             </Pressable>
         </View>
     );
 };
-export default HomeFab;
+export default ActionButton;
 
 const styles = StyleSheet.create({
     containerStyle: {

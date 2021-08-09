@@ -30,7 +30,7 @@ const SCREEN_HEIGHT = Dimensions.get('window').height;
 const equalWidth = SCREEN_WIDTH / 3;
 
 // Components
-import { UploadImagesGrid, HomeFab, UploadButton } from './_components';
+import { UploadImagesGrid, ActionButton, UploadButton } from './_components';
 import AddTags from '../pages/AddTags';
 import DeviceInfo from 'react-native-device-info';
 import moment from 'moment';
@@ -204,7 +204,7 @@ class HomeScreen extends PureComponent {
                         {this.renderHelperMessage()}
                     </View>
                 </View>
-                {this.renderFabButton()}
+                {this.renderActionButton()}
 
                 {this.renderUploadButton()}
             </>
@@ -609,7 +609,7 @@ class HomeScreen extends PureComponent {
      * fn to determine the state of FAB
      */
 
-    renderFabButton() {
+    renderActionButton() {
         let status = 'NO_IMAGES';
         let fabFunction = this.loadGallery;
         if (
@@ -628,7 +628,7 @@ class HomeScreen extends PureComponent {
             }
         }
 
-        return <HomeFab status={status} onPress={fabFunction} />;
+        return <ActionButton status={status} onPress={fabFunction} />;
     }
 }
 

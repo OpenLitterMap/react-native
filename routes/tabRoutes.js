@@ -9,7 +9,7 @@ import {
     CameraScreen
 } from '../screens';
 // import { CameraPage } from '../screens/pages';
-import { Fab, Colors } from '../screens/components';
+import { Colors } from '../screens/components';
 
 const Tab = createBottomTabNavigator();
 
@@ -95,11 +95,6 @@ const TabRoutes = ({ navigation }) => (
             {/* <Tab.Screen name="RANKING" component={RankingScreen} /> */}
             <Tab.Screen name="PROFILE" component={UserStatsScreen} />
         </Tab.Navigator>
-
-        {/* INFO: fab will be shown on all screens which shows bottom tabbar
-        Not used for now
-         */}
-        {/* <Fab navigation={navigation} /> */}
     </>
 );
 
