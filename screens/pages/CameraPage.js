@@ -69,6 +69,11 @@ class CameraPage extends React.Component {
         this._getLocationAsync();
     }
 
+    componentWillUnmount() {
+        // unsubscribe to location services on unmount
+        this.locationSubscription();
+    }
+
     /**
      * Flash a black screen when the user takes a photo
      */
@@ -120,6 +125,7 @@ class CameraPage extends React.Component {
      * Render the camera page
      */
     render() {
+        console.log('render camera');
         if (this.state.loading || this.props.index === 0) {
             return (
                 <View

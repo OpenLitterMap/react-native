@@ -81,7 +81,7 @@ const TabRoutes = ({ navigation }) => (
                 style: {
                     backgroundColor: 'white',
                     borderTopWidth: 0,
-                    height: 60
+                    paddingTop: 10
                 }
             }}>
             <Tab.Screen name="HOME" component={HomeScreen} />
@@ -89,7 +89,7 @@ const TabRoutes = ({ navigation }) => (
             <Tab.Screen
                 name="CAMERA"
                 component={CameraPage}
-                options={{ tabBarVisible: false }}
+                options={{ unmountOnBlur: true }}
             />
             {/* <Tab.Screen name="TEAM" component={TeamScreen} /> */}
             {/* <Tab.Screen name="RANKING" component={RankingScreen} /> */}
