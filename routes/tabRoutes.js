@@ -47,7 +47,7 @@ const TabRoutes = ({ navigation }) => (
                                 ? 'ios-camera'
                                 : 'ios-camera-outline';
                             break;
-                        case 'PROFILE':
+                        case 'USER_STATS':
                             iconName = focused
                                 ? 'ios-person'
                                 : 'ios-person-outline';
@@ -93,7 +93,7 @@ const TabRoutes = ({ navigation }) => (
 
             {/* <Tab.Screen name="TEAM" component={TeamScreen} /> */}
             {/* <Tab.Screen name="RANKING" component={RankingScreen} /> */}
-            <Tab.Screen name="PROFILE" component={UserStatsScreen} />
+            <Tab.Screen name="USER_STATS" component={UserStatsScreen} />
         </Tab.Navigator>
     </>
 );

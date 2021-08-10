@@ -92,69 +92,8 @@ class GlobalDataScreen extends Component {
                             tagline={`Next Target\n${litterTarget.nextTarget.toLocaleString()} Litter`}
                             valueSuffix="%"
                         />
+                        {/* grid for stats */}
                         <StatsGrid statsData={statsData} />
-                        {/* <View style={styles.statsContainer}>
-                            <View style={styles.statsRow}>
-                                <IconStatsCard
-                                    imageContent={
-                                        <Icon
-                                            name="ios-trash-outline"
-                                            size={36}
-                                            color="#E12F2E"
-                                        />
-                                    }
-                                    value={`${totalLitter.toLocaleString()}`}
-                                    title="Total Litter"
-                                    contentCenter
-                                    backgroundColor="#FDE5E5"
-                                    fontColor="#E12F2E"
-                                />
-                                <IconStatsCard
-                                    imageContent={
-                                        <Icon
-                                            name="ios-images-outline"
-                                            size={36}
-                                            color="#997028"
-                                        />
-                                    }
-                                    contentCenter
-                                    value={`${totalPhotos.toLocaleString()}`}
-                                    title="Total Photos"
-                                    backgroundColor="#FDF2D3"
-                                    fontColor="#997028"
-                                />
-                            </View>
-                            <View style={styles.statsRow}>
-                                <IconStatsCard
-                                    imageContent={
-                                        <Icon
-                                            name="ios-server-outline"
-                                            size={36}
-                                            color="#2C45FF"
-                                        />
-                                    }
-                                    value={`${totalLittercoin.toLocaleString()}`}
-                                    title="Total Littercoin"
-                                    contentCenter
-                                    backgroundColor="#ECEEFF"
-                                    fontColor="#2C45FF"
-                                />
-                                <IconStatsCard
-                                    imageContent={
-                                        <Icon
-                                            name="ios-people-outline"
-                                            size={36}
-                                            color="#1F6E5D"
-                                        />
-                                    }
-                                    contentCenter
-                                    value="4,748"
-                                    title="Total Users"
-                                    backgroundColor="#DEFFF8"
-                                    fontColor="#1F6E5D"
-                                />
-                            </View>
-                        </View> */}
                     </ScrollView>
                 )}
             </>
