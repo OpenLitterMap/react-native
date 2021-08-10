@@ -16,7 +16,7 @@ import { getTranslation, TransText } from 'react-native-translation';
 import Icon from 'react-native-vector-icons/Ionicons';
 import * as actions from '../actions';
 import { connect } from 'react-redux';
-import { Body, SubTitle, Title, Header, Colors } from './components';
+import { Body, SubTitle, Title, Header, Colors, Caption } from './components';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
@@ -30,8 +30,6 @@ class SettingsScreen extends Component {
 
     render() {
         const lang = this.props.lang;
-        const settings = getTranslation(`${lang}.settings.settings`);
-        const logout = getTranslation(`${lang}.settings.logout`);
 
         return (
             <>
@@ -46,13 +44,18 @@ class SettingsScreen extends Component {
                             />
                         </Pressable>
                     }
-                    centerContent={<Title color="white">Settings</Title>}
+                    centerContent={
+                        <Title
+                            style={{ marginLeft: 20 }}
+                            color="white"
+                            dictionary={`${lang}.settings.settings`}
+                        />
+                    }
                     rightContent={
                         <Pressable onPress={() => this.props.logout()}>
-                            <Icon
-                                name="ios-exit-outline"
-                                color={Colors.white}
-                                size={24}
+                            <Body
+                                color="white"
+                                dictionary={`${lang}.settings.logout`}
                             />
                         </Pressable>
                     }

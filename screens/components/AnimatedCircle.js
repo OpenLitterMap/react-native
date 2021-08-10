@@ -2,7 +2,7 @@ import * as React from 'react';
 import { Easing, TextInput, Animated, View, StyleSheet } from 'react-native';
 import PropTypes from 'prop-types';
 import Svg, { G, Circle } from 'react-native-svg';
-import { Caption } from './typography';
+import { Body, Caption } from './typography';
 import { Colors } from './theme';
 
 const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
@@ -153,14 +153,15 @@ const AnimatedCircle = ({
                     ]}
                 />
 
-                <Caption
+                <Body
+                    family="semiBold"
                     style={[
                         { color: textColor ?? color },
                         styles.tagline,
                         taglineStyles
                     ]}>
                     {tagline}
-                </Caption>
+                </Body>
             </View>
         </View>
     );

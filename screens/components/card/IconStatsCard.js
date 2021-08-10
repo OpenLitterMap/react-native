@@ -1,7 +1,8 @@
 import React from 'react';
 import { StyleSheet, View, Dimensions } from 'react-native';
 import PropTypes from 'prop-types';
-import { Colors, Title, Caption } from '../../components';
+import { Title, Caption } from '../typography';
+import { Colors } from '../theme';
 const { width } = Dimensions.get('window');
 
 const IconStatsCard = ({
@@ -24,7 +25,7 @@ const IconStatsCard = ({
                 style
             ]}>
             {imageContent && (
-                <View style={{ marginBottom: 20 }}>{imageContent}</View>
+                <View style={{ marginBottom: 10 }}>{imageContent}</View>
             )}
 
             <Title

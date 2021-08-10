@@ -30,12 +30,12 @@ const SCREEN_HEIGHT = Dimensions.get('window').height;
 const equalWidth = SCREEN_WIDTH / 3;
 
 // Components
-import { UploadImagesGrid, HomeFab, UploadButton } from './_components';
+import { UploadImagesGrid, ActionButton, UploadButton } from './_components';
 import AddTags from '../pages/AddTags';
 import DeviceInfo from 'react-native-device-info';
 import moment from 'moment';
 
-class LeftPage extends PureComponent {
+class HomeScreen extends PureComponent {
     constructor(props) {
         super(props);
 
@@ -87,7 +87,7 @@ class LeftPage extends PureComponent {
     }
 
     render() {
-        // console.log('Rendering: LeftPage');
+        // console.log('Rendering: HomeScreen');
 
         if (this.props.imageBrowserOpen) {
             // todo- cancel all subscriptions and async tasks in componentWillUnmount
@@ -204,7 +204,7 @@ class LeftPage extends PureComponent {
                         {this.renderHelperMessage()}
                     </View>
                 </View>
-                {this.renderFabButton()}
+                {this.renderActionButton()}
 
                 {this.renderUploadButton()}
             </>
@@ -609,7 +609,7 @@ class LeftPage extends PureComponent {
      * fn to determine the state of FAB
      */
 
-    renderFabButton() {
+    renderActionButton() {
         let status = 'NO_IMAGES';
         let fabFunction = this.loadGallery;
         if (
@@ -628,7 +628,7 @@ class LeftPage extends PureComponent {
             }
         }
 
-        return <HomeFab status={status} onPress={fabFunction} />;
+        return <ActionButton status={status} onPress={fabFunction} />;
     }
 }
 
@@ -650,7 +650,7 @@ const styles = {
     },
     container: {
         flex: 1,
-        backgroundColor: '#fff'
+        backgroundColor: Colors.accentLight
     },
     normalText: {
         fontSize: SCREEN_HEIGHT * 0.02
@@ -761,4 +761,4 @@ const mapStateToProps = state => {
 export default connect(
     mapStateToProps,
     actions
-)(LeftPage);
+)(HomeScreen);

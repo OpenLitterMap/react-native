@@ -1,6 +1,7 @@
-export { default as ProfileScreen } from './profile/ProfileScreen';
-export { default as StatsScreen } from './stats/StatsScreen';
+export { default as UserStatsScreen } from './userStats/UserStatsScreen';
+export { default as GlobalDataScreen } from './globalData/GlobalDataScreen';
 export { default as TeamScreen } from './team/TeamScreen';
 export { default as RankingScreen } from './ranking/RankingScreen';
 export { default as SettingScreen } from './SettingsScreen';
 export { default as HomeScreen } from './home/HomeScreen';
+export { default as CameraScreen } from './camera/CameraScreen';

@@ -31,7 +31,7 @@ import base64 from 'react-native-base64';
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
-class CameraPage extends React.Component {
+class CameraScreen extends React.Component {
     constructor(props) {
         super(props);
 
@@ -67,6 +67,11 @@ class CameraPage extends React.Component {
         });
 
         this._getLocationAsync();
+    }
+
+    componentWillUnmount() {
+        // unsubscribe to location services on unmount
+        this.locationSubscription();
     }
 
     /**
@@ -409,4 +414,4 @@ const mapStateToProps = state => {
 export default connect(
     mapStateToProps,
     actions
-)(CameraPage);
+)(CameraScreen);

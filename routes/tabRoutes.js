@@ -3,14 +3,13 @@ import { View } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {
-    ProfileScreen,
-    StatsScreen,
+    UserStatsScreen,
+    GlobalDataScreen,
     HomeScreen,
-    TeamScreen,
-    RankingScreen
+    CameraScreen
 } from '../screens';
-import { CameraPage } from '../screens/pages';
-import { Fab, Colors } from '../screens/components';
+// import { CameraPage } from '../screens/pages';
+import { Colors } from '../screens/components';
 
 const Tab = createBottomTabNavigator();
 
@@ -28,7 +27,7 @@ const TabRoutes = ({ navigation }) => (
                                 ? 'ios-home'
                                 : 'ios-home-outline';
                             break;
-                        case 'STATS':
+                        case 'GLOBAL_DATA':
                             iconName = focused
                                 ? 'ios-trending-up'
                                 : 'ios-trending-up-outline';
@@ -48,7 +47,7 @@ const TabRoutes = ({ navigation }) => (
                                 ? 'ios-camera'
                                 : 'ios-camera-outline';
                             break;
-                        case 'PROFILE':
+                        case 'USER_STATS':
                             iconName = focused
                                 ? 'ios-person'
                                 : 'ios-person-outline';
@@ -81,25 +80,21 @@ const TabRoutes = ({ navigation }) => (
                 style: {
                     backgroundColor: 'white',
                     borderTopWidth: 0,
-                    height: 60
+                    paddingTop: 10
                 }
             }}>
             <Tab.Screen name="HOME" component={HomeScreen} />
-            <Tab.Screen name="STATS" component={StatsScreen} />
             <Tab.Screen
                 name="CAMERA"
-                component={CameraPage}
-                options={{ tabBarVisible: false }}
+                component={CameraScreen}
+                options={{ unmountOnBlur: true }}
             />
+            <Tab.Screen name="GLOBAL_DATA" component={GlobalDataScreen} />
+
             {/* <Tab.Screen name="TEAM" component={TeamScreen} /> */}
             {/* <Tab.Screen name="RANKING" component={RankingScreen} /> */}
-            <Tab.Screen name="PROFILE" component={ProfileScreen} />
+            <Tab.Screen name="USER_STATS" component={UserStatsScreen} />
         </Tab.Navigator>
-
-        {/* INFO: fab will be shown on all screens which shows bottom tabbar
-        Not used for now
-         */}
-        {/* <Fab navigation={navigation} /> */}
     </>
 );
 
