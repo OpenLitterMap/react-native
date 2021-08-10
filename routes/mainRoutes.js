@@ -7,6 +7,8 @@ import * as actions from '../actions';
 import AuthStack from './authRoutes';
 import TabRoutes from './tabRoutes';
 import { SettingScreen } from '../screens';
+// import AlbumList from '../screens/pages/library/AlbumList';
+import AlbumList from '../screens/gallery/AlbumScreen';
 
 const Stack = createStackNavigator();
 
@@ -82,6 +84,10 @@ class MainRoutes extends Component {
                             <Stack.Screen
                                 name="SETTING"
                                 component={SettingScreen}
+                            />
+                            <Stack.Screen
+                                name="GALLERY"
+                                component={AlbumList}
                             />
                         </>
                     )}

@@ -89,10 +89,10 @@ class HomeScreen extends PureComponent {
     render() {
         // console.log('Rendering: HomeScreen');
 
-        if (this.props.imageBrowserOpen) {
-            // todo- cancel all subscriptions and async tasks in componentWillUnmount
-            return <AlbumList navigation={this.props.navigation} />;
-        }
+        // if (this.props.imageBrowserOpen) {
+        //     // todo- cancel all subscriptions and async tasks in componentWillUnmount
+        //     return <AlbumList navigation={this.props.navigation} />;
+        // }
 
         const lang = this.props.lang;
 
@@ -250,7 +250,8 @@ class HomeScreen extends PureComponent {
      * @props gallery_actions, gallery_reducer
      */
     loadGallery = async () => {
-        this.props.setImagesLoading(true);
+        // this.props.setImagesLoading(true);
+        this.props.navigation.navigate('GALLERY');
 
         let p =
             Platform.OS === 'android' ? PERMISSIONS.ANDROID : PERMISSIONS.IOS;
