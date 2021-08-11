@@ -11,7 +11,7 @@ import {
 import AsyncStorage from '@react-native-community/async-storage';
 import { connect } from 'react-redux';
 import * as actions from '../../actions';
-
+import Icon from 'react-native-vector-icons/Ionicons';
 import { request, PERMISSIONS } from 'react-native-permissions';
 
 import { Header, Body, SubTitle } from '../components';
@@ -73,21 +73,26 @@ class AlbumScreen extends Component {
                                 this.props.navigation.goBack();
                                 // this.props.setImageLoading;
                             }}>
-                            <Body color="white">Cancel</Body>
+                            {/* <Body color="white">Cancel</Body> */}
+                            <Icon
+                                name="ios-chevron-back-outline"
+                                size={24}
+                                color="white"
+                            />
                         </Pressable>
                     }
-                    centerContent={<SubTitle color="white">Photos</SubTitle>}
-                    rightContent={
-                        <Pressable
-                            onPress={() => {
-                                // this._chooseImages();
-                            }}>
-                            <Body color="white">Done</Body>
-                        </Pressable>
-                    }
+                    centerContent={<SubTitle color="white">Album</SubTitle>}
+                    // rightContent={
+                    //     <Pressable
+                    //         onPress={() => {
+                    //             // this._chooseImages();
+                    //         }}>
+                    //         <Body color="white">Done</Body>
+                    //     </Pressable>
+                    // }
                 />
                 {this.state.hasPermission ? (
-                    <View>
+                    <View style={{ flex: 1 }}>
                         <AlbumList />
                     </View>
                 ) : (

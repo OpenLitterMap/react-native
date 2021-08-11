@@ -8,14 +8,16 @@ import {
     PHOTOS_FROM_GALLERY,
     REMOVE_TAG_FROM_GALLERY_PHOTO,
     TOGGLE_IMAGE_BROWSER,
-    TOGGLE_SELECTED_GALLERY
+    TOGGLE_SELECTED_GALLERY,
+    ADD_GEOTAGGED_IMAGES
 } from '../actions/types';
 
 const INITIAL_STATE = {
     gallery: [], // array of selected images
     imageBrowserOpen: false,
     imagesLoading: true, // inside the photo gallery, turn on to show spinner
-    galleryUploadProgress: 0
+    galleryUploadProgress: 0,
+    geotaggedImages: [] // array of geotagged images
 };
 
 export default function(state = INITIAL_STATE, action) {
@@ -188,6 +190,17 @@ export default function(state = INITIAL_STATE, action) {
             return {
                 ...state,
                 gallery
+            };
+        /**
+         * add array of geotagged images to state
+         */
+        case ADD_GEOTAGGED_IMAGES:
+            let geotaggedImages = [...action.payload, ...state.geotaggedImages];
+            console.log(geotaggedImages);
+
+            return {
+                ...state,
+                geotaggedImages
             };
 
         default:

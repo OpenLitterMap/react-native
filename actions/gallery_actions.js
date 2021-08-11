@@ -9,7 +9,8 @@ import {
     PHOTOS_FROM_GALLERY,
     REMOVE_TAG_FROM_GALLERY_PHOTO,
     TOGGLE_IMAGE_BROWSER,
-    TOGGLE_SELECTED_GALLERY
+    TOGGLE_SELECTED_GALLERY,
+    ADD_GEOTAGGED_IMAGES
 } from './types';
 
 /**
@@ -97,5 +98,12 @@ export const toggleSelectedGallery = index => {
     return {
         type: TOGGLE_SELECTED_GALLERY,
         payload: index
+    };
+};
+
+export const addGeotaggedImages = data => {
+    return {
+        type: ADD_GEOTAGGED_IMAGES,
+        payload: data
     };
 };
