@@ -5,13 +5,14 @@ import { Colors } from '../../components';
 export default class AlbumCard extends Component {
     constructor(props) {
         super(props);
-        this.state = {};
     }
     render() {
-        let { albumName, thumbnail, counter } = this.props;
-
+        let { albumName, thumbnail, counter, navigation } = this.props;
+        // console.log(navigation);
         return (
-            <Pressable style={[styles.base]}>
+            <Pressable
+                style={[styles.base]}
+                onPress={() => navigation.navigate('GALLERY')}>
                 <Image source={{ uri: thumbnail }} style={styles.thumb} />
                 <View style={styles.textWrapper}>
                     <Text style={styles.name}>{albumName}</Text>

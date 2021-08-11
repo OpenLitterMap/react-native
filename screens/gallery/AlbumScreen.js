@@ -93,7 +93,7 @@ class AlbumScreen extends Component {
                 />
                 {this.state.hasPermission ? (
                     <View style={{ flex: 1 }}>
-                        <AlbumList />
+                        <AlbumList navigation={this.props.navigation} />
                     </View>
                 ) : (
                     <View>

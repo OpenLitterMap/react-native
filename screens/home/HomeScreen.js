@@ -251,7 +251,7 @@ class HomeScreen extends PureComponent {
      */
     loadGallery = async () => {
         // this.props.setImagesLoading(true);
-        this.props.navigation.navigate('GALLERY');
+        this.props.navigation.navigate('ALBUM');
 
         let p =
             Platform.OS === 'android' ? PERMISSIONS.ANDROID : PERMISSIONS.IOS;

@@ -11,6 +11,7 @@ import {
     TOGGLE_SELECTED_GALLERY,
     ADD_GEOTAGGED_IMAGES
 } from '../actions/types';
+import Lodash from 'lodash';
 
 const INITIAL_STATE = {
     gallery: [], // array of selected images
@@ -195,13 +196,19 @@ export default function(state = INITIAL_STATE, action) {
          * add array of geotagged images to state
          */
         case ADD_GEOTAGGED_IMAGES:
-            let geotaggedImages = [...action.payload, ...state.geotaggedImages];
-            console.log(geotaggedImages);
-
-            return {
-                ...state,
-                geotaggedImages
-            };
+            if (!Lodash.isEqual(state.geotaggedImages, action.payload)) {
+                // let geotaggedImages = [
+                //     ...action.payload,
+                //     ...state.geotaggedImages
+                // ];
+                let geotaggedImages = [...action.payload];
+                return {
+                    ...state,
+                    geotaggedImages
+                };
+            } else {
+                return state;
+            }
 
         default:
             return state;

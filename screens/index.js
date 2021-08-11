@@ -5,3 +5,4 @@ export { default as RankingScreen } from './ranking/RankingScreen';
 export { default as SettingScreen } from './SettingsScreen';
 export { default as HomeScreen } from './home/HomeScreen';
 export { default as CameraScreen } from './camera/CameraScreen';
+export { default as GalleryScreen } from './gallery/GalleryScreen';

@@ -99,6 +99,7 @@ class AlbumList extends Component {
                     albumName="Geotagged"
                     thumbnail={this.props.geotaggedImages[0]?.uri}
                     counter={this.props.geotaggedImages.length}
+                    navigation={this.props.navigation}
                 />
             );
         } else {
