@@ -9,6 +9,7 @@ import {
     Image
 } from 'react-native';
 import { connect } from 'react-redux';
+import AsyncStorage from '@react-native-community/async-storage';
 import Icon from 'react-native-vector-icons/Ionicons';
 import * as actions from '../../actions';
 import { Header, SubTitle, Body } from '../components';
@@ -17,25 +18,77 @@ const { width } = Dimensions.get('window');
 class GalleryScreen extends Component {
     constructor(props) {
         super(props);
+        this.state = {
+            selected: []
+        };
+    }
+
+    handleDoneClick() {
+        this.props.photosFromGallery(this.state.selected);
+
+        AsyncStorage.setItem(
+            'openlittermap-gallery',
+            JSON.stringify(this.state.selected)
+        ).then(_ => {
+            return true;
+        });
+    }
+
+    selectImage(item) {
+        const selectedArray = this.state.selected;
+        const index = selectedArray.indexOf(item);
+        if (index !== -1) {
+            this.setState({
+                selected: this.state.selected.filter((_, i) => i !== index)
+            });
+        }
+
+        if (index === -1) {
+            this.setState(prevState => {
+                return { selected: [...prevState.selected, item] };
+            });
+        }
     }
 
     renderImage({ item, index }) {
         // console.log(JSON.stringify(item.item, null, 2));
+        const selected = this.state.selected.includes(item);
         return (
-            <Image
-                key={item.uri}
-                source={{ uri: item.uri }}
-                style={{
-                    width: width / 3 - 2,
-                    height: width / 3 - 2,
-                    margin: 1
-                }}
-            />
+            <Pressable onPress={() => this.selectImage(item)}>
+                <Image
+                    key={item.uri}
+                    source={{ uri: item.uri }}
+                    style={{
+                        width: width / 3 - 2,
+                        height: width / 3 - 2,
+                        margin: 1
+                    }}
+                />
+                {selected && (
+                    <View
+                        style={{
+                            position: 'absolute',
+                            width: 30,
+                            height: 30,
+                            backgroundColor: '#0984e3',
+                            right: 10,
+                            bottom: 10,
+                            borderRadius: 100,
+                            justifyContent: 'center',
+                            alignItems: 'center'
+                        }}>
+                        <Icon
+                            name="ios-checkmark-outline"
+                            size={24}
+                            color="white"
+                        />
+                    </View>
+                )}
+            </Pressable>
         );
     }
     render() {
         const { geotaggedImages } = this.props;
-        console.log(JSON.stringify(geotaggedImages, null, 2));
         return (
             <>
                 <Header
@@ -46,18 +99,14 @@ class GalleryScreen extends Component {
                                 // this.props.setImageLoading;
                             }}>
                             <Body color="white">Cancel</Body>
-                            {/* <Icon
-                                name="ios-chevron-back-outline"
-                                size={24}
-                                color="white"
-                            /> */}
                         </Pressable>
                     }
                     centerContent={<SubTitle color="white">Geotagged</SubTitle>}
                     rightContent={
                         <Pressable
-                            onPress={() => {
-                                // this._chooseImages();
+                            onPress={async () => {
+                                await this.handleDoneClick();
+                                this.props.navigation.navigate('HOME');
                             }}>
                             <Body color="white">Done</Body>
                         </Pressable>
@@ -71,6 +120,7 @@ class GalleryScreen extends Component {
                         renderItem={(item, index) =>
                             this.renderImage(item, index)
                         }
+                        extraData={this.state.selected}
                     />
                 </View>
             </>
