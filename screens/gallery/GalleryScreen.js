@@ -23,8 +23,11 @@ class GalleryScreen extends Component {
         };
     }
 
-    handleDoneClick() {
-        this.props.photosFromGallery(this.state.selected);
+    async handleDoneClick() {
+        const sortedArray = await this.state.selected.sort(
+            (a, b) => a.id - b.id
+        );
+        this.props.photosFromGallery(sortedArray);
 
         AsyncStorage.setItem(
             'openlittermap-gallery',

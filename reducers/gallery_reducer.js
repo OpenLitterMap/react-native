@@ -1,3 +1,4 @@
+import CameraRoll from '@react-native-community/cameraroll';
 import {
     ADD_TAGS_TO_GALLERY_IMAGE,
     CHANGE_UPLOAD_PROGRESS,
@@ -196,6 +197,7 @@ export default function(state = INITIAL_STATE, action) {
          * add array of geotagged images to state
          */
         case ADD_GEOTAGGED_IMAGES:
+            console.log('herreee');
             if (!Lodash.isEqual(state.geotaggedImages, action.payload)) {
                 // let geotaggedImages = [
                 //     ...action.payload,
@@ -204,10 +206,11 @@ export default function(state = INITIAL_STATE, action) {
                 let geotaggedImages = [...action.payload];
                 return {
                     ...state,
-                    geotaggedImages
+                    geotaggedImages,
+                    imagesLoading: false
                 };
             } else {
-                return state;
+                return { state, imagesLoading: false };
             }
 
         default:

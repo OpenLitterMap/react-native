@@ -1,4 +1,5 @@
 import React from 'react';
+import CameraRoll from '@react-native-community/cameraroll';
 
 import {
     ADD_TAGS_TO_GALLERY_IMAGE,
@@ -63,7 +64,58 @@ export const setImagesLoading = bool => {
 };
 
 /**
- * Add photos from gallery to redux
+ * get photos from camera roll
+ */
+
+export const getPhotosFromCameraroll = id => async dispatch => {
+    const params = {
+        // initially get first 100 images
+        first: 100
+        // toTime: 1627819113000,
+        // fromTime: 1626782313000
+        // groupTypes: 'SavedPhotos',
+        // assetType: 'Photos',
+        // include: ['location']
+    };
+
+    const camerarollData = await CameraRoll.getPhotos(params);
+    const imagesArray = camerarollData.edges;
+    let geotagged = [];
+
+    imagesArray.map(item => {
+        id++;
+        if (
+            item.node?.location !== undefined &&
+            item.node?.location?.longitude !== undefined &&
+            item.node?.location?.latitude !== undefined
+        ) {
+            geotagged.push({
+                id,
+                filename: item.node.image.filename, // this will get hashed on the backend
+                uri: item.node.image.uri,
+                size: item.node.image.fileSize,
+                height: item.node.image.height,
+                width: item.node.image.width,
+                lat: item.node.location.latitude,
+                lon: item.node.location.longitude,
+                timestamp: item.node.timestamp,
+                selected: false,
+                picked_up: false,
+                tags: {},
+                type: 'gallery'
+            });
+        }
+    });
+
+    console.log(`geotagged length ${geotagged.length}`);
+    geotagged.length > 0 &&
+        dispatch({
+            type: 'ADD_GEOTAGGED_IMAGES',
+            payload: geotagged
+        });
+};
+/**
+ * Add selected photos from gallery to redux
  */
 export const photosFromGallery = photos => {
     return {
