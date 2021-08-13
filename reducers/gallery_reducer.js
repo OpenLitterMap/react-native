@@ -197,7 +197,6 @@ export default function(state = INITIAL_STATE, action) {
          * add array of geotagged images to state
          */
         case ADD_GEOTAGGED_IMAGES:
-            console.log('herreee');
             if (!Lodash.isEqual(state.geotaggedImages, action.payload)) {
                 // let geotaggedImages = [
                 //     ...action.payload,
@@ -206,11 +205,10 @@ export default function(state = INITIAL_STATE, action) {
                 let geotaggedImages = [...action.payload];
                 return {
                     ...state,
-                    geotaggedImages,
-                    imagesLoading: false
+                    geotaggedImages
                 };
             } else {
-                return { state, imagesLoading: false };
+                return state;
             }
 
         default:

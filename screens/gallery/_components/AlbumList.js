@@ -17,18 +17,20 @@ class AlbumList extends Component {
         this.getImagesFormCameraroll();
     }
 
-    getImagesFormCameraroll() {
+    async getImagesFormCameraroll() {
         const galleryLength = this.props.gallery.length;
         let id =
             galleryLength === 0
                 ? 0
                 : this.props.gallery[galleryLength - 1].id + 1;
 
-        this.props.getPhotosFromCameraroll(id);
+        await this.props.getPhotosFromCameraroll(id);
+        console.log('render');
+        this.setState({ isLoading: false });
     }
 
     render() {
-        if (this.props.imagesLoading) {
+        if (this.state.isLoading) {
             return (
                 <View style={styles.container}>
                     <ActivityIndicator color={Colors.accent} />
@@ -36,10 +38,7 @@ class AlbumList extends Component {
             );
         }
 
-        if (
-            this.props.geotaggedImages.length > 0 &&
-            !this.state.imagesLoading
-        ) {
+        if (this.props.geotaggedImages?.length > 0 && !this.state.isLoading) {
             return (
                 <AlbumCard
                     albumName="Geotagged"

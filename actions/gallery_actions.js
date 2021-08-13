@@ -70,7 +70,7 @@ export const setImagesLoading = bool => {
 export const getPhotosFromCameraroll = id => async dispatch => {
     const params = {
         // initially get first 100 images
-        first: 100
+        first: 1000
         // toTime: 1627819113000,
         // fromTime: 1626782313000
         // groupTypes: 'SavedPhotos',
@@ -108,11 +108,11 @@ export const getPhotosFromCameraroll = id => async dispatch => {
     });
 
     console.log(`geotagged length ${geotagged.length}`);
-    geotagged.length > 0 &&
-        dispatch({
-            type: 'ADD_GEOTAGGED_IMAGES',
-            payload: geotagged
-        });
+
+    dispatch({
+        type: 'ADD_GEOTAGGED_IMAGES',
+        payload: geotagged
+    });
 };
 /**
  * Add selected photos from gallery to redux
