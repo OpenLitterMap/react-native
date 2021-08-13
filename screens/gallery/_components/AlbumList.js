@@ -30,15 +30,7 @@ class AlbumList extends Component {
     }
 
     render() {
-        if (this.state.isLoading) {
-            return (
-                <View style={styles.container}>
-                    <ActivityIndicator color={Colors.accent} />
-                </View>
-            );
-        }
-
-        if (this.props.geotaggedImages?.length > 0 && !this.state.isLoading) {
+        if (this.props.geotaggedImages?.length > 0) {
             return (
                 <AlbumCard
                     albumName="Geotagged"
@@ -47,7 +39,14 @@ class AlbumList extends Component {
                     navigation={this.props.navigation}
                 />
             );
-        } else {
+        }
+        if (this.state.isLoading) {
+            return (
+                <View style={styles.container}>
+                    <ActivityIndicator color={Colors.accent} />
+                </View>
+            );
+        } else if (this.props.geotaggedImages?.length === 0) {
             return (
                 <View style={styles.container}>
                     <Body>No geotagged photos found</Body>
