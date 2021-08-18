@@ -6,9 +6,9 @@ import AsyncStorage from '@react-native-community/async-storage';
 import * as actions from '../actions';
 import AuthStack from './authRoutes';
 import TabRoutes from './tabRoutes';
-import { SettingScreen, GalleryScreen } from '../screens';
+import { SettingScreen } from '../screens';
 // import AlbumList from '../screens/pages/library/AlbumList';
-import AlbumList from '../screens/gallery/AlbumScreen';
+import GalleryStack from './galleryRoutes';
 
 const Stack = createStackNavigator();
 
@@ -80,15 +80,13 @@ class MainRoutes extends Component {
                     ) : (
                         <>
                             <Stack.Screen name="APP" component={TabRoutes} />
-
+                            <Stack.Screen
+                                name="ALBUM"
+                                component={GalleryStack}
+                            />
                             <Stack.Screen
                                 name="SETTING"
                                 component={SettingScreen}
-                            />
-                            <Stack.Screen name="ALBUM" component={AlbumList} />
-                            <Stack.Screen
-                                name="GALLERY"
-                                component={GalleryScreen}
                             />
                         </>
                     )}

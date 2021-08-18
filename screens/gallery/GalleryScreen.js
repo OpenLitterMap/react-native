@@ -49,7 +49,7 @@ class GalleryScreen extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            selected: [],
+            selectedImages: [],
             sortedData: []
         };
     }
@@ -57,6 +57,7 @@ class GalleryScreen extends Component {
     componentDidMount() {
         this.splitIntoRows(this.props.geotaggedImages);
     }
+
     async splitIntoRows(images) {
         let temp = {};
         images.map(image => {
@@ -96,51 +97,65 @@ class GalleryScreen extends Component {
                 final.push(newObj);
             }
         }
-        // console.log(final);
-        /**
-         * =======
-         */
-        // for (let prop in temp) {
-        //     // console.log('====>');
-        //     // console.log(prop);
-        //     let newObj = { title: prop, data: temp[prop] };
-        //     finalData.push(newObj);
-        // }
-        // console.log(finalData);
+        console.log(JSON.stringify(final, null, 2));
         this.setState({ sortedData: final });
     }
 
+    /**
+     * fn that is called when "done" is pressed
+     * sorts the array based on id
+     * call action photosFromGallery to save selected images to state
+     *
+     * saves the selected array of images to Async store
+     */
     async handleDoneClick() {
-        const sortedArray = await this.state.selected.sort(
+        const sortedArray = await this.state.selectedImages.sort(
             (a, b) => a.id - b.id
         );
+
+        console.log(JSON.stringify(sortedArray, null, 2));
         this.props.photosFromGallery(sortedArray);
 
         AsyncStorage.setItem(
             'openlittermap-gallery',
-            JSON.stringify(this.state.selected)
+            JSON.stringify(this.state.selectedImages)
         ).then(_ => {
             return true;
         });
     }
 
+    /**
+     * fn to select and deselect image on tap
+     *
+     * @param  item - The image object
+     */
+
     selectImage(item) {
-        const selectedArray = this.state.selected;
+        console.log(item);
+        const selectedArray = this.state.selectedImages;
+        // check if item /image is already selected
         const index = selectedArray.indexOf(item);
         if (index !== -1) {
             this.setState({
-                selected: this.state.selected.filter((_, i) => i !== index)
+                selectedImages: this.state.selectedImages.filter(
+                    (_, i) => i !== index
+                )
             });
         }
 
         if (index === -1) {
             this.setState(prevState => {
-                return { selected: [...prevState.selected, item] };
+                return { selectedImages: [...prevState.selectedImages, item] };
             });
         }
     }
 
-    renderImage({ item, index }) {
+    /**
+     * fn that returns the sections for flatlist to display
+     *
+     */
+
+    renderSection({ item, index }) {
         let headerTitle = item?.title;
         if (Number.isInteger(headerTitle) && headerTitle < 12) {
             headerTitle = moment(headerTitle).format('MMMM');
@@ -157,20 +172,12 @@ class GalleryScreen extends Component {
         if (headerTitle === 'month') {
             headerTitle = 'This Month';
         }
-        // if (parseInt(headerTitle) < 12) {
-        //     headerTitle = moment(parseInt(headerTitle)).format('MMMM');
-        // }
+
         return (
             <View>
-                <View
-                    style={{
-                        marginTop: 10,
-                        paddingLeft: 5
-                    }}>
+                <View style={styles.headerStyle}>
                     <Body
                         style={{
-                            // textAlign: 'center',
-                            marginVertical: 7,
                             color: '#aaaaaa'
                         }}>
                         {headerTitle}
@@ -178,7 +185,9 @@ class GalleryScreen extends Component {
                 </View>
                 <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
                     {item.data.map(image => {
-                        const selected = this.state.selected.includes(image);
+                        const selected = this.state.selectedImages.includes(
+                            image
+                        );
                         return (
                             <Pressable
                                 key={image.uri}
@@ -218,8 +227,8 @@ class GalleryScreen extends Component {
             </View>
         );
     }
+
     render() {
-        const { geotaggedImages } = this.props;
         return (
             <>
                 <Header
@@ -255,32 +264,11 @@ class GalleryScreen extends Component {
                         // numColumns={3}
                         data={this.state.sortedData}
                         renderItem={(item, index) =>
-                            this.renderImage(item, index)
+                            this.renderSection(item, index)
                         }
-                        extraData={this.state.selected}
+                        extraData={this.state.selectedImages}
                         keyExtractor={item => `${item.title}`}
                     />
-                    {/* <SectionList
-                        style={{ flexDirection: 'column' }}
-                        alwaysBounceVertical={false}
-                        // numColumns={3}
-                        sections={this.state.sortedData}
-                        renderItem={(item, index) => {
-                            console.log('===========>');
-                            console.log(item);
-                            return (
-                                <View style={{ flexDirection: 'row' }}>
-                                    {this.renderImage(item, index)}
-                                </View>
-                            );
-                        }}
-                        extraData={this.state.selected}
-                        renderSectionHeader={({ section: { title } }) => (
-                            <Text style={{ backgroundColor: 'tomato' }}>
-                                {title}
-                            </Text>
-                        )}
-                    /> */}
                 </SafeAreaView>
             </>
         );
@@ -298,4 +286,10 @@ export default connect(
     actions
 )(GalleryScreen);
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+    headerStyle: {
+        marginTop: 16,
+        marginBottom: 5,
+        paddingLeft: 5
+    }
+});

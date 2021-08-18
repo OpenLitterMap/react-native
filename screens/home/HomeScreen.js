@@ -83,12 +83,6 @@ class HomeScreen extends PureComponent {
     }
 
     getImagesFormCameraroll() {
-        // const galleryLength = this.props.gallery.length;
-        // let id =
-        //     galleryLength === 0
-        //         ? 0
-        //         : this.props.gallery[galleryLength - 1].id + 1;
-
         this.props.getPhotosFromCameraroll();
     }
 
@@ -203,7 +197,7 @@ class HomeScreen extends PureComponent {
                             </View>
                         )}
                     </Modal>
-
+                    {/* <Body>{JSON.stringify(this.props.gallery, null, 2)}</Body> */}
                     <UploadImagesGrid
                         gallery={this.props.gallery}
                         photos={this.props.photos}
