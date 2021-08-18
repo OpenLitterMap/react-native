@@ -70,10 +70,10 @@ export const setImagesLoading = bool => {
 /**
  * initial load -- Home Page -- fetch 1000
  *      sets state -- array of geotaggged
- *                 -- galleryImageFetched - true
+ *                 -- camerarollImageFetched - true
  *                 -- lastFetchTime
  *
- * Album page -- array of geotagged.length === 0 && galleryImageFetched == false
+ * Album page -- array of geotagged.length === 0 && camerarollImageFetched == false
  *          fetch first 1000
  * else
  *          dont fetch -- button for try again "refetch"
@@ -82,20 +82,25 @@ export const setImagesLoading = bool => {
  * on scroll end fetch next 1000 and so on till next_page is false
  */
 
-export const getPhotosFromCameraroll = (
-    id,
-    geotaggedImages
-) => async dispatch => {
-    let camerarollData;
-    // const timeParams = {
-    //     first: 1000,
-    //     toTime: Math.floor(new Date().getTime()),
-    //     // toTime: 1627819113000,
-    //     fromTime: geotaggedImages[0].timestamp
-    //     // fromTime: 1626782313000
-    // };
+export const getPhotosFromCameraroll = () => async (dispatch, getState) => {
+    const {
+        gallery,
+        geotaggedImages,
+        camerarollImageFetched,
+        lastFetchTime
+    } = getState().gallery;
+    let id = gallery?.length === 0 ? 0 : gallery[gallery?.length - 1].id + 1;
 
-    const params = {
+    let camerarollData;
+    let fetchType = 'INITIAL';
+    const timeParams = {
+        first: 1000,
+        toTime: Math.floor(new Date().getTime()),
+        // toTime: 1627819113000,
+        fromTime: lastFetchTime
+        // fromTime: 1626782313000
+    };
+    const initialParams = {
         // initially get first 100 images
         first: 1000
         // toTime: 1627819113000,
@@ -104,43 +109,59 @@ export const getPhotosFromCameraroll = (
         // assetType: 'Photos',
         // include: ['location']
     };
-    camerarollData = await CameraRoll.getPhotos(params);
+    if (
+        geotaggedImages?.length === 0 &&
+        camerarollImageFetched === false &&
+        lastFetchTime === null
+    ) {
+        console.log('INITIAL');
+        camerarollData = await CameraRoll.getPhotos(initialParams);
+        fetchType = 'INITIAL';
+    }
+    if (lastFetchTime !== null) {
+        console.log('TIME');
+        camerarollData = await CameraRoll.getPhotos(timeParams);
+        fetchType = 'TIME';
+    }
 
     // const camerarollData = await CameraRoll.getPhotos(params);
-    const imagesArray = camerarollData.edges;
-    let geotagged = [];
 
-    imagesArray.map(item => {
-        id++;
-        if (
-            item.node?.location !== undefined &&
-            item.node?.location?.longitude !== undefined &&
-            item.node?.location?.latitude !== undefined
-        ) {
-            geotagged.push({
-                id,
-                filename: item.node.image.filename, // this will get hashed on the backend
-                uri: item.node.image.uri,
-                size: item.node.image.fileSize,
-                height: item.node.image.height,
-                width: item.node.image.width,
-                lat: item.node.location.latitude,
-                lon: item.node.location.longitude,
-                timestamp: item.node.timestamp,
-                selected: false,
-                picked_up: false,
-                tags: {},
-                type: 'gallery'
-            });
-        }
-    });
+    if (camerarollData) {
+        const imagesArray = camerarollData.edges;
+        let geotagged = [];
 
-    console.log(`geotagged length ${geotagged.length}`);
+        imagesArray.map(item => {
+            id++;
+            if (
+                item.node?.location !== undefined &&
+                item.node?.location?.longitude !== undefined &&
+                item.node?.location?.latitude !== undefined
+            ) {
+                geotagged.push({
+                    id,
+                    filename: item.node.image.filename, // this will get hashed on the backend
+                    uri: item.node.image.uri,
+                    size: item.node.image.fileSize,
+                    height: item.node.image.height,
+                    width: item.node.image.width,
+                    lat: item.node.location.latitude,
+                    lon: item.node.location.longitude,
+                    timestamp: item.node.timestamp,
+                    selected: false,
+                    picked_up: false,
+                    tags: {},
+                    type: 'gallery'
+                });
+            }
+        });
 
-    dispatch({
-        type: 'ADD_GEOTAGGED_IMAGES',
-        payload: geotagged
-    });
+        console.log(`geotagged length ${geotagged?.length}`);
+
+        dispatch({
+            type: 'ADD_GEOTAGGED_IMAGES',
+            payload: { geotagged, fetchType }
+        });
+    }
 };
 /**
  * Add selected photos from gallery to redux

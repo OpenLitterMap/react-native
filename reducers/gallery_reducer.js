@@ -19,7 +19,9 @@ const INITIAL_STATE = {
     imageBrowserOpen: false,
     imagesLoading: true, // inside the photo gallery, turn on to show spinner
     galleryUploadProgress: 0,
-    geotaggedImages: [] // array of geotagged images
+    geotaggedImages: [], // array of geotagged images
+    camerarollImageFetched: false,
+    lastFetchTime: null
 };
 
 export default function(state = INITIAL_STATE, action) {
@@ -197,19 +199,37 @@ export default function(state = INITIAL_STATE, action) {
          * add array of geotagged images to state
          */
         case ADD_GEOTAGGED_IMAGES:
-            if (!Lodash.isEqual(state.geotaggedImages, action.payload)) {
-                // let geotaggedImages = [
-                //     ...action.payload,
-                //     ...state.geotaggedImages
-                // ];
-                let geotaggedImages = [...action.payload];
-                return {
-                    ...state,
-                    geotaggedImages
-                };
-            } else {
-                return state;
-            }
+            let geotaggedImages = [
+                ...action.payload.geotagged,
+                ...state.geotaggedImages
+            ];
+            return {
+                ...state,
+                geotaggedImages,
+                camerarollImageFetched: true,
+                lastFetchTime: Math.floor(new Date().getTime())
+            };
+        // if (
+        //     !Lodash.isEqual(state.geotaggedImages, action.payload.geotagged)
+        // ) {
+        //     // let geotaggedImages = [
+        //     //     ...action.payload,
+        //     //     ...state.geotaggedImages
+        //     // ];
+        //     let geotaggedImages = [...action.payload.geotagged];
+        //     return {
+        //         ...state,
+        //         geotaggedImages,
+        //         camerarollImageFetched: true,
+        //         lastFetchTime: Math.floor(new Date().getTime())
+        //     };
+        // } else {
+        //     return {
+        //         ...state,
+        //         camerarollImageFetched: true,
+        //         lastFetchTime: Math.floor(new Date().getTime())
+        //     };
+        // }
 
         default:
             return state;

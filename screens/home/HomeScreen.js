@@ -83,13 +83,13 @@ class HomeScreen extends PureComponent {
     }
 
     getImagesFormCameraroll() {
-        const galleryLength = this.props.gallery.length;
-        let id =
-            galleryLength === 0
-                ? 0
-                : this.props.gallery[galleryLength - 1].id + 1;
+        // const galleryLength = this.props.gallery.length;
+        // let id =
+        //     galleryLength === 0
+        //         ? 0
+        //         : this.props.gallery[galleryLength - 1].id + 1;
 
-        this.props.getPhotosFromCameraroll(id, this.props.geotaggedImages);
+        this.props.getPhotosFromCameraroll();
     }
 
     /**

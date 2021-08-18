@@ -19,15 +19,12 @@ class AlbumList extends Component {
 
     async getImagesFormCameraroll() {
         const galleryLength = this.props.gallery.length;
-        let id =
-            galleryLength === 0
-                ? 0
-                : this.props.gallery[galleryLength - 1].id + 1;
+        // let id =
+        //     galleryLength === 0
+        //         ? 0
+        //         : this.props.gallery[galleryLength - 1].id + 1;
 
-        await this.props.getPhotosFromCameraroll(
-            id,
-            this.props.geotaggedImages
-        );
+        await this.props.getPhotosFromCameraroll();
         console.log('render');
         this.setState({ isLoading: false });
     }
