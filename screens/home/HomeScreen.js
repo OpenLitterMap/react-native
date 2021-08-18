@@ -266,6 +266,7 @@ class HomeScreen extends PureComponent {
      */
     loadGallery = async () => {
         // this.props.setImagesLoading(true);
+        // FIXME: change GALLERY to ALBUM
         this.props.navigation.navigate('ALBUM');
 
         let p =
