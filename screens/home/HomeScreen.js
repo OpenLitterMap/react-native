@@ -265,16 +265,13 @@ class HomeScreen extends PureComponent {
      * @props gallery_actions, gallery_reducer
      */
     loadGallery = async () => {
-        // this.props.setImagesLoading(true);
-        // FIXME: change GALLERY to ALBUM
-        this.props.navigation.navigate('ALBUM');
-
         let p =
             Platform.OS === 'android' ? PERMISSIONS.ANDROID : PERMISSIONS.IOS;
 
         request(p.CAMERA).then(result => {
             if (result === 'granted') {
-                this.props.toggleImageBrowser(true);
+                this.props.navigation.navigate('ALBUM');
+                // this.props.toggleImageBrowser(true);
             }
         });
     };

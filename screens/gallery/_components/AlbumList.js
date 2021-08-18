@@ -8,25 +8,13 @@ import AlbumCard from './AlbumCard';
 class AlbumList extends Component {
     constructor(props) {
         super(props);
-
-        this.state = {
-            isLoading: true
-        };
     }
     componentDidMount() {
         this.getImagesFormCameraroll();
     }
 
-    async getImagesFormCameraroll() {
-        const galleryLength = this.props.gallery.length;
-        // let id =
-        //     galleryLength === 0
-        //         ? 0
-        //         : this.props.gallery[galleryLength - 1].id + 1;
-
-        await this.props.getPhotosFromCameraroll();
-        console.log('render');
-        this.setState({ isLoading: false });
+    getImagesFormCameraroll() {
+        this.props.getPhotosFromCameraroll();
     }
 
     render() {
@@ -40,7 +28,7 @@ class AlbumList extends Component {
                 />
             );
         }
-        if (this.state.isLoading) {
+        if (this.props.imagesLoading) {
             return (
                 <View style={styles.container}>
                     <ActivityIndicator color={Colors.accent} />

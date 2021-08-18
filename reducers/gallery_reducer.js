@@ -17,7 +17,8 @@ import Lodash from 'lodash';
 const INITIAL_STATE = {
     gallery: [], // array of selected images
     imageBrowserOpen: false,
-    imagesLoading: true, // inside the photo gallery, turn on to show spinner
+    // imagesLoading: true, // inside the photo gallery, turn on to show spinner
+    imagesLoading: false,
     galleryUploadProgress: 0,
     geotaggedImages: [], // array of geotagged images
     camerarollImageFetched: false,
@@ -207,29 +208,9 @@ export default function(state = INITIAL_STATE, action) {
                 ...state,
                 geotaggedImages,
                 camerarollImageFetched: true,
-                lastFetchTime: Math.floor(new Date().getTime())
+                lastFetchTime: Math.floor(new Date().getTime()),
+                imagesLoading: false
             };
-        // if (
-        //     !Lodash.isEqual(state.geotaggedImages, action.payload.geotagged)
-        // ) {
-        //     // let geotaggedImages = [
-        //     //     ...action.payload,
-        //     //     ...state.geotaggedImages
-        //     // ];
-        //     let geotaggedImages = [...action.payload.geotagged];
-        //     return {
-        //         ...state,
-        //         geotaggedImages,
-        //         camerarollImageFetched: true,
-        //         lastFetchTime: Math.floor(new Date().getTime())
-        //     };
-        // } else {
-        //     return {
-        //         ...state,
-        //         camerarollImageFetched: true,
-        //         lastFetchTime: Math.floor(new Date().getTime())
-        //     };
-        // }
 
         default:
             return state;

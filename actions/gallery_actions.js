@@ -87,12 +87,21 @@ export const getPhotosFromCameraroll = () => async (dispatch, getState) => {
         gallery,
         geotaggedImages,
         camerarollImageFetched,
-        lastFetchTime
+        lastFetchTime,
+        imagesLoading
     } = getState().gallery;
     let id = gallery?.length === 0 ? 0 : gallery[gallery?.length - 1].id + 1;
 
     let camerarollData;
     let fetchType = 'INITIAL';
+
+    if (imagesLoading) {
+        return;
+    }
+    dispatch({
+        type: TOGGLE_IMAGES_LOADING,
+        payload: true
+    });
     const timeParams = {
         first: 1000,
         toTime: Math.floor(new Date().getTime()),
