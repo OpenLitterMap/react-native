@@ -56,6 +56,7 @@ class GalleryScreen extends Component {
     renderImage({ item, index }) {
         // console.log(JSON.stringify(item.item, null, 2));
         const selected = this.state.selected.includes(item);
+
         return (
             <Pressable onPress={() => this.selectImage(item)}>
                 <Image

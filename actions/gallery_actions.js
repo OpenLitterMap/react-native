@@ -67,7 +67,34 @@ export const setImagesLoading = bool => {
  * get photos from camera roll
  */
 
-export const getPhotosFromCameraroll = id => async dispatch => {
+/**
+ * initial load -- Home Page -- fetch 1000
+ *      sets state -- array of geotaggged
+ *                 -- galleryImageFetched - true
+ *                 -- lastFetchTime
+ *
+ * Album page -- array of geotagged.length === 0 && galleryImageFetched == false
+ *          fetch first 1000
+ * else
+ *          dont fetch -- button for try again "refetch"
+ *
+ * gallery page - fetch between date.now and lastFetchTime
+ * on scroll end fetch next 1000 and so on till next_page is false
+ */
+
+export const getPhotosFromCameraroll = (
+    id,
+    geotaggedImages
+) => async dispatch => {
+    let camerarollData;
+    // const timeParams = {
+    //     first: 1000,
+    //     toTime: Math.floor(new Date().getTime()),
+    //     // toTime: 1627819113000,
+    //     fromTime: geotaggedImages[0].timestamp
+    //     // fromTime: 1626782313000
+    // };
+
     const params = {
         // initially get first 100 images
         first: 1000
@@ -77,8 +104,9 @@ export const getPhotosFromCameraroll = id => async dispatch => {
         // assetType: 'Photos',
         // include: ['location']
     };
+    camerarollData = await CameraRoll.getPhotos(params);
 
-    const camerarollData = await CameraRoll.getPhotos(params);
+    // const camerarollData = await CameraRoll.getPhotos(params);
     const imagesArray = camerarollData.edges;
     let geotagged = [];
 

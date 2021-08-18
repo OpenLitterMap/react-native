@@ -75,6 +75,21 @@ class HomeScreen extends PureComponent {
     async componentDidMount() {
         // web_actions, web_reducer
         await this.props.checkForImagesOnWeb(this.props.token);
+
+        // TODO: ask for gallery permission here
+        // load cameraroll geotagged images
+
+        this.getImagesFormCameraroll();
+    }
+
+    getImagesFormCameraroll() {
+        const galleryLength = this.props.gallery.length;
+        let id =
+            galleryLength === 0
+                ? 0
+                : this.props.gallery[galleryLength - 1].id + 1;
+
+        this.props.getPhotosFromCameraroll(id, this.props.geotaggedImages);
     }
 
     /**

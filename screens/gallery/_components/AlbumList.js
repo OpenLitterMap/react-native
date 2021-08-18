@@ -24,7 +24,10 @@ class AlbumList extends Component {
                 ? 0
                 : this.props.gallery[galleryLength - 1].id + 1;
 
-        await this.props.getPhotosFromCameraroll(id);
+        await this.props.getPhotosFromCameraroll(
+            id,
+            this.props.geotaggedImages
+        );
         console.log('render');
         this.setState({ isLoading: false });
     }
