@@ -1,11 +1,9 @@
 import React, { Component } from 'react';
 import {
-    Text,
     StyleSheet,
     View,
     Pressable,
     FlatList,
-    SectionList,
     Dimensions,
     Image,
     SafeAreaView

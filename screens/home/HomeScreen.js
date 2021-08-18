@@ -4,7 +4,6 @@ import {
     Dimensions,
     Modal,
     Text,
-    TouchableOpacity,
     TouchableWithoutFeedback,
     View
 } from 'react-native';
@@ -77,11 +76,45 @@ class HomeScreen extends PureComponent {
         await this.props.checkForImagesOnWeb(this.props.token);
 
         // TODO: ask for gallery permission here
-        // load cameraroll geotagged images
 
-        this.getImagesFormCameraroll();
+        // fn to request permission to view cameraroll
+        this.requestCameraRollPermission();
     }
 
+    /**
+     * fn to request permission to view cameraroll
+     * if granted fetch images from camera roll
+     */
+    async requestCameraRollPermission() {
+        if (Platform.OS === 'ios') {
+            request(PERMISSIONS.IOS.PHOTO_LIBRARY).then(result => {
+                if (result === 'granted') {
+                    this.getImagesFormCameraroll();
+                }
+            });
+        }
+
+        if (Platform.OS === 'android') {
+            let hasPermission = false;
+
+            request(PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE).then(result => {
+                if (result === 'granted') {
+                    hasPermission = true;
+                }
+
+                PermissionsAndroid.request(
+                    'android.permission.ACCESS_MEDIA_LOCATION'
+                ).then(result => {
+                    if (result === PermissionsAndroid.RESULTS.DENIED) {
+                        hasPermission = false;
+                    }
+                    if (hasPermission) {
+                        this.getImagesFormCameraroll();
+                    }
+                });
+            });
+        }
+    }
     getImagesFormCameraroll() {
         this.props.getPhotosFromCameraroll();
     }
@@ -96,13 +129,6 @@ class HomeScreen extends PureComponent {
     }
 
     render() {
-        // console.log('Rendering: HomeScreen');
-
-        // if (this.props.imageBrowserOpen) {
-        //     // todo- cancel all subscriptions and async tasks in componentWillUnmount
-        //     return <AlbumList navigation={this.props.navigation} />;
-        // }
-
         const lang = this.props.lang;
 
         return (
@@ -255,19 +281,11 @@ class HomeScreen extends PureComponent {
     };
 
     /**
-     * Open Photo Gallery by changing state
-     * @props gallery_actions, gallery_reducer
+     * Navigate to album screen
+     *
      */
     loadGallery = async () => {
-        let p =
-            Platform.OS === 'android' ? PERMISSIONS.ANDROID : PERMISSIONS.IOS;
-
-        request(p.CAMERA).then(result => {
-            if (result === 'granted') {
-                this.props.navigation.navigate('ALBUM');
-                // this.props.toggleImageBrowser(true);
-            }
-        });
+        this.props.navigation.navigate('ALBUM');
     };
 
     /**

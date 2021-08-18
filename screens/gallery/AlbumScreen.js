@@ -1,14 +1,5 @@
 import React, { Component } from 'react';
-import {
-    ActivityIndicator,
-    Dimensions,
-    SafeAreaView,
-    Text,
-    View,
-    Pressable,
-    PermissionsAndroid
-} from 'react-native';
-import AsyncStorage from '@react-native-community/async-storage';
+import { View, Pressable, PermissionsAndroid } from 'react-native';
 import { connect } from 'react-redux';
 import * as actions from '../../actions';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -96,8 +87,13 @@ class AlbumScreen extends Component {
                         <AlbumList navigation={this.props.navigation} />
                     </View>
                 ) : (
-                    <View>
-                        <Body>No Permissions</Body>
+                    <View
+                        style={{
+                            flex: 1,
+                            justifyContent: 'center',
+                            alignItems: 'center'
+                        }}>
+                        <Body>No Permissions to view gallery</Body>
                     </View>
                 )}
             </>
