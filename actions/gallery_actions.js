@@ -73,13 +73,9 @@ export const setImagesLoading = bool => {
  *                 -- camerarollImageFetched - true
  *                 -- lastFetchTime
  *
- * Album page -- array of geotagged.length === 0 && camerarollImageFetched == false
- *          fetch first 1000
- * else
- *          dont fetch -- button for try again "refetch"
+ * next fetch - Album screen or Home screen
+ * if lastFetch !== null fetch images between lastFetch and Date.now()
  *
- * gallery page - fetch between date.now and lastFetchTime
- * on scroll end fetch next 1000 and so on till next_page is false
  */
 
 export const getPhotosFromCameraroll = () => async (dispatch, getState) => {

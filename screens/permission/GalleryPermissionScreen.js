@@ -25,18 +25,16 @@ export default class GalleryPermissionScreen extends Component {
     }
 
     componentDidMount() {
-        this.appStateSubscription = AppState.addEventListener(
-            'change',
-            nextAppState => {
-                if (
-                    this.state.appState.match(/inactive|background/) &&
-                    nextAppState === 'active'
-                ) {
-                    this.checkGalleryPermission();
-                }
-                this.setState({ appState: nextAppState });
+        AppState.addEventListener('change', nextAppState => {
+            console.log(nextAppState);
+            if (
+                this.state.appState.match(/inactive|background/) &&
+                nextAppState === 'active'
+            ) {
+                this.checkGalleryPermission();
             }
-        );
+            this.setState({ appState: nextAppState });
+        });
     }
 
     componentWillUnmount() {

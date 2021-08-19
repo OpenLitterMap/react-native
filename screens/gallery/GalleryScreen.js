@@ -88,14 +88,12 @@ class GalleryScreen extends Component {
 
         order = _.concat(order, allMonths, allYears);
 
-        // console.log(order);
         for (let prop of order) {
             if (temp[prop]) {
                 let newObj = { title: prop, data: temp[prop] };
                 final.push(newObj);
             }
         }
-        console.log(JSON.stringify(final, null, 2));
         this.setState({ sortedData: final });
     }
 
@@ -111,7 +109,6 @@ class GalleryScreen extends Component {
             (a, b) => a.id - b.id
         );
 
-        console.log(JSON.stringify(sortedArray, null, 2));
         this.props.photosFromGallery(sortedArray);
 
         AsyncStorage.setItem(
@@ -129,7 +126,6 @@ class GalleryScreen extends Component {
      */
 
     selectImage(item) {
-        console.log(item);
         const selectedArray = this.state.selectedImages;
         // check if item /image is already selected
         const index = selectedArray.indexOf(item);
