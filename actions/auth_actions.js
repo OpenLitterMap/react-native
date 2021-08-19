@@ -66,7 +66,7 @@ export const checkValidToken = token => {
                     error?.response?.data
                 );
 
-                if (error.response.data.message === 'Unauthenticated.') {
+                if (error?.response?.data?.message === 'Unauthenticated.') {
                     dispatch({
                         type: 'TOKEN_IS_VALID',
                         payload: false

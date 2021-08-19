@@ -6,6 +6,7 @@ import AsyncStorage from '@react-native-community/async-storage';
 import * as actions from '../actions';
 import AuthStack from './authRoutes';
 import TabRoutes from './tabRoutes';
+import PermissionStack from './permissionRoutes';
 import { SettingScreen } from '../screens';
 // import AlbumList from '../screens/pages/library/AlbumList';
 import GalleryStack from './galleryRoutes';
@@ -79,6 +80,10 @@ class MainRoutes extends Component {
                         <Stack.Screen name="AUTH_HOME" component={AuthStack} />
                     ) : (
                         <>
+                            <Stack.Screen
+                                name="PERMISSION"
+                                component={PermissionStack}
+                            />
                             <Stack.Screen name="APP" component={TabRoutes} />
                             <Stack.Screen
                                 name="ALBUM"
