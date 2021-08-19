@@ -80,10 +80,6 @@ class MainRoutes extends Component {
                         <Stack.Screen name="AUTH_HOME" component={AuthStack} />
                     ) : (
                         <>
-                            <Stack.Screen
-                                name="PERMISSION"
-                                component={PermissionStack}
-                            />
                             <Stack.Screen name="APP" component={TabRoutes} />
                             <Stack.Screen
                                 name="ALBUM"
@@ -92,6 +88,10 @@ class MainRoutes extends Component {
                             <Stack.Screen
                                 name="SETTING"
                                 component={SettingScreen}
+                            />
+                            <Stack.Screen
+                                name="PERMISSION"
+                                component={PermissionStack}
                             />
                         </>
                     )}

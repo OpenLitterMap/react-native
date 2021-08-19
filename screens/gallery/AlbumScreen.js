@@ -37,14 +37,16 @@ class AlbumScreen extends Component {
             let hasPermission = false;
 
             request(PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE).then(result => {
+                console.log(result);
                 if (result === 'granted') {
                     hasPermission = true;
                 }
-
+                // this.setState({ hasPermission, loading: false });
                 PermissionsAndroid.request(
                     'android.permission.ACCESS_MEDIA_LOCATION'
-                ).then(result => {
-                    if (result === PermissionsAndroid.RESULTS.DENIED) {
+                ).then(resultNew => {
+                    console.log(resultNew);
+                    if (resultNew === PermissionsAndroid.RESULTS.DENIED) {
                         hasPermission = false;
                     }
 
