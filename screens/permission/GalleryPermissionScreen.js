@@ -25,21 +25,22 @@ export default class GalleryPermissionScreen extends Component {
     }
 
     componentDidMount() {
-        AppState.addEventListener('change', nextAppState => {
-            console.log(nextAppState);
-            if (
-                this.state.appState.match(/inactive|background/) &&
-                nextAppState === 'active'
-            ) {
-                this.checkGalleryPermission();
-            }
-            this.setState({ appState: nextAppState });
-        });
+        AppState.addEventListener('change', this.handleAppStateChange);
     }
 
     componentWillUnmount() {
-        AppState.removeEventListener('change');
+        AppState.removeEventListener('change', this.handleAppStateChange);
     }
+
+    handleAppStateChange = nextAppState => {
+        if (
+            this.state.appState.match(/inactive|background/) &&
+            nextAppState === 'active'
+        ) {
+            this.checkGalleryPermission();
+        }
+        this.setState({ appState: nextAppState });
+    };
 
     async checkGalleryPermission() {
         const result = await checkCameraRollPermission();
@@ -70,7 +71,7 @@ export default class GalleryPermissionScreen extends Component {
                 <Title>Allow Gallery Access</Title>
                 <Body color="muted" style={styles.bodyText}>
                     Please provide us access to your gallery, which is required
-                    to select geotagged litter images for upload.
+                    if you want to upload geotagged images from gallery.
                 </Body>
                 <Pressable
                     style={styles.buttonStyle}
