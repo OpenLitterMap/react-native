@@ -5,12 +5,10 @@ import {
     View,
     Image,
     Pressable,
-    PermissionsAndroid,
     Platform,
     Linking
 } from 'react-native';
 import { StackActions } from '@react-navigation/native';
-import { request, PERMISSIONS, check } from 'react-native-permissions';
 
 import { Title, Body, Colors } from '../components';
 import {
@@ -30,7 +28,6 @@ export default class GalleryPermissionScreen extends Component {
         this.appStateSubscription = AppState.addEventListener(
             'change',
             nextAppState => {
-                // console.log(nextAppState);
                 if (
                     this.state.appState.match(/inactive|background/) &&
                     nextAppState === 'active'

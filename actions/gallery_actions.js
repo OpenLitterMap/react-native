@@ -106,17 +106,18 @@ export const getPhotosFromCameraroll = () => async (dispatch, getState) => {
         first: 1000,
         toTime: Math.floor(new Date().getTime()),
         // toTime: 1627819113000,
-        fromTime: lastFetchTime
+        fromTime: lastFetchTime,
         // fromTime: 1626782313000
+        include: ['location', 'filename', 'fileSize', 'imageSize']
     };
     const initialParams = {
         // initially get first 100 images
-        first: 1000
+        first: 1000,
         // toTime: 1627819113000,
         // fromTime: 1626782313000
         // groupTypes: 'SavedPhotos',
         // assetType: 'Photos',
-        // include: ['location']
+        include: ['location', 'filename', 'fileSize', 'imageSize']
     };
     if (
         geotaggedImages?.length === 0 &&
@@ -126,6 +127,7 @@ export const getPhotosFromCameraroll = () => async (dispatch, getState) => {
         console.log('INITIAL');
         camerarollData = await CameraRoll.getPhotos(initialParams);
         fetchType = 'INITIAL';
+        // console.log(camerarollData);
     }
     if (lastFetchTime !== null) {
         console.log('TIME');
@@ -141,6 +143,7 @@ export const getPhotosFromCameraroll = () => async (dispatch, getState) => {
 
         imagesArray.map(item => {
             id++;
+
             if (
                 item.node?.location !== undefined &&
                 item.node?.location?.longitude !== undefined &&
