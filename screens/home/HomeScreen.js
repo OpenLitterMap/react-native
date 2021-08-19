@@ -21,8 +21,7 @@ import { Header, Title, Body, Colors } from '../components';
 
 import { connect } from 'react-redux';
 import * as actions from '../../actions';
-
-import AlbumList from '../pages/library/AlbumList';
+import { checkCameraRollPermission } from '../../utils/permissions';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
@@ -78,76 +77,20 @@ class HomeScreen extends PureComponent {
 
         // TODO: ask for gallery permission here
 
-        // fn to request permission to view cameraroll
-        // this.requestCameraRollPermission();
-        this.checkCameraRollPermission();
+        this.checkGalleryPermission();
     }
 
-    async checkCameraRollPermission() {
-        let result;
-        if (Platform.OS === 'ios') {
-            result = await check('ios.permission.PHOTO_LIBRARY');
-        }
-        if (Platform.OS === 'android') {
-            result = await check('android.permission.READ_EXTERNAL_STORAGE');
-        }
-
+    async checkGalleryPermission() {
+        const result = await checkCameraRollPermission();
         if (result === 'granted') {
-            console.log(result);
             this.getImagesFormCameraroll();
-        } else if (
-            result === 'unavailable' ||
-            result === 'denied' ||
-            result === 'blocked'
-        ) {
-            console.log(result);
+        } else {
             this.props.navigation.navigate('PERMISSION', {
                 screen: 'GALLERY_PERMISSION'
             });
         }
     }
-    /**
-     * fn to request permission to view cameraroll
-     * if granted fetch images from camera roll
-     */
-    // async requestCameraRollPermission() {
-    //     if (Platform.OS === 'ios') {
-    //         request(PERMISSIONS.IOS.PHOTO_LIBRARY).then(result => {
-    //             if (result === 'granted') {
-    //                 // FIXME: only for testing fix this
-    //                 // this.props.navigation.navigate('PERMISSION', {
-    //                 //     screen: 'GALLERY_PERMISSION'
-    //                 // });
-    //                 this.getImagesFormCameraroll();
-    //             } else {
-    //                 this.props.navigation.navigate('PERMISSION', {
-    //                     screen: 'GALLERY_PERMISSION'
-    //                 });
-    //             }
-    //         });
-    //     }
 
-    //     if (Platform.OS === 'android') {
-    //         let hasPermission = false;
-
-    //         request(PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE).then(result => {
-    //             if (result === 'granted') {
-    //                 hasPermission = true;
-    //             }
-
-    //             PermissionsAndroid.request(
-    //                 'android.permission.ACCESS_MEDIA_LOCATION'
-    //             ).then(result => {
-    //                 if (result === PermissionsAndroid.RESULTS.DENIED) {
-    //                     hasPermission = false;
-    //                 }
-    //                 if (hasPermission) {
-    //                     this.getImagesFormCameraroll();
-    //                 }
-    //             });
-    //         });
-    //     }
-    // }
     getImagesFormCameraroll() {
         this.props.getPhotosFromCameraroll();
     }

@@ -6,13 +6,17 @@ import {
     Image,
     Pressable,
     PermissionsAndroid,
-    Platform
+    Platform,
+    Linking
 } from 'react-native';
 import { StackActions } from '@react-navigation/native';
 import { request, PERMISSIONS, check } from 'react-native-permissions';
 
 import { Title, Body, Colors } from '../components';
-import { Linking } from 'react-native';
+import {
+    checkCameraRollPermission,
+    requestCameraRollPermission
+} from '../../utils/permissions';
 
 export default class GalleryPermissionScreen extends Component {
     constructor(props) {
@@ -26,12 +30,12 @@ export default class GalleryPermissionScreen extends Component {
         this.appStateSubscription = AppState.addEventListener(
             'change',
             nextAppState => {
-                console.log(nextAppState);
+                // console.log(nextAppState);
                 if (
                     this.state.appState.match(/inactive|background/) &&
                     nextAppState === 'active'
                 ) {
-                    this.checkCameraRollPermission();
+                    this.checkGalleryPermission();
                 }
                 this.setState({ appState: nextAppState });
             }
@@ -42,46 +46,21 @@ export default class GalleryPermissionScreen extends Component {
         AppState.removeEventListener('change');
     }
 
-    async checkCameraRollPermission() {
-        let result;
-        if (Platform.OS === 'ios') {
-            result = await check('ios.permission.PHOTO_LIBRARY');
-        }
-        if (Platform.OS === 'android') {
-            result = await check('android.permission.READ_EXTERNAL_STORAGE');
-        }
-
+    async checkGalleryPermission() {
+        const result = await checkCameraRollPermission();
         if (result === 'granted') {
             this.props.navigation.dispatch(StackActions.popToTop());
-            // this.getImagesFormCameraroll();
         }
     }
-    async requestCameraRollPermission() {
-        if (Platform.OS === 'ios') {
-            const resultIos = await request(PERMISSIONS.IOS.PHOTO_LIBRARY);
-            if (resultIos === 'granted') {
-                this.props.navigation.dispatch(StackActions.popToTop());
-            } else if (resultIos === 'blocked') {
-                console.log('BLOCKED');
-                Linking.openURL('app-settings:');
-            }
-        }
 
-        if (Platform.OS === 'android') {
-            const resultAndroid = await request(
-                PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE
-            );
-            const mediaLocation = await PermissionsAndroid.request(
-                'android.permission.ACCESS_MEDIA_LOCATION'
-            );
-            if (
-                resultAndroid === 'granted' &&
-                mediaLocation !== PermissionsAndroid.RESULTS.DENIED
-            ) {
-                this.props.navigation.dispatch(StackActions.popToTop());
-            } else {
-                Linking.openSettings();
-            }
+    async requestGalleryPermission() {
+        const result = await requestCameraRollPermission();
+        if (result === 'granted') {
+            this.props.navigation.dispatch(StackActions.popToTop());
+        } else {
+            Platform.OS === 'ios'
+                ? Linking.openURL('app-settings:')
+                : Linking.openSettings();
         }
     }
 
@@ -100,7 +79,7 @@ export default class GalleryPermissionScreen extends Component {
                 </Body>
                 <Pressable
                     style={styles.buttonStyle}
-                    onPress={() => this.requestCameraRollPermission()}>
+                    onPress={() => this.requestGalleryPermission()}>
                     <Body color="white">Allow gallery access</Body>
                 </Pressable>
                 <Pressable

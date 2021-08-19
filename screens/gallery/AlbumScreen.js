@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
-import { View, Pressable, PermissionsAndroid } from 'react-native';
+import { View, Pressable } from 'react-native';
 import { connect } from 'react-redux';
 import * as actions from '../../actions';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { request, PERMISSIONS } from 'react-native-permissions';
 
 import { Header, Body, SubTitle } from '../components';
+import { checkCameraRollPermission } from '../../utils/permissions';
 import AlbumList from './_components/AlbumList';
 
 class AlbumScreen extends Component {
@@ -21,37 +21,16 @@ class AlbumScreen extends Component {
     }
 
     componentDidMount() {
-        this.requestCameraPermission();
+        this.checkGalleryPermission();
     }
 
-    async requestCameraPermission() {
-        if (Platform.OS === 'ios') {
-            request(PERMISSIONS.IOS.PHOTO_LIBRARY).then(result => {
-                if (result === 'granted') {
-                    this.setState({ hasPermission: true, loading: false });
-                }
-            });
-        }
-
-        if (Platform.OS === 'android') {
-            let hasPermission = false;
-
-            request(PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE).then(result => {
-                console.log(result);
-                if (result === 'granted') {
-                    hasPermission = true;
-                }
-                // this.setState({ hasPermission, loading: false });
-                PermissionsAndroid.request(
-                    'android.permission.ACCESS_MEDIA_LOCATION'
-                ).then(resultNew => {
-                    console.log(resultNew);
-                    if (resultNew === PermissionsAndroid.RESULTS.DENIED) {
-                        hasPermission = false;
-                    }
-
-                    this.setState({ hasPermission, loading: false });
-                });
+    async checkGalleryPermission() {
+        const result = await checkCameraRollPermission();
+        if (result === 'granted') {
+            this.setState({ hasPermission: true, loading: false });
+        } else {
+            this.props.navigation.navigate('PERMISSION', {
+                screen: 'GALLERY_PERMISSION'
             });
         }
     }
@@ -75,14 +54,6 @@ class AlbumScreen extends Component {
                         </Pressable>
                     }
                     centerContent={<SubTitle color="white">Album</SubTitle>}
-                    // rightContent={
-                    //     <Pressable
-                    //         onPress={() => {
-                    //             // this._chooseImages();
-                    //         }}>
-                    //         <Body color="white">Done</Body>
-                    //     </Pressable>
-                    // }
                 />
                 {this.state.hasPermission ? (
                     <View style={{ flex: 1 }}>
