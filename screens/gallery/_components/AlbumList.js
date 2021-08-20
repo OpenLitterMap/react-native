@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Text, StyleSheet, View, ActivityIndicator } from 'react-native';
+import { StyleSheet, View, ActivityIndicator } from 'react-native';
 import { connect } from 'react-redux';
 import * as actions from '../../../actions';
 import { Colors, Body } from '../../components';

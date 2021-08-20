@@ -55,18 +55,9 @@ class AlbumScreen extends Component {
                     }
                     centerContent={<SubTitle color="white">Album</SubTitle>}
                 />
-                {this.state.hasPermission ? (
+                {this.state.hasPermission && (
                     <View style={{ flex: 1 }}>
                         <AlbumList navigation={this.props.navigation} />
-                    </View>
-                ) : (
-                    <View
-                        style={{
-                            flex: 1,
-                            justifyContent: 'center',
-                            alignItems: 'center'
-                        }}>
-                        <Body>No Permissions to view gallery</Body>
                     </View>
                 )}
             </>

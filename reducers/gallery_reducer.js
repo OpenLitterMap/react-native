@@ -1,5 +1,6 @@
 import CameraRoll from '@react-native-community/cameraroll';
 import {
+    ADD_GEOTAGGED_IMAGES,
     ADD_TAGS_TO_GALLERY_IMAGE,
     CHANGE_UPLOAD_PROGRESS,
     DELETE_SELECTED_GALLERY,
@@ -9,10 +10,8 @@ import {
     PHOTOS_FROM_GALLERY,
     REMOVE_TAG_FROM_GALLERY_PHOTO,
     TOGGLE_IMAGE_BROWSER,
-    TOGGLE_SELECTED_GALLERY,
-    ADD_GEOTAGGED_IMAGES
+    TOGGLE_SELECTED_GALLERY
 } from '../actions/types';
-import Lodash from 'lodash';
 
 const INITIAL_STATE = {
     gallery: [], // array of selected images
@@ -200,7 +199,7 @@ export default function(state = INITIAL_STATE, action) {
          * add array of geotagged images to state
          */
         case ADD_GEOTAGGED_IMAGES:
-            let geotaggedImages = [
+            const geotaggedImages = [
                 ...action.payload.geotagged,
                 ...state.geotaggedImages
             ];

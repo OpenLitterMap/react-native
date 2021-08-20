@@ -2,6 +2,7 @@ import React from 'react';
 import CameraRoll from '@react-native-community/cameraroll';
 
 import {
+    ADD_GEOTAGGED_IMAGES,
     ADD_TAGS_TO_GALLERY_IMAGE,
     DELETE_SELECTED_GALLERY,
     DESELECT_ALL_GALLERY_PHOTOS,
@@ -10,8 +11,7 @@ import {
     PHOTOS_FROM_GALLERY,
     REMOVE_TAG_FROM_GALLERY_PHOTO,
     TOGGLE_IMAGE_BROWSER,
-    TOGGLE_SELECTED_GALLERY,
-    ADD_GEOTAGGED_IMAGES
+    TOGGLE_SELECTED_GALLERY
 } from './types';
 
 /**
@@ -120,18 +120,13 @@ export const getPhotosFromCameraroll = () => async (dispatch, getState) => {
         camerarollImageFetched === false &&
         lastFetchTime === null
     ) {
-        console.log('INITIAL');
         camerarollData = await CameraRoll.getPhotos(initialParams);
         fetchType = 'INITIAL';
-        // console.log(camerarollData);
     }
     if (lastFetchTime !== null) {
-        console.log('TIME');
         camerarollData = await CameraRoll.getPhotos(timeParams);
         fetchType = 'TIME';
     }
-
-    // const camerarollData = await CameraRoll.getPhotos(params);
 
     if (camerarollData) {
         const imagesArray = camerarollData.edges;
@@ -162,8 +157,6 @@ export const getPhotosFromCameraroll = () => async (dispatch, getState) => {
                 });
             }
         });
-
-        console.log(`geotagged length ${geotagged?.length}`);
 
         dispatch({
             type: 'ADD_GEOTAGGED_IMAGES',

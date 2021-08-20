@@ -199,7 +199,7 @@ class HomeScreen extends PureComponent {
                             </View>
                         )}
                     </Modal>
-                    {/* <Body>{JSON.stringify(this.props.gallery, null, 2)}</Body> */}
+
                     <UploadImagesGrid
                         gallery={this.props.gallery}
                         photos={this.props.photos}
