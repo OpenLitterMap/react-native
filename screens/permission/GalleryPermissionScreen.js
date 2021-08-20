@@ -25,13 +25,27 @@ export default class GalleryPermissionScreen extends Component {
     }
 
     componentDidMount() {
+        /**
+         * App state event listner to check if app is in foreground/active
+         * or in background/inactive
+         */
         AppState.addEventListener('change', this.handleAppStateChange);
     }
 
     componentWillUnmount() {
+        /**
+         * remove appState subscription
+         */
         AppState.removeEventListener('change', this.handleAppStateChange);
     }
-
+    /**
+     * fn that is called when app state changes
+     *
+     * if app comes back from inactive/background to active state
+     * {@link GalleryPermissionScreen.checkGalleryPermission} gallery permission is again checked
+     * @param {"active" | "background" | "inactive"} nextAppState
+     * "inactive" is IOS only
+     */
     handleAppStateChange = nextAppState => {
         if (
             this.state.appState.match(/inactive|background/) &&
@@ -42,6 +56,10 @@ export default class GalleryPermissionScreen extends Component {
         this.setState({ appState: nextAppState });
     };
 
+    /**
+     * fn to check for cameraroll/gallery permissions
+     * if permissions granted go back to home, else do nothing
+     */
     async checkGalleryPermission() {
         const result = await checkCameraRollPermission();
         if (result === 'granted') {
@@ -49,6 +67,14 @@ export default class GalleryPermissionScreen extends Component {
         }
     }
 
+    /**
+     * fn to request permission for accessing gallery/cameraroll
+     *
+     * if asked earlier and user denied / ("BLOCKED")
+     * it then take user to app setting
+     *
+     * if user granted access go back
+     */
     async requestGalleryPermission() {
         const result = await requestCameraRollPermission();
         if (result === 'granted') {
@@ -93,7 +119,6 @@ const styles = StyleSheet.create({
     container: {
         justifyContent: 'center',
         alignItems: 'center',
-        // backgroundColor: 'tomato',
         flex: 1,
         padding: 20
     },
