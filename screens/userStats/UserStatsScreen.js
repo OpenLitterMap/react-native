@@ -23,6 +23,7 @@ import {
 class UserStatsScreen extends Component {
     constructor(props) {
         super(props);
+        console.log('=========>');
         console.log(JSON.stringify(this.props.user, null, '\t'));
     }
 
@@ -45,7 +46,7 @@ class UserStatsScreen extends Component {
                 bgColor: '#F3E8FF'
             },
             {
-                value: `${user?.total_images.toLocaleString()}`,
+                value: `${user?.total_images?.toLocaleString() || 0}`,
                 title: 'Photos',
                 icon: 'ios-images-outline',
                 color: '#F59E0B',
