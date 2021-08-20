@@ -10,10 +10,6 @@ class AlbumList extends Component {
         super(props);
     }
     componentDidMount() {
-        this.getImagesFormCameraroll();
-    }
-
-    getImagesFormCameraroll() {
         this.props.getPhotosFromCameraroll();
     }
 

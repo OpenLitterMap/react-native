@@ -1,4 +1,3 @@
-import CameraRoll from '@react-native-community/cameraroll';
 import {
     ADD_GEOTAGGED_IMAGES,
     ADD_TAGS_TO_GALLERY_IMAGE,

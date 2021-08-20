@@ -1,10 +1,7 @@
 import React, { Component } from 'react';
 import { View, Pressable } from 'react-native';
-import { connect } from 'react-redux';
-import * as actions from '../../actions';
 import Icon from 'react-native-vector-icons/Ionicons';
-
-import { Header, Body, SubTitle } from '../components';
+import { Header, SubTitle } from '../components';
 import { checkCameraRollPermission } from '../../utils/permissions';
 import AlbumList from './_components/AlbumList';
 
@@ -14,8 +11,6 @@ class AlbumScreen extends Component {
 
         this.state = {
             loading: true,
-            totalFiles: 0,
-            selected: [],
             hasPermission: false
         };
     }
@@ -23,6 +18,11 @@ class AlbumScreen extends Component {
     componentDidMount() {
         this.checkGalleryPermission();
     }
+
+    /**
+     * fn to check for cameraroll/gallery permissions
+     * if permissions granted setState, else navigate to GalleryPermissionScreen
+     */
 
     async checkGalleryPermission() {
         const result = await checkCameraRollPermission();
@@ -43,9 +43,7 @@ class AlbumScreen extends Component {
                         <Pressable
                             onPress={() => {
                                 this.props.navigation.goBack();
-                                // this.props.setImageLoading;
                             }}>
-                            {/* <Body color="white">Cancel</Body> */}
                             <Icon
                                 name="ios-chevron-back-outline"
                                 size={24}
@@ -65,13 +63,4 @@ class AlbumScreen extends Component {
     }
 }
 
-const mapStateToProps = state => {
-    return {
-        totalGallerySelected: state.gallery.totalGallerySelected
-    };
-};
-
-export default connect(
-    mapStateToProps,
-    actions
-)(AlbumScreen);
+export default AlbumScreen;

@@ -8,7 +8,6 @@ export default class AlbumCard extends Component {
     }
     render() {
         let { albumName, thumbnail, counter, navigation } = this.props;
-        // console.log(navigation);
         return (
             <Pressable
                 style={[styles.base]}
@@ -27,7 +26,6 @@ export default class AlbumCard extends Component {
 
 const styles = StyleSheet.create({
     base: {
-        // flex: 1,
         flexDirection: 'row',
         alignItems: 'center',
         paddingVertical: 20,
