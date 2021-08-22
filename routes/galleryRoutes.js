@@ -1,6 +1,6 @@
 import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
-import { GalleryScreen, AblumScreen } from '../screens';
+import { GalleryScreen, AlbumScreen } from '../screens';
 
 const Stack = createStackNavigator();
 
@@ -10,7 +10,7 @@ const GalleryStack = () => {
             screenOptions={{
                 headerShown: false
             }}>
-            <Stack.Screen name="ALBUM" component={AblumScreen} />
+            <Stack.Screen name="ALBUM" component={AlbumScreen} />
             <Stack.Screen name="GALLERY" component={GalleryScreen} />
         </Stack.Navigator>
     );

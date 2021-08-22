@@ -6,7 +6,7 @@ export { default as SettingScreen } from './SettingsScreen';
 export { default as HomeScreen } from './home/HomeScreen';
 export { default as CameraScreen } from './camera/CameraScreen';
 export { default as GalleryScreen } from './gallery/GalleryScreen';
-export { default as AblumScreen } from './gallery/AlbumScreen';
+export { default as AlbumScreen } from './gallery/AlbumScreen';
 export {
     default as GalleryPermissionScreen
 } from './permission/GalleryPermissionScreen';
