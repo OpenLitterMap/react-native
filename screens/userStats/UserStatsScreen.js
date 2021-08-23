@@ -39,8 +39,8 @@ class UserStatsScreen extends Component {
                 bgColor: '#CCFBF1'
             },
             {
-                value: `${user?.level.toLocaleString()}`,
-                title: 'Level',
+                value: `${user?.position.toLocaleString()}`,
+                title: 'Rank',
                 icon: 'ios-podium-outline',
                 color: '#A855F7',
                 bgColor: '#F3E8FF'

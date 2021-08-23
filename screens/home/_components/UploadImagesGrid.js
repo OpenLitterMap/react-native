@@ -77,6 +77,8 @@ class UploadImagesGrid extends PureComponent {
 
             // litter.js
             this.props.swiperIndexChanged(globalIndex);
+        } else {
+            console.log('PRESSED');
         }
     }
 
