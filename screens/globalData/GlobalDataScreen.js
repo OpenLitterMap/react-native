@@ -93,7 +93,12 @@ class GlobalDataScreen extends Component {
                             valueSuffix="%"
                         />
                         {/* grid for stats */}
-                        <StatsGrid statsData={statsData} />
+                        {/* added extra margin so that UserScren and GlobalData
+                        screen have same starting point for stats card
+                        So that it looks good when swiping */}
+                        <View style={{ marginTop: 22 }}>
+                            <StatsGrid statsData={statsData} />
+                        </View>
                     </ScrollView>
                 )}
             </>
