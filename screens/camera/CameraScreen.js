@@ -183,19 +183,6 @@ class CameraScreen extends React.Component {
 
                     {/* Bottom Row */}
                     <View style={styles.bottomRow}>
-                        {/* Bottom Left */}
-                        <TouchableOpacity
-                            onPress={() =>
-                                this.props.navigation.navigate('HOME')
-                            }
-                            style={styles.bottomLeftIcon}>
-                            <Icon
-                                color="white"
-                                name="backup"
-                                size={SCREEN_HEIGHT * 0.05}
-                            />
-                        </TouchableOpacity>
-
                         {/* Photo Button*/}
                         <TouchableOpacity
                             onPress={this.takePicture.bind(this)}
@@ -340,15 +327,6 @@ class CameraScreen extends React.Component {
 
 // StyleSheet needed for $rem above
 const styles = StyleSheet.create({
-    bottomLeftIcon: {
-        backgroundColor: 'transparent',
-        position: 'absolute',
-        left: 30,
-        bottom: 0,
-        zIndex: 1,
-        paddingRight: 20,
-        paddingTop: 20
-    },
     bottomRightIcon: {
         backgroundColor: 'transparent',
         position: 'absolute',
