@@ -342,7 +342,7 @@ class UploadImagesGrid extends PureComponent {
                         No images to upload
                     </SubTitle>
                     <Body style={styles.exptyStateText}>
-                        Click images or select from gallery
+                        Take a photo or select from gallery
                     </Body>
                     {/* <TransText
                         style={{ fontSize: SCREEN_HEIGHT * 0.02 }}
