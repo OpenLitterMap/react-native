@@ -35,7 +35,7 @@ StatsGrid.propTypes = {
     statsData: PropTypes.arrayOf(
         PropTypes.shape({
             title: PropTypes.string.isRequired,
-            value: PropTypes.string.isRequired,
+            value: PropTypes.number.isRequired,
             icon: PropTypes.string.isRequired,
             color: PropTypes.string.isRequired,
             bgColor: PropTypes.string.isRequired

@@ -13,6 +13,7 @@ import { connect } from 'react-redux';
 class GlobalDataScreen extends Component {
     constructor(props) {
         super(props);
+        console.log('GLOBAL DATA');
     }
 
     componentDidMount() {
@@ -30,28 +31,29 @@ class GlobalDataScreen extends Component {
 
         const statsData = [
             {
-                value: `${totalLitter.toLocaleString()}`,
+                // value: `${totalLitter.toLocaleString()}`,
+                value: totalLitter,
                 title: 'Total Litter',
                 icon: 'ios-trash-outline',
                 color: '#14B8A6',
                 bgColor: '#CCFBF1'
             },
             {
-                value: `${totalPhotos.toLocaleString()}`,
+                value: totalPhotos,
                 title: 'Total Photos',
                 icon: 'ios-images-outline',
                 color: '#A855F7',
                 bgColor: '#F3E8FF'
             },
             {
-                value: `${totalLittercoin.toLocaleString()}`,
+                value: totalLittercoin,
                 title: 'Total Littercoin',
                 icon: 'ios-server-outline',
                 color: '#F59E0B',
                 bgColor: '#FEF9C3'
             },
             {
-                value: '4,748',
+                value: 4748,
                 title: 'Total Users',
                 icon: 'ios-people-outline',
                 color: '#0EA5E9',

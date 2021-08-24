@@ -1,5 +1,6 @@
 import React from 'react';
 import { StyleSheet, View, Dimensions } from 'react-native';
+import { CountUp } from 'use-count-up';
 import PropTypes from 'prop-types';
 import { Title, Caption } from '../typography';
 import { Colors } from '../theme';
@@ -31,10 +32,16 @@ const IconStatsCard = ({
             <Title
                 style={[
                     contentCenter && { textAlign: 'center' },
-                    { color: fontColor }
+                    { color: fontColor, fontSize: 24 }
                 ]}>
-                {value}
+                <CountUp
+                    isCounting
+                    end={value}
+                    duration={5}
+                    shouldUseToLocaleString
+                />
             </Title>
+
             <Caption
                 family="regular"
                 style={[
@@ -50,7 +57,7 @@ const IconStatsCard = ({
 export default IconStatsCard;
 
 IconStatsCard.propTypes = {
-    value: PropTypes.string.isRequired,
+    value: PropTypes.number.isRequired,
     title: PropTypes.string.isRequired,
     style: PropTypes.any,
     fontColor: PropTypes.string,

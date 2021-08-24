@@ -12,19 +12,15 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import {
     Body,
     Title,
-    SubTitle,
-    Caption,
     AnimatedCircle,
     Header,
     Colors,
-    StatsGrid,
-    AnimatedText
+    StatsGrid
 } from '../components';
 
 class UserStatsScreen extends Component {
     constructor(props) {
         super(props);
-        console.log('=========>');
         // console.log(JSON.stringify(this.props.user, null, '\t'));
     }
 
@@ -33,30 +29,28 @@ class UserStatsScreen extends Component {
 
         const statsData = [
             {
-                value: `${user?.xp.toLocaleString()}`,
+                value: user?.xp,
                 title: 'XP',
                 icon: 'ios-medal-outline',
                 color: '#14B8A6',
                 bgColor: '#CCFBF1'
             },
             {
-                value: `${user?.position.toLocaleString()}`,
+                value: user?.position,
                 title: 'Rank',
                 icon: 'ios-podium-outline',
                 color: '#A855F7',
                 bgColor: '#F3E8FF'
             },
             {
-                value: `${user?.total_images?.toLocaleString() || 0}`,
+                value: user?.total_images || 0,
                 title: 'Photos',
                 icon: 'ios-images-outline',
                 color: '#F59E0B',
                 bgColor: '#FEF9C3'
             },
             {
-                value: `${(
-                    user?.total_brands + user?.total_tags
-                ).toLocaleString()}`,
+                value: user?.total_brands + user?.total_tags,
                 title: 'Tags',
                 icon: 'ios-pricetags-outline',
                 color: '#0EA5E9',
