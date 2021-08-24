@@ -9,6 +9,7 @@ const { width } = Dimensions.get('window');
 const IconStatsCard = ({
     style,
     value,
+    startValue = 0,
     title,
     fontColor = Colors.accent,
     imageContent,
@@ -35,7 +36,8 @@ const IconStatsCard = ({
                     { color: fontColor, fontSize: 24 }
                 ]}>
                 <CountUp
-                    isCounting
+                    isCounting={startValue === value ? false : true}
+                    start={startValue}
                     end={value}
                     duration={5}
                     shouldUseToLocaleString
@@ -58,6 +60,7 @@ export default IconStatsCard;
 
 IconStatsCard.propTypes = {
     value: PropTypes.number.isRequired,
+    startValue: PropTypes.number,
     title: PropTypes.string.isRequired,
     style: PropTypes.any,
     fontColor: PropTypes.string,

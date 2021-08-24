@@ -20,6 +20,7 @@ const StatsGrid = ({ statsData }) => {
                             />
                         }
                         value={stat.value}
+                        startValue={stat.startValue}
                         title={stat.title}
                         contentCenter
                         backgroundColor={stat.bgColor}
@@ -36,6 +37,7 @@ StatsGrid.propTypes = {
         PropTypes.shape({
             title: PropTypes.string.isRequired,
             value: PropTypes.number.isRequired,
+            startValue: PropTypes.number,
             icon: PropTypes.string.isRequired,
             color: PropTypes.string.isRequired,
             bgColor: PropTypes.string.isRequired
