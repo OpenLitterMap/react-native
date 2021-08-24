@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-community/async-storage';
 import {
     ACCOUNT_CREATED,
     BAD_PASSWORD,
@@ -204,7 +205,8 @@ export default function(state = INITIAL_STATE, action) {
             user.level = level;
             user.xpRequired = xpRequired;
             user.targetPercentage = targetPercentage;
-
+            user.totalTags = user.total_brands + user.total_tags;
+            AsyncStorage.setItem('user', JSON.stringify(user));
             return {
                 ...state,
                 user

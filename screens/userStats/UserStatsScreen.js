@@ -6,6 +6,8 @@ import {
     Pressable,
     ActivityIndicator
 } from 'react-native';
+import AsyncStorage from '@react-native-community/async-storage';
+
 import * as actions from '../../actions';
 import { connect } from 'react-redux';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -22,6 +24,31 @@ class UserStatsScreen extends Component {
     constructor(props) {
         super(props);
         // console.log(JSON.stringify(this.props.user, null, '\t'));
+        this.state = {
+            xpStart: 0,
+            positionStart: 0,
+            totalImagesStart: 0,
+            totalTagsStart: 0
+        };
+    }
+
+    componentDidMount() {
+        this.getDataFromStorage();
+        this.props.fetchUser(this.props.token);
+    }
+
+    async getDataFromStorage() {
+        const user = await AsyncStorage.getItem('user');
+        if (user !== undefined && user !== null) {
+            const { xp, position, total_images, totalTags } = JSON.parse(user);
+            console.log({ xp, position, total_images, totalTags });
+            this.setState({
+                xpStart: xp,
+                positionStart: position,
+                totalImagesStart: total_images,
+                totalTagsStart: totalTags
+            });
+        }
     }
 
     render() {
@@ -29,28 +56,32 @@ class UserStatsScreen extends Component {
 
         const statsData = [
             {
-                value: user?.xp,
+                value: user?.xp || this.state.xpStart,
+                startValue: this.state.xpStart,
                 title: 'XP',
                 icon: 'ios-medal-outline',
                 color: '#14B8A6',
                 bgColor: '#CCFBF1'
             },
             {
-                value: user?.position,
+                value: user?.position || this.state.positionStart,
+                startValue: this.state.positionStart,
                 title: 'Rank',
                 icon: 'ios-podium-outline',
                 color: '#A855F7',
                 bgColor: '#F3E8FF'
             },
             {
-                value: user?.total_images || 0,
+                value: user?.total_images || this.state.totalImagesStart,
+                startValue: this.state.totalImagesStart,
                 title: 'Photos',
                 icon: 'ios-images-outline',
                 color: '#F59E0B',
                 bgColor: '#FEF9C3'
             },
             {
-                value: user?.total_brands + user?.total_tags,
+                value: user?.totalTags || this.state.totalTagsStart,
+                startValue: this.state.totalTagsStart,
                 title: 'Tags',
                 icon: 'ios-pricetags-outline',
                 color: '#0EA5E9',

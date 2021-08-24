@@ -47,10 +47,24 @@ class MainRoutes extends Component {
             console.log('tokenIsValid', this.props.tokenIsValid);
 
             if (this.props.tokenIsValid) {
-                await this.props.fetchUser(userToken);
-                // if (!this.props.user) {
-                //     await this.props.fetchUser(userToken);
-                // }
+                if (!this.props.user) {
+                    console.log(
+                        'User does not exist on props. Checking AsyncStorage'
+                    );
+                    const user = await AsyncStorage.getItem('user');
+
+                    if (user) {
+                        console.log(
+                            'User object found in AsyncStorage. Updating state props.'
+                        );
+                        this.props.userFound(user);
+                    } else {
+                        console.log(
+                            'User does not exist in AsyncStorage. Making API request with token.'
+                        );
+                        this.props.fetchUser(userToken);
+                    }
+                }
                 this.setState({ isLoading: false });
             }
         } else {
