@@ -7,7 +7,6 @@ import {
     ActivityIndicator
 } from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
-
 import * as actions from '../../actions';
 import { connect } from 'react-redux';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -34,21 +33,38 @@ class UserStatsScreen extends Component {
 
     componentDidMount() {
         this.getDataFromStorage();
-        this.props.fetchUser(this.props.token);
     }
 
     async getDataFromStorage() {
-        const user = await AsyncStorage.getItem('user');
-        if (user !== undefined && user !== null) {
-            const { xp, position, total_images, totalTags } = JSON.parse(user);
-            console.log({ xp, position, total_images, totalTags });
+        // data of previously viewd stats by user
+        const previousStats = await AsyncStorage.getItem('previousUserStats');
+
+        if (previousStats !== undefined && previousStats !== null) {
+            const { xp, position, totalImages, totalTags } = JSON.parse(
+                previousStats
+            );
             this.setState({
                 xpStart: xp,
                 positionStart: position,
-                totalImagesStart: total_images,
+                totalImagesStart: totalImages,
                 totalTagsStart: totalTags
             });
         }
+        this.fetchUserData();
+    }
+
+    async fetchUserData() {
+        await this.props.fetchUser(this.props.token);
+        const user = this.props.user;
+        const statsObj = {
+            xp: user?.xp,
+            position: user?.position,
+            totalImages: user?.total_images,
+            totalTags: user?.totalTags
+        };
+        // INFO: previous stats saved for animation purpose
+        // so value animates from previous viewd and current
+        AsyncStorage.setItem('previousUserStats', JSON.stringify(statsObj));
     }
 
     render() {
