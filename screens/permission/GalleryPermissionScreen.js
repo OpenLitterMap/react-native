@@ -63,7 +63,7 @@ export default class GalleryPermissionScreen extends Component {
     async checkGalleryPermission() {
         const result = await checkCameraRollPermission();
         if (result === 'granted') {
-            this.props.navigation.dispatch(StackActions.popToTop());
+            this.props.navigation.navigate('HOME');
         }
     }
 
@@ -78,7 +78,7 @@ export default class GalleryPermissionScreen extends Component {
     async requestGalleryPermission() {
         const result = await requestCameraRollPermission();
         if (result === 'granted') {
-            this.props.navigation.dispatch(StackActions.popToTop());
+            this.props.navigation.navigate('HOME');
         } else {
             Platform.OS === 'ios'
                 ? Linking.openURL('app-settings:')
@@ -104,10 +104,7 @@ export default class GalleryPermissionScreen extends Component {
                     onPress={() => this.requestGalleryPermission()}>
                     <Body color="white">Allow gallery access</Body>
                 </Pressable>
-                <Pressable
-                    onPress={() =>
-                        navigation.dispatch(StackActions.popToTop())
-                    }>
+                <Pressable onPress={() => navigation.navigate('HOME')}>
                     <Body>Not now, Later</Body>
                 </Pressable>
             </View>
