@@ -16,7 +16,7 @@ class GlobalDataScreen extends Component {
         super(props);
         // default start value
         this.state = {
-            // isFocused: true,
+            isFocused: false,
             litterStart: 0,
             photosStart: 0,
             littercoinStart: 0,
@@ -25,27 +25,21 @@ class GlobalDataScreen extends Component {
     }
 
     componentDidMount() {
-        // INFO: testing focus listners will remove comment later
+        this.unsubscribe = this.props.navigation.addListener('focus', () => {
+            // console.log('GLOBAL DATA');
 
-        // console.log(this.props.navigation.isFocused());
-        // this.unsubscribe = this.props.navigation.addListener('focus', () => {
-        //     // Prevent default behavior
-        //     // e.preventDefault();
-        //     console.log('GLOBAL DATA');
-
-        //     this.setState({
-        //         isFocused: true
-        //     });
-        // });
+            this.setState({
+                isFocused: true
+            });
+        });
 
         this.getDataFormStorage();
         this.props.getStats();
     }
 
-    // componentWillUnmount() {
-    //     // this.props.navigation.removeListener('focus');
-    //     // this.unsubscribe();
-    // }
+    componentWillUnmount() {
+        this.unsubscribe();
+    }
 
     /**
      * fn to get previous stat values from AsyncStore and set to state
@@ -116,7 +110,7 @@ class GlobalDataScreen extends Component {
                 {/* INFO: showing loader when there is no previous value in 
                 asyncstore -- only shown on first app load after login */}
                 {(this.state.litterStart === 0 && totalLitter === 0) ||
-                !this.props.navigation.isFocused() ? (
+                !this.state.isFocused ? (
                     <View
                         style={{
                             flex: 1,
