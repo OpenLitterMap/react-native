@@ -12,6 +12,10 @@ const PermissionStack = () => {
             }}>
             <Stack.Screen
                 name="GALLERY_PERMISSION"
+                component={GalleryPermissionScreen}
+            />
+            <Stack.Screen
+                name="CAMERA_PERMISSION"
                 component={CameraPermissionScreen}
             />
         </Stack.Navigator>

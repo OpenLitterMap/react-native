@@ -22,6 +22,10 @@ import * as actions from '../../actions';
 import { connect } from 'react-redux';
 import moment from 'moment';
 import VALUES from '../../utils/Values';
+import {
+    checkCameraPermission,
+    checkLocationPermission
+} from '../../utils/permissions';
 
 import DeviceInfo from 'react-native-device-info';
 import base64 from 'react-native-base64';
@@ -56,17 +60,8 @@ class CameraScreen extends React.Component {
             $rem: Dimensions.get('window').width / VALUES.remDivisionFactor
         });
 
-        const p =
-            Platform.OS === 'android' ? PERMISSIONS.ANDROID : PERMISSIONS.IOS;
-
-        request(p.CAMERA).then(result => {
-            // console.log({ result });
-            if (result === 'granted') {
-                this.setState({ permissionGranted: true });
-            }
-        });
-
-        this._getLocationAsync();
+        this.checkPermission();
+        // this._getLocationAsync();
     }
 
     componentWillUnmount() {
@@ -74,6 +69,45 @@ class CameraScreen extends React.Component {
         this.locationSubscription();
     }
 
+    /**
+     * check for camera and location permission
+     * if not granted navigate to permission screen
+     */
+    async checkPermission() {
+        const cameraPermission = await checkCameraPermission();
+        const locationPermission = await checkLocationPermission();
+
+        if (
+            cameraPermission === 'granted' &&
+            locationPermission === 'granted'
+        ) {
+            this.setState({ permissionGranted: true });
+            this.getUserLocation();
+        } else {
+            this.props.navigation.navigate('PERMISSION', {
+                screen: 'CAMERA_PERMISSION'
+            });
+        }
+    }
+    /**
+     * Get location of user
+     * subscribe to location changes
+     */
+
+    async getUserLocation() {
+        const locationPermission = await checkLocationPermission();
+        if (locationPermission === 'granted') {
+            this.locationSubscription = await RNLocation.subscribeToLocationUpdates(
+                locations => {
+                    this.setState({
+                        lat: locations[0].latitude,
+                        lon: locations[0].longitude
+                    });
+                }
+            );
+            this.setState({ loading: false });
+        }
+    }
     /**
      * Flash a black screen when the user takes a photo
      */
@@ -91,35 +125,6 @@ class CameraScreen extends React.Component {
             })
         ]).start();
     }
-
-    /**
-     * Get the location of the device when the user takes a photo
-     */
-    _getLocationAsync = async () => {
-        RNLocation.requestPermission({
-            ios: 'whenInUse',
-            android: {
-                detail: 'fine'
-            }
-        })
-            .then(granted => {
-                if (granted) {
-                    this.locationSubscription = RNLocation.subscribeToLocationUpdates(
-                        locations => {
-                            this.setState({
-                                lat: locations[0].latitude,
-                                lon: locations[0].longitude
-                            });
-                        }
-                    );
-                }
-            })
-            .finally(_ => {
-                this.setState({
-                    loading: false
-                });
-            });
-    };
 
     /**
      * Render the camera page
@@ -156,31 +161,6 @@ class CameraScreen extends React.Component {
                     }}
                     style={{ flex: 1 }}
                     captureAudio={false}>
-                    {/*Top Row
-                        <View
-                          style={{
-                            alignItems: 'flex-start',
-                            backgroundColor: 'transparent',
-                            flex: 1,
-                            flexDirection: 'row',
-                            justifyContent: 'space-between',
-                            marginTop: 15,
-                            marginLeft: 15
-                          }}
-                        >
-                          <TouchableOpacity
-                            onPress={this.goToAwards}
-                          >
-                            <Icon
-                              color="white"
-                              name="trophy"
-                              size={40}
-                              type="font-awesome"
-                            />
-                          </TouchableOpacity>
-                        </View>
-                        */}
-
                     {/* Bottom Row */}
                     <View style={styles.bottomRow}>
                         {/* Photo Button*/}
@@ -203,14 +183,6 @@ class CameraScreen extends React.Component {
                                 opacity: this.state.shutterOpacity
                             }}
                         />
-
-                        {/* Bottom Right
-                          <TouchableOpacity
-                            onPress={this.changeView.bind(this, 1)}
-                            style={styles.bottomRightIcon}
-                          ><Icon color="white" name="layers" size={SCREEN_HEIGHT * 0.05} />
-                          </TouchableOpacity>
-                        */}
                     </View>
                     <SafeAreaView style={{ flex: 0 }} />
                 </RNCamera>
@@ -316,13 +288,6 @@ class CameraScreen extends React.Component {
     // zoomOut ()
     // {
     // }
-
-    /**
-     * Slide to value, passed to Parent Slides.js
-     */
-    changeView(value) {
-        this.props.swipe(value);
-    }
 }
 
 // StyleSheet needed for $rem above
