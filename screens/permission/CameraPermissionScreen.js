@@ -12,8 +12,8 @@ import {
 import Icon from 'react-native-vector-icons/Ionicons';
 import { Title, Body, Colors, SubTitle, Caption } from '../components';
 import {
-    checkCameraRollPermission,
-    requestCameraRollPermission
+    checkCameraPermission,
+    requestCameraPermission
 } from '../../utils/permissions';
 
 const { width } = Dimensions.get('window');
@@ -43,7 +43,7 @@ export default class CameraPermissionScreen extends Component {
      * fn that is called when app state changes
      *
      * if app comes back from inactive/background to active state
-     * {@link CameraPermissionScreen.checkGalleryPermission} gallery permission is again checked
+     * {@link CameraPermissionScreen.checkCameraAccessPermission} gallery permission is again checked
      * @param {"active" | "background" | "inactive"} nextAppState
      * "inactive" is IOS only
      */
@@ -52,24 +52,24 @@ export default class CameraPermissionScreen extends Component {
             this.state.appState.match(/inactive|background/) &&
             nextAppState === 'active'
         ) {
-            this.checkGalleryPermission();
+            this.checkCameraAccessPermission();
         }
         this.setState({ appState: nextAppState });
     };
 
     /**
-     * fn to check for cameraroll/gallery permissions
+     * fn to check for camera permissions
      * if permissions granted go back to home, else do nothing
      */
-    async checkGalleryPermission() {
-        const result = await checkCameraRollPermission();
+    async checkCameraAccessPermission() {
+        const result = await checkCameraPermission();
         if (result === 'granted') {
-            this.props.navigation.navigate('HOME');
+            this.props.navigation.navigate('CAMERA');
         }
     }
 
     /**
-     * fn to request permission for accessing gallery/cameraroll
+     * fn to request permission for accessing camera
      *
      * if asked earlier and user denied / ("BLOCKED")
      * it then take user to app setting
@@ -77,9 +77,9 @@ export default class CameraPermissionScreen extends Component {
      * if user granted access go back
      */
     async requestGalleryPermission() {
-        const result = await requestCameraRollPermission();
+        const result = await requestCameraPermission();
         if (result === 'granted') {
-            this.props.navigation.navigate('HOME');
+            this.props.navigation.navigate('CAMERA');
         } else {
             Platform.OS === 'ios'
                 ? Linking.openURL('app-settings:')
@@ -124,7 +124,7 @@ export default class CameraPermissionScreen extends Component {
                     onPress={() => this.requestGalleryPermission()}>
                     <Body color="white">Allow Permissions</Body>
                 </Pressable>
-                <Pressable onPress={() => navigation.navigate('HOME')}>
+                <Pressable onPress={() => navigation.navigate('CAMERA')}>
                     <Body>Not now, Later</Body>
                 </Pressable>
             </View>
