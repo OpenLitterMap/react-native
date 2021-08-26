@@ -1,5 +1,5 @@
 import { Platform, PermissionsAndroid } from 'react-native';
-import { request, PERMISSIONS } from 'react-native-permissions';
+import { check, request, PERMISSIONS } from 'react-native-permissions';
 
 export const requestCameraRollPermission = async () => {
     let result;
@@ -20,6 +20,18 @@ export const requestCameraRollPermission = async () => {
         } else {
             result = 'denied';
         }
+    }
+
+    return result;
+};
+
+export const checkCameraRollPermission = async () => {
+    let result;
+    if (Platform.OS === 'ios') {
+        result = await check('ios.permission.PHOTO_LIBRARY');
+    }
+    if (Platform.OS === 'android') {
+        result = await check('android.permission.READ_EXTERNAL_STORAGE');
     }
 
     return result;

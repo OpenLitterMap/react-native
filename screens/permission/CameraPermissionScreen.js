@@ -86,7 +86,6 @@ export default class CameraPermissionScreen extends Component {
     async requestPermissions() {
         const cameraResult = await requestCameraPermission();
         const locationResult = await requestLocationPermission();
-        console.log(cameraResult, locationResult);
         if (cameraResult === 'granted' && locationResult === 'granted') {
             this.props.navigation.navigate('CAMERA');
         } else {
