@@ -1,18 +1,19 @@
 import React from 'react';
 import {
     ActivityIndicator,
+    Alert,
     Dimensions,
     Platform,
     SafeAreaView,
     Text,
     TouchableOpacity,
     View,
-    Animated
+    Animated,
+    Linking
 } from 'react-native';
 import StyleSheet from 'react-native-extended-stylesheet';
 import AsyncStorage from '@react-native-community/async-storage';
 
-import { request, PERMISSIONS } from 'react-native-permissions';
 import RNLocation from 'react-native-location';
 import { RNCamera } from 'react-native-camera'; // FaceDetector
 
@@ -29,8 +30,6 @@ import {
 
 import DeviceInfo from 'react-native-device-info';
 import base64 from 'react-native-base64';
-
-// import { getUniqueId, getManufacturer } from 'react-native-device-info';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -137,7 +136,6 @@ class CameraScreen extends React.Component {
      * Render the camera page
      */
     render() {
-        console.log('RENDER');
         if (this.state.loading) {
             return (
                 <View
@@ -160,7 +158,6 @@ class CameraScreen extends React.Component {
      * Render Camera
      */
     renderCamera() {
-        console.log('CAMERA');
         return (
             <>
                 <RNCamera
@@ -219,7 +216,33 @@ class CameraScreen extends React.Component {
      * We attach the users current GPS to the image
      */
     takePicture() {
-        if (this.camera) {
+        const lat = this.state.lat;
+        const lon = this.state.lon;
+        if (lat === null || lon === null) {
+            // Todo: Needs translation
+            Alert.alert(
+                'Location data not found',
+                'Your location services are not turned on. Please activate them to take geotagged photos.',
+                [
+                    {
+                        text: 'OK',
+                        onPress: async () => {
+                            // take user to location setting
+                            // INFO: IOS only
+                            // TODO: find a way to do the same in android without external libs
+                            iosUrl = 'App-Prefs:Privacy&path=LOCATION';
+                            if (Platform.OS === 'ios') {
+                                const result = await Linking.canOpenURL(iosUrl);
+                                result &&
+                                    Linking.openURL(
+                                        'App-Prefs:Privacy&path=LOCATION'
+                                    );
+                            }
+                        }
+                    }
+                ]
+            );
+        } else if (this.camera) {
             try {
                 this.animateShutter();
 
@@ -227,16 +250,6 @@ class CameraScreen extends React.Component {
                     .takePictureAsync()
                     .then(result => {
                         console.log('takePicture', result); // height, uri, width
-
-                        const lat = this.state.lat;
-                        const lon = this.state.lon;
-
-                        if (lat === null || lon === null) {
-                            // Todo: Needs translation
-                            alert(
-                                'Your location services are not turn on. Please activate them to take geotagged photos.'
-                            );
-                        }
 
                         const now = moment();
                         const date = moment(now).format('YYYY:MM:DD HH:mm:ss');
