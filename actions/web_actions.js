@@ -131,7 +131,6 @@ export const removeWebImage = id => {
  * web image - image that are uploaded from web but not tagged
  */
 export const deleteSelectedWebImages = (token, photoId) => {
-    console.log(photoId);
     return dispatch => {
         return axios({
             url: URL + '/api/photos/delete',
@@ -143,7 +142,6 @@ export const deleteSelectedWebImages = (token, photoId) => {
             params: { photoId }
         })
             .then(resp => {
-                console.log('delete web image', resp.data);
                 dispatch({
                     type: REMOVE_WEB_IMAGE,
                     payload: photoId
