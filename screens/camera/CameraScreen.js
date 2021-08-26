@@ -60,13 +60,19 @@ class CameraScreen extends React.Component {
             $rem: Dimensions.get('window').width / VALUES.remDivisionFactor
         });
 
-        this.checkPermission();
-        // this._getLocationAsync();
+        this.focusListner = this.props.navigation.addListener('focus', () => {
+            this.checkPermission();
+        });
+        this.blurListner = this.props.navigation.addListener('blur', () => {
+            this.setState({ loading: true });
+        });
     }
 
     componentWillUnmount() {
         // unsubscribe to location services on unmount
         this.locationSubscription();
+        this.focusListner();
+        this.blurListner();
     }
 
     /**
@@ -97,12 +103,13 @@ class CameraScreen extends React.Component {
     async getUserLocation() {
         const locationPermission = await checkLocationPermission();
         if (locationPermission === 'granted') {
-            this.locationSubscription = await RNLocation.subscribeToLocationUpdates(
+            this.locationSubscription = RNLocation.subscribeToLocationUpdates(
                 locations => {
-                    this.setState({
-                        lat: locations[0].latitude,
-                        lon: locations[0].longitude
-                    });
+                    !this.state.loading &&
+                        this.setState({
+                            lat: locations[0].latitude,
+                            lon: locations[0].longitude
+                        });
                 }
             );
             this.setState({ loading: false });
@@ -130,7 +137,8 @@ class CameraScreen extends React.Component {
      * Render the camera page
      */
     render() {
-        if (this.state.loading || this.props.index === 0) {
+        console.log('RENDER');
+        if (this.state.loading) {
             return (
                 <View
                     style={{
@@ -152,7 +160,7 @@ class CameraScreen extends React.Component {
      * Render Camera
      */
     renderCamera() {
-        // console.log('CAMERA');
+        console.log('CAMERA');
         return (
             <>
                 <RNCamera
