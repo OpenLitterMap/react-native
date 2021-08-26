@@ -6,16 +6,18 @@ import {
     Image,
     Pressable,
     Platform,
-    Linking
+    Linking,
+    Dimensions
 } from 'react-native';
-
-import { Title, Body, Colors } from '../components';
+import Icon from 'react-native-vector-icons/Ionicons';
+import { Title, Body, Colors, SubTitle, Caption } from '../components';
 import {
     checkCameraRollPermission,
     requestCameraRollPermission
 } from '../../utils/permissions';
 
-export default class GalleryPermissionScreen extends Component {
+const { width } = Dimensions.get('window');
+export default class CameraPermissionScreen extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -41,7 +43,7 @@ export default class GalleryPermissionScreen extends Component {
      * fn that is called when app state changes
      *
      * if app comes back from inactive/background to active state
-     * {@link GalleryPermissionScreen.checkGalleryPermission} gallery permission is again checked
+     * {@link CameraPermissionScreen.checkGalleryPermission} gallery permission is again checked
      * @param {"active" | "background" | "inactive"} nextAppState
      * "inactive" is IOS only
      */
@@ -90,18 +92,37 @@ export default class GalleryPermissionScreen extends Component {
         return (
             <View style={styles.container}>
                 <Image
-                    source={require('../../assets/illustrations/gallery_permission.png')}
+                    source={require('../../assets/illustrations/camera_permission.png')}
                     style={styles.imageStyle}
                 />
-                <Title>Allow Gallery Access</Title>
-                <Body color="muted" style={styles.bodyText}>
-                    Please provide us access to your gallery, which is required
-                    if you want to upload geotagged images from gallery.
-                </Body>
+                <Title>Please Give Permissions</Title>
+                {/* 1 */}
+                <View style={styles.permissionContainer}>
+                    <View style={styles.permissionItem}>
+                        <Icon name="ios-camera" size={32} color={Colors.text} />
+                        <View style={styles.itemBody}>
+                            <Body>Camera Access</Body>
+                            <Caption>
+                                To capture litter images from app camera.
+                            </Caption>
+                        </View>
+                    </View>
+
+                    {/* 2 */}
+                    <View style={styles.permissionItem}>
+                        <Icon name="ios-location" size={32} />
+                        <View style={styles.itemBody}>
+                            <Body>Location Access</Body>
+                            <Caption>
+                                To get exact geolocation of where the litter is.
+                            </Caption>
+                        </View>
+                    </View>
+                </View>
                 <Pressable
                     style={styles.buttonStyle}
                     onPress={() => this.requestGalleryPermission()}>
-                    <Body color="white">Allow gallery access</Body>
+                    <Body color="white">Allow Permissions</Body>
                 </Pressable>
                 <Pressable onPress={() => navigation.navigate('HOME')}>
                     <Body>Not now, Later</Body>
@@ -126,6 +147,16 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         marginVertical: 20
     },
+    permissionContainer: {
+        width: width - 80,
+        marginTop: 20
+    },
+    permissionItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginTop: 20
+    },
+    itemBody: { flexShrink: 1, marginLeft: 20 },
     buttonStyle: {
         paddingHorizontal: 28,
         paddingVertical: 20,

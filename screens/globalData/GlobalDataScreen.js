@@ -25,7 +25,7 @@ class GlobalDataScreen extends Component {
     }
 
     componentDidMount() {
-        this.unsubscribe = this.props.navigation.addListener('focus', () => {
+        this.focusListner = this.props.navigation.addListener('focus', () => {
             // console.log('GLOBAL DATA');
 
             this.setState({
@@ -38,7 +38,7 @@ class GlobalDataScreen extends Component {
     }
 
     componentWillUnmount() {
-        this.unsubscribe();
+        this.focusListner();
     }
 
     /**
