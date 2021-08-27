@@ -61,10 +61,10 @@ export const checkValidToken = token => {
             })
             .catch(error => {
                 console.log(error);
-                console.log(
-                    'auth_actions.checkValidToken',
-                    error?.response?.data
-                );
+                // console.log(
+                //     'auth_actions.checkValidToken',
+                //     error?.response?.data
+                // );
 
                 if (error.response.data.message === 'Unauthenticated.') {
                     dispatch({
@@ -214,7 +214,8 @@ export const loginOrSignupReset = () => {
  * This action will call many reducers
  */
 export const logout = () => {
-    AsyncStorage.removeItem('jwt');
+    AsyncStorage.clear();
+
     // delete user from AsyncStorage?
     // state is reset on Logout => user: null
     return {
@@ -365,16 +366,7 @@ export const fetchUser = token => {
                     const responseJson = response
                         .text() // returns a promise
                         .then(async responseJson => {
-                            // console.log('=== fetchUser - responseJson1 ===');
-                            // console.log(typeof(responseJson));
-                            // console.log(responseJson);
                             const userObj = JSON.parse(responseJson);
-                            // console.log("User object ...", userObj);
-
-                            await AsyncStorage.setItem(
-                                'user',
-                                JSON.stringify(userObj)
-                            );
 
                             dispatch({
                                 type: USER_FOUND,

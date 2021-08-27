@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { View, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
+import AsyncStorage from '@react-native-community/async-storage';
 import {
     Header,
     Title,
@@ -13,10 +14,49 @@ import { connect } from 'react-redux';
 class GlobalDataScreen extends Component {
     constructor(props) {
         super(props);
+        // default start value
+        this.state = {
+            isFocused: false,
+            litterStart: 0,
+            photosStart: 0,
+            littercoinStart: 0,
+            usersStart: 0
+        };
     }
 
     componentDidMount() {
+        this.focusListner = this.props.navigation.addListener('focus', () => {
+            // console.log('GLOBAL DATA');
+
+            this.setState({
+                isFocused: true
+            });
+        });
+
+        this.getDataFormStorage();
         this.props.getStats();
+    }
+
+    componentWillUnmount() {
+        this.focusListner();
+    }
+
+    /**
+     * fn to get previous stat values from AsyncStore and set to state
+     */
+    async getDataFormStorage() {
+        const stats = await AsyncStorage.getItem('globalStats');
+
+        if (stats !== undefined && stats !== null) {
+            const { totalLitter, totalPhotos, totalLittercoin } = JSON.parse(
+                stats
+            );
+            this.setState({
+                litterStart: totalLitter,
+                photosStart: totalPhotos,
+                littercoinStart: totalLittercoin
+            });
+        }
     }
 
     render() {
@@ -30,28 +70,32 @@ class GlobalDataScreen extends Component {
 
         const statsData = [
             {
-                value: `${totalLitter.toLocaleString()}`,
+                value: totalLitter || this.state.litterStart,
+                startValue: this.state.litterStart,
                 title: 'Total Litter',
                 icon: 'ios-trash-outline',
                 color: '#14B8A6',
                 bgColor: '#CCFBF1'
             },
             {
-                value: `${totalPhotos.toLocaleString()}`,
+                value: totalPhotos || this.state.photosStart,
+                startValue: this.state.photosStart,
                 title: 'Total Photos',
                 icon: 'ios-images-outline',
                 color: '#A855F7',
                 bgColor: '#F3E8FF'
             },
             {
-                value: `${totalLittercoin.toLocaleString()}`,
+                value: totalLittercoin || this.state.littercoinStart,
+                startValue: this.state.littercoinStart,
                 title: 'Total Littercoin',
                 icon: 'ios-server-outline',
                 color: '#F59E0B',
                 bgColor: '#FEF9C3'
             },
             {
-                value: '4,748',
+                value: 4748,
+                startValue: 4000,
                 title: 'Total Users',
                 icon: 'ios-people-outline',
                 color: '#0EA5E9',
@@ -63,7 +107,10 @@ class GlobalDataScreen extends Component {
                 <Header
                     leftContent={<Title color="white">Global Data</Title>}
                 />
-                {totalLitter === 0 || totalPhotos === 0 ? (
+                {/* INFO: showing loader when there is no previous value in 
+                asyncstore -- only shown on first app load after login */}
+                {(this.state.litterStart === 0 && totalLitter === 0) ||
+                !this.state.isFocused ? (
                     <View
                         style={{
                             flex: 1,
@@ -93,7 +140,12 @@ class GlobalDataScreen extends Component {
                             valueSuffix="%"
                         />
                         {/* grid for stats */}
-                        <StatsGrid statsData={statsData} />
+                        {/* added extra margin so that UserScren and GlobalData
+                        screen have same starting point for stats card
+                        So that it looks good when swiping */}
+                        <View style={{ marginTop: 22 }}>
+                            <StatsGrid statsData={statsData} />
+                        </View>
                     </ScrollView>
                 )}
             </>

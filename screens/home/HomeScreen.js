@@ -4,15 +4,15 @@ import {
     Dimensions,
     Modal,
     Text,
-    TouchableOpacity,
     TouchableWithoutFeedback,
-    View
+    View,
+    Platform
 } from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
 
 import { TransText } from 'react-native-translation';
 
-import { request, PERMISSIONS } from 'react-native-permissions';
+import { check, request, PERMISSIONS } from 'react-native-permissions';
 
 import { Button } from 'react-native-elements';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -21,8 +21,7 @@ import { Header, Title, Body, Colors } from '../components';
 
 import { connect } from 'react-redux';
 import * as actions from '../../actions';
-
-import AlbumList from '../pages/library/AlbumList';
+import { checkCameraRollPermission } from '../../utils/permissions';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
@@ -75,6 +74,25 @@ class HomeScreen extends PureComponent {
     async componentDidMount() {
         // web_actions, web_reducer
         await this.props.checkForImagesOnWeb(this.props.token);
+
+        // TODO: ask for gallery permission here
+
+        this.checkGalleryPermission();
+    }
+
+    async checkGalleryPermission() {
+        const result = await checkCameraRollPermission();
+        if (result === 'granted') {
+            this.getImagesFormCameraroll();
+        } else {
+            this.props.navigation.navigate('PERMISSION', {
+                screen: 'GALLERY_PERMISSION'
+            });
+        }
+    }
+
+    getImagesFormCameraroll() {
+        this.props.getPhotosFromCameraroll();
     }
 
     /**
@@ -87,13 +105,6 @@ class HomeScreen extends PureComponent {
     }
 
     render() {
-        // console.log('Rendering: HomeScreen');
-
-        if (this.props.imageBrowserOpen) {
-            // todo- cancel all subscriptions and async tasks in componentWillUnmount
-            return <AlbumList navigation={this.props.navigation} />;
-        }
-
         const lang = this.props.lang;
 
         return (
@@ -199,7 +210,17 @@ class HomeScreen extends PureComponent {
                         webImagesCount={this.props.webImagesCount}
                         webPhotos={this.props.webPhotos}
                     />
-
+                    {/* TODO: remove this -- only for dev purpose */}
+                    {/* <Button
+                        title="delete web image"
+                        onPress={() => {
+                            this.props.deleteSelectedWebImages(
+                                this.props.token,
+                                42
+                            );
+                        }}>
+                        Delete
+                    </Button> */}
                     <View style={styles.bottomContainer}>
                         {this.renderHelperMessage()}
                     </View>
@@ -246,20 +267,11 @@ class HomeScreen extends PureComponent {
     };
 
     /**
-     * Open Photo Gallery by changing state
-     * @props gallery_actions, gallery_reducer
+     * Navigate to album screen
+     *
      */
     loadGallery = async () => {
-        this.props.setImagesLoading(true);
-
-        let p =
-            Platform.OS === 'android' ? PERMISSIONS.ANDROID : PERMISSIONS.IOS;
-
-        request(p.CAMERA).then(result => {
-            if (result === 'granted') {
-                this.props.toggleImageBrowser(true);
-            }
-        });
+        this.props.navigation.navigate('ALBUM');
     };
 
     /**

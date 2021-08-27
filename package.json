@@ -13,11 +13,13 @@
   "dependencies": {
     "@around25/react-native-gallery-media-picker": "^0.2.0",
     "@react-native-community/async-storage": "^1.12.1",
-    "@react-native-community/cameraroll": "^1.8.1",
+    "@react-native-community/cameraroll": "^4.0.4",
     "@react-native-community/masked-view": "^0.1.11",
     "@react-native-community/picker": "^1.8.1",
     "@react-native-community/viewpager": "^3.3.1",
     "@react-navigation/bottom-tabs": "^5.11.11",
+    "@react-navigation/material-bottom-tabs": "^5.3.19",
+    "@react-navigation/material-top-tabs": "^5.3.19",
     "@react-navigation/native": "^5.9.4",
     "@react-navigation/stack": "^5.14.5",
     "@sentry/react-native": "^2.4.3",
@@ -61,6 +63,7 @@
     "react-native-svg": "^12.1.1",
     "react-native-swipe-gestures": "^1.0.5",
     "react-native-swiper": "^1.6.0",
+    "react-native-tab-view": "^2.16.0",
     "react-native-translation": "git+https://git@github.com/xlcrr/react-native-translation.git",
     "react-native-vector-icons": "^8.1.0",
     "react-redux": "^7.2.4",
@@ -68,6 +71,7 @@
     "redux-persist": "^6.0.0",
     "redux-thunk": "^2.3.0",
     "typescript": "^3.9.9",
+    "use-count-up": "^2.3.1",
     "validate.js": "^0.13.1"
   },
   "devDependencies": {
