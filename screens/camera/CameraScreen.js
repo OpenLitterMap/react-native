@@ -1,18 +1,19 @@
 import React from 'react';
 import {
     ActivityIndicator,
+    Alert,
     Dimensions,
     Platform,
     SafeAreaView,
     Text,
     TouchableOpacity,
     View,
-    Animated
+    Animated,
+    Linking
 } from 'react-native';
 import StyleSheet from 'react-native-extended-stylesheet';
 import AsyncStorage from '@react-native-community/async-storage';
 
-import { request, PERMISSIONS } from 'react-native-permissions';
 import RNLocation from 'react-native-location';
 import { RNCamera } from 'react-native-camera'; // FaceDetector
 
@@ -22,11 +23,13 @@ import * as actions from '../../actions';
 import { connect } from 'react-redux';
 import moment from 'moment';
 import VALUES from '../../utils/Values';
+import {
+    checkCameraPermission,
+    checkLocationPermission
+} from '../../utils/permissions';
 
 import DeviceInfo from 'react-native-device-info';
 import base64 from 'react-native-base64';
-
-// import { getUniqueId, getManufacturer } from 'react-native-device-info';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -56,24 +59,61 @@ class CameraScreen extends React.Component {
             $rem: Dimensions.get('window').width / VALUES.remDivisionFactor
         });
 
-        const p =
-            Platform.OS === 'android' ? PERMISSIONS.ANDROID : PERMISSIONS.IOS;
-
-        request(p.CAMERA).then(result => {
-            // console.log({ result });
-            if (result === 'granted') {
-                this.setState({ permissionGranted: true });
-            }
+        this.focusListner = this.props.navigation.addListener('focus', () => {
+            this.checkPermission();
         });
-
-        this._getLocationAsync();
+        this.blurListner = this.props.navigation.addListener('blur', () => {
+            this.setState({ loading: true });
+        });
     }
 
     componentWillUnmount() {
         // unsubscribe to location services on unmount
         this.locationSubscription();
+        this.focusListner();
+        this.blurListner();
     }
 
+    /**
+     * check for camera and location permission
+     * if not granted navigate to permission screen
+     */
+    async checkPermission() {
+        const cameraPermission = await checkCameraPermission();
+        const locationPermission = await checkLocationPermission();
+
+        if (
+            cameraPermission === 'granted' &&
+            locationPermission === 'granted'
+        ) {
+            this.setState({ permissionGranted: true });
+            this.getUserLocation();
+        } else {
+            this.props.navigation.navigate('PERMISSION', {
+                screen: 'CAMERA_PERMISSION'
+            });
+        }
+    }
+    /**
+     * Get location of user
+     * subscribe to location changes
+     */
+
+    async getUserLocation() {
+        const locationPermission = await checkLocationPermission();
+        if (locationPermission === 'granted') {
+            this.locationSubscription = RNLocation.subscribeToLocationUpdates(
+                locations => {
+                    !this.state.loading &&
+                        this.setState({
+                            lat: locations[0].latitude,
+                            lon: locations[0].longitude
+                        });
+                }
+            );
+            this.setState({ loading: false });
+        }
+    }
     /**
      * Flash a black screen when the user takes a photo
      */
@@ -93,39 +133,10 @@ class CameraScreen extends React.Component {
     }
 
     /**
-     * Get the location of the device when the user takes a photo
-     */
-    _getLocationAsync = async () => {
-        RNLocation.requestPermission({
-            ios: 'whenInUse',
-            android: {
-                detail: 'fine'
-            }
-        })
-            .then(granted => {
-                if (granted) {
-                    this.locationSubscription = RNLocation.subscribeToLocationUpdates(
-                        locations => {
-                            this.setState({
-                                lat: locations[0].latitude,
-                                lon: locations[0].longitude
-                            });
-                        }
-                    );
-                }
-            })
-            .finally(_ => {
-                this.setState({
-                    loading: false
-                });
-            });
-    };
-
-    /**
      * Render the camera page
      */
     render() {
-        if (this.state.loading || this.props.index === 0) {
+        if (this.state.loading) {
             return (
                 <View
                     style={{
@@ -147,7 +158,6 @@ class CameraScreen extends React.Component {
      * Render Camera
      */
     renderCamera() {
-        // console.log('CAMERA');
         return (
             <>
                 <RNCamera
@@ -156,46 +166,8 @@ class CameraScreen extends React.Component {
                     }}
                     style={{ flex: 1 }}
                     captureAudio={false}>
-                    {/*Top Row
-                        <View
-                          style={{
-                            alignItems: 'flex-start',
-                            backgroundColor: 'transparent',
-                            flex: 1,
-                            flexDirection: 'row',
-                            justifyContent: 'space-between',
-                            marginTop: 15,
-                            marginLeft: 15
-                          }}
-                        >
-                          <TouchableOpacity
-                            onPress={this.goToAwards}
-                          >
-                            <Icon
-                              color="white"
-                              name="trophy"
-                              size={40}
-                              type="font-awesome"
-                            />
-                          </TouchableOpacity>
-                        </View>
-                        */}
-
                     {/* Bottom Row */}
                     <View style={styles.bottomRow}>
-                        {/* Bottom Left */}
-                        <TouchableOpacity
-                            onPress={() =>
-                                this.props.navigation.navigate('HOME')
-                            }
-                            style={styles.bottomLeftIcon}>
-                            <Icon
-                                color="white"
-                                name="backup"
-                                size={SCREEN_HEIGHT * 0.05}
-                            />
-                        </TouchableOpacity>
-
                         {/* Photo Button*/}
                         <TouchableOpacity
                             onPress={this.takePicture.bind(this)}
@@ -216,14 +188,6 @@ class CameraScreen extends React.Component {
                                 opacity: this.state.shutterOpacity
                             }}
                         />
-
-                        {/* Bottom Right
-                          <TouchableOpacity
-                            onPress={this.changeView.bind(this, 1)}
-                            style={styles.bottomRightIcon}
-                          ><Icon color="white" name="layers" size={SCREEN_HEIGHT * 0.05} />
-                          </TouchableOpacity>
-                        */}
                     </View>
                     <SafeAreaView style={{ flex: 0 }} />
                 </RNCamera>
@@ -252,7 +216,33 @@ class CameraScreen extends React.Component {
      * We attach the users current GPS to the image
      */
     takePicture() {
-        if (this.camera) {
+        const lat = this.state.lat;
+        const lon = this.state.lon;
+        if (lat === null || lon === null) {
+            // Todo: Needs translation
+            Alert.alert(
+                'Location data not found',
+                'Your location services are not turned on. Please activate them to take geotagged photos.',
+                [
+                    {
+                        text: 'OK',
+                        onPress: async () => {
+                            // take user to location setting
+                            // INFO: IOS only
+                            // TODO: find a way to do the same in android without external libs
+                            iosUrl = 'App-Prefs:Privacy&path=LOCATION';
+                            if (Platform.OS === 'ios') {
+                                const result = await Linking.canOpenURL(iosUrl);
+                                result &&
+                                    Linking.openURL(
+                                        'App-Prefs:Privacy&path=LOCATION'
+                                    );
+                            }
+                        }
+                    }
+                ]
+            );
+        } else if (this.camera) {
             try {
                 this.animateShutter();
 
@@ -260,16 +250,6 @@ class CameraScreen extends React.Component {
                     .takePictureAsync()
                     .then(result => {
                         console.log('takePicture', result); // height, uri, width
-
-                        const lat = this.state.lat;
-                        const lon = this.state.lon;
-
-                        if (lat === null || lon === null) {
-                            // Todo: Needs translation
-                            alert(
-                                'Your location services are not turn on. Please activate them to take geotagged photos.'
-                            );
-                        }
 
                         const now = moment();
                         const date = moment(now).format('YYYY:MM:DD HH:mm:ss');
@@ -329,26 +309,10 @@ class CameraScreen extends React.Component {
     // zoomOut ()
     // {
     // }
-
-    /**
-     * Slide to value, passed to Parent Slides.js
-     */
-    changeView(value) {
-        this.props.swipe(value);
-    }
 }
 
 // StyleSheet needed for $rem above
 const styles = StyleSheet.create({
-    bottomLeftIcon: {
-        backgroundColor: 'transparent',
-        position: 'absolute',
-        left: 30,
-        bottom: 0,
-        zIndex: 1,
-        paddingRight: 20,
-        paddingTop: 20
-    },
     bottomRightIcon: {
         backgroundColor: 'transparent',
         position: 'absolute',

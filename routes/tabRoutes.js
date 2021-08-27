@@ -1,6 +1,8 @@
 import React from 'react';
-import { View } from 'react-native';
+import { View, SafeAreaView } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
+
 import Icon from 'react-native-vector-icons/Ionicons';
 import {
     UserStatsScreen,
@@ -11,12 +13,17 @@ import {
 // import { CameraPage } from '../screens/pages';
 import { Colors } from '../screens/components';
 
-const Tab = createBottomTabNavigator();
+// const Tab = createBottomTabNavigator();
+const Tab = createMaterialTopTabNavigator();
 
 const TabRoutes = ({ navigation }) => (
     <>
         <Tab.Navigator
+            lazy={true}
+            tabBarPosition="bottom"
             initialRouteName="HOME"
+            showIcon={true}
+            tabStyle={{ backgroundColor: '#000' }}
             screenOptions={({ route }) => ({
                 tabBarIcon: ({ focused, color, size }) => {
                     let iconName;
@@ -66,7 +73,10 @@ const TabRoutes = ({ navigation }) => (
                                 height: 50,
                                 borderRadius: 100,
                                 justifyContent: 'center',
-                                alignItems: 'center'
+                                alignItems: 'center',
+                                alignContent: 'center',
+                                padding: 0,
+                                marginTop: -5
                             }}>
                             <Icon name={iconName} size={24} color={color} />
                         </View>
@@ -76,11 +86,20 @@ const TabRoutes = ({ navigation }) => (
             tabBarOptions={{
                 activeTintColor: `${Colors.accent}`,
                 inactiveTintColor: 'gray',
+                showIcon: true,
                 showLabel: false,
+                iconStyle: {
+                    height: 50
+                },
+                pressColor: 'white',
+                pressOpacity: 0,
+                indicatorStyle: { display: 'none', backgroundColor: 'white' },
                 style: {
                     backgroundColor: 'white',
                     borderTopWidth: 0,
-                    paddingTop: 10
+                    height: 60,
+                    margin: 0,
+                    padding: 0
                 }
             }}>
             <Tab.Screen name="HOME" component={HomeScreen} />
@@ -95,6 +114,7 @@ const TabRoutes = ({ navigation }) => (
             {/* <Tab.Screen name="RANKING" component={RankingScreen} /> */}
             <Tab.Screen name="USER_STATS" component={UserStatsScreen} />
         </Tab.Navigator>
+        <SafeAreaView backgroundColor="#ffffff" />
     </>
 );
 

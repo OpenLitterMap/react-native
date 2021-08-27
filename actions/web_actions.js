@@ -1,5 +1,6 @@
 import {
     ADD_TAGS_TO_WEB_IMAGE,
+    DELETE_SELECTED_WEB_IMAGES,
     LOAD_MORE_WEB_IMAGES,
     INCREMENT_WEB_IMAGES_UPLOADED,
     REMOVE_WEB_IMAGE,
@@ -122,5 +123,32 @@ export const removeWebImage = id => {
     return {
         type: REMOVE_WEB_IMAGE,
         payload: id
+    };
+};
+
+/**
+ * Delete selected web image
+ * web image - image that are uploaded from web but not tagged
+ */
+export const deleteSelectedWebImages = (token, photoId) => {
+    return dispatch => {
+        return axios({
+            url: URL + '/api/photos/delete',
+            method: 'DELETE',
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            params: { photoId }
+        })
+            .then(resp => {
+                dispatch({
+                    type: REMOVE_WEB_IMAGE,
+                    payload: photoId
+                });
+            })
+            .catch(err => {
+                console.log('delete web image', err);
+            });
     };
 };

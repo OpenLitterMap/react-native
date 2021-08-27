@@ -6,14 +6,13 @@ import {
     Pressable,
     ActivityIndicator
 } from 'react-native';
+import AsyncStorage from '@react-native-community/async-storage';
 import * as actions from '../../actions';
 import { connect } from 'react-redux';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {
     Body,
     Title,
-    SubTitle,
-    Caption,
     AnimatedCircle,
     Header,
     Colors,
@@ -23,8 +22,49 @@ import {
 class UserStatsScreen extends Component {
     constructor(props) {
         super(props);
-        console.log('=========>');
-        console.log(JSON.stringify(this.props.user, null, '\t'));
+        // console.log(JSON.stringify(this.props.user, null, '\t'));
+        this.state = {
+            xpStart: 0,
+            positionStart: 0,
+            totalImagesStart: 0,
+            totalTagsStart: 0
+        };
+    }
+
+    componentDidMount() {
+        this.getDataFromStorage();
+    }
+
+    async getDataFromStorage() {
+        // data of previously viewd stats by user
+        const previousStats = await AsyncStorage.getItem('previousUserStats');
+
+        if (previousStats !== undefined && previousStats !== null) {
+            const { xp, position, totalImages, totalTags } = JSON.parse(
+                previousStats
+            );
+            this.setState({
+                xpStart: xp,
+                positionStart: position,
+                totalImagesStart: totalImages,
+                totalTagsStart: totalTags
+            });
+        }
+        this.fetchUserData();
+    }
+
+    async fetchUserData() {
+        await this.props.fetchUser(this.props.token);
+        const user = this.props.user;
+        const statsObj = {
+            xp: user?.xp,
+            position: user?.position,
+            totalImages: user?.total_images,
+            totalTags: user?.totalTags
+        };
+        // INFO: previous stats saved for animation purpose
+        // so value animates from previous viewd and current
+        AsyncStorage.setItem('previousUserStats', JSON.stringify(statsObj));
     }
 
     render() {
@@ -32,30 +72,32 @@ class UserStatsScreen extends Component {
 
         const statsData = [
             {
-                value: `${user?.xp.toLocaleString()}`,
+                value: user?.xp || this.state.xpStart,
+                startValue: this.state.xpStart,
                 title: 'XP',
                 icon: 'ios-medal-outline',
                 color: '#14B8A6',
                 bgColor: '#CCFBF1'
             },
             {
-                value: `${user?.level.toLocaleString()}`,
-                title: 'Level',
+                value: user?.position || this.state.positionStart,
+                startValue: this.state.positionStart,
+                title: 'Rank',
                 icon: 'ios-podium-outline',
                 color: '#A855F7',
                 bgColor: '#F3E8FF'
             },
             {
-                value: `${user?.total_images?.toLocaleString() || 0}`,
+                value: user?.total_images || this.state.totalImagesStart,
+                startValue: this.state.totalImagesStart,
                 title: 'Photos',
                 icon: 'ios-images-outline',
                 color: '#F59E0B',
                 bgColor: '#FEF9C3'
             },
             {
-                value: `${(
-                    user?.total_brands + user?.total_tags
-                ).toLocaleString()}`,
+                value: user?.totalTags || this.state.totalTagsStart,
+                startValue: this.state.totalTagsStart,
                 title: 'Tags',
                 icon: 'ios-pricetags-outline',
                 color: '#0EA5E9',
@@ -118,6 +160,7 @@ class UserStatsScreen extends Component {
                     <Body color="accent" style={{ textAlign: 'center' }}>
                         {user.xpRequired}XP more to level up
                     </Body>
+
                     <StatsGrid statsData={statsData} />
                 </ScrollView>
             </>
