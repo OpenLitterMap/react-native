@@ -4,6 +4,7 @@ import { STATS_REQUEST_SUCCESS, STATS_REQUEST_ERROR } from '../actions/types';
 const INITIAL_STATE = {
     totalLitter: 0,
     totalPhotos: 0,
+    totalUsers: 0,
     totalLittercoin: 0,
     litterTarget: {
         previousTarget: 0,
@@ -17,6 +18,7 @@ export default function(state = INITIAL_STATE, action) {
             // console.log(JSON.stringify(action.payload, null, '\t'));
             const totalLitter = action.payload?.total_litter;
             const totalPhotos = action.payload?.total_photos;
+            const totalUsers = action.payload?.total_users;
             const totalLittercoin = parseInt(action.payload?.littercoin);
             const litterTarget = {
                 previousTarget: action.payload.previousXp,
@@ -32,6 +34,7 @@ export default function(state = INITIAL_STATE, action) {
                 JSON.stringify({
                     totalLitter,
                     totalPhotos,
+                    totalUsers,
                     totalLittercoin,
                     litterTarget,
                     targetPercentage
@@ -41,6 +44,7 @@ export default function(state = INITIAL_STATE, action) {
                 ...state,
                 totalLitter,
                 totalPhotos,
+                totalUsers,
                 totalLittercoin,
                 litterTarget,
                 targetPercentage

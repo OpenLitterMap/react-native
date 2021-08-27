@@ -48,12 +48,16 @@ class GlobalDataScreen extends Component {
         const stats = await AsyncStorage.getItem('globalStats');
 
         if (stats !== undefined && stats !== null) {
-            const { totalLitter, totalPhotos, totalLittercoin } = JSON.parse(
-                stats
-            );
+            const {
+                totalLitter,
+                totalPhotos,
+                totalUsers,
+                totalLittercoin
+            } = JSON.parse(stats);
             this.setState({
                 litterStart: totalLitter,
                 photosStart: totalPhotos,
+                totalUsers: totalUsers,
                 littercoinStart: totalLittercoin
             });
         }
@@ -63,6 +67,7 @@ class GlobalDataScreen extends Component {
         const {
             totalLitter,
             totalPhotos,
+            totalUsers,
             totalLittercoin,
             litterTarget,
             targetPercentage
@@ -94,8 +99,8 @@ class GlobalDataScreen extends Component {
                 bgColor: '#FEF9C3'
             },
             {
-                value: 4748,
-                startValue: 4000,
+                value: totalUsers || this.state.usersStart,
+                startValue: this.state.usersStart,
                 title: 'Total Users',
                 icon: 'ios-people-outline',
                 color: '#0EA5E9',
@@ -172,6 +177,7 @@ const mapStateToProps = state => {
     return {
         totalLitter: state.stats.totalLitter,
         totalPhotos: state.stats.totalPhotos,
+        totalUsers: state.stats.totalUsers,
         totalLittercoin: state.stats.totalLittercoin,
         litterTarget: state.stats.litterTarget,
         targetPercentage: state.stats.targetPercentage
