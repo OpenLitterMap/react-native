@@ -1,11 +1,15 @@
 import { STATS_REQUEST_SUCCESS, STATS_REQUEST_ERROR, URL } from './types';
 import axios from 'axios';
 
-export const getStats = () => {
+export const getStats = token => {
     return dispatch => {
         return axios({
-            url: URL + '/api/v2/global/stats-data',
-            method: 'GET'
+            url: URL + '/api/global/stats-data',
+            method: 'GET',
+            headers: {
+                Authorization: 'Bearer ' + token,
+                Accept: 'application/json'
+            }
         })
             .then(response => {
                 console.log(

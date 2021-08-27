@@ -24,7 +24,7 @@ class GlobalDataScreen extends Component {
         };
     }
 
-    componentDidMount() {
+    async componentDidMount() {
         this.focusListner = this.props.navigation.addListener('focus', () => {
             // console.log('GLOBAL DATA');
 
@@ -33,8 +33,8 @@ class GlobalDataScreen extends Component {
             });
         });
 
-        this.getDataFormStorage();
-        this.props.getStats();
+        const token = await this.getDataFormStorage();
+        this.props.getStats(token);
     }
 
     componentWillUnmount() {
@@ -61,6 +61,8 @@ class GlobalDataScreen extends Component {
                 littercoinStart: totalLittercoin
             });
         }
+
+        return AsyncStorage.getItem('token');
     }
 
     render() {
