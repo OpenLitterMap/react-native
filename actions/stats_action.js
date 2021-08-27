@@ -4,7 +4,7 @@ import axios from 'axios';
 export const getStats = () => {
     return dispatch => {
         return axios({
-            url: URL + '/v2/global/stats-data',
+            url: URL + '/api/v2/global/stats-data',
             method: 'GET'
         })
             .then(response => {
