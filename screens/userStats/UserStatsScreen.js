@@ -16,8 +16,29 @@ import {
     AnimatedCircle,
     Header,
     Colors,
-    StatsGrid
+    StatsGrid,
+    Caption
 } from '../components';
+
+const ProgressStatCard = ({ value, title, tagline, color, style }) => {
+    return (
+        <View
+            style={[
+                style,
+                {
+                    // borderTopColor: color,
+                    // borderTopWidth: 4,
+                    borderRadius: 8,
+                    paddingLeft: 10,
+                    paddingVertical: 10
+                }
+            ]}>
+            <Title style={{ color }}>{value}</Title>
+            <Body style={{ color }}>{title}</Body>
+            <Caption>{tagline}</Caption>
+        </View>
+    );
+};
 
 class UserStatsScreen extends Component {
     constructor(props) {
@@ -141,25 +162,83 @@ class UserStatsScreen extends Component {
                     }
                 />
                 <ScrollView
-                    contentContainerStyle={{
-                        paddingTop: 20
-                    }}
+                    contentContainerStyle={
+                        {
+                            // paddingTop: 20
+                        }
+                    }
                     style={styles.container}
                     showsVerticalScrollIndicator={false}
                     alwaysBounceVertical={false}>
-                    <AnimatedCircle
-                        strokeWidth={30}
-                        percentage={user.targetPercentage}
-                        color={`${Colors.accent}`}
-                        value={user.level}
-                        delay={500}
-                        duration={5000}
-                        radius={160}
-                        tagline="Level"
-                    />
-                    <Body color="accent" style={{ textAlign: 'center' }}>
+                    <View
+                        style={{
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            flex: 1,
+                            margin: 20,
+                            marginTop: 0,
+                            paddingVertical: 20,
+                            borderRadius: 20
+                            // backgroundColor: '#f2fffc'
+                        }}>
+                        <View
+                            style={{
+                                // flex: 1,
+                                flexGrow: 1,
+                                justifyContent: 'center',
+                                alignItems: 'center'
+                            }}>
+                            <View style={{ position: 'absolute' }}>
+                                <AnimatedCircle
+                                    isValueDisplayed={false}
+                                    strokeWidth={10}
+                                    percentage={user.targetPercentage}
+                                    color={`${Colors.accent}`}
+                                    value={user.level}
+                                    delay={500}
+                                    duration={5000}
+                                    radius={70}
+                                    // tagline="Level"
+                                />
+                            </View>
+
+                            <View>
+                                <AnimatedCircle
+                                    isValueDisplayed={false}
+                                    strokeWidth={10}
+                                    percentage={user.targetPercentage + 10}
+                                    color={`#f7ca18`}
+                                    value={user.level}
+                                    delay={500}
+                                    duration={5000}
+                                    radius={90}
+                                    tagline="Level"
+                                />
+                            </View>
+                        </View>
+
+                        <View style={{ flexShrink: 1, padding: 10 }}>
+                            <ProgressStatCard
+                                color={Colors.accent}
+                                value={user.level}
+                                title="Level"
+                                tagline={`${
+                                    user.xpRequired
+                                }XP more to level up`}
+                            />
+                            <ProgressStatCard
+                                style={{ marginTop: 20 }}
+                                color="#f7ca18"
+                                value={`80`}
+                                title="Littercoin"
+                                tagline={`50 images more for next littercoin`}
+                            />
+                        </View>
+                    </View>
+
+                    {/* <Body color="accent" style={{ textAlign: 'center' }}>
                         {user.xpRequired}XP more to level up
-                    </Body>
+                    </Body> */}
 
                     <StatsGrid statsData={statsData} />
                 </ScrollView>
