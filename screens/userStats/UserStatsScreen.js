@@ -25,7 +25,7 @@ const { width } = Dimensions.get('window');
 class UserStatsScreen extends Component {
     constructor(props) {
         super(props);
-        // console.log(JSON.stringify(this.props.user, null, '\t'));
+        console.log(JSON.stringify(this.props.user, null, '\t'));
         this.state = {
             xpStart: 0,
             positionStart: 0,
@@ -144,11 +144,6 @@ class UserStatsScreen extends Component {
                     }
                 />
                 <ScrollView
-                    contentContainerStyle={
-                        {
-                            // paddingTop: 20
-                        }
-                    }
                     style={styles.container}
                     showsVerticalScrollIndicator={false}
                     alwaysBounceVertical={false}>
@@ -175,7 +170,7 @@ class UserStatsScreen extends Component {
                                     isValueDisplayed={false}
                                     strokeWidth={10}
                                     percentage={user.targetPercentage}
-                                    color={`${Colors.accent}`}
+                                    color="#e268b3"
                                     value={user.level}
                                     delay={500}
                                     duration={5000}
@@ -188,9 +183,9 @@ class UserStatsScreen extends Component {
                                 <AnimatedCircle
                                     isValueDisplayed={false}
                                     strokeWidth={10}
-                                    percentage={user.targetPercentage + 10}
-                                    color="#f7ca18"
-                                    value={user.level}
+                                    percentage={user?.total_images % 100}
+                                    color="#A46EDA"
+                                    value={user?.total_images % 100}
                                     delay={500}
                                     duration={5000}
                                     radius={(width - 40) / 4}
@@ -201,7 +196,7 @@ class UserStatsScreen extends Component {
 
                         <View style={{ flexShrink: 1, padding: 10 }}>
                             <ProgressStatCard
-                                color={Colors.accent}
+                                color="#e268b3"
                                 value={user.level}
                                 title="Level"
                                 tagline={`${
@@ -210,10 +205,12 @@ class UserStatsScreen extends Component {
                             />
                             <ProgressStatCard
                                 style={{ marginTop: 20 }}
-                                color="#f7ca18"
-                                value={`80`}
+                                color="#A46EDA"
+                                value={user.totalLittercoin}
                                 title="Littercoin"
-                                tagline={`50 images more for next littercoin`}
+                                tagline={`${100 -
+                                    (user?.total_images %
+                                        100)} images more for next littercoin`}
                             />
                         </View>
                     </View>
