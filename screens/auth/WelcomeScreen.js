@@ -4,9 +4,11 @@ import { TransText } from 'react-native-translation';
 import LinearGradient from 'react-native-linear-gradient';
 import LanguageFlags from './welcome/LanguageFlags';
 import Slides from './welcome/Slides';
+import { Colors, Body, SubTitle } from '../components';
 
 import { connect } from 'react-redux';
 import * as actions from '../../actions';
+import { Pressable } from 'react-native';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -38,7 +40,9 @@ class WelcomeScreen extends Component {
     }
 
     goToAuth(auth) {
-        this.props.navigation.navigate('AUTH');
+        this.props.navigation.navigate('AUTH', {
+            screen: auth
+        });
     }
 
     /**
@@ -52,26 +56,38 @@ class WelcomeScreen extends Component {
                 <LanguageFlags lang={lang} />
 
                 <LinearGradient
-                    colors={['#2ecc71', '#8e44ad', '#c5d119']}
+                    colors={[Colors.accent, Colors.accentLight]}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 1 }}
                     style={{ flex: 1 }}>
                     <Slides data={SLIDE_DATA} lang={lang} />
 
                     <View style={styles.loginPosition}>
-                        <TouchableOpacity
+                        <Pressable
                             onPress={this.goToAuth.bind(this, 'signup')}
                             style={styles.loginButton}>
                             <TransText
                                 style={styles.signupText}
                                 dictionary={`${lang}.welcome.continue`}
                             />
-                        </TouchableOpacity>
-                        <TransText
+                        </Pressable>
+                        <Pressable
                             onPress={this.goToAuth.bind(this, 'login')}
-                            style={styles.loginText}
-                            dictionary={`${lang}.welcome.already-have-account`}
-                        />
+                            style={{
+                                flexDirection: 'row',
+                                justifyContent: 'center'
+                            }}>
+                            <Body
+                                style={styles.loginText}
+                                dictionary={`${lang}.auth.already-have`}
+                            />
+                            <Body
+                                color="accent"
+                                family="semiBold"
+                                style={[styles.loginText, { marginLeft: 10 }]}
+                                dictionary={`${lang}.auth.login`}
+                            />
+                        </Pressable>
                     </View>
                 </LinearGradient>
             </View>
@@ -87,9 +103,9 @@ const styles = {
     },
     loginButton: {
         alignItems: 'center',
-        backgroundColor: '#00a8ff',
-        borderWidth: 0.5,
-        borderRadius: 6,
+        backgroundColor: Colors.accent,
+        // borderWidth: 0.5,
+        borderRadius: 100,
         height: SCREEN_HEIGHT * 0.07,
         justifyContent: 'center',
         width: SCREEN_WIDTH * 0.8
@@ -104,12 +120,8 @@ const styles = {
         fontWeight: '600'
     },
     loginText: {
-        alignItems: 'center',
-        alignSelf: 'center',
-        padding: SCREEN_HEIGHT * 0.015,
-        fontSize: SCREEN_HEIGHT * 0.02,
-        justifyContent: 'center',
-        marginTop: 10
+        marginTop: 10,
+        paddingVertical: 10
     }
 };
 

@@ -167,15 +167,16 @@ class AuthScreen extends Component {
     componentDidMount() {
         this.updateSizeVariables();
         // FIXME: check this getParam is not defined in 5x
-        // if (this.props.navigation.getParam('auth') === 'login') {
-        //     this.setState({
-        //         formMode: formModes.LOGIN
-        //     });
-        // }
+        const { screen } = this.props.route.params;
+        if (screen === 'login') {
+            this.setState({
+                formMode: formModes.LOGIN
+            });
+        }
 
-        this.setState({
-            formMode: formModes.LOGIN
-        });
+        // this.setState({
+        //     formMode: formModes.LOGIN
+        // });
         if (Platform.OS === 'ios') {
             this.keyboardWillShowSub = Keyboard.addListener(
                 'keyboardWillShow',
