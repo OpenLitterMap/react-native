@@ -382,17 +382,31 @@ class AuthScreen extends Component {
      *
      * @return boolean
      */
-    validateUsername = username => {
-        if (this.isUsernameValid(username)) {
+    validateUsername = async username => {
+        const { result, errorType } = await this.isUsernameValid(username);
+        if (result) {
             this.setState({
                 usernameErrorMessage: null
             });
         } else {
+            let errorMessage;
+            // TODO: add below translations to rest of languages
+            switch (errorType) {
+                case 'MIN_MAX_LENGTH':
+                    errorMessage = `${this.props.lang}.auth.username-min-max`;
+                    break;
+                case 'NO_USERNAME':
+                    errorMessage = `${this.props.lang}.auth.enter-username`;
+                    break;
+                case 'EQUAL_TO_PASSWORD':
+                    errorMessage = `${
+                        this.props.lang
+                    }.auth.username-equal-to-password`;
+                    break;
+            }
+
             this.setState({
-                usernameErrorMessage:
-                    username.trim() === ''
-                        ? `${this.props.lang}.auth.enter-username`
-                        : `${this.props.lang}.auth.alphanumeric-username`
+                usernameErrorMessage: errorMessage
             });
 
             return false;
@@ -455,7 +469,20 @@ class AuthScreen extends Component {
           $                         End anchor.
           source: https://stackoverflow.com/questions/336210/regular-expression-for-alphanumeric-and-underscores
          */
-        return username.length > 0;
+        let errorType;
+        let result = true;
+        if (username === this.state.password) {
+            result = false;
+            errorType = 'EQUAL_TO_PASSWORD';
+        }
+        if (username.length === 0) {
+            result = false;
+            errorType = 'NO_USERNAME';
+        } else if (username.length < 3 || username.length > 20) {
+            result = false;
+            errorType = 'MIN_MAX_LENGTH';
+        }
+        return { result, errorType };
         // let regex = /^\w{4,20}$/;
         // return regex.test(username);
     };
