@@ -37,7 +37,7 @@ const SCREEN_WIDTH = Dimensions.get('window').width;
 class CameraScreen extends React.Component {
     constructor(props) {
         super(props);
-
+        this.locationSubscription;
         this.state = {
             lat: null,
             lon: null,
@@ -69,7 +69,8 @@ class CameraScreen extends React.Component {
 
     componentWillUnmount() {
         // unsubscribe to location services on unmount
-        this.locationSubscription();
+
+        this.locationSubscription && this.locationSubscription();
         this.focusListner();
         this.blurListner();
     }
