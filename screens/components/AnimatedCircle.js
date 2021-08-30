@@ -20,7 +20,8 @@ const AnimatedCircle = ({
     valueStyles,
     max = 100,
     tagline,
-    taglineStyles
+    taglineStyles,
+    isValueDisplayed = true
 }) => {
     const animated = React.useRef(new Animated.Value(0)).current;
     const textAnimated = React.useRef(new Animated.Value(0)).current;
@@ -133,36 +134,38 @@ const AnimatedCircle = ({
                     />
                 </G>
             </Svg>
-            <View
-                style={[
-                    StyleSheet.absoluteFillObject,
-                    {
-                        alignItems: 'center',
-                        justifyContent: 'center'
-                    }
-                ]}>
-                <AnimatedTextInput
-                    ref={inputRef}
-                    underlineColorAndroid="transparent"
-                    editable={false}
-                    defaultValue="0"
+            {isValueDisplayed && (
+                <View
                     style={[
-                        { color: textColor ?? color },
-                        styles.value,
-                        valueStyles
-                    ]}
-                />
-
-                <Body
-                    family="semiBold"
-                    style={[
-                        { color: textColor ?? color },
-                        styles.tagline,
-                        taglineStyles
+                        StyleSheet.absoluteFillObject,
+                        {
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        }
                     ]}>
-                    {tagline}
-                </Body>
-            </View>
+                    <AnimatedTextInput
+                        ref={inputRef}
+                        underlineColorAndroid="transparent"
+                        editable={false}
+                        defaultValue="0"
+                        style={[
+                            { color: textColor ?? color },
+                            styles.value,
+                            valueStyles
+                        ]}
+                    />
+
+                    <Body
+                        family="semiBold"
+                        style={[
+                            { color: textColor ?? color },
+                            styles.tagline,
+                            taglineStyles
+                        ]}>
+                        {tagline}
+                    </Body>
+                </View>
+            )}
         </View>
     );
 };
@@ -179,7 +182,8 @@ AnimatedCircle.proptypes = {
     valueSuffix: PropTypes.string,
     valueStyles: PropTypes.oneOfType([PropTypes.array, PropTypes.object]),
     tagline: PropTypes.string,
-    taglineStyles: PropTypes.oneOfType([PropTypes.array, PropTypes.object])
+    taglineStyles: PropTypes.oneOfType([PropTypes.array, PropTypes.object]),
+    isValueDisplayed: PropTypes.bool
 };
 
 const styles = StyleSheet.create({

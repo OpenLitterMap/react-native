@@ -10,14 +10,8 @@ import AsyncStorage from '@react-native-community/async-storage';
 import * as actions from '../../actions';
 import { connect } from 'react-redux';
 import Icon from 'react-native-vector-icons/Ionicons';
-import {
-    Body,
-    Title,
-    AnimatedCircle,
-    Header,
-    Colors,
-    StatsGrid
-} from '../components';
+import { Body, Title, Header, Colors, StatsGrid } from '../components';
+import { ProgressCircleCard } from './_components';
 
 class UserStatsScreen extends Component {
     constructor(props) {
@@ -85,7 +79,8 @@ class UserStatsScreen extends Component {
                 title: 'Rank',
                 icon: 'ios-podium-outline',
                 color: '#A855F7',
-                bgColor: '#F3E8FF'
+                bgColor: '#F3E8FF',
+                ordinal: true
             },
             {
                 value: user?.total_images || this.state.totalImagesStart,
@@ -141,25 +136,16 @@ class UserStatsScreen extends Component {
                     }
                 />
                 <ScrollView
-                    contentContainerStyle={{
-                        paddingTop: 20
-                    }}
                     style={styles.container}
                     showsVerticalScrollIndicator={false}
                     alwaysBounceVertical={false}>
-                    <AnimatedCircle
-                        strokeWidth={30}
-                        percentage={user.targetPercentage}
-                        color={`${Colors.accent}`}
-                        value={user.level}
-                        delay={500}
-                        duration={5000}
-                        radius={160}
-                        tagline="Level"
+                    <ProgressCircleCard
+                        level={user?.level}
+                        levelPercentage={user?.targetPercentage}
+                        xpRequired={user?.xpRequired}
+                        totalLittercoin={user?.totalLittercoin}
+                        littercoinPercentage={user?.total_images % 100}
                     />
-                    <Body color="accent" style={{ textAlign: 'center' }}>
-                        {user.xpRequired}XP more to level up
-                    </Body>
 
                     <StatsGrid statsData={statsData} />
                 </ScrollView>
