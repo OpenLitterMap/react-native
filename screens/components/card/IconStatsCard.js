@@ -6,6 +6,22 @@ import { Title, Caption } from '../typography';
 import { Colors } from '../theme';
 const { width } = Dimensions.get('window');
 
+// fn to get ordinal of number
+export const getOrdinal = number => {
+    const b = number % 10;
+    const output =
+        Math.floor((number % 100) / 10) === 1
+            ? 'th'
+            : b === 1
+            ? 'st'
+            : b === 2
+            ? 'nd'
+            : b === 3
+            ? 'rd'
+            : 'th';
+    return output;
+};
+
 const IconStatsCard = ({
     style,
     value,
@@ -14,6 +30,7 @@ const IconStatsCard = ({
     fontColor = Colors.accent,
     imageContent,
     contentCenter,
+    ordinal,
     backgroundColor = Colors.accentLight
 }) => {
     return (
@@ -42,6 +59,10 @@ const IconStatsCard = ({
                     duration={5}
                     shouldUseToLocaleString
                 />
+                {ordinal &&
+                    value !== 0 &&
+                    value !== undefined &&
+                    getOrdinal(value)}
             </Title>
 
             <Caption
@@ -66,6 +87,7 @@ IconStatsCard.propTypes = {
     fontColor: PropTypes.string,
     backgroundColor: PropTypes.string,
     contentCenter: PropTypes.bool,
+    ordinal: PropTypes.bool,
     imageContent: PropTypes.element
 };
 

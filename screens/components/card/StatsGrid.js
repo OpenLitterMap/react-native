@@ -25,6 +25,7 @@ const StatsGrid = ({ statsData }) => {
                         contentCenter
                         backgroundColor={stat.bgColor}
                         fontColor={stat.color}
+                        ordinal={stat.ordinal}
                     />
                 ))}
             </View>
@@ -40,7 +41,8 @@ StatsGrid.propTypes = {
             startValue: PropTypes.number,
             icon: PropTypes.string.isRequired,
             color: PropTypes.string.isRequired,
-            bgColor: PropTypes.string.isRequired
+            bgColor: PropTypes.string.isRequired,
+            ordinal: PropTypes.bool
         })
     )
 };

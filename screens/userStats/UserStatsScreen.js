@@ -79,7 +79,8 @@ class UserStatsScreen extends Component {
                 title: 'Rank',
                 icon: 'ios-podium-outline',
                 color: '#A855F7',
-                bgColor: '#F3E8FF'
+                bgColor: '#F3E8FF',
+                ordinal: true
             },
             {
                 value: user?.total_images || this.state.totalImagesStart,
