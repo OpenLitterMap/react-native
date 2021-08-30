@@ -197,17 +197,20 @@ export default function(state = INITIAL_STATE, action) {
             } else {
                 user = action.payload.userObj;
             }
-            // console.log(JSON.stringify(user, null, '\t'));
             const level = XPLEVEL.findIndex(xp => xp > user.xp);
             const xpRequired = XPLEVEL[level] - user.xp;
-
-            const targetPercentage = (user.xp / XPLEVEL[level]) * 100;
+            const previousTarget = level > 0 ? XPLEVEL[level - 1] : 0;
+            const targetPercentage =
+                ((user.xp - previousTarget) /
+                    (XPLEVEL[level] - previousTarget)) *
+                100;
             user.level = level;
             user.xpRequired = xpRequired;
             user.targetPercentage = targetPercentage;
             user.totalTags = user.total_brands + user.total_tags;
             user.totalLittercoin =
                 (user.littercoin_allowance || 0) + (user.littercoin_owed || 0);
+
             AsyncStorage.setItem('user', JSON.stringify(user));
             return {
                 ...state,

@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, View, Dimensions } from 'react-native';
+import { StyleSheet, View, Dimensions } from 'react-native';
 import ProgressStatCard from './ProgressStatCard';
 import { AnimatedCircle } from '../../components';
 const { width } = Dimensions.get('window');
@@ -12,33 +12,18 @@ const ProgressCircleCard = ({
     littercoinPercentage
 }) => {
     return (
-        <View
-            style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                flex: 1,
-                marginHorizontal: 20,
-                paddingVertical: 20,
-                borderRadius: 20
-            }}>
-            <View
-                style={{
-                    // flex: 1,
-                    flexGrow: 1,
-                    justifyContent: 'center',
-                    alignItems: 'center'
-                }}>
+        <View style={styles.container}>
+            <View style={styles.circleContainer}>
                 <View style={{ position: 'absolute' }}>
                     <AnimatedCircle
                         isValueDisplayed={false}
                         strokeWidth={10}
                         percentage={levelPercentage}
                         color="#e268b3"
-                        value={level}
+                        value={levelPercentage}
                         delay={500}
                         duration={5000}
                         radius={(width - 40) / 4 - 16}
-                        // tagline="Level"
                     />
                 </View>
 
@@ -52,7 +37,6 @@ const ProgressCircleCard = ({
                         delay={500}
                         duration={5000}
                         radius={(width - 40) / 4}
-                        tagline="Level"
                     />
                 </View>
             </View>
@@ -79,4 +63,18 @@ const ProgressCircleCard = ({
 
 export default ProgressCircleCard;
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+    container: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        flex: 1,
+        marginHorizontal: 20,
+        paddingVertical: 20,
+        borderRadius: 20
+    },
+    circleContainer: {
+        flexGrow: 1,
+        justifyContent: 'center',
+        alignItems: 'center'
+    }
+});
