@@ -62,11 +62,6 @@ class AuthScreen extends Component {
     }
 
     componentDidUpdate(prevProps, prevState) {
-        console.log('componentDidUpdate');
-        console.log('prevProps.isSubmitting', prevProps.isSubmitting);
-        console.log('this.props.isSubmitting', this.props.isSubmitting);
-        console.log('isFormReady', this.state.isFormReady);
-
         // if formMode changed, recheck validity
         if (prevState.formMode !== this.state.formMode) {
             // clear last server message
@@ -166,16 +161,16 @@ class AuthScreen extends Component {
      */
     componentDidMount() {
         this.updateSizeVariables();
-        // FIXME: check this getParam is not defined in 5x
-        // if (this.props.navigation.getParam('auth') === 'login') {
-        //     this.setState({
-        //         formMode: formModes.LOGIN
-        //     });
-        // }
+        const { screen } = this.props.route.params;
+        if (screen === 'login') {
+            this.setState({
+                formMode: formModes.LOGIN
+            });
+        }
 
-        this.setState({
-            formMode: formModes.LOGIN
-        });
+        // this.setState({
+        //     formMode: formModes.LOGIN
+        // });
         if (Platform.OS === 'ios') {
             this.keyboardWillShowSub = Keyboard.addListener(
                 'keyboardWillShow',
@@ -387,17 +382,31 @@ class AuthScreen extends Component {
      *
      * @return boolean
      */
-    validateUsername = username => {
-        if (this.isUsernameValid(username)) {
+    validateUsername = async username => {
+        const { result, errorType } = await this.isUsernameValid(username);
+        if (result) {
             this.setState({
                 usernameErrorMessage: null
             });
         } else {
+            let errorMessage;
+            // TODO: add below translations to rest of languages
+            switch (errorType) {
+                case 'MIN_MAX_LENGTH':
+                    errorMessage = `${this.props.lang}.auth.username-min-max`;
+                    break;
+                case 'NO_USERNAME':
+                    errorMessage = `${this.props.lang}.auth.enter-username`;
+                    break;
+                case 'EQUAL_TO_PASSWORD':
+                    errorMessage = `${
+                        this.props.lang
+                    }.auth.username-equal-to-password`;
+                    break;
+            }
+
             this.setState({
-                usernameErrorMessage:
-                    username.trim() === ''
-                        ? `${this.props.lang}.auth.enter-username`
-                        : `${this.props.lang}.auth.alphanumeric-username`
+                usernameErrorMessage: errorMessage
             });
 
             return false;
@@ -411,10 +420,9 @@ class AuthScreen extends Component {
      *
      * @param email
      */
-    updateEmail = email => {
-        email = email.trim().toLocaleLowerCase();
-
-        this.setState({ email: email });
+    updateEmail = async email => {
+        email = await email.trim().toLocaleLowerCase();
+        this.setState({ email });
 
         // only check for errors if the login/signup button has been pressed
         if (this.state.buttonPressed) {
@@ -461,7 +469,20 @@ class AuthScreen extends Component {
           $                         End anchor.
           source: https://stackoverflow.com/questions/336210/regular-expression-for-alphanumeric-and-underscores
          */
-        return username.length > 0;
+        let errorType;
+        let result = true;
+        if (username === this.state.password) {
+            result = false;
+            errorType = 'EQUAL_TO_PASSWORD';
+        }
+        if (username.length === 0) {
+            result = false;
+            errorType = 'NO_USERNAME';
+        } else if (username.length < 3 || username.length > 20) {
+            result = false;
+            errorType = 'MIN_MAX_LENGTH';
+        }
+        return { result, errorType };
         // let regex = /^\w{4,20}$/;
         // return regex.test(username);
     };
