@@ -1,5 +1,6 @@
 import React from 'react';
 import { View } from 'react-native';
+import { CountUp } from 'use-count-up';
 import { Title, Body, Caption } from '../../components';
 
 const ProgressStatCard = ({ value, title, tagline, color, style }) => {
@@ -13,7 +14,14 @@ const ProgressStatCard = ({ value, title, tagline, color, style }) => {
                     paddingVertical: 10
                 }
             ]}>
-            <Title style={{ color }}>{value}</Title>
+            <Title style={{ color }}>
+                <CountUp
+                    isCounting
+                    end={value}
+                    duration={5}
+                    shouldUseToLocaleString
+                />
+            </Title>
             <Body style={{ color }}>{title}</Body>
             <Caption>{tagline}</Caption>
         </View>
