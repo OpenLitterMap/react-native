@@ -16,19 +16,19 @@ const SCREEN_WIDTH = Dimensions.get('window').width;
 const SLIDE_DATA = [
     {
         id: 1,
-        image: require('../../assets/easy.png'),
+        image: require('../../assets/illustrations/click_image.png'),
         title: 'welcome.easy',
         text: 'welcome.just-tag-and-upload'
     },
     {
         id: 2,
-        image: require('../../assets/rank.png'),
+        image: require('../../assets/illustrations/rankup.png'),
         title: 'welcome.fun',
         text: 'welcome.climb-leaderboards'
     },
     {
         id: 3,
-        image: require('../../assets/dove_colour.png'),
+        image: require('../../assets/illustrations/open_data.png'),
         title: 'welcome.open',
         text: 'welcome.unlimited-potential'
     }
@@ -55,11 +55,11 @@ class WelcomeScreen extends Component {
             <View style={{ flex: 1, position: 'relative', zIndex: 1 }}>
                 <LanguageFlags lang={lang} />
 
-                <LinearGradient
-                    colors={[Colors.accent, Colors.accentLight]}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
-                    style={{ flex: 1 }}>
+                <View
+                    // colors={[Colors.accentLight, Colors.accentLight]}
+                    // start={{ x: 0, y: 0 }}
+                    // end={{ x: 1, y: 1 }}
+                    style={{ flex: 1, backgroundColor: Colors.accentLight }}>
                     <Slides data={SLIDE_DATA} lang={lang} />
 
                     <View style={styles.loginPosition}>
@@ -89,7 +89,7 @@ class WelcomeScreen extends Component {
                             />
                         </Pressable>
                     </View>
-                </LinearGradient>
+                </View>
             </View>
         );
     }
@@ -117,7 +117,8 @@ const styles = {
     },
     signupText: {
         fontSize: SCREEN_HEIGHT * 0.02,
-        fontWeight: '600'
+        fontWeight: '600',
+        color: 'white'
     },
     loginText: {
         marginTop: 10,

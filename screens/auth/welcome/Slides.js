@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import PageControl from 'react-native-page-control';
 import { getLanguage, TransText } from 'react-native-translation';
+import { Title } from '../../components';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -37,7 +38,7 @@ class Slides extends Component {
             flexDirection = 'column';
         }
 
-        return { flex: 1, flexDirection: flexDirection, alignSelf: 'center' };
+        return { flexDirection: flexDirection, alignSelf: 'center' };
     }
 
     renderSlides() {
@@ -50,16 +51,17 @@ class Slides extends Component {
 
                     <View style={styles.textContainer}>
                         <View style={this.getInnerTextContainer()}>
-                            <TransText
-                                style={styles.slideTitle1}
+                            <Title
+                                style={styles.slideTitle}
                                 dictionary={`${lang}.welcome.its`}
                             />
-                            <TransText
-                                style={styles.slideTitle2}
+                            <Title
+                                color="accent"
+                                style={styles.slideTitle}
                                 dictionary={`${lang}.${slide.title}`}
                             />
                         </View>
-                        <TransText
+                        <Title
                             style={styles.slideText}
                             dictionary={`${lang}.${slide.text}`}
                         />
@@ -118,12 +120,14 @@ const styles = {
         color: 'white'
     },
     slideImage: {
+        width: SCREEN_WIDTH - 40,
+        height: SCREEN_WIDTH - 40,
         // backgroundColor: 'red',
-        height: SCREEN_HEIGHT * 0.45,
-        position: 'absolute',
-        resizeMode: 'contain',
-        top: SCREEN_HEIGHT * 0.15,
-        width: SCREEN_WIDTH * 0.7
+        // height: SCREEN_HEIGHT * 0.45,
+        // position: 'absolute',
+        // resizeMode: 'contain',
+        marginTop: SCREEN_HEIGHT * 0.15
+        // width: SCREEN_WIDTH * 0.7
     },
     indicatorSize: {
         height: SCREEN_HEIGHT * 0.01,
@@ -161,33 +165,23 @@ const styles = {
         alignItems: 'center',
         // backgroundColor: '#2ecc71',
         flex: 1,
-        justifyContent: 'center',
+        // justifyContent: 'center',
         width: SCREEN_WIDTH
     },
-    slideTitle1: {
-        color: '#18181a',
+    slideTitle: {
         fontSize: SCREEN_HEIGHT * 0.06, // 40
-        fontFamily: 'Avenir-Black',
-        textAlign: 'center'
-    },
-    slideTitle2: {
-        color: '#4cd137',
-        fontSize: SCREEN_HEIGHT * 0.06, // 40
-        fontFamily: 'Avenir-Black',
         textAlign: 'center'
     },
     slideText: {
-        color: '#18181a',
         fontSize: SCREEN_WIDTH * 0.05, // 20
-        fontWeight: 'bold',
         textAlign: 'center'
     },
     textContainer: {
-        position: 'absolute',
-        display: 'flex',
-        bottom: SCREEN_HEIGHT * 0.22,
-        marginLeft: SCREEN_HEIGHT * 0.05,
-        marginRight: SCREEN_HEIGHT * 0.05
+        // position: 'absolute',
+        // display: 'flex',
+        // bottom: SCREEN_HEIGHT * 0.22,
+        // marginLeft: SCREEN_HEIGHT * 0.05,
+        // marginRight: SCREEN_HEIGHT * 0.05
     },
     titleLabel: {
         textAlign: 'center',
