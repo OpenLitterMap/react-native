@@ -8,8 +8,6 @@ const ProgressStatCard = ({ value, title, tagline, color, style }) => {
             style={[
                 style,
                 {
-                    // borderTopColor: color,
-                    // borderTopWidth: 4,
                     borderRadius: 8,
                     paddingLeft: 10,
                     paddingVertical: 10

@@ -4,28 +4,19 @@ import {
     View,
     ScrollView,
     Pressable,
-    ActivityIndicator,
-    Dimensions
+    ActivityIndicator
 } from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
 import * as actions from '../../actions';
 import { connect } from 'react-redux';
 import Icon from 'react-native-vector-icons/Ionicons';
-import {
-    Body,
-    Title,
-    AnimatedCircle,
-    Header,
-    Colors,
-    StatsGrid
-} from '../components';
-import { ProgressStatCard } from './_components';
-const { width } = Dimensions.get('window');
+import { Body, Title, Header, Colors, StatsGrid } from '../components';
+import { ProgressCircleCard } from './_components';
 
 class UserStatsScreen extends Component {
     constructor(props) {
         super(props);
-        console.log(JSON.stringify(this.props.user, null, '\t'));
+        // console.log(JSON.stringify(this.props.user, null, '\t'));
         this.state = {
             xpStart: 0,
             positionStart: 0,
@@ -147,77 +138,13 @@ class UserStatsScreen extends Component {
                     style={styles.container}
                     showsVerticalScrollIndicator={false}
                     alwaysBounceVertical={false}>
-                    <View
-                        style={{
-                            flexDirection: 'row',
-                            alignItems: 'center',
-                            flex: 1,
-                            margin: 20,
-                            marginTop: 0,
-                            paddingVertical: 20,
-                            borderRadius: 20
-                            // backgroundColor: '#f2fffc'
-                        }}>
-                        <View
-                            style={{
-                                // flex: 1,
-                                flexGrow: 1,
-                                justifyContent: 'center',
-                                alignItems: 'center'
-                            }}>
-                            <View style={{ position: 'absolute' }}>
-                                <AnimatedCircle
-                                    isValueDisplayed={false}
-                                    strokeWidth={10}
-                                    percentage={user.targetPercentage}
-                                    color="#e268b3"
-                                    value={user.level}
-                                    delay={500}
-                                    duration={5000}
-                                    radius={(width - 40) / 4 - 16}
-                                    // tagline="Level"
-                                />
-                            </View>
-
-                            <View>
-                                <AnimatedCircle
-                                    isValueDisplayed={false}
-                                    strokeWidth={10}
-                                    percentage={user?.total_images % 100}
-                                    color="#A46EDA"
-                                    value={user?.total_images % 100}
-                                    delay={500}
-                                    duration={5000}
-                                    radius={(width - 40) / 4}
-                                    tagline="Level"
-                                />
-                            </View>
-                        </View>
-
-                        <View style={{ flexShrink: 1, padding: 10 }}>
-                            <ProgressStatCard
-                                color="#e268b3"
-                                value={user.level}
-                                title="Level"
-                                tagline={`${
-                                    user.xpRequired
-                                }XP more to level up`}
-                            />
-                            <ProgressStatCard
-                                style={{ marginTop: 20 }}
-                                color="#A46EDA"
-                                value={user.totalLittercoin}
-                                title="Littercoin"
-                                tagline={`${100 -
-                                    (user?.total_images %
-                                        100)} images more for next littercoin`}
-                            />
-                        </View>
-                    </View>
-
-                    {/* <Body color="accent" style={{ textAlign: 'center' }}>
-                        {user.xpRequired}XP more to level up
-                    </Body> */}
+                    <ProgressCircleCard
+                        level={user?.level}
+                        levelPercentage={user?.targetPercentage}
+                        xpRequired={user?.xpRequired}
+                        totalLittercoin={user?.totalLittercoin}
+                        littercoinPercentage={user?.total_images % 100}
+                    />
 
                     <StatsGrid statsData={statsData} />
                 </ScrollView>
