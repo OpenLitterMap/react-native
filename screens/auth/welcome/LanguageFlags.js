@@ -95,7 +95,7 @@ class LanguageFlags extends Component {
                             onPress={() => this.change(lang.lang)}>
                             <Image
                                 source={lang.flag}
-                                // style={{ marginBottom: 10 }}
+                                style={{ marginBottom: 10 }}
                             />
                         </TouchableOpacity>
                     ))

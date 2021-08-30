@@ -4,6 +4,7 @@ import {
     Dimensions,
     Image,
     ScrollView,
+    StyleSheet,
     View
 } from 'react-native';
 import PageControl from 'react-native-page-control';
@@ -47,9 +48,14 @@ class Slides extends Component {
         return this.props.data.map((slide, i) => {
             return (
                 <View key={slide.id} style={styles.slide}>
-                    <Image source={slide.image} style={styles.slideImage} />
+                    <Image
+                        source={slide.image}
+                        style={styles.slideImage}
+                        resizeMode="contain"
+                        resizeMethod="resize"
+                    />
 
-                    <View style={styles.textContainer}>
+                    <View>
                         <View style={this.getInnerTextContainer()}>
                             <Title
                                 style={styles.slideTitle}
@@ -101,54 +107,20 @@ class Slides extends Component {
     }
 }
 
-const styles = {
-    buttonContainer: {
-        alignItems: 'center',
-        backgroundColor: 'green',
-        padding: 20
-    },
-    buttonStyle: {
-        backgroundColor: '#0288D1',
-        marginTop: 15
-    },
+const styles = StyleSheet.create({
     container: {
         flex: 1,
         alignItems: 'center',
         justifyContent: 'center'
     },
-    formLabel: {
-        color: 'white'
-    },
     slideImage: {
         width: SCREEN_WIDTH - 40,
         height: SCREEN_HEIGHT * 0.45,
-        marginTop: SCREEN_HEIGHT * 0.15
+        marginTop: 80
     },
     indicatorSize: {
         height: SCREEN_HEIGHT * 0.01,
         width: SCREEN_WIDTH * 0.02
-    },
-    inputStyle: {
-        backgroundColor: 'white',
-        marginBottom: 20,
-        textColor: 'white'
-    },
-    linearGradient: {
-        flex: 1
-    },
-    logo: {
-        width: SCREEN_WIDTH * 0.7,
-        height: 200,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginTop: 25,
-        marginBottom: 25
-    },
-    mainTitle: {
-        fontSize: 48,
-        fontWeight: 'bold',
-        position: 'absolute',
-        top: 50
     },
     pageControl: {
         position: 'absolute',
@@ -168,18 +140,7 @@ const styles = {
     slideText: {
         fontSize: 18,
         textAlign: 'center'
-    },
-    textContainer: {
-        // position: 'absolute',
-        // display: 'flex',
-        // bottom: SCREEN_HEIGHT * 0.22,
-        // marginLeft: SCREEN_HEIGHT * 0.05,
-        // marginRight: SCREEN_HEIGHT * 0.05
-    },
-    titleLabel: {
-        textAlign: 'center',
-        fontWeight: 'bold'
     }
-};
+});
 
 export default Slides;

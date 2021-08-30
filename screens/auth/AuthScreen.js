@@ -62,11 +62,6 @@ class AuthScreen extends Component {
     }
 
     componentDidUpdate(prevProps, prevState) {
-        console.log('componentDidUpdate');
-        console.log('prevProps.isSubmitting', prevProps.isSubmitting);
-        console.log('this.props.isSubmitting', this.props.isSubmitting);
-        console.log('isFormReady', this.state.isFormReady);
-
         // if formMode changed, recheck validity
         if (prevState.formMode !== this.state.formMode) {
             // clear last server message
@@ -411,10 +406,9 @@ class AuthScreen extends Component {
      *
      * @param email
      */
-    updateEmail = email => {
-        email = email.trim().toLocaleLowerCase();
-
-        this.setState({ email: email });
+    updateEmail = async email => {
+        email = await email.trim().toLocaleLowerCase();
+        this.setState({ email });
 
         // only check for errors if the login/signup button has been pressed
         if (this.state.buttonPressed) {

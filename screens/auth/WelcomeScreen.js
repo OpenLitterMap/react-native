@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import {
     Dimensions,
     SafeAreaView,
-    TouchableOpacity,
+    StyleSheet,
     View,
     StatusBar
 } from 'react-native';
@@ -66,7 +66,7 @@ class WelcomeScreen extends Component {
                     backgroundColor={`${Colors.accentLight}`}
                 />
                 <SafeAreaView
-                    style={{ flex: 1, position: 'relative', zIndex: 1 }}>
+                    style={{ flex: 1, backgroundColor: Colors.accentLight }}>
                     <LanguageFlags lang={lang} />
 
                     <View
@@ -116,7 +116,7 @@ class WelcomeScreen extends Component {
     }
 }
 
-const styles = {
+const styles = StyleSheet.create({
     activityContainer: {
         flex: 1,
         justifyContent: 'center',
@@ -146,7 +146,7 @@ const styles = {
         paddingVertical: 10,
         paddingHorizontal: 5
     }
-};
+});
 
 const mapStateToProps = state => {
     return {
