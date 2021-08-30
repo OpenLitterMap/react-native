@@ -95,7 +95,7 @@ class LanguageFlags extends Component {
                             onPress={() => this.change(lang.lang)}>
                             <Image
                                 source={lang.flag}
-                                style={{ marginBottom: 10 }}
+                                // style={{ marginBottom: 10 }}
                             />
                         </TouchableOpacity>
                     ))
@@ -112,8 +112,8 @@ class LanguageFlags extends Component {
 const styles = {
     top: {
         position: 'absolute',
-        top: 10, // SCREEN_WIDTH * 0.075 on iOS?
-        left: 10, // SCREEN_WIDTH * 0.075,
+        top: 40, // SCREEN_WIDTH * 0.075 on iOS?
+        left: 20, // SCREEN_WIDTH * 0.075,
         zIndex: 1
     }
 };

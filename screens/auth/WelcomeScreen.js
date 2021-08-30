@@ -1,10 +1,16 @@
 import React, { Component } from 'react';
-import { Dimensions, SafeAreaView, TouchableOpacity, View } from 'react-native';
+import {
+    Dimensions,
+    SafeAreaView,
+    TouchableOpacity,
+    View,
+    StatusBar
+} from 'react-native';
 import { TransText } from 'react-native-translation';
 import LinearGradient from 'react-native-linear-gradient';
 import LanguageFlags from './welcome/LanguageFlags';
 import Slides from './welcome/Slides';
-import { Colors, Body, SubTitle } from '../components';
+import { Colors, Body, Title } from '../components';
 
 import { connect } from 'react-redux';
 import * as actions from '../../actions';
@@ -52,45 +58,60 @@ class WelcomeScreen extends Component {
         const lang = this.props.lang;
 
         return (
-            <View style={{ flex: 1, position: 'relative', zIndex: 1 }}>
-                <LanguageFlags lang={lang} />
+            <>
+                <StatusBar
+                    translucent
+                    // hidden
+                    barStyle="dark-content"
+                    backgroundColor={`${Colors.accentLight}`}
+                />
+                <SafeAreaView
+                    style={{ flex: 1, position: 'relative', zIndex: 1 }}>
+                    <LanguageFlags lang={lang} />
 
-                <View
-                    // colors={[Colors.accentLight, Colors.accentLight]}
-                    // start={{ x: 0, y: 0 }}
-                    // end={{ x: 1, y: 1 }}
-                    style={{ flex: 1, backgroundColor: Colors.accentLight }}>
-                    <Slides data={SLIDE_DATA} lang={lang} />
+                    <View
+                        style={{
+                            flex: 1,
+                            backgroundColor: Colors.accentLight
+                        }}>
+                        <Slides data={SLIDE_DATA} lang={lang} />
 
-                    <View style={styles.loginPosition}>
-                        <Pressable
-                            onPress={this.goToAuth.bind(this, 'signup')}
-                            style={styles.loginButton}>
-                            <TransText
-                                style={styles.signupText}
-                                dictionary={`${lang}.welcome.continue`}
-                            />
-                        </Pressable>
-                        <Pressable
-                            onPress={this.goToAuth.bind(this, 'login')}
-                            style={{
-                                flexDirection: 'row',
-                                justifyContent: 'center'
-                            }}>
-                            <Body
-                                style={styles.loginText}
-                                dictionary={`${lang}.auth.already-have`}
-                            />
-                            <Body
-                                color="accent"
-                                family="semiBold"
-                                style={[styles.loginText, { marginLeft: 10 }]}
-                                dictionary={`${lang}.auth.login`}
-                            />
-                        </Pressable>
+                        <View style={styles.loginPosition}>
+                            <Pressable
+                                onPress={this.goToAuth.bind(this, 'signup')}
+                                style={styles.loginButton}>
+                                <Body
+                                    family="medium"
+                                    style={styles.signupText}
+                                    color="white"
+                                    dictionary={`${lang}.welcome.continue`}
+                                />
+                            </Pressable>
+                            <Pressable
+                                onPress={this.goToAuth.bind(this, 'login')}
+                                style={{
+                                    flexDirection: 'row',
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                    // backgroundColor: 'red',
+                                    alignSelf: 'center',
+                                    alignContent: 'center'
+                                }}>
+                                <Body
+                                    style={styles.loginText}
+                                    dictionary={`${lang}.auth.already-have`}
+                                />
+                                <Body
+                                    color="accent"
+                                    family="semiBold"
+                                    style={[styles.loginText]}
+                                    dictionary={`${lang}.auth.login`}
+                                />
+                            </Pressable>
+                        </View>
                     </View>
-                </View>
-            </View>
+                </SafeAreaView>
+            </>
         );
     }
 }
@@ -106,23 +127,24 @@ const styles = {
         backgroundColor: Colors.accent,
         // borderWidth: 0.5,
         borderRadius: 100,
-        height: SCREEN_HEIGHT * 0.07,
+        height: SCREEN_HEIGHT * 0.08,
         justifyContent: 'center',
-        width: SCREEN_WIDTH * 0.8
+        width: SCREEN_WIDTH - 40
     },
     loginPosition: {
         position: 'absolute',
         bottom: SCREEN_HEIGHT * 0.06,
-        left: SCREEN_WIDTH * 0.1
+        left: 20
     },
     signupText: {
-        fontSize: SCREEN_HEIGHT * 0.02,
-        fontWeight: '600',
-        color: 'white'
+        // fontSize: SCREEN_HEIGHT * 0.02,
+        // fontWeight: '600',
+        // color: 'white'
     },
     loginText: {
         marginTop: 10,
-        paddingVertical: 10
+        paddingVertical: 10,
+        paddingHorizontal: 5
     }
 };
 

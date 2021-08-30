@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 import PageControl from 'react-native-page-control';
 import { getLanguage, TransText } from 'react-native-translation';
-import { Title } from '../../components';
+import { Title, Body, Colors } from '../../components';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -61,8 +61,8 @@ class Slides extends Component {
                                 dictionary={`${lang}.${slide.title}`}
                             />
                         </View>
-                        <Title
-                            style={styles.slideText}
+                        <Body
+                            style={{ textAlign: 'center' }}
                             dictionary={`${lang}.${slide.text}`}
                         />
                     </View>
@@ -72,8 +72,8 @@ class Slides extends Component {
                         numberOfPages={this.props.data.length}
                         currentPage={slide.id - 1}
                         // hidesForSinglePage
-                        pageIndicatorTintColor="gray"
-                        currentPageIndicatorTintColor="white"
+                        pageIndicatorTintColor="white"
+                        currentPageIndicatorTintColor={`${Colors.accent}`}
                         indicatorStyle={{ borderRadius: 15 }}
                         currentIndicatorStyle={{ borderRadius: 5 }}
                         indicatorSize={styles.indicatorSize}
@@ -121,13 +121,8 @@ const styles = {
     },
     slideImage: {
         width: SCREEN_WIDTH - 40,
-        height: SCREEN_WIDTH - 40,
-        // backgroundColor: 'red',
-        // height: SCREEN_HEIGHT * 0.45,
-        // position: 'absolute',
-        // resizeMode: 'contain',
+        height: SCREEN_HEIGHT * 0.45,
         marginTop: SCREEN_HEIGHT * 0.15
-        // width: SCREEN_WIDTH * 0.7
     },
     indicatorSize: {
         height: SCREEN_HEIGHT * 0.01,
@@ -163,17 +158,15 @@ const styles = {
     },
     slide: {
         alignItems: 'center',
-        // backgroundColor: '#2ecc71',
         flex: 1,
-        // justifyContent: 'center',
         width: SCREEN_WIDTH
     },
     slideTitle: {
-        fontSize: SCREEN_HEIGHT * 0.06, // 40
+        fontSize: 36,
         textAlign: 'center'
     },
     slideText: {
-        fontSize: SCREEN_WIDTH * 0.05, // 20
+        fontSize: 18,
         textAlign: 'center'
     },
     textContainer: {
