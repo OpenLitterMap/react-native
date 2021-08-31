@@ -8,8 +8,7 @@ import {
 } from 'react-native';
 import { TransText } from 'react-native-translation';
 import LinearGradient from 'react-native-linear-gradient';
-import LanguageFlags from './welcome/LanguageFlags';
-import Slides from './welcome/Slides';
+import { LanguageFlags, Slides } from './_components';
 import { Colors, Body, Title } from '../components';
 
 import { connect } from 'react-redux';
