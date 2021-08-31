@@ -12,8 +12,6 @@ import AsyncStorage from '@react-native-community/async-storage';
 
 import { TransText } from 'react-native-translation';
 
-import { check, request, PERMISSIONS } from 'react-native-permissions';
-
 import { Button } from 'react-native-elements';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { Header, Title, Body, Colors } from '../components';
@@ -75,7 +73,14 @@ class HomeScreen extends PureComponent {
         // web_actions, web_reducer
         await this.props.checkForImagesOnWeb(this.props.token);
 
+        this.checkNewVersion();
         this.checkGalleryPermission();
+    }
+
+    componentDidUpdate(prevProps) {
+        if (prevProps.appVersion !== this.props.appVersion) {
+            this.checkNewVersion();
+        }
     }
 
     async checkGalleryPermission() {
@@ -85,6 +90,19 @@ class HomeScreen extends PureComponent {
         } else {
             this.props.navigation.navigate('PERMISSION', {
                 screen: 'GALLERY_PERMISSION'
+            });
+        }
+    }
+
+    async checkNewVersion() {
+        const version = DeviceInfo.getVersion();
+        const platform = Platform.OS;
+
+        if (this.props.appVersion === null) {
+            this.props.checkAppVersion();
+        } else if (this.props.appVersion[platform].version !== version) {
+            this.props.navigation.navigate('UPDATE', {
+                url: this.props.appVersion[platform].url
             });
         }
     }
@@ -754,7 +772,8 @@ const mapStateToProps = state => {
         webImagesCount: state.web.count,
         //webNextImage: state.web.nextImage
         webPhotos: state.web.photos,
-        totalWebImagesUpdated: state.web.totalWebImagesUpdated
+        totalWebImagesUpdated: state.web.totalWebImagesUpdated,
+        appVersion: state.shared.appVersion
     };
 };
 

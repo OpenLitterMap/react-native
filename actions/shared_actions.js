@@ -1,8 +1,9 @@
 import React from 'react';
 import {
+    CHECK_APP_VERSION,
     CLOSE_LITTER_MODAL,
-    INCREMENT_SELECTED,
     DECREMENT_SELECTED,
+    INCREMENT_SELECTED,
     TOGGLE_LITTER,
     TOGGLE_SELECTING,
     TOGGLE_THANK_YOU,
@@ -10,6 +11,33 @@ import {
     URL
 } from './types';
 import axios from 'axios';
+
+/**
+ * check for new app version
+ *
+ */
+
+export const checkAppVersion = () => {
+    return async dispatch => {
+        try {
+            const response = await axios({
+                url: URL + '/api/mobile-app-version',
+                method: 'GET',
+                headers: {
+                    Accept: 'application/json'
+                }
+            });
+            if (response.data) {
+                dispatch({
+                    type: CHECK_APP_VERSION,
+                    payload: response.data
+                });
+            }
+        } catch (error) {
+            console.log('appversion check ' + error);
+        }
+    };
+};
 
 /**
  * Close the Litter Picker Modal
