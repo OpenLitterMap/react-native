@@ -145,13 +145,8 @@ class GlobalDataScreen extends Component {
                             tagline={`Next Target\n${litterTarget.nextTarget.toLocaleString()} Litter`}
                             valueSuffix="%"
                         />
-                        {/* grid for stats */}
-                        {/* added extra margin so that UserScren and GlobalData
-                        screen have same starting point for stats card
-                        So that it looks good when swiping */}
-                        <View style={{ marginTop: 22 }}>
-                            <StatsGrid statsData={statsData} />
-                        </View>
+
+                        <StatsGrid statsData={statsData} />
                     </ScrollView>
                 )}
             </>
