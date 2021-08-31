@@ -46,7 +46,6 @@ class GlobalDataScreen extends Component {
      */
     async getDataFormStorage() {
         const stats = await AsyncStorage.getItem('globalStats');
-
         if (stats !== undefined && stats !== null) {
             const {
                 totalLitter,
@@ -57,12 +56,12 @@ class GlobalDataScreen extends Component {
             this.setState({
                 litterStart: totalLitter,
                 photosStart: totalPhotos,
-                totalUsers: totalUsers,
+                usersStart: totalUsers,
                 littercoinStart: totalLittercoin
             });
         }
-
-        return AsyncStorage.getItem('token');
+        const token = await AsyncStorage.getItem('token');
+        return token;
     }
 
     render() {

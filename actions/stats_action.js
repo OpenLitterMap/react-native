@@ -12,10 +12,6 @@ export const getStats = token => {
             }
         })
             .then(response => {
-                console.log(
-                    'get_countries',
-                    JSON.stringify(response.data, null, '\t')
-                );
                 if (response.data) {
                     dispatch({
                         type: STATS_REQUEST_SUCCESS,
