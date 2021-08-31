@@ -126,7 +126,12 @@ class HomeScreen extends PureComponent {
         return (
             <>
                 <Header
-                    leftContent={<Title color="white">Upload</Title>}
+                    leftContent={
+                        <Title
+                            color="white"
+                            dictionary={`${lang}.leftpage.upload`}
+                        />
+                    }
                     rightContent={this.renderDeleteButton()}
                 />
                 <View style={styles.container}>
@@ -336,7 +341,9 @@ class HomeScreen extends PureComponent {
 
         if (tagged === 0) return;
 
-        return <UploadButton onPress={this.uploadPhotos} />;
+        return (
+            <UploadButton lang={this.props.lang} onPress={this.uploadPhotos} />
+        );
     }
 
     /**

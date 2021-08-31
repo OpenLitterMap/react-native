@@ -4,7 +4,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { Colors, SubTitle } from '../../components';
 // ios-cloud-upload-outline
 const { width } = Dimensions.get('window');
-const UploadButton = ({ onPress }) => {
+const UploadButton = ({ onPress, lang }) => {
     return (
         <Pressable onPress={() => onPress()} style={styles.buttonStyle}>
             <Icon
@@ -13,7 +13,7 @@ const UploadButton = ({ onPress }) => {
                 size={32}
                 style={{ marginRight: 20 }}
             />
-            <SubTitle color="white">Upload</SubTitle>
+            <SubTitle color="white" dictionary={`${lang}.leftpage.upload`} />
         </Pressable>
     );
 };
