@@ -91,10 +91,6 @@ class AuthScreen extends Component {
             this.recheckFormValidity();
         }
 
-        if (!Lodash.isEqual(prevProps.user, this.props.user)) {
-            this.navigationToDashboard();
-        }
-
         if (!Lodash.isEqual(prevProps.success, this.props.success)) {
             this.setState({ email: '', password: '' });
         }
@@ -124,12 +120,6 @@ class AuthScreen extends Component {
         IS_PORTRAIT = SCREEN_WIDTH <= SCREEN_HEIGHT;
 
         StyleSheet.build({ $rem: SCREEN_WIDTH / VALUES.remDivisionFactor });
-    };
-
-    navigationToDashboard = () => {
-        // no need to manually navigate in react navigation 5 auth flow
-        // TODO: remove this function in future
-        // this.props.navigation.navigate('App');
     };
 
     keyboardWillShow = event => {
@@ -191,18 +181,13 @@ class AuthScreen extends Component {
             );
         }
 
-        // FIXME: convert this feature to react navigation 5 -- commenting code for now
-        // this.focusListner = this.props.navigation.addListener(
-        //     'didFocus',
-        //     () => {
-        //         this.props.loginOrSignupReset();
-        //     }
-        // );
+        this.focusListner = this.props.navigation.addListener('focus', () => {
+            this.props.loginOrSignupReset();
+        });
     }
 
     componentWillUnmount() {
-        // FIXME: convert this feature to react navigation 5 -- commenting code for now
-        // this.focusListner.remove();
+        this.focusListner();
         this.keyboardWillShowSub.remove();
         this.keyboardWillHideSub.remove();
     }
