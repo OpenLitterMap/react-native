@@ -71,14 +71,15 @@ class GlobalDataScreen extends Component {
             totalUsers,
             totalLittercoin,
             litterTarget,
-            targetPercentage
+            targetPercentage,
+            lang
         } = this.props;
 
         const statsData = [
             {
                 value: totalLitter || this.state.litterStart,
                 startValue: this.state.litterStart,
-                title: 'Total Litter',
+                title: `${lang}.stats.total-litter`,
                 icon: 'ios-trash-outline',
                 color: '#14B8A6',
                 bgColor: '#CCFBF1'
@@ -86,7 +87,7 @@ class GlobalDataScreen extends Component {
             {
                 value: totalPhotos || this.state.photosStart,
                 startValue: this.state.photosStart,
-                title: 'Total Photos',
+                title: `${lang}.stats.total-photos`,
                 icon: 'ios-images-outline',
                 color: '#A855F7',
                 bgColor: '#F3E8FF'
@@ -94,7 +95,7 @@ class GlobalDataScreen extends Component {
             {
                 value: totalLittercoin || this.state.littercoinStart,
                 startValue: this.state.littercoinStart,
-                title: 'Total Littercoin',
+                title: `${lang}.stats.total-littercoin`,
                 icon: 'ios-server-outline',
                 color: '#F59E0B',
                 bgColor: '#FEF9C3'
@@ -102,7 +103,7 @@ class GlobalDataScreen extends Component {
             {
                 value: totalUsers || this.state.usersStart,
                 startValue: this.state.usersStart,
-                title: 'Total Users',
+                title: `${lang}.stats.total-users`,
                 icon: 'ios-people-outline',
                 color: '#0EA5E9',
                 bgColor: '#E0F2FE'
@@ -111,7 +112,12 @@ class GlobalDataScreen extends Component {
         return (
             <>
                 <Header
-                    leftContent={<Title color="white">Global Data</Title>}
+                    leftContent={
+                        <Title
+                            color="white"
+                            dictionary={`${lang}.stats.total-users`}
+                        />
+                    }
                 />
                 {/* INFO: showing loader when there is no previous value in 
                 asyncstore -- only shown on first app load after login */}
@@ -176,7 +182,8 @@ const mapStateToProps = state => {
         totalUsers: state.stats.totalUsers,
         totalLittercoin: state.stats.totalLittercoin,
         litterTarget: state.stats.litterTarget,
-        targetPercentage: state.stats.targetPercentage
+        targetPercentage: state.stats.targetPercentage,
+        lang: state.auth.lang
     };
 };
 

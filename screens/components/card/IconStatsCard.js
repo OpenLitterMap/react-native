@@ -70,9 +70,9 @@ const IconStatsCard = ({
                 style={[
                     contentCenter && { textAlign: 'center' },
                     { color: fontColor }
-                ]}>
-                {title}
-            </Caption>
+                ]}
+                dictionary={title}
+            />
         </View>
     );
 };
