@@ -6,10 +6,8 @@ import {
     View,
     StatusBar
 } from 'react-native';
-import { TransText } from 'react-native-translation';
-import LinearGradient from 'react-native-linear-gradient';
 import { LanguageFlags, Slides } from './_components';
-import { Colors, Body, Title } from '../components';
+import { Colors, Body } from '../components';
 
 import { connect } from 'react-redux';
 import * as actions from '../../actions';

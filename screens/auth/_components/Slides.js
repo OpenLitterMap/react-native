@@ -17,16 +17,6 @@ const SCREEN_WIDTH = Dimensions.get('window').width;
 class Slides extends Component {
     constructor(props) {
         super(props);
-
-        this.state = {
-            fontLoaded: false
-        };
-    }
-
-    // for android only
-    // async
-    componentDidMount() {
-        this.setState({ fontLoaded: true });
     }
 
     /**
@@ -68,7 +58,10 @@ class Slides extends Component {
                             />
                         </View>
                         <Body
-                            style={{ textAlign: 'center' }}
+                            style={{
+                                textAlign: 'center',
+                                paddingHorizontal: 20
+                            }}
                             dictionary={`${lang}.${slide.text}`}
                         />
                     </View>
@@ -91,10 +84,6 @@ class Slides extends Component {
     }
 
     render() {
-        if (this.state.fontLoaded === false) {
-            return <ActivityIndicator />;
-        }
-
         return (
             <ScrollView
                 horizontal

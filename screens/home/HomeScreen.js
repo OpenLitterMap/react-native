@@ -75,8 +75,6 @@ class HomeScreen extends PureComponent {
         // web_actions, web_reducer
         await this.props.checkForImagesOnWeb(this.props.token);
 
-        // TODO: ask for gallery permission here
-
         this.checkGalleryPermission();
     }
 
@@ -210,17 +208,7 @@ class HomeScreen extends PureComponent {
                         webImagesCount={this.props.webImagesCount}
                         webPhotos={this.props.webPhotos}
                     />
-                    {/* TODO: remove this -- only for dev purpose */}
-                    {/* <Button
-                        title="delete web image"
-                        onPress={() => {
-                            this.props.deleteSelectedWebImages(
-                                this.props.token,
-                                42
-                            );
-                        }}>
-                        Delete
-                    </Button> */}
+
                     <View style={styles.bottomContainer}>
                         {this.renderHelperMessage()}
                     </View>

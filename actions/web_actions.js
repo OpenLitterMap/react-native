@@ -1,8 +1,8 @@
 import {
     ADD_TAGS_TO_WEB_IMAGE,
-    DELETE_SELECTED_WEB_IMAGES,
     LOAD_MORE_WEB_IMAGES,
     INCREMENT_WEB_IMAGES_UPLOADED,
+    REMOVE_TAG_FROM_WEB_IMAGE,
     REMOVE_WEB_IMAGE,
     WEB_IMAGES,
     URL
@@ -19,6 +19,12 @@ export const addTagsToWebImage = data => {
     };
 };
 
+export const removeTagFromWebImage = data => {
+    return {
+        type: REMOVE_TAG_FROM_WEB_IMAGE,
+        payload: data
+    };
+};
 /**
  * When LeftPage didMount, check web for any images
  *
