@@ -1,9 +1,10 @@
 import React, { Component } from 'react';
 import {
-    Dimensions,
+    Platform,
     Image,
     SafeAreaView,
     TouchableOpacity,
+    StyleSheet,
     View
 } from 'react-native';
 
@@ -95,13 +96,25 @@ class LanguageFlags extends Component {
                             onPress={() => this.change(lang.lang)}>
                             <Image
                                 source={lang.flag}
-                                style={{ marginBottom: 10 }}
+                                resizeMethod="auto"
+                                resizeMode="cover"
+                                style={[
+                                    styles.imageStyle,
+                                    {
+                                        marginBottom: 12
+                                    }
+                                ]}
                             />
                         </TouchableOpacity>
                     ))
                 ) : (
                     <TouchableOpacity onPress={this.toggle}>
-                        <Image source={this.getCurrentFlag()} />
+                        <Image
+                            resizeMethod="auto"
+                            resizeMode="cover"
+                            style={styles.imageStyle}
+                            source={this.getCurrentFlag()}
+                        />
                     </TouchableOpacity>
                 )}
             </SafeAreaView>
@@ -109,14 +122,15 @@ class LanguageFlags extends Component {
     }
 }
 
-const styles = {
+const styles = StyleSheet.create({
     top: {
         position: 'absolute',
-        top: 40, // SCREEN_WIDTH * 0.075 on iOS?
-        left: 20, // SCREEN_WIDTH * 0.075,
+        top: Platform.OS === 'ios' ? 20 : 40,
+        left: 20,
         zIndex: 1
-    }
-};
+    },
+    imageStyle: { borderRadius: 4, width: 60, height: 40 }
+});
 
 // LanguageFlags = Animatable.createAnimatableComponent(LanguageFlags);
 
