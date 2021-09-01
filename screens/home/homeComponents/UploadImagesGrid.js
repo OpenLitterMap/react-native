@@ -8,7 +8,6 @@ import {
     TouchableWithoutFeedback,
     View
 } from 'react-native';
-import { TransText } from 'react-native-translation';
 
 import { Icon } from 'react-native-elements';
 import DeviceInfo from 'react-native-device-info';
@@ -321,6 +320,7 @@ class UploadImagesGrid extends PureComponent {
      * @returns {JSX.Element}
      */
     render() {
+        const lang = this.props.lang;
         if (
             this.props.photos.length === 0 &&
             this.props.gallery.length === 0 &&
@@ -340,16 +340,14 @@ class UploadImagesGrid extends PureComponent {
                         }}
                         source={require('../../../assets/illustrations/empty_image.png')}
                     />
-                    <SubTitle style={styles.exptyStateText}>
-                        No images to upload
-                    </SubTitle>
-                    <Body style={styles.exptyStateText}>
-                        Take a photo or select from gallery
-                    </Body>
-                    {/* <TransText
-                        style={{ fontSize: SCREEN_HEIGHT * 0.02 }}
-                        dictionary={`${this.props.lang}.leftpage.get-started`}
-                    /> */}
+                    <SubTitle
+                        style={styles.exptyStateText}
+                        dictionary={`${lang}.leftpage.no-images`}
+                    />
+                    <Body
+                        style={styles.exptyStateText}
+                        dictionary={`${lang}.leftpage.take-photo`}
+                    />
                 </View>
             );
         }

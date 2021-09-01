@@ -13,6 +13,7 @@
     "thank-you": "Obrigada!!!",
     "you-have-uploaded": "Você enviou{count}fotos",
     "close": "Fechar",
-    "get-started": "Tire ou selecione fotos da galeria para começar!",
+    "take-photo": "Tire uma foto ou selecione da galeria",
+    "no-images": "Sem imagens para fazer upload",
     "camera": "Câmera"
 }

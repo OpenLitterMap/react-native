@@ -3,7 +3,7 @@ import { View, Pressable } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { Header, SubTitle } from '../components';
 import { checkCameraRollPermission } from '../../utils/permissions';
-import AlbumList from './_components/AlbumList';
+import AlbumList from './galleryComponents/AlbumList';
 
 class AlbumScreen extends Component {
     constructor(props) {

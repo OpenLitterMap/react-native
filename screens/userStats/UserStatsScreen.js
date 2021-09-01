@@ -11,7 +11,7 @@ import * as actions from '../../actions';
 import { connect } from 'react-redux';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { Body, Title, Header, Colors, StatsGrid } from '../components';
-import { ProgressCircleCard } from './_components';
+import { ProgressCircleCard } from './userComponents';
 
 class UserStatsScreen extends Component {
     constructor(props) {
@@ -53,7 +53,7 @@ class UserStatsScreen extends Component {
         const statsObj = {
             xp: user?.xp,
             position: user?.position,
-            totalImages: user?.total_images,
+            totalImages: user?.total_images || 0,
             totalTags: user?.totalTags
         };
         // INFO: previous stats saved for animation purpose

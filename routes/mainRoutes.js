@@ -7,7 +7,7 @@ import * as actions from '../actions';
 import AuthStack from './authRoutes';
 import TabRoutes from './tabRoutes';
 import PermissionStack from './permissionRoutes';
-import { SettingScreen } from '../screens';
+import { SettingScreen, NewUpdateScreen } from '../screens';
 // import AlbumList from '../screens/pages/library/AlbumList';
 import GalleryStack from './galleryRoutes';
 
@@ -92,6 +92,10 @@ class MainRoutes extends Component {
                             <Stack.Screen
                                 name="PERMISSION"
                                 component={PermissionStack}
+                            />
+                            <Stack.Screen
+                                name="UPDATE"
+                                component={NewUpdateScreen}
                             />
                         </>
                     )}

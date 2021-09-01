@@ -95,8 +95,6 @@ export const onSeenFeatureTour = text => {
  **  - fired on AuthScreen componentDidMount
  */
 
-// TODO: check for this actions use
-
 export const checkForToken = () => async dispatch => {
     console.log('auth_actions - checkForToken');
     let jwt;

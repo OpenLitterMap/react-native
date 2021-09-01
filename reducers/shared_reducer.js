@@ -1,4 +1,5 @@
 import {
+    CHECK_APP_VERSION,
     CLOSE_LITTER_MODAL,
     DECREMENT_SELECTED,
     INCREMENT_SELECTED,
@@ -14,11 +15,17 @@ const INITIAL_STATE = {
     litterVisible: false, // show LitterPicker
     modalVisible: false,
     thankYouVisible: false,
-    uploadVisible: false
+    uploadVisible: false,
+    appVersion: null
 };
 
 export default function(state = INITIAL_STATE, action) {
     switch (action.type) {
+        case CHECK_APP_VERSION:
+            return {
+                ...state,
+                appVersion: action.payload
+            };
         case CLOSE_LITTER_MODAL:
             return {
                 ...state,

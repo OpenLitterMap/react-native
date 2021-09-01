@@ -140,7 +140,7 @@ class LitterTags extends Component {
             });
         } else if (currentIndex < photosLength + galleryLength + webLength) {
             // web_actions
-            this.props.removeTagFromWebPhoto({
+            this.props.removeTagFromWebImage({
                 category,
                 tag,
                 currentIndex: currentIndex - photosLength - galleryLength

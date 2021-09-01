@@ -13,6 +13,7 @@
     "thank-you": "Herzlichen Dank!!!",
     "you-have-uploaded": "Du hast {count} Foto(s) hochgeladen",
     "close": "Schlieβen",
-    "get-started": "Nehm ein Foto oder suche eins aus der Galerie um zu starten!",
+    "take-photo": "Machen Sie ein Foto oder wählen Sie aus der Galerie",
+    "no-images": "Keine Bilder zum Hochladen",
     "camera": "Kamera"
 }

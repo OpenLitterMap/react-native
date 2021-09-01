@@ -12,8 +12,6 @@ import AsyncStorage from '@react-native-community/async-storage';
 
 import { TransText } from 'react-native-translation';
 
-import { check, request, PERMISSIONS } from 'react-native-permissions';
-
 import { Button } from 'react-native-elements';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { Header, Title, Body, Colors } from '../components';
@@ -29,7 +27,7 @@ const SCREEN_HEIGHT = Dimensions.get('window').height;
 const equalWidth = SCREEN_WIDTH / 3;
 
 // Components
-import { UploadImagesGrid, ActionButton, UploadButton } from './_components';
+import { UploadImagesGrid, ActionButton, UploadButton } from './homeComponents';
 import AddTags from '../pages/AddTags';
 import DeviceInfo from 'react-native-device-info';
 import moment from 'moment';
@@ -75,9 +73,14 @@ class HomeScreen extends PureComponent {
         // web_actions, web_reducer
         await this.props.checkForImagesOnWeb(this.props.token);
 
-        // TODO: ask for gallery permission here
-
+        this.checkNewVersion();
         this.checkGalleryPermission();
+    }
+
+    componentDidUpdate(prevProps) {
+        if (prevProps.appVersion !== this.props.appVersion) {
+            this.checkNewVersion();
+        }
     }
 
     async checkGalleryPermission() {
@@ -87,6 +90,19 @@ class HomeScreen extends PureComponent {
         } else {
             this.props.navigation.navigate('PERMISSION', {
                 screen: 'GALLERY_PERMISSION'
+            });
+        }
+    }
+
+    async checkNewVersion() {
+        const version = DeviceInfo.getVersion();
+        const platform = Platform.OS;
+
+        if (this.props.appVersion === null) {
+            this.props.checkAppVersion();
+        } else if (this.props.appVersion[platform].version !== version) {
+            this.props.navigation.navigate('UPDATE', {
+                url: this.props.appVersion[platform].url
             });
         }
     }
@@ -110,7 +126,12 @@ class HomeScreen extends PureComponent {
         return (
             <>
                 <Header
-                    leftContent={<Title color="white">Upload</Title>}
+                    leftContent={
+                        <Title
+                            color="white"
+                            dictionary={`${lang}.leftpage.upload`}
+                        />
+                    }
                     rightContent={this.renderDeleteButton()}
                 />
                 <View style={styles.container}>
@@ -210,17 +231,7 @@ class HomeScreen extends PureComponent {
                         webImagesCount={this.props.webImagesCount}
                         webPhotos={this.props.webPhotos}
                     />
-                    {/* TODO: remove this -- only for dev purpose */}
-                    {/* <Button
-                        title="delete web image"
-                        onPress={() => {
-                            this.props.deleteSelectedWebImages(
-                                this.props.token,
-                                42
-                            );
-                        }}>
-                        Delete
-                    </Button> */}
+
                     <View style={styles.bottomContainer}>
                         {this.renderHelperMessage()}
                     </View>
@@ -330,7 +341,9 @@ class HomeScreen extends PureComponent {
 
         if (tagged === 0) return;
 
-        return <UploadButton onPress={this.uploadPhotos} />;
+        return (
+            <UploadButton lang={this.props.lang} onPress={this.uploadPhotos} />
+        );
     }
 
     /**
@@ -766,7 +779,8 @@ const mapStateToProps = state => {
         webImagesCount: state.web.count,
         //webNextImage: state.web.nextImage
         webPhotos: state.web.photos,
-        totalWebImagesUpdated: state.web.totalWebImagesUpdated
+        totalWebImagesUpdated: state.web.totalWebImagesUpdated,
+        appVersion: state.shared.appVersion
     };
 };
 
