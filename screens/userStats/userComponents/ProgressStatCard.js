@@ -22,7 +22,7 @@ const ProgressStatCard = ({ value, title, tagline, color, style }) => {
                     shouldUseToLocaleString
                 />
             </Title>
-            <Body style={{ color }}>{title}</Body>
+            <Body style={{ color }} dictionary={title} />
             <Caption>{tagline}</Caption>
         </View>
     );

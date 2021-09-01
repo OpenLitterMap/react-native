@@ -4,6 +4,7 @@ import litter from './litter.json';
 import settings from './settings.json';
 import stats from './stats.json';
 import tag from './tag.json';
+import user from './user.json';
 import welcome from './welcome.json';
 
 export const de = {
@@ -13,5 +14,6 @@ export const de = {
     settings,
     stats,
     tag,
+    user,
     welcome
 };

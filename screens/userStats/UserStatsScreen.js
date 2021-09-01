@@ -63,12 +63,13 @@ class UserStatsScreen extends Component {
 
     render() {
         const user = this.props.user;
+        const lang = this.props.lang;
 
         const statsData = [
             {
                 value: user?.xp || this.state.xpStart,
                 startValue: this.state.xpStart,
-                title: 'XP',
+                title: `${lang}.user.XP`,
                 icon: 'ios-medal-outline',
                 color: '#14B8A6',
                 bgColor: '#CCFBF1'
@@ -76,7 +77,7 @@ class UserStatsScreen extends Component {
             {
                 value: user?.position || this.state.positionStart,
                 startValue: this.state.positionStart,
-                title: 'Rank',
+                title: `${lang}.user.rank`,
                 icon: 'ios-podium-outline',
                 color: '#A855F7',
                 bgColor: '#F3E8FF',
@@ -85,7 +86,7 @@ class UserStatsScreen extends Component {
             {
                 value: user?.total_images || this.state.totalImagesStart,
                 startValue: this.state.totalImagesStart,
-                title: 'Photos',
+                title: `${lang}.user.photos`,
                 icon: 'ios-images-outline',
                 color: '#F59E0B',
                 bgColor: '#FEF9C3'
@@ -93,7 +94,7 @@ class UserStatsScreen extends Component {
             {
                 value: user?.totalTags || this.state.totalTagsStart,
                 startValue: this.state.totalTagsStart,
-                title: 'Tags',
+                title: `${lang}.user.tags`,
                 icon: 'ios-pricetags-outline',
                 color: '#0EA5E9',
                 bgColor: '#E0F2FE'
@@ -140,6 +141,7 @@ class UserStatsScreen extends Component {
                     showsVerticalScrollIndicator={false}
                     alwaysBounceVertical={false}>
                     <ProgressCircleCard
+                        lang={lang}
                         level={user?.level}
                         levelPercentage={user?.targetPercentage}
                         xpRequired={user?.xpRequired}
