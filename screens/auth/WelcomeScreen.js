@@ -33,7 +33,7 @@ const SLIDE_DATA = [
         id: 3,
         image: require('../../assets/illustrations/open_data.png'),
         title: 'welcome.open',
-        text: 'welcome.unlimited-potential'
+        text: 'welcome.open-database'
     }
 ];
 

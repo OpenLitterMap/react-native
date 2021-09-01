@@ -53,14 +53,14 @@ class Slides extends Component {
                             />
                             <Title
                                 color="accent"
-                                style={styles.slideTitle}
+                                style={[styles.slideTitle, { marginLeft: 6 }]}
                                 dictionary={`${lang}.${slide.title}`}
                             />
                         </View>
                         <Body
                             style={{
                                 textAlign: 'center',
-                                paddingHorizontal: 20
+                                paddingHorizontal: 30
                             }}
                             dictionary={`${lang}.${slide.text}`}
                         />
