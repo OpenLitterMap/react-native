@@ -3,7 +3,14 @@ import { View } from 'react-native';
 import { CountUp } from 'use-count-up';
 import { Title, Body, Caption } from '../../components';
 
-const ProgressStatCard = ({ value, title, tagline, color, style }) => {
+const ProgressStatCard = ({
+    value,
+    title,
+    tagline,
+    color,
+    style,
+    taglineCount
+}) => {
     return (
         <View
             style={[
@@ -23,7 +30,7 @@ const ProgressStatCard = ({ value, title, tagline, color, style }) => {
                 />
             </Title>
             <Body style={{ color }} dictionary={title} />
-            <Caption>{tagline}</Caption>
+            <Caption dictionary={tagline} values={{ count: taglineCount }} />
         </View>
     );
 };

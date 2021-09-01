@@ -45,17 +45,21 @@ const ProgressCircleCard = ({
             <View style={{ flexShrink: 1, padding: 10 }}>
                 <ProgressStatCard
                     color="#e268b3"
-                    value={`${lang}.user.level`}
-                    title="Level"
-                    tagline={`${xpRequired}XP more to level up`}
+                    value={level}
+                    title={`${lang}.user.level`}
+                    tagline={`${lang}.user.level-up`}
+                    taglineCount={xpRequired}
+                    // tagline={`${xpRequired}XP more to level up`}
                 />
                 <ProgressStatCard
                     style={{ marginTop: 20 }}
                     color="#A46EDA"
                     value={totalLittercoin}
                     title={`${lang}.user.littercoin`}
-                    tagline={`${100 -
-                        littercoinPercentage} images more for next littercoin`}
+                    tagline={`${lang}.user.next-littercoin`}
+                    taglineCount={100 - littercoinPercentage}
+                    // tagline={`${100 -
+                    //     littercoinPercentage} images more for next littercoin`}
                 />
             </View>
         </View>

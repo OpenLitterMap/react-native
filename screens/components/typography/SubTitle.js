@@ -10,6 +10,7 @@ const SubTitle = ({
     color = 'text',
     children,
     dictionary,
+    values,
     ...rest
 }) => {
     return (
@@ -18,6 +19,7 @@ const SubTitle = ({
             family={family}
             color={color}
             dictionary={dictionary}
+            values={values}
             {...rest}>
             {children}
         </StyledText>
@@ -29,7 +31,8 @@ SubTitle.propTypes = {
     style: PropTypes.any,
     color: PropTypes.oneOf(ColorType),
     children: PropTypes.node,
-    dictionary: PropTypes.string
+    dictionary: PropTypes.string,
+    values: PropTypes.object
 };
 
 const styles = StyleSheet.create({
