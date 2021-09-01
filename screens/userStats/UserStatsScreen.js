@@ -53,7 +53,7 @@ class UserStatsScreen extends Component {
         const statsObj = {
             xp: user?.xp,
             position: user?.position,
-            totalImages: user?.total_images,
+            totalImages: user?.total_images || 0,
             totalTags: user?.totalTags
         };
         // INFO: previous stats saved for animation purpose
