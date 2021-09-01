@@ -119,7 +119,10 @@ class UserStatsScreen extends Component {
                 <Header
                     leftContent={
                         <View>
-                            <Title color="white">Welcome</Title>
+                            <Title
+                                color="white"
+                                dictionary={`${lang}.user.welcome`}
+                            />
                             <Body color="white">{user?.username}</Body>
                         </View>
                     }
