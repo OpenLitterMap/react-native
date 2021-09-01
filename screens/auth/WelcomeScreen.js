@@ -6,7 +6,7 @@ import {
     View,
     StatusBar
 } from 'react-native';
-import { LanguageFlags, Slides } from './_components';
+import { LanguageFlags, Slides } from './authComponents';
 import { Colors, Body } from '../components';
 
 import { connect } from 'react-redux';

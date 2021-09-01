@@ -11,7 +11,7 @@ import * as actions from '../../actions';
 import { connect } from 'react-redux';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { Body, Title, Header, Colors, StatsGrid } from '../components';
-import { ProgressCircleCard } from './_components';
+import { ProgressCircleCard } from './userComponents';
 
 class UserStatsScreen extends Component {
     constructor(props) {

@@ -27,7 +27,7 @@ const SCREEN_HEIGHT = Dimensions.get('window').height;
 const equalWidth = SCREEN_WIDTH / 3;
 
 // Components
-import { UploadImagesGrid, ActionButton, UploadButton } from './_components';
+import { UploadImagesGrid, ActionButton, UploadButton } from './homeComponents';
 import AddTags from '../pages/AddTags';
 import DeviceInfo from 'react-native-device-info';
 import moment from 'moment';
