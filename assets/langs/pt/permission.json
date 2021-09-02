@@ -1,0 +1,11 @@
+{
+    "allow-gallery-access": "Permitir acesso à galeria",
+    "allow-permission": "Permitir permissões",
+    "camera-access": "Acesso à câmera",
+    "camera-access-body": "Para capturar imagens de lixo da câmera do aplicativo",
+    "gallery-body": "Forneça-nos acesso à sua galeria, que é necessário se você quiser fazer upload de imagens com geo-tag da galeria",
+    "location-access": "Acesso de localização",
+    "location-body": "Para obter geolocalização exata de onde o lixo está",
+    "not-now": "Não agora, mais tarde",
+    "please-give-permissions": "Por favor, dê permissões"
+}

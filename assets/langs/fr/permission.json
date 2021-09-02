@@ -1,0 +1,11 @@
+{
+    "allow-gallery-access": "Autoriser l'accès à la galerie",
+    "allow-permission": "Autoriser les autorisations",
+    "camera-access": "Accès à la caméra",
+    "camera-access-body": "Pour capturer des images de détritus à partir de la caméra de l'application",
+    "gallery-body": "Veuillez nous fournir l'accès à votre galerie, ce qui est requis si vous souhaitez télécharger des images géolocalisées à partir de la galerie",
+    "location-access": "Accès à l'emplacement",
+    "location-body": "Pour obtenir la géolocalisation exacte de l'endroit où se trouve la litière",
+    "not-now": "Pas maintenant plus tard",
+    "please-give-permissions": "Veuillez donner des autorisations"
+}
