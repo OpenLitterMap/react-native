@@ -64,8 +64,6 @@ class WelcomeScreen extends Component {
                 />
                 <SafeAreaView
                     style={{ flex: 1, backgroundColor: Colors.accentLight }}>
-                    <LanguageFlags lang={lang} />
-
                     <View
                         style={{
                             flex: 1,
@@ -90,7 +88,6 @@ class WelcomeScreen extends Component {
                                     flexDirection: 'row',
                                     justifyContent: 'center',
                                     alignItems: 'center',
-                                    // backgroundColor: 'red',
                                     alignSelf: 'center',
                                     alignContent: 'center'
                                 }}>
@@ -106,6 +103,7 @@ class WelcomeScreen extends Component {
                                 />
                             </Pressable>
                         </View>
+                        <LanguageFlags lang={lang} />
                     </View>
                 </SafeAreaView>
             </>
