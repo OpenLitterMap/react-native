@@ -48,9 +48,12 @@ class MainRoutes extends Component {
 
             if (this.props.tokenIsValid) {
                 await this.props.fetchUser(userToken);
-                // if (!this.props.user) {
-                //     await this.props.fetchUser(userToken);
-                // }
+
+                this.setState({ isLoading: false });
+            } else {
+                // if token is invalid logout the user
+
+                this.props.logout();
                 this.setState({ isLoading: false });
             }
         } else {

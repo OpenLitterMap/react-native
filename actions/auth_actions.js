@@ -62,17 +62,13 @@ export const checkValidToken = token => {
             })
             .catch(error => {
                 console.log(error);
-                // console.log(
-                //     'auth_actions.checkValidToken',
-                //     error?.response?.data
-                // );
-
-                if (error.response.data.message === 'Unauthenticated.') {
-                    dispatch({
-                        type: 'TOKEN_IS_VALID',
-                        payload: false
-                    });
-                }
+                //  token is critical data
+                // for any type of error that occurs during validating token
+                // we should mark token as invalid
+                dispatch({
+                    type: 'TOKEN_IS_VALID',
+                    payload: false
+                });
             });
     };
 };
