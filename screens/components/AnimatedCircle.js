@@ -20,6 +20,7 @@ const AnimatedCircle = ({
     valueStyles,
     max = 100,
     tagline,
+    nextTarget,
     taglineStyles,
     isValueDisplayed = true
 }) => {
@@ -161,7 +162,9 @@ const AnimatedCircle = ({
                             { color: textColor ?? color },
                             styles.tagline,
                             taglineStyles
-                        ]}>
+                        ]}
+                        dictionary={tagline}
+                        values={{ count: nextTarget }}>
                         {tagline}
                     </Body>
                 </View>
@@ -183,6 +186,7 @@ AnimatedCircle.proptypes = {
     valueStyles: PropTypes.oneOfType([PropTypes.array, PropTypes.object]),
     tagline: PropTypes.string,
     taglineStyles: PropTypes.oneOfType([PropTypes.array, PropTypes.object]),
+    nextTarget: PropTypes.string,
     isValueDisplayed: PropTypes.bool
 };
 

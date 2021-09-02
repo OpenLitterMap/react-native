@@ -10,6 +10,7 @@ const Caption = ({
     color = 'muted',
     children,
     dictionary,
+    values,
     ...rest
 }) => {
     return (
@@ -17,6 +18,7 @@ const Caption = ({
             style={[styles.text, style]}
             family={family}
             color={color}
+            values={values}
             dictionary={dictionary}
             {...rest}>
             {children}
@@ -29,7 +31,8 @@ Caption.propTypes = {
     style: PropTypes.any,
     color: PropTypes.oneOf(ColorType),
     children: PropTypes.node,
-    dictionary: PropTypes.string
+    dictionary: PropTypes.string,
+    values: PropTypes.object
 };
 
 const styles = StyleSheet.create({

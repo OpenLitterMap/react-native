@@ -5,6 +5,7 @@ import { AnimatedCircle } from '../../components';
 const { width } = Dimensions.get('window');
 
 const ProgressCircleCard = ({
+    lang,
     level,
     levelPercentage,
     xpRequired,
@@ -45,16 +46,20 @@ const ProgressCircleCard = ({
                 <ProgressStatCard
                     color="#e268b3"
                     value={level}
-                    title="Level"
-                    tagline={`${xpRequired}XP more to level up`}
+                    title={`${lang}.user.level`}
+                    tagline={`${lang}.user.level-up`}
+                    taglineCount={xpRequired}
+                    // tagline={`${xpRequired}XP more to level up`}
                 />
                 <ProgressStatCard
                     style={{ marginTop: 20 }}
                     color="#A46EDA"
                     value={totalLittercoin}
-                    title="Littercoin"
-                    tagline={`${100 -
-                        littercoinPercentage} images more for next littercoin`}
+                    title={`${lang}.user.littercoin`}
+                    tagline={`${lang}.user.next-littercoin`}
+                    taglineCount={littercoinPercentage}
+                    // tagline={`${100 -
+                    //     littercoinPercentage} images more for next littercoin`}
                 />
             </View>
         </View>

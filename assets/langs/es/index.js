@@ -5,6 +5,7 @@ import permission from './permission.json';
 import settings from './settings.json';
 import stats from './stats.json';
 import tag from './tag.json';
+import user from './user.json';
 import welcome from './welcome.json';
 
 export const es = {
@@ -15,5 +16,6 @@ export const es = {
     settings,
     stats,
     tag,
+    user,
     welcome
 };

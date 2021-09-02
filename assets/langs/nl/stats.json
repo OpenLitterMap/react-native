@@ -1,6 +1,6 @@
 {
     "global-data": "Wereldwijde gegevens",
-    "next-target": "Volgende doel",
+    "next-target": "Volgende doel\n{count} Afval",
     "total-litter": "Totaal afval",
     "total-photos": "Totaal aantal foto's",
     "total-users": "Totaal aantal gebruikers",

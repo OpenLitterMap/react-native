@@ -10,6 +10,7 @@ const StyledText = ({
     color = 'text',
     children,
     dictionary,
+    values,
     ...rest
 }) => {
     const textColor = Colors[`${color}`];
@@ -17,6 +18,7 @@ const StyledText = ({
     if (dictionary) {
         return (
             <TransText
+                values={values}
                 dictionary={dictionary}
                 style={[styles.text, { color: textColor }, font, style]}
             />
@@ -36,7 +38,8 @@ StyledText.propTypes = {
     style: PropTypes.any,
     color: PropTypes.oneOf(ColorType),
     children: PropTypes.node,
-    dictionary: PropTypes.string
+    dictionary: PropTypes.string,
+    values: PropTypes.object
 };
 
 const styles = StyleSheet.create({
