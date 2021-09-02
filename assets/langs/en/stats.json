@@ -1,6 +1,6 @@
 {
     "global-data": "Global Data",
-    "next-target": "Next Target",
+    "next-target": "Next Target\n{count} Litter",
     "total-litter": "Total Litter",
     "total-photos": "Total Photos",
     "total-users": "Total Users",

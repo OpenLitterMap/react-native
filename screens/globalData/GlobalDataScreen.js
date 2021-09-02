@@ -148,7 +148,8 @@ class GlobalDataScreen extends Component {
                             delay={500}
                             duration={5000}
                             radius={160}
-                            tagline={`Next Target\n${litterTarget.nextTarget.toLocaleString()} Litter`}
+                            tagline={`${this.props.lang}.stats.next-target`}
+                            nextTarget={litterTarget.nextTarget.toLocaleString()}
                             valueSuffix="%"
                         />
 
