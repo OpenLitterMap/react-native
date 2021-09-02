@@ -10,6 +10,8 @@ import {
     Dimensions
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { connect } from 'react-redux';
+import * as actions from '../../actions';
 import { Title, Body, Colors, Caption } from '../components';
 import {
     checkCameraPermission,
@@ -19,7 +21,7 @@ import {
 } from '../../utils/permissions';
 
 const { width } = Dimensions.get('window');
-export default class CameraPermissionScreen extends Component {
+class CameraPermissionScreen extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -96,49 +98,81 @@ export default class CameraPermissionScreen extends Component {
     }
 
     render() {
-        const { navigation } = this.props;
+        const { navigation, lang } = this.props;
         return (
             <View style={styles.container}>
                 <Image
                     source={require('../../assets/illustrations/camera_permission.png')}
                     style={styles.imageStyle}
                 />
-                <Title>Please Give Permissions</Title>
+                <Title
+                    dictionary={`${lang}.permission.please-give-permissions`}
+                />
                 {/* 1 */}
                 <View style={styles.permissionContainer}>
-                    <View style={styles.permissionItem}>
+                    <View
+                        style={[
+                            styles.permissionItem,
+                            lang === 'ar' && { flexDirection: 'row-reverse' }
+                        ]}>
                         <Icon name="ios-camera" size={32} color={Colors.text} />
                         <View style={styles.itemBody}>
-                            <Body>Camera Access</Body>
-                            <Caption>
-                                To capture litter images from app camera.
-                            </Caption>
+                            <Body
+                                style={lang === 'ar' && { textAlign: 'right' }}
+                                dictionary={`${lang}.permission.camera-access`}
+                            />
+                            <Caption
+                                style={lang === 'ar' && { textAlign: 'right' }}
+                                dictionary={`${lang}.permission.camera-access-body`}
+                            />
                         </View>
                     </View>
 
                     {/* 2 */}
-                    <View style={styles.permissionItem}>
+                    <View
+                        style={[
+                            styles.permissionItem,
+                            lang === 'ar' && { flexDirection: 'row-reverse' }
+                        ]}>
                         <Icon name="ios-location" size={32} />
                         <View style={styles.itemBody}>
-                            <Body>Location Access</Body>
-                            <Caption>
-                                To get exact geolocation of where the litter is.
-                            </Caption>
+                            <Body
+                                style={lang === 'ar' && { textAlign: 'right' }}
+                                dictionary={`${lang}.permission.location-access`}
+                            />
+                            <Caption
+                                style={lang === 'ar' && { textAlign: 'right' }}
+                                dictionary={`${lang}.permission.location-body`}
+                            />
                         </View>
                     </View>
                 </View>
                 <Pressable
                     style={styles.buttonStyle}
                     onPress={() => this.requestPermissions()}>
-                    <Body color="white">Allow Permissions</Body>
+                    <Body
+                        color="white"
+                        dictionary={`${lang}.permission.allow-permission`}
+                    />
                 </Pressable>
-                <Pressable onPress={() => navigation.navigate('CAMERA')}>
-                    <Body>Not now, Later</Body>
+                <Pressable onPress={() => navigation.navigate('HOME')}>
+                    <Body dictionary={`${lang}.permission.not-now`} />
                 </Pressable>
             </View>
         );
     }
 }
+
+const mapStateToProps = state => {
+    return {
+        lang: state.auth.lang
+    };
+};
+
+export default connect(
+    mapStateToProps,
+    actions
+)(CameraPermissionScreen);
 
 const styles = StyleSheet.create({
     container: {
@@ -164,7 +198,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginTop: 20
     },
-    itemBody: { flexShrink: 1, marginLeft: 20 },
+    itemBody: { flexShrink: 1, marginHorizontal: 20 },
     buttonStyle: {
         paddingHorizontal: 28,
         paddingVertical: 20,
