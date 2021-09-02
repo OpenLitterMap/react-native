@@ -678,6 +678,60 @@ class AuthScreen extends Component {
                                 />
                             )}
                             <View style={styles.contentContainer}>
+                                {/* Show input to create a username */}
+                                {formMode === formModes.CREATE_ACCOUNT && (
+                                    <>
+                                        <View
+                                            style={[
+                                                styles.inputWrap,
+                                                usernameErrorMessage &&
+                                                    styles.errorBorder
+                                            ]}>
+                                            <Icon
+                                                iconStyle={styles.inputIconAt}
+                                                name="account-circle"
+                                                type="material"
+                                                size={22}
+                                                color={COLORS.iconGreyDisabled}
+                                            />
+                                            <TextInput
+                                                onSubmitEditing={() =>
+                                                    this._focusNextField(
+                                                        'email'
+                                                    )
+                                                }
+                                                autoFocus={false}
+                                                autoCorrect={false}
+                                                autoCapitalize={'none'}
+                                                containerStyle={
+                                                    styles.formContainer
+                                                }
+                                                placeholder={
+                                                    usernameTranslation
+                                                }
+                                                placeholderTextColor="#ccc"
+                                                selectionColor={'#2c3e50'}
+                                                style={styles.inputStyle}
+                                                onChangeText={
+                                                    this.updateUsername
+                                                }
+                                                value={username}
+                                            />
+                                        </View>
+                                        {usernameErrorMessage !== null &&
+                                            usernameErrorMessage !==
+                                                undefined && (
+                                                <View style={styles.errorWrap}>
+                                                    <TransText
+                                                        style={styles.error}
+                                                        dictionary={
+                                                            usernameErrorMessage
+                                                        }
+                                                    />
+                                                </View>
+                                            )}
+                                    </>
+                                )}
                                 <View
                                     style={[
                                         styles.inputWrap,
@@ -792,56 +846,6 @@ class AuthScreen extends Component {
                                         onPress={this.forgotPassword}
                                         dictionary={`${lang}.auth.forgot-password`}
                                     />
-                                )}
-
-                                {/* Show input to create a username */}
-                                {formMode === formModes.CREATE_ACCOUNT && (
-                                    <>
-                                        <View
-                                            style={[
-                                                styles.inputWrap,
-                                                usernameErrorMessage &&
-                                                    styles.errorBorder
-                                            ]}>
-                                            <Icon
-                                                iconStyle={styles.inputIconAt}
-                                                name="account-circle"
-                                                type="material"
-                                                size={22}
-                                                color={COLORS.iconGreyDisabled}
-                                            />
-                                            <TextInput
-                                                autoFocus={false}
-                                                autoCorrect={false}
-                                                autoCapitalize={'none'}
-                                                containerStyle={
-                                                    styles.formContainer
-                                                }
-                                                placeholder={
-                                                    usernameTranslation
-                                                }
-                                                placeholderTextColor="#ccc"
-                                                selectionColor={'#2c3e50'}
-                                                style={styles.inputStyle}
-                                                onChangeText={
-                                                    this.updateUsername
-                                                }
-                                                value={username}
-                                            />
-                                        </View>
-                                        {usernameErrorMessage !== null &&
-                                            usernameErrorMessage !==
-                                                undefined && (
-                                                <View style={styles.errorWrap}>
-                                                    <TransText
-                                                        style={styles.error}
-                                                        dictionary={
-                                                            usernameErrorMessage
-                                                        }
-                                                    />
-                                                </View>
-                                            )}
-                                    </>
                                 )}
 
                                 {buttonPressed &&
