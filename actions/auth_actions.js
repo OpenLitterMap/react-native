@@ -16,6 +16,7 @@ import {
     USER_FOUND,
     USERNAME_CHANGED,
     TOGGLE_USERNAME_MODAL,
+    SUBMIT_END,
     STORE_CURRENT_APP_VERSION,
     ON_SEEN_FEATURE_TOUR,
     URL
@@ -121,6 +122,9 @@ export const checkForToken = () => async dispatch => {
 export const createAccount = data => {
     // console.log('action - attempting to create an account');
     return dispatch => {
+        // setting isSubmitting to true
+        // shows loader on button
+        dispatch({ type: SUBMIT_START });
         fetch(URL + '/api/register', {
             method: 'POST',
             headers: {
@@ -238,6 +242,9 @@ export const changeServerStatusText = text => {
  */
 export const sendResetPasswordRequest = email => {
     return dispatch => {
+        // setting isSubmitting to true
+        // shows loader on button
+        dispatch({ type: SUBMIT_START });
         return axios(URL + '/api/password/email', {
             method: 'POST',
             data: {
@@ -256,6 +263,8 @@ export const sendResetPasswordRequest = email => {
                     response.data.message ===
                     'We have emailed your password reset link!'
                 ) {
+                    // setting isSubmitting to false
+                    dispatch({ type: SUBMIT_END });
                     return {
                         success: true
                     };
@@ -268,6 +277,8 @@ export const sendResetPasswordRequest = email => {
                     error.response.data.message ===
                     'The given data was invalid.'
                 ) {
+                    // setting isSubmitting to false
+                    dispatch({ type: SUBMIT_END });
                     return {
                         success: false,
                         msg: error.response.data.errors.email // We can't find a user with that email address

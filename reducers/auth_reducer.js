@@ -18,6 +18,7 @@ import {
     USERNAME_ERROR,
     ON_SEEN_FEATURE_TOUR,
     SERVER_STATUS,
+    SUBMIT_END,
     SUBMIT_START
 } from '../actions/types';
 import { XPLEVEL } from '../screens/pages/data/xpLevel';
@@ -86,6 +87,11 @@ export default function(state = INITIAL_STATE, action) {
                 ...state,
                 appVersion: action.payload,
                 hasSeenFeatureTour: true
+            };
+        case SUBMIT_END:
+            return {
+                ...state,
+                isSubmitting: false
             };
 
         case SUBMIT_START:
