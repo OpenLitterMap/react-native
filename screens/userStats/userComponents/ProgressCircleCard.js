@@ -57,7 +57,7 @@ const ProgressCircleCard = ({
                     value={totalLittercoin}
                     title={`${lang}.user.littercoin`}
                     tagline={`${lang}.user.next-littercoin`}
-                    taglineCount={100 - littercoinPercentage}
+                    taglineCount={littercoinPercentage}
                     // tagline={`${100 -
                     //     littercoinPercentage} images more for next littercoin`}
                 />
