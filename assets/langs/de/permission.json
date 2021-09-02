@@ -6,6 +6,9 @@
     "gallery-body": "Bitte geben Sie uns Zugang zu Ihrer Galerie, was erforderlich ist, wenn Sie Bilder mit Geo-Tags aus der Galerie hochladen möchten",
     "location-access": "Standortzugriff",
     "location-body": "Um eine genaue Geolokalisierung zu erhalten, wo sich der Wurf befindet",
+    "new-version": "Neue Version verfügbar",
     "not-now": "Nicht jetzt, später",
-    "please-give-permissions": "Bitte Berechtigungen erteilen"
+    "please-give-permissions": "Bitte Berechtigungen erteilen",
+    "please-update-app": "Bitte aktualisieren Sie die App für ein verbessertes Erlebnis",
+    "update-now": "Jetzt aktualisieren"
 }

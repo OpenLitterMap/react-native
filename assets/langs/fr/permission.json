@@ -6,6 +6,9 @@
     "gallery-body": "Veuillez nous fournir l'accès à votre galerie, ce qui est requis si vous souhaitez télécharger des images géolocalisées à partir de la galerie",
     "location-access": "Accès à l'emplacement",
     "location-body": "Pour obtenir la géolocalisation exacte de l'endroit où se trouve la litière",
+    "new-version": "Nouvelle version disponible",
     "not-now": "Pas maintenant plus tard",
-    "please-give-permissions": "Veuillez donner des autorisations"
+    "please-give-permissions": "Veuillez donner des autorisations",
+    "please-update-app": "Veuillez mettre à jour l'application pour une meilleure expérience",
+    "update-now": "Mettez à jour maintenant"
 }

@@ -8,14 +8,15 @@ import {
     Platform,
     Linking
 } from 'react-native';
-
+import { connect } from 'react-redux';
+import * as actions from '../../actions';
 import { Title, Body, Colors } from '../components';
 import {
     checkCameraRollPermission,
     requestCameraRollPermission
 } from '../../utils/permissions';
 
-export default class GalleryPermissionScreen extends Component {
+class GalleryPermissionScreen extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -86,30 +87,47 @@ export default class GalleryPermissionScreen extends Component {
     }
 
     render() {
-        const { navigation } = this.props;
+        const { navigation, lang } = this.props;
         return (
             <View style={styles.container}>
                 <Image
                     source={require('../../assets/illustrations/gallery_permission.png')}
                     style={styles.imageStyle}
                 />
-                <Title>Allow Gallery Access</Title>
-                <Body color="muted" style={styles.bodyText}>
+                <Title dictionary={`${lang}.permission.allow-gallery-access`} />
+                <Body
+                    color="muted"
+                    style={styles.bodyText}
+                    dictionary={`${lang}.permission.gallery-body`}>
                     Please provide us access to your gallery, which is required
                     if you want to upload geotagged images from gallery.
                 </Body>
                 <Pressable
                     style={styles.buttonStyle}
                     onPress={() => this.requestGalleryPermission()}>
-                    <Body color="white">Allow gallery access</Body>
+                    <Body
+                        color="white"
+                        dictionary={`${lang}.permission.allow-gallery-access`}
+                    />
                 </Pressable>
                 <Pressable onPress={() => navigation.navigate('HOME')}>
-                    <Body>Not now, Later</Body>
+                    <Body dictionary={`${lang}.permission.not-now`} />
                 </Pressable>
             </View>
         );
     }
 }
+
+const mapStateToProps = state => {
+    return {
+        lang: state.auth.lang
+    };
+};
+
+export default connect(
+    mapStateToProps,
+    actions
+)(GalleryPermissionScreen);
 
 const styles = StyleSheet.create({
     container: {

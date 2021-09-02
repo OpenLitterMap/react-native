@@ -6,6 +6,9 @@
     "gallery-body": "Forneça-nos acesso à sua galeria, que é necessário se você quiser fazer upload de imagens com geo-tag da galeria",
     "location-access": "Acesso de localização",
     "location-body": "Para obter geolocalização exata de onde o lixo está",
+    "new-version": "Nova versão disponível",
     "not-now": "Não agora, mais tarde",
-    "please-give-permissions": "Por favor, dê permissões"
+    "please-give-permissions": "Por favor, dê permissões",
+    "please-update-app": "Atualize o aplicativo para uma experiência aprimorada",
+    "update-now": "Atualize agora"
 }
