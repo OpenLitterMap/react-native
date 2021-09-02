@@ -866,11 +866,11 @@ class AuthScreen extends Component {
                                 {/* Main action button shared between all form types */}
                                 <View style={styles.buttonContainer}>
                                     <TouchableOpacity
-                                        disabled={!isFormReady}
+                                        disabled={!isFormReady || isSubmitting}
                                         onPress={this.submitButtonClick}
                                         style={[
                                             styles.submitButton,
-                                            !isFormReady &&
+                                            (!isFormReady || isSubmitting) &&
                                                 styles.buttonDisabled,
                                             formMode ===
                                                 formModes.FORGOT_PASSWORD &&
