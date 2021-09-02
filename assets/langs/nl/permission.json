@@ -1,0 +1,14 @@
+{
+    "allow-gallery-access": "Toegang tot galerij toestaan",
+    "allow-permission": "Machtigingen toestaan",
+    "camera-access": "Cameratoegang",
+    "camera-access-body": "Om nestfoto's van de app-camera vast te leggen",
+    "gallery-body": "Geef ons alstublieft toegang tot uw galerij, wat vereist is als u afbeeldingen met geotags uit de galerij wilt uploaden",
+    "location-access": "Locatietoegang",
+    "location-body": "Om de exacte geolocatie te krijgen van waar het nest is",
+    "new-version": "Nieuwe versie beschikbaar",
+    "not-now": "Niet nu later",
+    "please-give-permissions": "Geef alstublieft toestemming",
+    "please-update-app": "Werk de app bij voor een verbeterde ervaring",
+    "update-now": "Update nu"
+}

@@ -1,6 +1,7 @@
 import auth from './auth.json';
 import leftpage from './leftpage.json';
 import litter from './litter.json';
+import permission from './permission.json';
 import settings from './settings.json';
 import stats from './stats.json';
 import tag from './tag.json';
@@ -10,6 +11,7 @@ export const fr = {
     auth,
     leftpage,
     litter,
+    permission,
     settings,
     stats,
     tag,

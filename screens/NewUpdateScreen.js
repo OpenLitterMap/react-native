@@ -1,9 +1,10 @@
 import React, { Component } from 'react';
 import { StyleSheet, View, Image, Pressable, Linking } from 'react-native';
-
+import { connect } from 'react-redux';
+import * as actions from '../actions';
 import { Title, Body, Colors } from './components';
 
-export default class NewUpdateScreen extends Component {
+class NewUpdateScreen extends Component {
     constructor(props) {
         super(props);
     }
@@ -13,7 +14,7 @@ export default class NewUpdateScreen extends Component {
         canOpen && Linking.openURL(url);
     }
     render() {
-        const { navigation, route } = this.props;
+        const { navigation, route, lang } = this.props;
         const { url } = route.params;
         return (
             <View style={styles.container}>
@@ -21,22 +22,38 @@ export default class NewUpdateScreen extends Component {
                     source={require('../assets/illustrations/new_update.png')}
                     style={styles.imageStyle}
                 />
-                <Title>New Version Available</Title>
-                <Body color="muted" style={styles.bodyText}>
-                    Please update the app for an improved experience.
-                </Body>
+                <Title dictionary={`${lang}.permission.new-version`} />
+                <Body
+                    color="muted"
+                    style={styles.bodyText}
+                    dictionary={`${lang}.permission.please-update-app`}
+                />
                 <Pressable
                     style={styles.buttonStyle}
                     onPress={() => this.handleButtonClick(url)}>
-                    <Body color="white">Update Now</Body>
+                    <Body
+                        color="white"
+                        dictionary={`${lang}.permission.update-now`}
+                    />
                 </Pressable>
                 <Pressable onPress={() => navigation.navigate('HOME')}>
-                    <Body>Not now, Later</Body>
+                    <Body dictionary={`${lang}.permission.not-now`} />
                 </Pressable>
             </View>
         );
     }
 }
+
+const mapStateToProps = state => {
+    return {
+        lang: state.auth.lang
+    };
+};
+
+export default connect(
+    mapStateToProps,
+    actions
+)(NewUpdateScreen);
 
 const styles = StyleSheet.create({
     container: {
