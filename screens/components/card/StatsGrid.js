@@ -5,6 +5,23 @@ import Icon from 'react-native-vector-icons/Ionicons';
 
 import IconStatsCard from './IconStatsCard';
 
+/**
+ * @typedef  StatsDataType
+ * @type {Object}
+ * @property {string} title -- the title of the stats card (Rank , XP, Total Tags etc)
+ * @property {number} value -- the end value for animation / actual value
+ * @property {number} startValue -- the starting value for animation
+ * @property {string} icon -- the name of the icon -- Ionicons from react-native-vector-icons
+ * @property {string} color - color of the text
+ * @property {string} bgColor -- background color of card
+ * @property {boolean} ordinal -- if true adds ordinal to the number (eg- 1st, 2nd, 28th etc)
+ */
+
+/**
+ * component that creates a grid to show stats
+ * used in GlobalStatsScreen and USerStatsScreen
+ * @param {Array.<StatsDataType>} statsData Array<{@link StatsDataType}>
+ */
 const StatsGrid = ({ statsData }) => {
     return (
         <View style={styles.statsContainer}>

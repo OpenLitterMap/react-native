@@ -6,7 +6,12 @@ import { Title, Caption } from '../typography';
 import { Colors } from '../theme';
 const { width } = Dimensions.get('window');
 
-// fn to get ordinal of number
+/**
+ * function to get ordinal of the number
+ * eg - 1st , 2nd , 50th etc
+ * @param {number} number
+ * @returns {string} ordinal for the number passed as param
+ */
 export const getOrdinal = number => {
     const b = number % 10;
     const output =
@@ -22,6 +27,24 @@ export const getOrdinal = number => {
     return output;
 };
 
+/**
+ * props accepted by IconStatsCard
+ * @typedef {Object} IconStatsCardProps
+ * @property {number} value -- the end value for animation / actual value
+ * @property {number} startValue -- the starting value for animation
+ * @property {any} style -- styles to override default styles of container
+ * @property {string} fontColor - color for the text of card
+ * @property {string} backgroundColor
+ * @property {boolean} contentCenter - if true content is center aligned or its left aligned
+ * @property {boolean} ordinal -- if true adds ordinal to the number (eg- 1st, 2nd, 28th etc)
+ * @property {any} imageContent -- content like icon thats to be shown in stats card (to visually explain the card content)
+ *
+ */
+/**
+ * the card component to show stats in GlobalStatsScreen and UserStatsScreen
+ * @param {IconStatsCardProps} props - {@link IconStatsCardProps}
+ * @returns
+ */
 const IconStatsCard = ({
     style,
     value,
