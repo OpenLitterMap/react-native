@@ -44,8 +44,6 @@ class MainRoutes extends Component {
             // Check if the token is valid
             await this.props.checkValidToken(userToken);
 
-            console.log('tokenIsValid', this.props.tokenIsValid);
-
             if (this.props.tokenIsValid) {
                 await this.props.fetchUser(userToken);
 

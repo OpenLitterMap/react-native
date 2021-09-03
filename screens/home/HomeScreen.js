@@ -96,6 +96,7 @@ class HomeScreen extends PureComponent {
 
     async checkNewVersion() {
         const version = DeviceInfo.getVersion();
+
         const platform = Platform.OS;
 
         if (this.props.appVersion === null) {

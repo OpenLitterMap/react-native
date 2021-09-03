@@ -49,7 +49,6 @@ const ProgressCircleCard = ({
                     title={`${lang}.user.level`}
                     tagline={`${lang}.user.level-up`}
                     taglineCount={xpRequired}
-                    // tagline={`${xpRequired}XP more to level up`}
                 />
                 <ProgressStatCard
                     style={{ marginTop: 20 }}
@@ -58,8 +57,6 @@ const ProgressCircleCard = ({
                     title={`${lang}.user.littercoin`}
                     tagline={`${lang}.user.next-littercoin`}
                     taglineCount={littercoinPercentage}
-                    // tagline={`${100 -
-                    //     littercoinPercentage} images more for next littercoin`}
                 />
             </View>
         </View>

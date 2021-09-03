@@ -115,7 +115,7 @@ class GlobalDataScreen extends Component {
                     leftContent={
                         <Title
                             color="white"
-                            dictionary={`${lang}.stats.total-users`}
+                            dictionary={`${lang}.stats.global-data`}
                         />
                     }
                 />

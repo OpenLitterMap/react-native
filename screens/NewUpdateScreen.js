@@ -1,5 +1,12 @@
 import React, { Component } from 'react';
-import { StyleSheet, View, Image, Pressable, Linking } from 'react-native';
+import {
+    StyleSheet,
+    View,
+    Image,
+    Pressable,
+    Linking,
+    Platform
+} from 'react-native';
 import { connect } from 'react-redux';
 import * as actions from '../actions';
 import { Title, Body, Colors } from './components';
@@ -9,9 +16,15 @@ class NewUpdateScreen extends Component {
         super(props);
     }
 
-    async handleButtonClick(url) {
+    async handleButtonClick() {
+        const url =
+            Platform.OS === 'ios'
+                ? 'https://apps.apple.com/ie/app/openlittermap/id1475982147'
+                : 'https://play.google.com/store/apps/details?id=com.geotech.openlittermap';
+
         const canOpen = await Linking.canOpenURL(url);
-        canOpen && Linking.openURL(url);
+
+        canOpen && (await Linking.openURL(url));
     }
     render() {
         const { navigation, route, lang } = this.props;
@@ -30,7 +43,7 @@ class NewUpdateScreen extends Component {
                 />
                 <Pressable
                     style={styles.buttonStyle}
-                    onPress={() => this.handleButtonClick(url)}>
+                    onPress={() => this.handleButtonClick()}>
                     <Body
                         color="white"
                         dictionary={`${lang}.permission.update-now`}

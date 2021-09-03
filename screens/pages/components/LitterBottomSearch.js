@@ -12,8 +12,6 @@ import {
     View,
     Alert
 } from 'react-native';
-import AsyncStorage from '@react-native-community/async-storage';
-
 import { getTranslation, TransText } from 'react-native-translation';
 import AsyncStorage from '@react-native-community/async-storage';
 import DeviceInfo from 'react-native-device-info';
@@ -23,8 +21,6 @@ import { Icon } from 'react-native-elements';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
-
-import KeyboardSpacer from 'react-native-keyboard-spacer';
 
 class LitterBottomSearch extends PureComponent {
     constructor(props) {
