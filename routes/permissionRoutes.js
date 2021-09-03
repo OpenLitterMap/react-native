@@ -7,6 +7,7 @@ const Stack = createStackNavigator();
 const PermissionStack = () => {
     return (
         <Stack.Navigator
+            initialRouteName="GALLERY_PERMISSION"
             screenOptions={{
                 headerShown: false
             }}>

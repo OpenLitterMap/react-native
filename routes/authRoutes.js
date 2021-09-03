@@ -8,6 +8,7 @@ const Stack = createStackNavigator();
 const AuthStack = () => {
     return (
         <Stack.Navigator
+            initialRouteName="WELCOME"
             screenOptions={{
                 headerShown: false
             }}>
