@@ -9,12 +9,14 @@ import {
     Switch,
     Text,
     TouchableHighlight,
-    View
+    View,
+    Pressable
 } from 'react-native';
 import { getTranslation, TransText } from 'react-native-translation';
-import { Header } from 'react-native-elements';
+import Icon from 'react-native-vector-icons/Ionicons';
 import * as actions from '../actions';
 import { connect } from 'react-redux';
+import { Body, SubTitle, Title, Header, Colors, Caption } from './components';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
@@ -28,13 +30,37 @@ class SettingsScreen extends Component {
 
     render() {
         const lang = this.props.lang;
-        const settings = getTranslation(`${lang}.settings.settings`);
-        const logout = getTranslation(`${lang}.settings.logout`);
 
         return (
             <>
-                <SafeAreaView style={{ flex: 0, backgroundColor: '#2189dc' }} />
-                <SafeAreaView style={{ flex: 1 }}>
+                <Header
+                    leftContent={
+                        <Pressable
+                            onPress={() => this.props.navigation.goBack()}>
+                            <Icon
+                                name="ios-chevron-back-outline"
+                                color={Colors.white}
+                                size={24}
+                            />
+                        </Pressable>
+                    }
+                    centerContent={
+                        <Title
+                            style={{ marginLeft: 20 }}
+                            color="white"
+                            dictionary={`${lang}.settings.settings`}
+                        />
+                    }
+                    rightContent={
+                        <Pressable onPress={() => this.props.logout()}>
+                            <Body
+                                color="white"
+                                dictionary={`${lang}.settings.logout`}
+                            />
+                        </Pressable>
+                    }
+                />
+                <View style={{ flex: 1 }}>
                     <Modal
                         animationType="slide"
                         transparent={true}
@@ -51,37 +77,12 @@ class SettingsScreen extends Component {
                         )}
                     </Modal>
 
-                    <Header
-                        containerStyle={{
-                            paddingTop: 0,
-                            height: SCREEN_HEIGHT * 0.1
-                        }}
-                        outerContainerStyles={{ height: SCREEN_HEIGHT * 0.1 }}
-                        leftComponent={{
-                            icon: 'keyboard-arrow-left',
-                            color: '#fff',
-                            onPress: () =>
-                                this.props.navigation.navigate('swipe'),
-                            size: SCREEN_HEIGHT * 0.03
-                        }}
-                        centerComponent={{
-                            text: settings,
-                            style: {
-                                color: '#fff',
-                                fontSize: SCREEN_HEIGHT * 0.02
-                            }
-                        }}
-                        rightComponent={{
-                            text: logout,
-                            onPress: () => this.props.logout(),
-                            size: SCREEN_HEIGHT * 0.03
-                        }}
-                    />
                     <View style={styles.container}>
                         <SectionList
                             stickySectionHeadersEnabled={false}
                             renderSectionHeader={({ section: { title } }) => (
-                                <TransText
+                                <SubTitle
+                                    color="muted"
                                     style={styles.sectionHeaderTitle}
                                     dictionary={`${lang}.${title}`}
                                 />
@@ -159,8 +160,8 @@ class SettingsScreen extends Component {
                             keyExtractor={(item, index) => item + index}
                         />
                     </View>
-                </SafeAreaView>
-                <SafeAreaView style={{ flex: 0, backgroundColor: '#ccc' }} />
+                </View>
+                <SafeAreaView style={{ flex: 0, backgroundColor: '#f7f7f7' }} />
             </>
         );
     }
@@ -178,24 +179,21 @@ class SettingsScreen extends Component {
                     onPress={() =>
                         this._rowPressed(item.id, item.title, item.key)
                     }>
-                    <View style={{ flexDirection: 'row' }}>
-                        <TransText
-                            style={{ flex: 1, fontSize: SCREEN_HEIGHT * 0.02 }}
-                            dictionary={`${this.props.lang}.${item.title}`}
-                        />
-                        <Text style={{ fontSize: SCREEN_HEIGHT * 0.02 }}>
-                            {this._getRowData(item.id)}
-                        </Text>
+                    <View
+                        style={{
+                            flexDirection: 'row',
+                            justifyContent: 'space-between'
+                        }}>
+                        <Body dictionary={`${this.props.lang}.${item.title}`} />
+                        <Body>{this._getRowData(item.id)}</Body>
                     </View>
                 </TouchableHighlight>
             );
         } else {
             return (
                 <View style={styles.switchRow}>
-                    <TransText
-                        style={{ flex: 1, fontSize: SCREEN_HEIGHT * 0.02 }}
-                        dictionary={`${this.props.lang}.${item.title}`}
-                    />
+                    <Body dictionary={`${this.props.lang}.${item.title}`} />
+
                     {this._getRowData(item.id)}
                 </View>
             );
@@ -290,7 +288,7 @@ const styles = {
     },
     container: {
         flex: 1,
-        backgroundColor: '#ccc'
+        backgroundColor: '#f7f7f7'
     },
     image: {
         height: 50,
@@ -322,8 +320,7 @@ const styles = {
     sectionRow: {
         alignItems: 'center',
         backgroundColor: 'white',
-        borderBottomColor: '#ccc',
-        borderBottomWidth: 2,
+        marginBottom: 2,
         flexDirection: 'row',
         height: SCREEN_HEIGHT * 0.06
     },
@@ -334,18 +331,16 @@ const styles = {
         flex: 1
     },
     sectionHeaderTitle: {
-        color: '#2980b9',
-        paddingLeft: 20,
+        paddingLeft: 10,
         paddingTop: 20,
-        paddingBottom: 5,
-        fontSize: SCREEN_HEIGHT * 0.02
+        paddingBottom: 5
     },
     switchRow: {
         flex: 1,
         flexDirection: 'row',
         alignItems: 'center',
-        fontSize: SCREEN_HEIGHT * 0.02,
-        padding: SCREEN_HEIGHT * 0.01
+        padding: SCREEN_HEIGHT * 0.01,
+        justifyContent: 'space-between'
     },
     waitModal: {
         flex: 1,

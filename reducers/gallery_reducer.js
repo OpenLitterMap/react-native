@@ -1,4 +1,5 @@
 import {
+    ADD_GEOTAGGED_IMAGES,
     ADD_TAGS_TO_GALLERY_IMAGE,
     CHANGE_UPLOAD_PROGRESS,
     DELETE_SELECTED_GALLERY,
@@ -14,8 +15,12 @@ import {
 const INITIAL_STATE = {
     gallery: [], // array of selected images
     imageBrowserOpen: false,
-    imagesLoading: true, // inside the photo gallery, turn on to show spinner
-    galleryUploadProgress: 0
+    // imagesLoading: true, // inside the photo gallery, turn on to show spinner
+    imagesLoading: false,
+    galleryUploadProgress: 0,
+    geotaggedImages: [], // array of geotagged images
+    camerarollImageFetched: false,
+    lastFetchTime: null
 };
 
 export default function(state = INITIAL_STATE, action) {
@@ -188,6 +193,21 @@ export default function(state = INITIAL_STATE, action) {
             return {
                 ...state,
                 gallery
+            };
+        /**
+         * add array of geotagged images to state
+         */
+        case ADD_GEOTAGGED_IMAGES:
+            const geotaggedImages = [
+                ...action.payload.geotagged,
+                ...state.geotaggedImages
+            ];
+            return {
+                ...state,
+                geotaggedImages,
+                camerarollImageFetched: true,
+                lastFetchTime: Math.floor(new Date().getTime()),
+                imagesLoading: false
             };
 
         default:

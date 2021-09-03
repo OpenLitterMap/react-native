@@ -12,8 +12,6 @@
 <p>We have just launched a <a href="https://www.gofundme.com/f/openlittermap-a-revolutionary-app-to-map-litter">GoFundMe</a> which includes our first promotional video and a new demo video showing how to use our app.</p>
 <p>The source code for the mobile app (React Native) will launch soon, followed by the OpenLitterAI and our smart contacts.</p>
 <p>OpenLitterMap is the first project to reward users with cryptocurrency for the production of geographic information. By using the app and doing "proof of work", users are "mining" Littercoin which we are experimenting with to reward and incentivize the sharing of geospatial data on plastic pollution.</p>
-<br>
-<p>STAY TUNED FOR LOTS OF EXCITING UPDATES</p>
 <hr>
 <p>OpenLitterMap/react-native is built with... <a href="https://reactnative.dev/">React Native!</a>.
 <p>You can set up <a href="https://github.com/OpenLitterMap/openlittermap-web">openlittermap-web</a> as a backend to test all its features with ease.</p>

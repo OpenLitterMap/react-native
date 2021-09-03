@@ -1,0 +1,14 @@
+{
+    "allow-gallery-access": "Permitir acceso a la galería",
+    "allow-permission": "Permitir permisos",
+    "camera-access": "Acceso a la cámara",
+    "camera-access-body": "Para capturar imágenes de basura desde la cámara de la aplicación",
+    "gallery-body": "Por favor, bríndenos acceso a su galería, que es necesario si desea cargar imágenes geoetiquetadas desde la galería.",
+    "location-access": "Acceso a la ubicación",
+    "location-body": "Para obtener la geolocalización exacta de dónde está la basura",
+    "new-version": "Nueva versión disponible",
+    "not-now": "No ahora, después",
+    "please-give-permissions": "Por favor otorgue permisos",
+    "please-update-app": "Actualiza la aplicación para mejorar la experiencia.",
+    "update-now": "Actualizar ahora"
+}

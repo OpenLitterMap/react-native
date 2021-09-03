@@ -8,6 +8,8 @@ import { connect } from 'react-redux';
 import * as actions from '../../../../../actions';
 import styles from './styles';
 
+let t1 = 0;
+let t2 = 0;
 // forked from https://github.com/Around25/react-native-gallery-media-picker
 class GalleryMediaPicker extends Component {
     constructor(props) {
@@ -38,6 +40,7 @@ class GalleryMediaPicker extends Component {
     }
 
     componentDidMount() {
+        t1 = Date.now();
         this.getFiles();
     }
 
@@ -120,6 +123,7 @@ class GalleryMediaPicker extends Component {
      */
     extract(items) {
         const platform = Platform.OS;
+        const geotagged = [];
 
         const galleryLength = this.props.gallery.length;
 
@@ -129,12 +133,13 @@ class GalleryMediaPicker extends Component {
                 ? 0
                 : this.props.gallery[galleryLength - 1].id + 1;
 
-        const geotagged = items.map(item => {
+        items.map(item => {
             id++;
 
             if (platform === 'ios') {
+                // console.log('this is ios id', id);
                 if (Object.keys(item.node.location).length > 0) {
-                    return {
+                    geotagged.push({
                         id,
                         filename: item.node.image.filename, // this will get hashed on the backend
                         uri: item.node.image.uri,
@@ -148,14 +153,14 @@ class GalleryMediaPicker extends Component {
                         picked_up: false,
                         tags: {},
                         type: 'gallery'
-                    };
-                } else {
-                    return null;
+                    });
                 }
             } else {
                 // android
                 if (item.node.hasOwnProperty('location')) {
-                    return {
+                    console.log(id);
+                    // console.log(JSON.stringify(item, null, '\t'));
+                    geotagged.push({
                         id,
                         filename: item.node.image.filename, // don't use this
                         uri: item.node.image.uri,
@@ -169,19 +174,20 @@ class GalleryMediaPicker extends Component {
                         picked_up: false,
                         tags: {},
                         type: 'gallery'
-                    };
-                } else {
-                    return null;
+                    });
                 }
             }
         });
+        console.log('=====');
 
         // console.log('geotagged[0]', geotagged[0]);
-        // console.log({ geotagged });
+        // console.log(JSON.stringify(geotagged, null, '\t'));
 
         let albums = [{ albumName: 'Geotagged', images: geotagged }];
-
+        // console.log(albums);
         this.setState({ albums });
+        t2 = Date.now();
+        console.log(t2 - t1);
     }
 
     // /**
@@ -216,7 +222,7 @@ class GalleryMediaPicker extends Component {
             .filter(album => album.albumName === selectedAlbumName)
             .pop();
 
-        console.log({ selectedAlbum });
+        // console.log({ selectedAlbum });
 
         return selectedAlbum.images;
     }

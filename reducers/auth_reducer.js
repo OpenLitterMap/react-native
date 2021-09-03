@@ -1,3 +1,4 @@
+import AsyncStorage from '@react-native-community/async-storage';
 import {
     ACCOUNT_CREATED,
     BAD_PASSWORD,
@@ -17,9 +18,10 @@ import {
     USERNAME_ERROR,
     ON_SEEN_FEATURE_TOUR,
     SERVER_STATUS,
+    SUBMIT_END,
     SUBMIT_START
 } from '../actions/types';
-
+import { XPLEVEL } from '../screens/pages/data/xpLevel';
 // import AsyncStorage from '@react-native-community/async-storage';
 // import { Map, List } from 'immutable';
 
@@ -86,6 +88,11 @@ export default function(state = INITIAL_STATE, action) {
                 appVersion: action.payload,
                 hasSeenFeatureTour: true
             };
+        case SUBMIT_END:
+            return {
+                ...state,
+                isSubmitting: false
+            };
 
         case SUBMIT_START:
             return {
@@ -122,7 +129,8 @@ export default function(state = INITIAL_STATE, action) {
 
             return {
                 state: INITIAL_STATE,
-                lang: lang
+                lang: lang,
+                token: null
             };
 
         /**
@@ -189,21 +197,27 @@ export default function(state = INITIAL_STATE, action) {
             };
 
         case USER_FOUND:
-            // console.log('- user found, reducer -');
-            // console.log(typeof(action.payload));
-            // console.log(action.payload);
             let user;
             if (action.payload === 'string') {
-                // console.log('Payload is string');
-                // console.log(JSON.parse(action.payload));
                 user = JSON.parse(action.payload);
             } else {
-                // console.log('Payload is not string');
-                // console.log(action.payload);
                 user = action.payload.userObj;
-                // console.log(user);
             }
-            // console.log(action.payload.token);
+            const level = XPLEVEL.findIndex(xp => xp > user.xp);
+            const xpRequired = XPLEVEL[level] - user.xp;
+            const previousTarget = level > 0 ? XPLEVEL[level - 1] : 0;
+            const targetPercentage =
+                ((user.xp - previousTarget) /
+                    (XPLEVEL[level] - previousTarget)) *
+                100;
+            user.level = level;
+            user.xpRequired = xpRequired;
+            user.targetPercentage = targetPercentage;
+            user.totalTags = user.total_brands + user.total_tags;
+            user.totalLittercoin =
+                (user.littercoin_allowance || 0) + (user.littercoin_owed || 0);
+
+            AsyncStorage.setItem('user', JSON.stringify(user));
             return {
                 ...state,
                 user

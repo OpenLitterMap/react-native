@@ -1,0 +1,121 @@
+import React from 'react';
+import { View, SafeAreaView } from 'react-native';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
+
+import Icon from 'react-native-vector-icons/Ionicons';
+import {
+    UserStatsScreen,
+    GlobalDataScreen,
+    HomeScreen,
+    CameraScreen
+} from '../screens';
+// import { CameraPage } from '../screens/pages';
+import { Colors } from '../screens/components';
+
+// const Tab = createBottomTabNavigator();
+const Tab = createMaterialTopTabNavigator();
+
+const TabRoutes = ({ navigation }) => (
+    <>
+        <Tab.Navigator
+            lazy={true}
+            tabBarPosition="bottom"
+            initialRouteName="HOME"
+            showIcon={true}
+            tabStyle={{ backgroundColor: '#000' }}
+            screenOptions={({ route }) => ({
+                tabBarIcon: ({ focused, color, size }) => {
+                    let iconName;
+
+                    switch (route.name) {
+                        case 'HOME':
+                            iconName = focused
+                                ? 'ios-home'
+                                : 'ios-home-outline';
+                            break;
+                        case 'GLOBAL_DATA':
+                            iconName = focused
+                                ? 'ios-trending-up'
+                                : 'ios-trending-up-outline';
+                            break;
+                        // case 'TEAM':
+                        //     iconName = focused
+                        //         ? 'ios-people'
+                        //         : 'ios-people-outline';
+                        //     break;
+                        // case 'RANKING':
+                        //     iconName = focused
+                        //         ? 'ios-trophy'
+                        //         : 'ios-trophy-outline';
+                        //     break;
+                        case 'CAMERA':
+                            iconName = focused
+                                ? 'ios-camera'
+                                : 'ios-camera-outline';
+                            break;
+                        case 'USER_STATS':
+                            iconName = focused
+                                ? 'ios-person'
+                                : 'ios-person-outline';
+                            break;
+                        default:
+                            break;
+                    }
+
+                    return (
+                        <View
+                            style={{
+                                backgroundColor: focused
+                                    ? `${Colors.accentLight}`
+                                    : 'white',
+                                width: 50,
+                                height: 50,
+                                borderRadius: 100,
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                alignContent: 'center',
+                                padding: 0,
+                                marginTop: -5
+                            }}>
+                            <Icon name={iconName} size={24} color={color} />
+                        </View>
+                    );
+                }
+            })}
+            tabBarOptions={{
+                activeTintColor: `${Colors.accent}`,
+                inactiveTintColor: 'gray',
+                showIcon: true,
+                showLabel: false,
+                iconStyle: {
+                    height: 50
+                },
+                pressColor: 'white',
+                pressOpacity: 0,
+                indicatorStyle: { display: 'none', backgroundColor: 'white' },
+                style: {
+                    backgroundColor: 'white',
+                    borderTopWidth: 0,
+                    height: 60,
+                    margin: 0,
+                    padding: 0
+                }
+            }}>
+            <Tab.Screen name="HOME" component={HomeScreen} />
+            <Tab.Screen
+                name="CAMERA"
+                component={CameraScreen}
+                options={{ unmountOnBlur: true }}
+            />
+            <Tab.Screen name="GLOBAL_DATA" component={GlobalDataScreen} />
+
+            {/* <Tab.Screen name="TEAM" component={TeamScreen} /> */}
+            {/* <Tab.Screen name="RANKING" component={RankingScreen} /> */}
+            <Tab.Screen name="USER_STATS" component={UserStatsScreen} />
+        </Tab.Navigator>
+        <SafeAreaView backgroundColor="#ffffff" />
+    </>
+);
+
+export default TabRoutes;

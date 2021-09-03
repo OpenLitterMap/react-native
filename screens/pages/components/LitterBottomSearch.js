@@ -12,9 +12,8 @@ import {
     View,
     Alert
 } from 'react-native';
-import AsyncStorage from '@react-native-community/async-storage';
-
 import { getTranslation, TransText } from 'react-native-translation';
+import AsyncStorage from '@react-native-community/async-storage';
 import DeviceInfo from 'react-native-device-info';
 import { connect } from 'react-redux';
 import * as actions from '../../../actions';
@@ -22,8 +21,6 @@ import { Icon } from 'react-native-elements';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
-
-import KeyboardSpacer from 'react-native-keyboard-spacer';
 
 class LitterBottomSearch extends PureComponent {
     constructor(props) {
@@ -110,6 +107,7 @@ class LitterBottomSearch extends PureComponent {
      * Show alert to delete an image that is being tagged
      *
      * Todo - translate
+     * Todo - Add Comments
      */
     deleteImage() {
         const currentIndex = this.props.swiperIndex;
@@ -121,12 +119,14 @@ class LitterBottomSearch extends PureComponent {
             [
                 {
                     text: 'OK',
-                    onPress: () => {
+                    onPress: async () => {
                         this.props.swiperIndexChanged(
                             currentIndex > 0 ? currentIndex - 1 : 0
                         );
                         if (currentIndex < photosLength) {
-                            this.props.deleteSelectedPhoto(currentIndex);
+                            this.props.deleteSelectedPhoto(
+                                currentIndex > 0 ? currentIndex - 1 : 0
+                            );
                         } else if (
                             currentIndex <
                             galleryLength + photosLength
@@ -134,12 +134,18 @@ class LitterBottomSearch extends PureComponent {
                             this.props.deleteSelectedGallery(
                                 currentIndex - photosLength
                             );
-                        }
-                        // else if (currentIndex < webLength)
-                        // {
-                        //     delete web image
-                        // }
-                        else {
+                        } else if (
+                            currentIndex <
+                            photosLength + galleryLength + webLength
+                        ) {
+                            // web_actions delete web image
+                            await this.props.deleteSelectedWebImages(
+                                this.props.token,
+                                this.props.webPhotos[
+                                    currentIndex - photosLength - galleryLength
+                                ].id
+                            );
+                        } else {
                             console.log('problem @ deleteImage');
 
                             return {};
@@ -289,14 +295,14 @@ class LitterBottomSearch extends PureComponent {
                 behavior={'padding'}>
                 <View style={this._container()}>
                     <TouchableOpacity
-                        onPress={this.closeLitterPicker.bind(this)}
+                        onPress={this.deleteImage.bind(this)}
                         style={
                             this.props.keyboardOpen ? styles.hide : styles.icon
                         }
                         disabled={this._checkForPhotos}>
                         <Icon
-                            color="grey"
-                            name="replay"
+                            color="red"
+                            name="close"
                             size={SCREEN_HEIGHT * 0.05}
                         />
                     </TouchableOpacity>
@@ -313,14 +319,14 @@ class LitterBottomSearch extends PureComponent {
                     />
 
                     <TouchableOpacity
-                        onPress={this.deleteImage.bind(this)}
+                        onPress={this.closeLitterPicker.bind(this)}
                         style={
                             this.props.keyboardOpen ? styles.hide : styles.icon
                         }
                         disabled={this._checkForPhotos}>
                         <Icon
-                            color="red"
-                            name="close"
+                            color="green"
+                            name="done"
                             size={SCREEN_HEIGHT * 0.05}
                         />
                     </TouchableOpacity>
@@ -483,7 +489,9 @@ const mapStateToProps = state => {
         gallery: state.gallery.gallery,
         galleryTotalCount: state.gallery.galleryTotalCount,
         photos: state.photos.photos,
-        photoSelected: state.litter.photoSelected
+        photoSelected: state.litter.photoSelected,
+        token: state.auth.token,
+        webPhotos: state.web.photos
     };
 };
 

@@ -1,6 +1,7 @@
 import {
     ADD_TAGS_TO_WEB_IMAGE,
     LOAD_MORE_WEB_IMAGES,
+    REMOVE_TAG_FROM_WEB_IMAGE,
     REMOVE_WEB_IMAGE,
     WEB_IMAGES
 } from '../actions/types';
@@ -70,6 +71,25 @@ export default function(state = INITIAL_STATE, action) {
             return {
                 ...state,
                 photos: webPhotos
+            };
+
+        /**
+         * Remove a tag that has been pressed
+         */
+        case REMOVE_TAG_FROM_WEB_IMAGE:
+            let updatedWebPhotos = [...state.photos];
+
+            let img = updatedWebPhotos[action.payload.currentIndex];
+            delete img.tags[action.payload.category][action.payload.tag];
+
+            // Delete the category if empty
+            if (Object.keys(img.tags[action.payload.category]).length === 0) {
+                delete img.tags[action.payload.category];
+            }
+
+            return {
+                ...state,
+                photos: updatedWebPhotos
             };
 
         /**

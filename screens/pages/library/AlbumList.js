@@ -10,10 +10,12 @@ import {
 import AsyncStorage from '@react-native-community/async-storage';
 
 import { request, PERMISSIONS } from 'react-native-permissions';
-import { Header } from 'react-native-elements';
+// import { Header } from 'react-native-elements';
 import GalleryMediaPicker from '../components/albums';
+import { Header, Body, SubTitle } from '../../components';
 import { connect } from 'react-redux';
 import * as actions from '../../../actions';
+import { Pressable } from 'react-native';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -81,7 +83,7 @@ class AlbumList extends PureComponent {
 
     renderCenterTitle() {
         // Todo - switch between albums
-        return <Text style={{ fontSize: SCREEN_HEIGHT * 0.025 }}>Photos</Text>;
+        return <SubTitle color="white">Photos</SubTitle>;
     }
 
     /**
@@ -89,7 +91,8 @@ class AlbumList extends PureComponent {
      */
     _chooseImages() {
         this.props.photosFromGallery(this.state.selected);
-        this.props.toggleImageBrowser();
+        // this.props.toggleImageBrowser();
+        this.props.navigation.goBack();
 
         // async-storage set gallery
         AsyncStorage.setItem(
@@ -107,55 +110,48 @@ class AlbumList extends PureComponent {
     render() {
         return (
             /* This should probably be wrapped in SafeAreaView? */
-            <View style={this.container()}>
+            <>
                 <Header
                     backgroundColor="white"
                     outerContainerStyles={{ height: SCREEN_HEIGHT * 0.1 }}
-                    leftComponent={{
-                        text: 'Cancel',
-                        style: {
-                            color: '#2089dc',
-                            fontSize: SCREEN_HEIGHT * 0.025
-                        },
-                        size: SCREEN_HEIGHT * 0.03,
-                        onPress: () => {
-                            this.props.toggleImageBrowser(false);
-                            this.props.setImageLoading;
-                        }
-                    }}
-                    centerComponent={this.renderCenterTitle()}
-                    rightComponent={{
-                        text: this._getDoneText(),
-                        style: {
-                            color: '#2089dc',
-                            fontSize: SCREEN_HEIGHT * 0.025,
-                            width: SCREEN_WIDTH * 0.3,
-                            textAlign: 'right'
-                        },
-                        size: SCREEN_HEIGHT * 0.05,
-                        onPress: () => {
-                            this._chooseImages();
-                        }
-                    }}
+                    leftContent={
+                        <Pressable
+                            onPress={() => {
+                                this.props.navigation.goBack();
+                                this.props.setImageLoading;
+                            }}>
+                            <Body color="white">Cancel</Body>
+                        </Pressable>
+                    }
+                    centerContent={this.renderCenterTitle()}
+                    rightContent={
+                        <Pressable
+                            onPress={() => {
+                                this._chooseImages();
+                            }}>
+                            <Body color="white">{this._getDoneText()}</Body>
+                        </Pressable>
+                    }
                 />
-
-                {this.state.hasPermission && (
-                    <GalleryMediaPicker
-                        groupTypes="All"
-                        assetType="Photos"
-                        // markIcon={marker}
-                        // customSelectMarker={this.renderSelectMarker()}
-                        batchSize={1}
-                        emptyGalleryText={'There are no photos or video'}
-                        maximumSelectedFiles={100}
-                        selected={this.state.selected}
-                        itemsPerRow={3}
-                        imageMargin={3}
-                        customLoader={<ActivityIndicator />}
-                        callback={this.getSelectedFiles.bind(this)}
-                    />
-                )}
-            </View>
+                <View style={this.container()}>
+                    {this.state.hasPermission && (
+                        <GalleryMediaPicker
+                            groupTypes="All"
+                            assetType="Photos"
+                            // markIcon={marker}
+                            // customSelectMarker={this.renderSelectMarker()}
+                            batchSize={1}
+                            emptyGalleryText={'There are no photos or video'}
+                            maximumSelectedFiles={100}
+                            selected={this.state.selected}
+                            itemsPerRow={3}
+                            imageMargin={3}
+                            customLoader={<ActivityIndicator />}
+                            callback={this.getSelectedFiles.bind(this)}
+                        />
+                    )}
+                </View>
+            </>
         );
     }
 }

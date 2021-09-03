@@ -16,6 +16,7 @@ import {
     USER_FOUND,
     USERNAME_CHANGED,
     TOGGLE_USERNAME_MODAL,
+    SUBMIT_END,
     STORE_CURRENT_APP_VERSION,
     ON_SEEN_FEATURE_TOUR,
     URL
@@ -60,17 +61,14 @@ export const checkValidToken = token => {
                 }
             })
             .catch(error => {
-                console.log(
-                    'auth_actions.checkValidToken',
-                    error.response.data
-                );
-
-                if (error.response.data.message === 'Unauthenticated.') {
-                    dispatch({
-                        type: 'TOKEN_IS_VALID',
-                        payload: false
-                    });
-                }
+                console.log(error);
+                //  token is critical data
+                // for any type of error that occurs during validating token
+                // we should mark token as invalid
+                dispatch({
+                    type: 'TOKEN_IS_VALID',
+                    payload: false
+                });
             });
     };
 };
@@ -93,6 +91,7 @@ export const onSeenFeatureTour = text => {
  *** CHECK IF TOKEN EXISTS - log in
  **  - fired on AuthScreen componentDidMount
  */
+
 export const checkForToken = () => async dispatch => {
     console.log('auth_actions - checkForToken');
     let jwt;
@@ -119,6 +118,9 @@ export const checkForToken = () => async dispatch => {
 export const createAccount = data => {
     // console.log('action - attempting to create an account');
     return dispatch => {
+        // setting isSubmitting to true
+        // shows loader on button
+        dispatch({ type: SUBMIT_START });
         fetch(URL + '/api/register', {
             method: 'POST',
             headers: {
@@ -210,7 +212,8 @@ export const loginOrSignupReset = () => {
  * This action will call many reducers
  */
 export const logout = () => {
-    AsyncStorage.removeItem('jwt');
+    AsyncStorage.clear();
+
     // delete user from AsyncStorage?
     // state is reset on Logout => user: null
     return {
@@ -235,6 +238,9 @@ export const changeServerStatusText = text => {
  */
 export const sendResetPasswordRequest = email => {
     return dispatch => {
+        // setting isSubmitting to true
+        // shows loader on button
+        dispatch({ type: SUBMIT_START });
         return axios(URL + '/api/password/email', {
             method: 'POST',
             data: {
@@ -253,6 +259,8 @@ export const sendResetPasswordRequest = email => {
                     response.data.message ===
                     'We have emailed your password reset link!'
                 ) {
+                    // setting isSubmitting to false
+                    dispatch({ type: SUBMIT_END });
                     return {
                         success: true
                     };
@@ -265,6 +273,8 @@ export const sendResetPasswordRequest = email => {
                     error.response.data.message ===
                     'The given data was invalid.'
                 ) {
+                    // setting isSubmitting to false
+                    dispatch({ type: SUBMIT_END });
                     return {
                         success: false,
                         msg: error.response.data.errors.email // We can't find a user with that email address
@@ -361,25 +371,13 @@ export const fetchUser = token => {
                     const responseJson = response
                         .text() // returns a promise
                         .then(async responseJson => {
-                            // console.log('=== fetchUser - responseJson1 ===');
-                            // console.log(typeof(responseJson));
-                            // console.log(responseJson);
                             const userObj = JSON.parse(responseJson);
-                            // console.log("User object ...", userObj);
-
-                            await AsyncStorage.setItem(
-                                'user',
-                                JSON.stringify(userObj)
-                            );
 
                             dispatch({
                                 type: USER_FOUND,
                                 payload: { userObj, token }
                             });
-
-                            this.props.navigation.navigate(
-                                userToken ? 'App' : 'Auth'
-                            );
+                            // INFO: no need to manually navigate -- handled in mainRoutes.js
                         })
                         .catch(error => {
                             // console.log('fetch user - error 2');

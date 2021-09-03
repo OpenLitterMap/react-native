@@ -62,11 +62,6 @@ class AuthScreen extends Component {
     }
 
     componentDidUpdate(prevProps, prevState) {
-        console.log('componentDidUpdate');
-        console.log('prevProps.isSubmitting', prevProps.isSubmitting);
-        console.log('this.props.isSubmitting', this.props.isSubmitting);
-        console.log('isFormReady', this.state.isFormReady);
-
         // if formMode changed, recheck validity
         if (prevState.formMode !== this.state.formMode) {
             // clear last server message
@@ -94,10 +89,6 @@ class AuthScreen extends Component {
             prevState.usernameErrorMessage !== this.state.usernameErrorMessage
         ) {
             this.recheckFormValidity();
-        }
-
-        if (!Lodash.isEqual(prevProps.user, this.props.user)) {
-            this.navigationToDashboard();
         }
 
         if (!Lodash.isEqual(prevProps.success, this.props.success)) {
@@ -131,10 +122,6 @@ class AuthScreen extends Component {
         StyleSheet.build({ $rem: SCREEN_WIDTH / VALUES.remDivisionFactor });
     };
 
-    navigationToDashboard = () => {
-        this.props.navigation.navigate('App');
-    };
-
     keyboardWillShow = event => {
         this.setState({
             isLogoDisplayed: false
@@ -164,13 +151,16 @@ class AuthScreen extends Component {
      */
     componentDidMount() {
         this.updateSizeVariables();
-
-        if (this.props.navigation.getParam('auth') === 'login') {
+        const { screen } = this.props.route.params;
+        if (screen === 'login') {
             this.setState({
                 formMode: formModes.LOGIN
             });
         }
 
+        // this.setState({
+        //     formMode: formModes.LOGIN
+        // });
         if (Platform.OS === 'ios') {
             this.keyboardWillShowSub = Keyboard.addListener(
                 'keyboardWillShow',
@@ -191,16 +181,13 @@ class AuthScreen extends Component {
             );
         }
 
-        this.focusListner = this.props.navigation.addListener(
-            'didFocus',
-            () => {
-                this.props.loginOrSignupReset();
-            }
-        );
+        this.focusListner = this.props.navigation.addListener('focus', () => {
+            this.props.loginOrSignupReset();
+        });
     }
 
     componentWillUnmount() {
-        this.focusListner.remove();
+        this.focusListner();
         this.keyboardWillShowSub.remove();
         this.keyboardWillHideSub.remove();
     }
@@ -252,7 +239,7 @@ class AuthScreen extends Component {
             serverStatusText: ''
         });
 
-        this.props.changeServerStatusText('');
+        // this.props.changeServerStatusText('');
 
         // Client side validation..
         const isValidClientSide = this.validateFields();
@@ -380,17 +367,31 @@ class AuthScreen extends Component {
      *
      * @return boolean
      */
-    validateUsername = username => {
-        if (this.isUsernameValid(username)) {
+    validateUsername = async username => {
+        const { result, errorType } = await this.isUsernameValid(username);
+        if (result) {
             this.setState({
                 usernameErrorMessage: null
             });
         } else {
+            let errorMessage;
+            // TODO: add below translations to rest of languages
+            switch (errorType) {
+                case 'MIN_MAX_LENGTH':
+                    errorMessage = `${this.props.lang}.auth.username-min-max`;
+                    break;
+                case 'NO_USERNAME':
+                    errorMessage = `${this.props.lang}.auth.enter-username`;
+                    break;
+                case 'EQUAL_TO_PASSWORD':
+                    errorMessage = `${
+                        this.props.lang
+                    }.auth.username-equal-to-password`;
+                    break;
+            }
+
             this.setState({
-                usernameErrorMessage:
-                    username.trim() === ''
-                        ? `${this.props.lang}.auth.enter-username`
-                        : `${this.props.lang}.auth.alphanumeric-username`
+                usernameErrorMessage: errorMessage
             });
 
             return false;
@@ -404,10 +405,9 @@ class AuthScreen extends Component {
      *
      * @param email
      */
-    updateEmail = email => {
-        email = email.trim().toLocaleLowerCase();
-
-        this.setState({ email: email });
+    updateEmail = async email => {
+        email = await email.trim().toLocaleLowerCase();
+        this.setState({ email });
 
         // only check for errors if the login/signup button has been pressed
         if (this.state.buttonPressed) {
@@ -454,7 +454,20 @@ class AuthScreen extends Component {
           $                         End anchor.
           source: https://stackoverflow.com/questions/336210/regular-expression-for-alphanumeric-and-underscores
          */
-        return username.length > 0;
+        let errorType;
+        let result = true;
+        if (username === this.state.password) {
+            result = false;
+            errorType = 'EQUAL_TO_PASSWORD';
+        }
+        if (username.length === 0) {
+            result = false;
+            errorType = 'NO_USERNAME';
+        } else if (username.length < 3 || username.length > 20) {
+            result = false;
+            errorType = 'MIN_MAX_LENGTH';
+        }
+        return { result, errorType };
         // let regex = /^\w{4,20}$/;
         // return regex.test(username);
     };
@@ -665,6 +678,60 @@ class AuthScreen extends Component {
                                 />
                             )}
                             <View style={styles.contentContainer}>
+                                {/* Show input to create a username */}
+                                {formMode === formModes.CREATE_ACCOUNT && (
+                                    <>
+                                        <View
+                                            style={[
+                                                styles.inputWrap,
+                                                usernameErrorMessage &&
+                                                    styles.errorBorder
+                                            ]}>
+                                            <Icon
+                                                iconStyle={styles.inputIconAt}
+                                                name="account-circle"
+                                                type="material"
+                                                size={22}
+                                                color={COLORS.iconGreyDisabled}
+                                            />
+                                            <TextInput
+                                                onSubmitEditing={() =>
+                                                    this._focusNextField(
+                                                        'email'
+                                                    )
+                                                }
+                                                autoFocus={false}
+                                                autoCorrect={false}
+                                                autoCapitalize={'none'}
+                                                containerStyle={
+                                                    styles.formContainer
+                                                }
+                                                placeholder={
+                                                    usernameTranslation
+                                                }
+                                                placeholderTextColor="#ccc"
+                                                selectionColor={'#2c3e50'}
+                                                style={styles.inputStyle}
+                                                onChangeText={
+                                                    this.updateUsername
+                                                }
+                                                value={username}
+                                            />
+                                        </View>
+                                        {usernameErrorMessage !== null &&
+                                            usernameErrorMessage !==
+                                                undefined && (
+                                                <View style={styles.errorWrap}>
+                                                    <TransText
+                                                        style={styles.error}
+                                                        dictionary={
+                                                            usernameErrorMessage
+                                                        }
+                                                    />
+                                                </View>
+                                            )}
+                                    </>
+                                )}
                                 <View
                                     style={[
                                         styles.inputWrap,
@@ -781,56 +848,6 @@ class AuthScreen extends Component {
                                     />
                                 )}
 
-                                {/* Show input to create a username */}
-                                {formMode === formModes.CREATE_ACCOUNT && (
-                                    <>
-                                        <View
-                                            style={[
-                                                styles.inputWrap,
-                                                usernameErrorMessage &&
-                                                    styles.errorBorder
-                                            ]}>
-                                            <Icon
-                                                iconStyle={styles.inputIconAt}
-                                                name="account-circle"
-                                                type="material"
-                                                size={22}
-                                                color={COLORS.iconGreyDisabled}
-                                            />
-                                            <TextInput
-                                                autoFocus={false}
-                                                autoCorrect={false}
-                                                autoCapitalize={'none'}
-                                                containerStyle={
-                                                    styles.formContainer
-                                                }
-                                                placeholder={
-                                                    usernameTranslation
-                                                }
-                                                placeholderTextColor="#ccc"
-                                                selectionColor={'#2c3e50'}
-                                                style={styles.inputStyle}
-                                                onChangeText={
-                                                    this.updateUsername
-                                                }
-                                                value={username}
-                                            />
-                                        </View>
-                                        {usernameErrorMessage !== null &&
-                                            usernameErrorMessage !==
-                                                undefined && (
-                                                <View style={styles.errorWrap}>
-                                                    <TransText
-                                                        style={styles.error}
-                                                        dictionary={
-                                                            usernameErrorMessage
-                                                        }
-                                                    />
-                                                </View>
-                                            )}
-                                    </>
-                                )}
-
                                 {buttonPressed &&
                                     (serverStatusText || isSubmitting) && (
                                         <View style={{ paddingTop: 5 }}>
@@ -853,11 +870,11 @@ class AuthScreen extends Component {
                                 {/* Main action button shared between all form types */}
                                 <View style={styles.buttonContainer}>
                                     <TouchableOpacity
-                                        disabled={!isFormReady}
+                                        disabled={!isFormReady || isSubmitting}
                                         onPress={this.submitButtonClick}
                                         style={[
                                             styles.submitButton,
-                                            !isFormReady &&
+                                            (!isFormReady || isSubmitting) &&
                                                 styles.buttonDisabled,
                                             formMode ===
                                                 formModes.FORGOT_PASSWORD &&

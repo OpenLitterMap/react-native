@@ -13,6 +13,7 @@
     "thank-you": "Merci!!!",
     "you-have-uploaded": "Vous avez téléversé {count} photo(s)",
     "close": "Fermer",
-    "get-started": "Prenez ou sélectionnez quelques photos pour commencer!",
+    "take-photo": "Prendre une photo ou sélectionner dans la galerie",
+    "no-images": "Aucune image à télécharger",
     "camera": "caméra"
 }
