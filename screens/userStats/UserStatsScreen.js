@@ -7,7 +7,7 @@ import {
     ActivityIndicator
 } from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
-import * as actions from '../../actions';
+import { fetchUser } from '../../actions';
 import { connect } from 'react-redux';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { Body, Title, Header, Colors, StatsGrid } from '../components';
@@ -16,7 +16,11 @@ import { ProgressCircleCard } from './userComponents';
 class UserStatsScreen extends Component {
     constructor(props) {
         super(props);
-        // console.log(JSON.stringify(this.props.user, null, '\t'));
+        /**
+         * saving the initial start position for animation
+         * if user is viewing the screen for first time animation starts from 0
+         * rest of the time it animates from last seen value (saved in AsyncStore)
+         */
         this.state = {
             xpStart: 0,
             positionStart: 0,
@@ -28,6 +32,14 @@ class UserStatsScreen extends Component {
     componentDidMount() {
         this.getDataFromStorage();
     }
+
+    /**
+     * fn to fetch last seen value from AsyncStore
+     * and if "previousUserStats" value exists in AsyncStore
+     * set it to state to be used as starting point of animation
+     *
+     * then call fn {@link UserStatsScreen.fetchUserData}
+     */
 
     async getDataFromStorage() {
         // data of previously viewd stats by user
@@ -47,8 +59,14 @@ class UserStatsScreen extends Component {
         this.fetchUserData();
     }
 
+    /**
+     * fn to fetch currently authenticated user data from backend
+     * {@link fetchUser} action is called
+     * the new user data from redux state is stored in asyncstorage
+     * to be used as previously viewed value next time
+     */
     async fetchUserData() {
-        await this.props.fetchUser(this.props.token);
+        await fetchUser(this.props.token);
         const user = this.props.user;
         const statsObj = {
             xp: user?.xp,
@@ -62,9 +80,22 @@ class UserStatsScreen extends Component {
     }
 
     render() {
+        /**
+         * Currently authenticated user data
+         */
         const user = this.props.user;
+        /**
+         * language selected by user from WelcomeScreen
+         */
         const lang = this.props.lang;
 
+        /**
+         * Array of data for {@link StatsGrid} props
+         * 1 -> user XP
+         * 2 -> user position/rank
+         * 3 -> user total images
+         * 4 -> user total tags (user.total_tags + user.total_brands added in reducer )
+         */
         const statsData = [
             {
                 value: user?.xp || this.state.xpStart,
@@ -102,6 +133,7 @@ class UserStatsScreen extends Component {
         ];
 
         // TODO: add a better loading screen add Skeleton Loading screen
+
         if (user === null || user === undefined) {
             return (
                 <View
@@ -184,5 +216,5 @@ const mapStateToProps = state => {
 
 export default connect(
     mapStateToProps,
-    actions
+    { fetchUser }
 )(UserStatsScreen);
