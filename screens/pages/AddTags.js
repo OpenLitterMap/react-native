@@ -483,6 +483,7 @@ class AddTags extends PureComponent {
     /**
      * Return the tags for an image at a specific index
      */
+
     getTags() {
         const currentGlobalIndex = this.props.swiperIndex;
 
