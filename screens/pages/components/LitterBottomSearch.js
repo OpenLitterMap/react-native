@@ -111,6 +111,7 @@ class LitterBottomSearch extends PureComponent {
      * Show alert to delete an image that is being tagged
      *
      * Todo - translate
+     * Todo - Add Comments
      */
     deleteImage() {
         const currentIndex = this.props.swiperIndex;
