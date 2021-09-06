@@ -7,10 +7,14 @@ const { width } = Dimensions.get('window');
 const ProgressCircleCard = ({
     lang,
     level,
+    levelStart,
     levelPercentage,
+    levelPercentageStart,
     xpRequired,
     totalLittercoin,
-    littercoinPercentage
+    littercoinStart,
+    littercoinPercentage,
+    littercoinPercentageStart
 }) => {
     return (
         <View style={styles.container}>
@@ -46,6 +50,7 @@ const ProgressCircleCard = ({
                 <ProgressStatCard
                     color="#e268b3"
                     value={level}
+                    startValue={levelStart}
                     title={`${lang}.user.level`}
                     tagline={`${lang}.user.level-up`}
                     taglineCount={xpRequired}
@@ -54,6 +59,7 @@ const ProgressCircleCard = ({
                     style={{ marginTop: 20 }}
                     color="#A46EDA"
                     value={totalLittercoin}
+                    startValue={littercoinStart}
                     title={`${lang}.user.littercoin`}
                     tagline={`${lang}.user.next-littercoin`}
                     taglineCount={littercoinPercentage}
