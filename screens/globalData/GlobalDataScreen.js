@@ -20,7 +20,8 @@ class GlobalDataScreen extends Component {
             litterStart: 0,
             photosStart: 0,
             littercoinStart: 0,
-            usersStart: 0
+            usersStart: 0,
+            percentageStart: 0
         };
     }
 
@@ -51,13 +52,15 @@ class GlobalDataScreen extends Component {
                 totalLitter,
                 totalPhotos,
                 totalUsers,
-                totalLittercoin
+                totalLittercoin,
+                targetPercentage
             } = JSON.parse(stats);
             this.setState({
                 litterStart: totalLitter,
                 photosStart: totalPhotos,
                 usersStart: totalUsers,
-                littercoinStart: totalLittercoin
+                littercoinStart: totalLittercoin,
+                percentageStart: targetPercentage
             });
         }
         const token = await AsyncStorage.getItem('token');
@@ -141,6 +144,7 @@ class GlobalDataScreen extends Component {
                         showsVerticalScrollIndicator={false}
                         alwaysBounceVertical={false}>
                         <AnimatedCircle
+                            startPercentage={this.state.percentageStart}
                             strokeWidth={30}
                             percentage={targetPercentage}
                             color={`${Colors.accent}`}

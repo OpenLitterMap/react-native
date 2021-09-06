@@ -8,6 +8,7 @@ import { Colors } from './theme';
 const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
 
 const AnimatedCircle = ({
+    startPercentage = 0,
     percentage = 0,
     radius = 150,
     strokeWidth = 10,
@@ -24,8 +25,9 @@ const AnimatedCircle = ({
     taglineStyles,
     isValueDisplayed = true
 }) => {
-    const animated = React.useRef(new Animated.Value(0)).current;
-    const textAnimated = React.useRef(new Animated.Value(0)).current;
+    const animated = React.useRef(new Animated.Value(startPercentage)).current;
+    const textAnimated = React.useRef(new Animated.Value(startPercentage))
+        .current;
     const circleRef = React.useRef();
     const inputRef = React.useRef();
     const circumference = 2 * Math.PI * radius;
@@ -174,6 +176,7 @@ const AnimatedCircle = ({
 };
 
 AnimatedCircle.proptypes = {
+    startPercentage: PropTypes.number,
     percentage: PropTypes.number,
     radius: PropTypes.number,
     strokeWidth: PropTypes.number,
