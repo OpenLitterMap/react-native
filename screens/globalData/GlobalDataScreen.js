@@ -149,7 +149,7 @@ class GlobalDataScreen extends Component {
                             percentage={targetPercentage}
                             color={`${Colors.accent}`}
                             value={targetPercentage}
-                            delay={500}
+                            delay={0}
                             duration={5000}
                             radius={160}
                             tagline={`${this.props.lang}.stats.next-target`}

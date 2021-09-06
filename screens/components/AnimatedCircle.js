@@ -1,11 +1,10 @@
 import * as React from 'react';
-import { Easing, TextInput, Animated, View, StyleSheet } from 'react-native';
+import { Easing, Animated, View, StyleSheet } from 'react-native';
+import { CountUp } from 'use-count-up';
 import PropTypes from 'prop-types';
 import Svg, { G, Circle } from 'react-native-svg';
 import { Body, Caption } from './typography';
 import { Colors } from './theme';
-
-const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
 
 const AnimatedCircle = ({
     startPercentage = 0,
@@ -26,10 +25,7 @@ const AnimatedCircle = ({
     isValueDisplayed = true
 }) => {
     const animated = React.useRef(new Animated.Value(startPercentage)).current;
-    const textAnimated = React.useRef(new Animated.Value(startPercentage))
-        .current;
     const circleRef = React.useRef();
-    const inputRef = React.useRef();
     const circumference = 2 * Math.PI * radius;
     const halfCircle = radius + strokeWidth;
 
@@ -38,17 +34,8 @@ const AnimatedCircle = ({
         return Animated.timing(animated, {
             delay: delay,
             toValue,
-            duration,
-            useNativeDriver: true
-            // easing: Easing.out(Easing.ease)
-        }).start();
-    };
-    // animation fn for text value
-    const textAnimation = toValue => {
-        return Animated.timing(textAnimated, {
-            delay: delay,
-            toValue,
-            duration,
+            duration:
+                toValue === 0 || toValue === startPercentage ? 0 : duration,
             useNativeDriver: true
             // easing: Easing.out(Easing.ease)
         }).start();
@@ -56,29 +43,6 @@ const AnimatedCircle = ({
 
     React.useEffect(() => {
         animation(percentage);
-        textAnimation(value);
-
-        textAnimated.addListener(
-            v => {
-                if (inputRef?.current) {
-                    const suffix =
-                        valueSuffix !== undefined ? `${valueSuffix}` : '';
-                    // if value(props) is decimal then return value with decimal
-                    // else return v.value without decimal
-                    // decimal used for stats page
-
-                    const text =
-                        value === Math.floor(value)
-                            ? `${Math.floor(v.value)}${suffix}`
-                            : `${v.value.toFixed(1)}${suffix}`;
-
-                    inputRef.current.setNativeProps({
-                        text
-                    });
-                }
-            },
-            [value]
-        );
 
         animated.addListener(
             v => {
@@ -92,13 +56,13 @@ const AnimatedCircle = ({
                         strokeDashoffset
                     });
                 }
+                // console.log(circleRef.current);
             },
             [max, percentage]
         );
 
         return () => {
             animated.removeAllListeners();
-            textAnimated.removeAllListeners();
         };
     });
 
@@ -122,7 +86,7 @@ const AnimatedCircle = ({
                         stroke={color}
                         strokeWidth={strokeWidth}
                         strokeLinecap="round"
-                        strokeDashoffset={circumference}
+                        strokeDashoffset={startPercentage}
                         strokeDasharray={circumference}
                     />
                     <Circle
@@ -146,17 +110,24 @@ const AnimatedCircle = ({
                             justifyContent: 'center'
                         }
                     ]}>
-                    <AnimatedTextInput
-                        ref={inputRef}
-                        underlineColorAndroid="transparent"
-                        editable={false}
-                        defaultValue="0"
+                    <Body
                         style={[
                             { color: textColor ?? color },
                             styles.value,
                             valueStyles
-                        ]}
-                    />
+                        ]}>
+                        <CountUp
+                            suffix={valueSuffix && valueSuffix}
+                            decimalPlaces={1}
+                            isCounting={
+                                startPercentage === percentage ? false : true
+                            }
+                            start={startPercentage}
+                            end={percentage ? percentage : startPercentage}
+                            duration={5}
+                            shouldUseToLocaleString
+                        />
+                    </Body>
 
                     <Body
                         family="semiBold"
