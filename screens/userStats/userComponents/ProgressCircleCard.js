@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View, Dimensions } from 'react-native';
+import { StyleSheet, View, Dimensions, Text } from 'react-native';
 import ProgressStatCard from './ProgressStatCard';
 import { AnimatedCircle } from '../../components';
 const { width } = Dimensions.get('window');
@@ -18,12 +18,14 @@ const ProgressCircleCard = ({
 }) => {
     return (
         <View style={styles.container}>
+            <Text />
             <View style={styles.circleContainer}>
                 <View style={{ position: 'absolute' }}>
                     <AnimatedCircle
                         isValueDisplayed={false}
                         strokeWidth={10}
                         percentage={levelPercentage}
+                        startPercentage={levelPercentageStart}
                         color="#e268b3"
                         value={levelPercentage}
                         delay={500}
@@ -37,6 +39,7 @@ const ProgressCircleCard = ({
                         isValueDisplayed={false}
                         strokeWidth={10}
                         percentage={littercoinPercentage}
+                        startPercentage={littercoinPercentageStart}
                         color="#A46EDA"
                         value={littercoinPercentage}
                         delay={500}

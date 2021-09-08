@@ -7,8 +7,8 @@ import { Body, Caption } from './typography';
 import { Colors } from './theme';
 
 const AnimatedCircle = ({
-    startPercentage = 0,
-    percentage = 0,
+    startPercentage,
+    percentage,
     radius = 150,
     strokeWidth = 10,
     duration = 500,
@@ -34,33 +34,46 @@ const AnimatedCircle = ({
         return Animated.timing(animated, {
             delay: delay,
             toValue,
-            duration:
-                toValue === 0 || toValue === startPercentage ? 0 : duration,
+            duration: duration,
             useNativeDriver: true
             // easing: Easing.out(Easing.ease)
         }).start();
     };
 
     React.useEffect(() => {
-        animation(percentage);
+        // only add listner and start animating if percentage != undefined
+        // else set strokeDashOffset to % of startPercentage
+        if (percentage !== undefined) {
+            animation(percentage);
 
-        animated.addListener(
-            v => {
-                const maxPerc = (100 * v.value) / max;
-                const strokeDashoffset =
-                    circumference - (circumference * maxPerc) / 100;
+            animated.addListener(
+                v => {
+                    const maxPerc = (100 * v.value) / max;
+                    const strokeDashoffset =
+                        circumference - (circumference * maxPerc) / 100;
 
-                // console.log(strokeDashoffset);
-                if (circleRef?.current) {
-                    circleRef.current.setNativeProps({
-                        strokeDashoffset
-                    });
-                }
-                // console.log(circleRef.current);
-            },
-            [max, percentage]
-        );
+                    // console.log(strokeDashoffset);
+                    if (circleRef?.current) {
+                        circleRef.current.setNativeProps({
+                            strokeDashoffset
+                        });
+                    }
+                    // console.log(circleRef.current);
+                },
+                [max, percentage]
+            );
+        } else {
+            const maxStartPerc = (100 * startPercentage) / max;
 
+            const strokeDashoffset =
+                circumference - (circumference * maxStartPerc) / 100;
+
+            if (circleRef?.current) {
+                circleRef.current.setNativeProps({
+                    strokeDashoffset
+                });
+            }
+        }
         return () => {
             animated.removeAllListeners();
         };
@@ -86,7 +99,7 @@ const AnimatedCircle = ({
                         stroke={color}
                         strokeWidth={strokeWidth}
                         strokeLinecap="round"
-                        strokeDashoffset={startPercentage}
+                        strokeDashoffset={circumference}
                         strokeDasharray={circumference}
                     />
                     <Circle

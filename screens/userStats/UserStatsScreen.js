@@ -23,8 +23,10 @@ class UserStatsScreen extends Component {
             totalImagesStart: 0,
             totalTagsStart: 0,
             levelStart: 0,
+            levelPercentageStart: 0,
             littercoinStart: 0,
-            littercoinPercentageStart: 0
+            littercoinPercentageStart: 0,
+            isLoading: true
         };
     }
 
@@ -43,6 +45,7 @@ class UserStatsScreen extends Component {
                 totalImages,
                 totalTags,
                 level,
+                levelPercentage,
                 littercoin,
                 littercoinPercentage
             } = JSON.parse(previousStats);
@@ -52,10 +55,12 @@ class UserStatsScreen extends Component {
                 totalImagesStart: totalImages,
                 totalTagsStart: totalTags,
                 levelStart: level,
+                levelPercentageStart: levelPercentage,
                 littercoinStart: littercoin,
                 littercoinPercentageStart: littercoinPercentage
             });
         }
+        this.setState({ isLoading: false });
         this.fetchUserData();
     }
 
@@ -68,6 +73,7 @@ class UserStatsScreen extends Component {
             totalImages: user?.total_images || 0,
             totalTags: user?.totalTags,
             level: user?.level,
+            levelPercentage: user?.targetPercentage,
             littercoin: user?.totalLittercoin,
             littercoinPercentage: user?.total_images % 100
         };
@@ -117,68 +123,72 @@ class UserStatsScreen extends Component {
         ];
 
         // TODO: add a better loading screen add Skeleton Loading screen
-        if (user === null || user === undefined) {
+        if (user === null || user === undefined || this.state.isLoading) {
             return (
                 <View
                     style={{
                         flex: 1,
                         justifyContent: 'center',
-                        alignItems: 'center'
+                        alignItems: 'center',
+                        backgroundColor: 'white'
                     }}>
                     <ActivityIndicator size="small" color={Colors.accent} />
                 </View>
             );
-        }
-        return (
-            <>
-                <Header
-                    leftContent={
-                        <View>
-                            <Title
-                                color="white"
-                                dictionary={`${lang}.user.welcome`}
-                            />
-                            <Body color="white">{user?.username}</Body>
-                        </View>
-                    }
-                    rightContent={
-                        <Pressable>
-                            <Icon
-                                name="ios-settings-outline"
-                                color="white"
-                                size={24}
-                                onPress={() => {
-                                    this.props.navigation.navigate('SETTING');
-                                }}
-                            />
-                        </Pressable>
-                    }
-                />
-                <ScrollView
-                    style={styles.container}
-                    showsVerticalScrollIndicator={false}
-                    alwaysBounceVertical={false}>
-                    <ProgressCircleCard
-                        lang={lang}
-                        level={user?.level}
-                        levelStart={this.state.levelStart}
-                        levelPercentage={user?.targetPercentage}
-                        levelPercentageStart={
-                            this.state.littercoinPercentageStart
+        } else {
+            return (
+                <>
+                    <Header
+                        leftContent={
+                            <View>
+                                <Title
+                                    color="white"
+                                    dictionary={`${lang}.user.welcome`}
+                                />
+                                <Body color="white">{user?.username}</Body>
+                            </View>
                         }
-                        xpRequired={user?.xpRequired}
-                        totalLittercoin={user?.totalLittercoin}
-                        littercoinStart={this.state.littercoinStart}
-                        littercoinPercentage={user?.total_images % 100}
-                        littercoinPercentageStart={
-                            this.state.littercoinPercentageStart
+                        rightContent={
+                            <Pressable>
+                                <Icon
+                                    name="ios-settings-outline"
+                                    color="white"
+                                    size={24}
+                                    onPress={() => {
+                                        this.props.navigation.navigate(
+                                            'SETTING'
+                                        );
+                                    }}
+                                />
+                            </Pressable>
                         }
                     />
+                    <ScrollView
+                        style={styles.container}
+                        showsVerticalScrollIndicator={false}
+                        alwaysBounceVertical={false}>
+                        <ProgressCircleCard
+                            lang={lang}
+                            level={user?.level}
+                            levelStart={this.state.levelStart}
+                            levelPercentage={user?.targetPercentage}
+                            levelPercentageStart={
+                                this.state.levelPercentageStart
+                            }
+                            xpRequired={user?.xpRequired}
+                            totalLittercoin={user?.totalLittercoin}
+                            littercoinStart={this.state.littercoinStart}
+                            littercoinPercentage={user?.total_images % 100}
+                            littercoinPercentageStart={
+                                this.state.littercoinPercentageStart
+                            }
+                        />
 
-                    <StatsGrid statsData={statsData} />
-                </ScrollView>
-            </>
-        );
+                        <StatsGrid statsData={statsData} />
+                    </ScrollView>
+                </>
+            );
+        }
     }
 }
 

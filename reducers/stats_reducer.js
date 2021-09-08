@@ -24,11 +24,10 @@ export default function(state = INITIAL_STATE, action) {
                 previousTarget: action.payload.previousXp,
                 nextTarget: action.payload.nextXp
             };
-            // const targetPercentage =
-            //     ((totalLitter - litterTarget.previousTarget) /
-            //         (litterTarget.nextTarget - litterTarget.previousTarget)) *
-            //     100;
-            const targetPercentage = 84.6;
+            const targetPercentage =
+                ((totalLitter - litterTarget.previousTarget) /
+                    (litterTarget.nextTarget - litterTarget.previousTarget)) *
+                100;
 
             AsyncStorage.setItem(
                 'globalStats',
