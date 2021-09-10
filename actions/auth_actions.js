@@ -329,11 +329,26 @@ export const serverLogin = data => {
                 throw 'Something went wront';
             }
         } catch (error) {
-            if (error?.response?.status === 400) {
-                dispatch({ type: BAD_PASSWORD });
-                return;
+            if (error.response) {
+                if (error?.response?.status === 400) {
+                    // handling wrong password response from backend
+                    dispatch({ type: BAD_PASSWORD });
+                    return;
+                } else {
+                    // handling other errors from backend and thrown from try block
+                    dispatch({
+                        type: LOGIN_FAIL,
+                        payload: 'Login Unsuccessful. Please try again.'
+                    });
+                    return;
+                }
             } else {
-                dispatch({ type: LOGIN_FAIL });
+                // Handling network error
+                dispatch({
+                    type: LOGIN_FAIL,
+                    payload:
+                        'Network error, please check internet connection and try again'
+                });
                 return;
             }
         }
