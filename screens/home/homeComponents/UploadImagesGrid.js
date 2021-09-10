@@ -194,6 +194,19 @@ class UploadImagesGrid extends PureComponent {
                             />
                         </View>
                     )}
+                    {item.lat !== undefined &&
+                        item.lat !== null &&
+                        item.lon !== undefined &&
+                        item.lon !== null && (
+                            <View
+                                style={{
+                                    position: 'absolute',
+                                    top: 5,
+                                    right: 5
+                                }}>
+                                <Icon name="place" size={28} color="#00aced" />
+                            </View>
+                        )}
                 </View>
             </TouchableWithoutFeedback>
         );
@@ -262,6 +275,19 @@ class UploadImagesGrid extends PureComponent {
                             />
                         </View>
                     )}
+                    {item.lat !== undefined &&
+                        item.lat !== null &&
+                        item.lon !== undefined &&
+                        item.lon !== null && (
+                            <View
+                                style={{
+                                    position: 'absolute',
+                                    top: 5,
+                                    right: 5
+                                }}>
+                                <Icon name="place" size={28} color="#00aced" />
+                            </View>
+                        )}
                 </View>
             </TouchableWithoutFeedback>
         );
