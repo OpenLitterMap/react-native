@@ -141,7 +141,7 @@ export const createAccount = data => {
             });
         } catch (error) {
             let payload;
-            console.log(JSON.stringify(error?.response?.data.errors));
+            // handling error from backend
             if (error?.response) {
                 const errorData = error?.response?.data.errors;
                 if (errorData?.email) {
@@ -151,7 +151,7 @@ export const createAccount = data => {
                 } else if (errorData?.password) {
                     payload = errorData?.password;
                 } else {
-                    payload = 'Something wwent wrong, please try again';
+                    payload = 'Something went wrong, please try again';
                 }
 
                 dispatch({
@@ -160,6 +160,7 @@ export const createAccount = data => {
                 });
                 return;
             } else {
+                // handling Network Error
                 dispatch({
                     type: SERVER_STATUS,
                     payload:
@@ -167,6 +168,21 @@ export const createAccount = data => {
                 });
                 return;
             }
+        }
+
+        if (response?.data?.success) {
+            dispatch({
+                type: ACCOUNT_CREATED,
+                payload: response?.data?.success
+            });
+            // Login user if account creation successful
+            const login = {
+                email: data.email,
+                password: data.password
+            };
+
+            // Log the user in
+            dispatch(serverLogin(login));
         }
     };
 };
