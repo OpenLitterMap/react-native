@@ -294,53 +294,52 @@ export const sendResetPasswordRequest = email => {
  */
 export const serverLogin = data => {
     return async dispatch => {
+        // initial dispatch to show form isSubmitting state
         dispatch({ type: SUBMIT_START });
-
-        return await axios(URL + '/oauth/token', {
-            method: 'POST',
-            headers: {
-                Accept: 'application/json',
-                'Content-Type': 'application/json'
-            },
-            data: {
-                client_id: CLIENT_ID,
-                client_secret: CLIENT_SECRET,
-                grant_type: 'password',
-                username: data.email,
-                password: data.password
-            }
-        })
-            .then(response => {
-                console.log('serverLogin', response);
-
-                if (response.status === 200) {
-                    const token = response.data.access_token;
-
-                    try {
-                        AsyncStorage.setItem('jwt', token);
-                    } catch (err) {
-                        console.log('serverLogin.saveJWT', err);
-                    }
-
-                    dispatch({ type: LOGIN_SUCCESS, payload: token });
-                    dispatch(fetchUser(token));
-                } else {
-                    dispatch({ type: LOGIN_FAIL });
-                }
-            })
-            .catch(error => {
-                console.log('serverLogin.error', error);
-
-                switch (error.response.status) {
-                    case 400:
-                        dispatch({ type: BAD_PASSWORD });
-                        break;
-
-                    default:
-                        dispatch({ type: LOGIN_FAIL });
-                        break;
+        // axios response
+        let response;
+        // jwt
+        let token;
+        try {
+            response = await axios(URL + '/oauth/token', {
+                method: 'POST',
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                data: {
+                    client_id: CLIENT_ID,
+                    client_secret: CLIENT_SECRET,
+                    grant_type: 'password',
+                    username: data.email,
+                    password: data.password
                 }
             });
+            if (response?.status === 200) {
+                token = response?.data?.access_token;
+
+                // save jwt to AsyncStore if status is 200
+                try {
+                    await AsyncStorage.setItem('jwt', token);
+                } catch (error) {
+                    console.log('serverLogin.saveJWT', error);
+                    throw 'Unable to save token to asyncstore';
+                }
+            } else {
+                throw 'Something went wront';
+            }
+        } catch (error) {
+            if (error?.response?.status === 400) {
+                dispatch({ type: BAD_PASSWORD });
+                return;
+            } else {
+                dispatch({ type: LOGIN_FAIL });
+                return;
+            }
+        }
+        // Dispatch success if no errors
+        dispatch({ type: LOGIN_SUCCESS, payload: token });
+        dispatch(fetchUser(token));
     };
 };
 
