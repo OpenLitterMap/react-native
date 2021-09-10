@@ -117,80 +117,57 @@ export const checkForToken = () => async dispatch => {
  */
 export const createAccount = data => {
     // console.log('action - attempting to create an account');
-    return dispatch => {
+    return async dispatch => {
         // setting isSubmitting to true
         // shows loader on button
         dispatch({ type: SUBMIT_START });
-        fetch(URL + '/api/register', {
-            method: 'POST',
-            headers: {
-                Accept: 'application/json',
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                client_id: CLIENT_ID,
-                client_secret: CLIENT_SECRET,
-                grant_type: 'password',
-                email: data.email,
-                password: data.password,
-                username: data.username
-            })
-        })
-            .then(response => {
-                // console.log('Response!');
-                const responseJson = response
-                    .text() // returns a promise
-                    .then(async responseJson => {
-                        // console.log('=== create account - responseJson ===');
+        let response;
 
-                        const jsonObj = JSON.parse(responseJson);
-                        // console.log('-- parsed response --');
-                        // console.log(jsonObj);
-
-                        // TODO refactor returned errors to be simple text messages with status codes
-                        if (jsonObj.errors) {
-                            let payload;
-                            if (jsonObj.errors.email) {
-                                payload = jsonObj.errors.email;
-                            }
-                            if (jsonObj.errors.password) {
-                                payload = jsonObj.errors.password;
-                            }
-                            if (jsonObj.errors.username) {
-                                payload = jsonObj.errors.username;
-                            }
-
-                            dispatch({
-                                type: SERVER_STATUS,
-                                payload: payload
-                            });
-                        }
-
-                        if (jsonObj.success) {
-                            dispatch({
-                                type: ACCOUNT_CREATED,
-                                payload: jsonObj.success
-                            });
-
-                            var login = {
-                                email: data.email,
-                                password: data.password
-                            };
-
-                            // Log the user in
-                            dispatch(serverLogin(login));
-                        }
-                    })
-                    .catch(err => {
-                        // console.log('Error 2');
-                        // console.log(err);
-                    });
-                // } // response status 200
-            })
-            .catch(error => {
-                // console.log('Error!');
-                // console.log(error);
+        try {
+            response = await axios(URL + '/api/register', {
+                method: 'POST',
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                data: {
+                    client_id: CLIENT_ID,
+                    client_secret: CLIENT_SECRET,
+                    grant_type: 'password',
+                    username: data.username,
+                    email: data.email,
+                    password: data.password
+                }
             });
+        } catch (error) {
+            let payload;
+            console.log(JSON.stringify(error?.response?.data.errors));
+            if (error?.response) {
+                const errorData = error?.response?.data.errors;
+                if (errorData?.email) {
+                    payload = errorData?.email;
+                } else if (errorData?.username) {
+                    payload = errorData?.username;
+                } else if (errorData?.password) {
+                    payload = errorData?.password;
+                } else {
+                    payload = 'Something wwent wrong, please try again';
+                }
+
+                dispatch({
+                    type: SERVER_STATUS,
+                    payload: payload
+                });
+                return;
+            } else {
+                dispatch({
+                    type: SERVER_STATUS,
+                    payload:
+                        'Network error, please check internet connection and try again'
+                });
+                return;
+            }
+        }
     };
 };
 
@@ -329,7 +306,7 @@ export const serverLogin = data => {
                 throw 'Something went wront';
             }
         } catch (error) {
-            if (error.response) {
+            if (error?.response) {
                 if (error?.response?.status === 400) {
                     // handling wrong password response from backend
                     dispatch({ type: BAD_PASSWORD });
