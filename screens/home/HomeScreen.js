@@ -486,7 +486,14 @@ class HomeScreen extends PureComponent {
         if (galleryCount > 0) {
             // async loop
             for (const img of this.props.gallery) {
-                if (Object.keys(img.tags).length > 0) {
+                console.log(img.lat);
+                if (
+                    Object.keys(img.tags).length > 0 &&
+                    img.lat !== undefined &&
+                    img.lat !== null &&
+                    img.lon !== undefined &&
+                    img.lon !== null
+                ) {
                     let galleryToUpload = new FormData();
 
                     galleryToUpload.append('photo', {
@@ -539,7 +546,13 @@ class HomeScreen extends PureComponent {
         if (photosCount > 0) {
             // async loop
             for (const img of this.props.photos) {
-                if (Object.keys(img.tags).length > 0) {
+                if (
+                    Object.keys(img.tags).length > 0 &&
+                    img.lat !== undefined &&
+                    img.lat !== null &&
+                    img.lon !== undefined &&
+                    img.lon !== null
+                ) {
                     let cameraPhoto = new FormData();
 
                     cameraPhoto.append('photo', {
