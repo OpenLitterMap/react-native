@@ -508,7 +508,7 @@ class HomeScreen extends PureComponent {
                         .format('YYYY:MM:DD HH:mm:ss');
 
                     galleryToUpload.append('lat', img.lat);
-                    // galleryToUpload.append('lon', img.lon);
+                    galleryToUpload.append('lon', img.lon);
                     galleryToUpload.append('date', date);
                     galleryToUpload.append('presence', img.picked_up);
                     galleryToUpload.append('model', model);
