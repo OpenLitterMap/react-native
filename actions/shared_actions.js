@@ -138,10 +138,16 @@ export const uploadPhoto = (token, image) => {
                 //  }
             });
         } catch (error) {
-            console.log(
-                'ERROR: shared_actions.upload_photo',
-                JSON.stringify(error.response.data, null, 2)
-            );
+            if (error.response) {
+                console.log(
+                    'ERROR: shared_actions.upload_photo',
+                    JSON.stringify(error?.response?.data, null, 2)
+                );
+            } else {
+                // Other errors -- NETWORK ERROR
+                console.log(error);
+            }
+
             return {
                 success: false
             };

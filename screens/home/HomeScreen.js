@@ -567,7 +567,7 @@ class HomeScreen extends PureComponent {
                     });
 
                     cameraPhoto.append('lat', img.lat);
-                    cameraPhoto.append('lon', img.lon);
+                    // cameraPhoto.append('lon', img.lon);
                     cameraPhoto.append('date', img.date);
                     cameraPhoto.append('presence', img.presence);
                     cameraPhoto.append('model', model);
