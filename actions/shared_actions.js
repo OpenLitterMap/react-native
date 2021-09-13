@@ -116,45 +116,46 @@ export const toggleSelecting = () => {
  */
 export const uploadPhoto = (token, image) => {
     // let progress = null;
-    return dispatch => {
-        return axios(URL + '/api/photos/submit', {
-            method: 'POST',
-            headers: {
-                Authorization: 'Bearer ' + token,
-                'Content-Type': 'multipart/form-data'
-            },
-            data: image
-            // need to debug this and make it smooth
-            // onUploadProgress: (p) => {
-            //    progress = p.loaded / p.total; // ( total ) / 2
-            //    progress = Math.round(progress * 100);
-            //    console.log(progress);
-            //    dispatch({
-            //      type: CHANGE_UPLOAD_PROGRESS,
-            //      payload: progress
-            //    });
-            //  }
-        })
-            .then(response => {
-                console.log(
-                    'Response: shared_actions.uploadPhoto',
-                    response.data
-                );
-
-                if (response.data.success) {
-                    // return the photo.id that has been created on the backend
-                    return {
-                        success: true,
-                        photo_id: response.data.photo_id
-                    };
-                }
-            })
-            .catch(error => {
-                console.log(
-                    'ERROR: shared_actions.upload_photo',
-                    error.response.data
-                );
+    let response;
+    return async dispatch => {
+        try {
+            response = await axios(URL + '/api/photos/submit', {
+                method: 'POST',
+                headers: {
+                    Authorization: 'Bearer ' + token,
+                    'Content-Type': 'multipart/form-data'
+                },
+                data: image
+                // need to debug this and make it smooth
+                // onUploadProgress: (p) => {
+                //    progress = p.loaded / p.total; // ( total ) / 2
+                //    progress = Math.round(progress * 100);
+                //    console.log(progress);
+                //    dispatch({
+                //      type: CHANGE_UPLOAD_PROGRESS,
+                //      payload: progress
+                //    });
+                //  }
             });
+        } catch (error) {
+            console.log(
+                'ERROR: shared_actions.upload_photo',
+                JSON.stringify(error.response.data, null, 2)
+            );
+            return {
+                success: false
+            };
+        }
+
+        console.log('Response: shared_actions.uploadPhoto', response);
+
+        if (response && response.data?.success) {
+            // return the photo.id that has been created on the backend
+            return {
+                success: true,
+                photo_id: response.data.photo_id
+            };
+        }
     };
 };
 

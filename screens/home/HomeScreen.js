@@ -38,7 +38,8 @@ class HomeScreen extends PureComponent {
 
         this.state = {
             total: 0, // total number of images with tags to upload
-            uploaded: 0 // total number of tagged images uploaded
+            uploaded: 0, // total number of tagged images uploaded
+            failedUpload: 0
         };
 
         // Bind any functions that call props
@@ -507,7 +508,7 @@ class HomeScreen extends PureComponent {
                         .format('YYYY:MM:DD HH:mm:ss');
 
                     galleryToUpload.append('lat', img.lat);
-                    galleryToUpload.append('lon', img.lon);
+                    // galleryToUpload.append('lon', img.lon);
                     galleryToUpload.append('date', date);
                     galleryToUpload.append('presence', img.picked_up);
                     galleryToUpload.append('model', model);
@@ -520,7 +521,7 @@ class HomeScreen extends PureComponent {
                         galleryToUpload
                     );
 
-                    if (response.success) {
+                    if (response && response.success) {
                         // shared_actions.js
                         const resp = await this.props.uploadTags(
                             this.props.token,
@@ -534,10 +535,14 @@ class HomeScreen extends PureComponent {
                                 myIndex
                             );
 
-                            this.setState({
-                                uploaded: this.state.uploaded + 1
-                            });
+                            this.setState(previousState => ({
+                                uploaded: previousState.uploaded + 1
+                            }));
                         }
+                    } else {
+                        this.setState(previousState => ({
+                            failedUpload: previousState.failedUpload + 1
+                        }));
                     }
                 }
             }
@@ -575,7 +580,7 @@ class HomeScreen extends PureComponent {
                         cameraPhoto
                     );
 
-                    if (response.success) {
+                    if (response && response.success) {
                         // shared_actions
                         const resp = await this.props.uploadTags(
                             this.props.token,
@@ -587,10 +592,14 @@ class HomeScreen extends PureComponent {
                             // Remove the image
                             this.props.cameraPhotoUploadedSuccessfully(myIndex);
 
-                            this.setState({
-                                uploaded: this.state.uploaded + 1
-                            });
+                            this.setState(previousState => ({
+                                uploaded: previousState.uploaded + 1
+                            }));
                         }
+                    } else {
+                        this.setState(previousState => ({
+                            failedUpload: previousState.failedUpload + 1
+                        }));
                     }
                 }
             }
@@ -609,16 +618,19 @@ class HomeScreen extends PureComponent {
                     if (response.success) {
                         this.props.removeWebImage(img.id);
 
-                        this.setState({
-                            uploaded: this.state.uploaded + 1
-                        });
+                        this.setState(previousState => ({
+                            uploaded: previousState.uploaded + 1
+                        }));
                     }
                 }
             }
         }
 
         //  Last step - if all photos have been deleted, close modal
-        if (this.state.uploaded === this.state.total) {
+        if (
+            this.state.uploaded + this.state.failedUpload ===
+            this.state.total
+        ) {
             // shared_actions
             this.props.toggleUpload();
             this.props.toggleThankYou();
