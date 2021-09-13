@@ -163,38 +163,32 @@ export const uploadPhoto = (token, image) => {
  * Upload the tags that were applied to an image
  */
 export const uploadTags = (token, tags, photo_id) => {
-    return dispatch => {
-        return axios(URL + '/api/add-tags', {
-            method: 'POST',
-            headers: {
-                Authorization: 'Bearer ' + token
-            },
-            data: {
-                litter: tags,
-                photo_id: photo_id
-            }
-            // need to debug this and make it smooth
-            // onUploadProgress: (p) => {
-            //    progress = p.loaded / p.total
-            //    progress = Math.round(progress * 100);
-            //    console.log(progress);
-            //    // dispatch({
-            //    //   type: CHANGE_UPLOAD_PROGRESS,
-            //    //   payload: progress
-            //    // });
-            //  }
-        })
-            .then(resp => {
-                console.log('uploadTags', resp.data);
-
-                if (resp.data.success) {
-                    return {
-                        success: true
-                    };
+    return async dispatch => {
+        let response;
+        try {
+            response = await axios(URL + '/api/add-tags', {
+                method: 'POST',
+                headers: {
+                    Authorization: 'Bearer ' + token
+                },
+                data: {
+                    litter: tags,
+                    photo_id: photo_id
                 }
-            })
-            .catch(err => {
-                console.log('uploadTags', err);
             });
+        } catch (error) {
+            console.log('uploadTags', error);
+            return {
+                success: false
+            };
+        }
+
+        console.log('uploadTags', response.data);
+
+        if (response && response?.data?.success) {
+            return {
+                success: true
+            };
+        }
     };
 };
