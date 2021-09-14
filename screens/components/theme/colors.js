@@ -3,7 +3,15 @@ export const Colors = {
     accentLight: '#dcffeb',
     text: '#050916',
     muted: '#7985a3',
-    white: '#ffffff'
+    white: '#ffffff',
+    error: '#e74c3c'
 };
 
-export const ColorType = ['accent', 'accentLight', 'text', 'muted', 'white'];
+export const ColorType = [
+    'accent',
+    'accentLight',
+    'text',
+    'muted',
+    'white',
+    'error'
+];
