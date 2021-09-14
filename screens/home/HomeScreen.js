@@ -505,7 +505,11 @@ class HomeScreen extends PureComponent {
             // async loop
             for (const img of this.props.gallery) {
                 const isgeotagged = await isGeotagged(img);
-                if (Object.keys(img.tags).length > 0 && isgeotagged) {
+                if (
+                    img.tags &&
+                    Object.keys(img.tags).length > 0 &&
+                    isgeotagged
+                ) {
                     let galleryToUpload = new FormData();
 
                     galleryToUpload.append('photo', {
@@ -540,7 +544,7 @@ class HomeScreen extends PureComponent {
                             response.photo_id
                         );
 
-                        if (resp.success) {
+                        if (resp && resp.success) {
                             // Remove the image
                             this.props.galleryPhotoUploadedSuccessfully(
                                 myIndex
@@ -568,7 +572,11 @@ class HomeScreen extends PureComponent {
             for (const img of this.props.photos) {
                 const isgeotagged = await isGeotagged(img);
 
-                if (Object.keys(img.tags).length > 0 && isgeotagged) {
+                if (
+                    img.tags &&
+                    Object.keys(img.tags).length > 0 &&
+                    isgeotagged
+                ) {
                     let cameraPhoto = new FormData();
 
                     cameraPhoto.append('photo', {
@@ -599,7 +607,7 @@ class HomeScreen extends PureComponent {
                             response.photo_id
                         );
 
-                        if (resp.success) {
+                        if (resp && resp.success) {
                             // Remove the image
                             this.props.cameraPhotoUploadedSuccessfully(myIndex);
 
@@ -623,18 +631,22 @@ class HomeScreen extends PureComponent {
         if (webCount > 0) {
             // async loop
             for (const img of this.props.webPhotos) {
-                if (Object.keys(img.tags).length > 0) {
+                if (img.tags && Object.keys(img.tags).length > 0) {
                     const response = await this.props.uploadTags(
                         this.props.token,
                         img.tags,
                         img.id
                     );
 
-                    if (response.success) {
+                    if (response && response.success) {
                         this.props.removeWebImage(img.id);
 
                         this.setState(previousState => ({
                             uploaded: previousState.uploaded + 1
+                        }));
+                    } else {
+                        this.setState(previousState => ({
+                            failedUpload: previousState.failedUpload + 1
                         }));
                     }
                 }
