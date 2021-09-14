@@ -14,12 +14,13 @@ import { TransText } from 'react-native-translation';
 
 import { Button } from 'react-native-elements';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { Header, Title, Body, Colors } from '../components';
+import { Header, Title, Body, Colors, SubTitle } from '../components';
 // import * as Progress from 'react-native-progress'
 
 import { connect } from 'react-redux';
 import * as actions from '../../actions';
 import { checkCameraRollPermission } from '../../utils/permissions';
+import { isGeotagged } from '../../utils/isGeotagged';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
@@ -184,24 +185,39 @@ class HomeScreen extends PureComponent {
                         {this.props.thankYouVisible && (
                             <View style={styles.modal}>
                                 <View style={styles.thankYouModalInner}>
-                                    <TransText
-                                        style={{
-                                            fontSize: SCREEN_HEIGHT * 0.02,
-                                            marginBottom: 5
-                                        }}
-                                        dictionary={`${lang}.leftpage.thank-you`}
-                                    />
+                                    {this.state.uploaded > 0 ? (
+                                        <TransText
+                                            style={{
+                                                fontSize: SCREEN_HEIGHT * 0.02,
+                                                marginBottom: 5
+                                            }}
+                                            dictionary={`${lang}.leftpage.thank-you`}
+                                        />
+                                    ) : (
+                                        <SubTitle
+                                            style={{ marginBottom: 5 }}
+                                            color="error">
+                                            Error
+                                        </SubTitle>
+                                    )}
 
-                                    <TransText
-                                        style={{
-                                            fontSize: SCREEN_HEIGHT * 0.02,
-                                            marginBottom: 5
-                                        }}
-                                        dictionary={`${lang}.leftpage.you-have-uploaded`}
-                                        values={{
-                                            count: this.state.uploaded
-                                        }}
-                                    />
+                                    {this.state.uploaded > 0 ? (
+                                        <TransText
+                                            style={{
+                                                fontSize: SCREEN_HEIGHT * 0.02,
+                                                marginBottom: 5
+                                            }}
+                                            dictionary={`${lang}.leftpage.you-have-uploaded`}
+                                            values={{
+                                                count: this.state.uploaded
+                                            }}
+                                        />
+                                    ) : (
+                                        <Body style={{ marginBottom: 12 }}>
+                                            Something went wrong please try
+                                            again.
+                                        </Body>
+                                    )}
 
                                     <View style={{ flexDirection: 'row' }}>
                                         <TouchableWithoutFeedback
@@ -452,7 +468,8 @@ class HomeScreen extends PureComponent {
     uploadPhotos = async () => {
         // Reset upload count
         this.setState({
-            uploaded: 0
+            uploaded: 0,
+            failedUpload: 0
         });
 
         const model = this.props.model;
@@ -487,14 +504,8 @@ class HomeScreen extends PureComponent {
         if (galleryCount > 0) {
             // async loop
             for (const img of this.props.gallery) {
-                console.log(img.lat);
-                if (
-                    Object.keys(img.tags).length > 0 &&
-                    img.lat !== undefined &&
-                    img.lat !== null &&
-                    img.lon !== undefined &&
-                    img.lon !== null
-                ) {
+                const isgeotagged = await isGeotagged(img);
+                if (Object.keys(img.tags).length > 0 && isgeotagged) {
                     let galleryToUpload = new FormData();
 
                     galleryToUpload.append('photo', {
@@ -544,6 +555,10 @@ class HomeScreen extends PureComponent {
                             failedUpload: previousState.failedUpload + 1
                         }));
                     }
+                } else if (!isgeotagged) {
+                    this.setState(previousState => ({
+                        failedUpload: previousState.failedUpload + 1
+                    }));
                 }
             }
         }
@@ -551,13 +566,9 @@ class HomeScreen extends PureComponent {
         if (photosCount > 0) {
             // async loop
             for (const img of this.props.photos) {
-                if (
-                    Object.keys(img.tags).length > 0 &&
-                    img.lat !== undefined &&
-                    img.lat !== null &&
-                    img.lon !== undefined &&
-                    img.lon !== null
-                ) {
+                const isgeotagged = await isGeotagged(img);
+
+                if (Object.keys(img.tags).length > 0 && isgeotagged) {
                     let cameraPhoto = new FormData();
 
                     cameraPhoto.append('photo', {
@@ -601,6 +612,10 @@ class HomeScreen extends PureComponent {
                             failedUpload: previousState.failedUpload + 1
                         }));
                     }
+                } else if (!isgeotagged) {
+                    this.setState(previousState => ({
+                        failedUpload: previousState.failedUpload + 1
+                    }));
                 }
             }
         }
@@ -634,6 +649,7 @@ class HomeScreen extends PureComponent {
             // shared_actions
             this.props.toggleUpload();
             this.props.toggleThankYou();
+            // this.state.uploaded > 0 && this.props.toggleThankYou();
         }
 
         setTimeout(() => {

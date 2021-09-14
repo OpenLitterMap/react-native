@@ -153,7 +153,7 @@ export const uploadPhoto = (token, image) => {
             };
         }
 
-        console.log('Response: shared_actions.uploadPhoto', response);
+        console.log('Response: shared_actions.uploadPhoto', response?.data);
 
         if (response && response.data?.success) {
             // return the photo.id that has been created on the backend
