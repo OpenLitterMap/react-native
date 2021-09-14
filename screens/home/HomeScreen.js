@@ -336,32 +336,43 @@ class HomeScreen extends PureComponent {
      */
     renderUploadButton() {
         if (
-            (this.props.photos.length === 0 &&
-                this.props.gallery.length === 0 &&
-                this.props.webPhotos.length === 0) ||
+            (this.props.photos?.length === 0 &&
+                this.props.gallery?.length === 0 &&
+                this.props.webPhotos?.length === 0) ||
             this.props.isSelecting
-        )
+        ) {
             return;
+        } else {
+            let tagged = 0;
+            this.props.photos.map(img => {
+                if (img.tags && Object.keys(img.tags)?.length > 0) {
+                    tagged++;
+                }
+            });
 
-        let tagged = 0;
+            this.props.gallery.map(img => {
+                if (img.tags && Object.keys(img.tags)?.length > 0) {
+                    tagged++;
+                }
+            });
 
-        this.props.photos.forEach(img => {
-            if (Object.keys(img.tags).length > 0) tagged++;
-        });
+            this.props.webPhotos.map(img => {
+                if (img.tags && Object.keys(img.tags)?.length > 0) {
+                    tagged++;
+                }
+            });
 
-        this.props.gallery.forEach(img => {
-            if (Object.keys(img.tags).length > 0) tagged++;
-        });
-
-        this.props.webPhotos.forEach(img => {
-            if (Object.keys(img.tags).length > 0) tagged++;
-        });
-
-        if (tagged === 0) return;
-
-        return (
-            <UploadButton lang={this.props.lang} onPress={this.uploadPhotos} />
-        );
+            if (tagged === 0) {
+                return;
+            } else {
+                return (
+                    <UploadButton
+                        lang={this.props.lang}
+                        onPress={this.uploadPhotos}
+                    />
+                );
+            }
+        }
     }
 
     /**
@@ -479,15 +490,21 @@ class HomeScreen extends PureComponent {
         let webCount = 0;
 
         this.props.gallery.map(item => {
-            if (Object.keys(item.tags).length > 0) galleryCount++;
+            if (item.tags && Object.keys(item.tags)?.length > 0) {
+                galleryCount++;
+            }
         });
 
         this.props.photos.map(item => {
-            if (Object.keys(item.tags).length > 0) photosCount++;
+            if (item.tags && Object.keys(item.tags)?.length > 0) {
+                photosCount++;
+            }
         });
 
         this.props.webPhotos.map(item => {
-            if (Object.keys(item.tags).length > 0) webCount++;
+            if (item.tags && Object.keys(item.tags)?.length > 0) {
+                webCount++;
+            }
         });
 
         const total = galleryCount + photosCount + webCount;
