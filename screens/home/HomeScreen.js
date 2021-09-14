@@ -14,12 +14,13 @@ import { TransText } from 'react-native-translation';
 
 import { Button } from 'react-native-elements';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { Header, Title, Body, Colors } from '../components';
+import { Header, Title, Body, Colors, SubTitle } from '../components';
 // import * as Progress from 'react-native-progress'
 
 import { connect } from 'react-redux';
 import * as actions from '../../actions';
 import { checkCameraRollPermission } from '../../utils/permissions';
+import { isGeotagged } from '../../utils/isGeotagged';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
@@ -38,7 +39,8 @@ class HomeScreen extends PureComponent {
 
         this.state = {
             total: 0, // total number of images with tags to upload
-            uploaded: 0 // total number of tagged images uploaded
+            uploaded: 0, // total number of tagged images uploaded
+            failedUpload: 0
         };
 
         // Bind any functions that call props
@@ -183,24 +185,39 @@ class HomeScreen extends PureComponent {
                         {this.props.thankYouVisible && (
                             <View style={styles.modal}>
                                 <View style={styles.thankYouModalInner}>
-                                    <TransText
-                                        style={{
-                                            fontSize: SCREEN_HEIGHT * 0.02,
-                                            marginBottom: 5
-                                        }}
-                                        dictionary={`${lang}.leftpage.thank-you`}
-                                    />
+                                    {this.state.uploaded > 0 ? (
+                                        <TransText
+                                            style={{
+                                                fontSize: SCREEN_HEIGHT * 0.02,
+                                                marginBottom: 5
+                                            }}
+                                            dictionary={`${lang}.leftpage.thank-you`}
+                                        />
+                                    ) : (
+                                        <SubTitle
+                                            style={{ marginBottom: 5 }}
+                                            color="error">
+                                            Error
+                                        </SubTitle>
+                                    )}
 
-                                    <TransText
-                                        style={{
-                                            fontSize: SCREEN_HEIGHT * 0.02,
-                                            marginBottom: 5
-                                        }}
-                                        dictionary={`${lang}.leftpage.you-have-uploaded`}
-                                        values={{
-                                            count: this.state.uploaded
-                                        }}
-                                    />
+                                    {this.state.uploaded > 0 ? (
+                                        <TransText
+                                            style={{
+                                                fontSize: SCREEN_HEIGHT * 0.02,
+                                                marginBottom: 5
+                                            }}
+                                            dictionary={`${lang}.leftpage.you-have-uploaded`}
+                                            values={{
+                                                count: this.state.uploaded
+                                            }}
+                                        />
+                                    ) : (
+                                        <Body style={{ marginBottom: 12 }}>
+                                            Something went wrong please try
+                                            again.
+                                        </Body>
+                                    )}
 
                                     <View style={{ flexDirection: 'row' }}>
                                         <TouchableWithoutFeedback
@@ -319,32 +336,43 @@ class HomeScreen extends PureComponent {
      */
     renderUploadButton() {
         if (
-            (this.props.photos.length === 0 &&
-                this.props.gallery.length === 0 &&
-                this.props.webPhotos.length === 0) ||
+            (this.props.photos?.length === 0 &&
+                this.props.gallery?.length === 0 &&
+                this.props.webPhotos?.length === 0) ||
             this.props.isSelecting
-        )
+        ) {
             return;
+        } else {
+            let tagged = 0;
+            this.props.photos.map(img => {
+                if (img.tags && Object.keys(img.tags)?.length > 0) {
+                    tagged++;
+                }
+            });
 
-        let tagged = 0;
+            this.props.gallery.map(img => {
+                if (img.tags && Object.keys(img.tags)?.length > 0) {
+                    tagged++;
+                }
+            });
 
-        this.props.photos.forEach(img => {
-            if (Object.keys(img.tags).length > 0) tagged++;
-        });
+            this.props.webPhotos.map(img => {
+                if (img.tags && Object.keys(img.tags)?.length > 0) {
+                    tagged++;
+                }
+            });
 
-        this.props.gallery.forEach(img => {
-            if (Object.keys(img.tags).length > 0) tagged++;
-        });
-
-        this.props.webPhotos.forEach(img => {
-            if (Object.keys(img.tags).length > 0) tagged++;
-        });
-
-        if (tagged === 0) return;
-
-        return (
-            <UploadButton lang={this.props.lang} onPress={this.uploadPhotos} />
-        );
+            if (tagged === 0) {
+                return;
+            } else {
+                return (
+                    <UploadButton
+                        lang={this.props.lang}
+                        onPress={this.uploadPhotos}
+                    />
+                );
+            }
+        }
     }
 
     /**
@@ -451,7 +479,8 @@ class HomeScreen extends PureComponent {
     uploadPhotos = async () => {
         // Reset upload count
         this.setState({
-            uploaded: 0
+            uploaded: 0,
+            failedUpload: 0
         });
 
         const model = this.props.model;
@@ -461,15 +490,21 @@ class HomeScreen extends PureComponent {
         let webCount = 0;
 
         this.props.gallery.map(item => {
-            if (Object.keys(item.tags).length > 0) galleryCount++;
+            if (item.tags && Object.keys(item.tags)?.length > 0) {
+                galleryCount++;
+            }
         });
 
         this.props.photos.map(item => {
-            if (Object.keys(item.tags).length > 0) photosCount++;
+            if (item.tags && Object.keys(item.tags)?.length > 0) {
+                photosCount++;
+            }
         });
 
         this.props.webPhotos.map(item => {
-            if (Object.keys(item.tags).length > 0) webCount++;
+            if (item.tags && Object.keys(item.tags)?.length > 0) {
+                webCount++;
+            }
         });
 
         const total = galleryCount + photosCount + webCount;
@@ -486,7 +521,12 @@ class HomeScreen extends PureComponent {
         if (galleryCount > 0) {
             // async loop
             for (const img of this.props.gallery) {
-                if (Object.keys(img.tags).length > 0) {
+                const isgeotagged = await isGeotagged(img);
+                if (
+                    img.tags &&
+                    Object.keys(img.tags).length > 0 &&
+                    isgeotagged
+                ) {
                     let galleryToUpload = new FormData();
 
                     galleryToUpload.append('photo', {
@@ -513,7 +553,7 @@ class HomeScreen extends PureComponent {
                         galleryToUpload
                     );
 
-                    if (response.success) {
+                    if (response && response.success) {
                         // shared_actions.js
                         const resp = await this.props.uploadTags(
                             this.props.token,
@@ -521,17 +561,25 @@ class HomeScreen extends PureComponent {
                             response.photo_id
                         );
 
-                        if (resp.success) {
+                        if (resp && resp.success) {
                             // Remove the image
                             this.props.galleryPhotoUploadedSuccessfully(
                                 myIndex
                             );
 
-                            this.setState({
-                                uploaded: this.state.uploaded + 1
-                            });
+                            this.setState(previousState => ({
+                                uploaded: previousState.uploaded + 1
+                            }));
                         }
+                    } else {
+                        this.setState(previousState => ({
+                            failedUpload: previousState.failedUpload + 1
+                        }));
                     }
+                } else if (!isgeotagged) {
+                    this.setState(previousState => ({
+                        failedUpload: previousState.failedUpload + 1
+                    }));
                 }
             }
         }
@@ -539,7 +587,13 @@ class HomeScreen extends PureComponent {
         if (photosCount > 0) {
             // async loop
             for (const img of this.props.photos) {
-                if (Object.keys(img.tags).length > 0) {
+                const isgeotagged = await isGeotagged(img);
+
+                if (
+                    img.tags &&
+                    Object.keys(img.tags).length > 0 &&
+                    isgeotagged
+                ) {
                     let cameraPhoto = new FormData();
 
                     cameraPhoto.append('photo', {
@@ -549,7 +603,7 @@ class HomeScreen extends PureComponent {
                     });
 
                     cameraPhoto.append('lat', img.lat);
-                    cameraPhoto.append('lon', img.lon);
+                    // cameraPhoto.append('lon', img.lon);
                     cameraPhoto.append('date', img.date);
                     cameraPhoto.append('presence', img.presence);
                     cameraPhoto.append('model', model);
@@ -562,7 +616,7 @@ class HomeScreen extends PureComponent {
                         cameraPhoto
                     );
 
-                    if (response.success) {
+                    if (response && response.success) {
                         // shared_actions
                         const resp = await this.props.uploadTags(
                             this.props.token,
@@ -570,15 +624,23 @@ class HomeScreen extends PureComponent {
                             response.photo_id
                         );
 
-                        if (resp.success) {
+                        if (resp && resp.success) {
                             // Remove the image
                             this.props.cameraPhotoUploadedSuccessfully(myIndex);
 
-                            this.setState({
-                                uploaded: this.state.uploaded + 1
-                            });
+                            this.setState(previousState => ({
+                                uploaded: previousState.uploaded + 1
+                            }));
                         }
+                    } else {
+                        this.setState(previousState => ({
+                            failedUpload: previousState.failedUpload + 1
+                        }));
                     }
+                } else if (!isgeotagged) {
+                    this.setState(previousState => ({
+                        failedUpload: previousState.failedUpload + 1
+                    }));
                 }
             }
         }
@@ -586,29 +648,37 @@ class HomeScreen extends PureComponent {
         if (webCount > 0) {
             // async loop
             for (const img of this.props.webPhotos) {
-                if (Object.keys(img.tags).length > 0) {
+                if (img.tags && Object.keys(img.tags).length > 0) {
                     const response = await this.props.uploadTags(
                         this.props.token,
                         img.tags,
                         img.id
                     );
 
-                    if (response.success) {
+                    if (response && response.success) {
                         this.props.removeWebImage(img.id);
 
-                        this.setState({
-                            uploaded: this.state.uploaded + 1
-                        });
+                        this.setState(previousState => ({
+                            uploaded: previousState.uploaded + 1
+                        }));
+                    } else {
+                        this.setState(previousState => ({
+                            failedUpload: previousState.failedUpload + 1
+                        }));
                     }
                 }
             }
         }
 
         //  Last step - if all photos have been deleted, close modal
-        if (this.state.uploaded === this.state.total) {
+        if (
+            this.state.uploaded + this.state.failedUpload ===
+            this.state.total
+        ) {
             // shared_actions
             this.props.toggleUpload();
             this.props.toggleThankYou();
+            // this.state.uploaded > 0 && this.props.toggleThankYou();
         }
 
         setTimeout(() => {

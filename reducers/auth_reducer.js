@@ -141,7 +141,7 @@ export default function(state = INITIAL_STATE, action) {
                 ...state,
                 password: '',
                 token: null,
-                serverStatusText: 'Login Unsuccessful. Please try again.',
+                serverStatusText: action.payload,
                 isSubmitting: false
             };
 

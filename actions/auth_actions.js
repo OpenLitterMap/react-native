@@ -117,80 +117,73 @@ export const checkForToken = () => async dispatch => {
  */
 export const createAccount = data => {
     // console.log('action - attempting to create an account');
-    return dispatch => {
+    return async dispatch => {
         // setting isSubmitting to true
         // shows loader on button
         dispatch({ type: SUBMIT_START });
-        fetch(URL + '/api/register', {
-            method: 'POST',
-            headers: {
-                Accept: 'application/json',
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                client_id: CLIENT_ID,
-                client_secret: CLIENT_SECRET,
-                grant_type: 'password',
-                email: data.email,
-                password: data.password,
-                username: data.username
-            })
-        })
-            .then(response => {
-                // console.log('Response!');
-                const responseJson = response
-                    .text() // returns a promise
-                    .then(async responseJson => {
-                        // console.log('=== create account - responseJson ===');
+        let response;
 
-                        const jsonObj = JSON.parse(responseJson);
-                        // console.log('-- parsed response --');
-                        // console.log(jsonObj);
-
-                        // TODO refactor returned errors to be simple text messages with status codes
-                        if (jsonObj.errors) {
-                            let payload;
-                            if (jsonObj.errors.email) {
-                                payload = jsonObj.errors.email;
-                            }
-                            if (jsonObj.errors.password) {
-                                payload = jsonObj.errors.password;
-                            }
-                            if (jsonObj.errors.username) {
-                                payload = jsonObj.errors.username;
-                            }
-
-                            dispatch({
-                                type: SERVER_STATUS,
-                                payload: payload
-                            });
-                        }
-
-                        if (jsonObj.success) {
-                            dispatch({
-                                type: ACCOUNT_CREATED,
-                                payload: jsonObj.success
-                            });
-
-                            var login = {
-                                email: data.email,
-                                password: data.password
-                            };
-
-                            // Log the user in
-                            dispatch(serverLogin(login));
-                        }
-                    })
-                    .catch(err => {
-                        // console.log('Error 2');
-                        // console.log(err);
-                    });
-                // } // response status 200
-            })
-            .catch(error => {
-                // console.log('Error!');
-                // console.log(error);
+        try {
+            response = await axios(URL + '/api/register', {
+                method: 'POST',
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                data: {
+                    client_id: CLIENT_ID,
+                    client_secret: CLIENT_SECRET,
+                    grant_type: 'password',
+                    username: data.username,
+                    email: data.email,
+                    password: data.password
+                }
             });
+        } catch (error) {
+            let payload;
+            // handling error from backend
+            if (error?.response) {
+                const errorData = error?.response?.data.errors;
+                if (errorData?.email) {
+                    payload = errorData?.email;
+                } else if (errorData?.username) {
+                    payload = errorData?.username;
+                } else if (errorData?.password) {
+                    payload = errorData?.password;
+                } else {
+                    payload = 'Something went wrong, please try again';
+                }
+
+                dispatch({
+                    type: SERVER_STATUS,
+                    payload: payload
+                });
+                return;
+            } else {
+                // handling Network Error
+                dispatch({
+                    type: SERVER_STATUS,
+                    payload:
+                        'Network error, please check internet connection and try again'
+                });
+                return;
+            }
+        }
+
+        if (response?.data?.success) {
+            dispatch({
+                type: ACCOUNT_CREATED,
+                payload: response?.data?.success
+            });
+            // Login user if account creation successful
+            const login = {
+                email: data.email,
+                password: data.password
+            };
+
+            // Log the user in
+            dispatch(serverLogin(login));
+        }
     };
 };
 
@@ -294,53 +287,67 @@ export const sendResetPasswordRequest = email => {
  */
 export const serverLogin = data => {
     return async dispatch => {
+        // initial dispatch to show form isSubmitting state
         dispatch({ type: SUBMIT_START });
-
-        return await axios(URL + '/oauth/token', {
-            method: 'POST',
-            headers: {
-                Accept: 'application/json',
-                'Content-Type': 'application/json'
-            },
-            data: {
-                client_id: CLIENT_ID,
-                client_secret: CLIENT_SECRET,
-                grant_type: 'password',
-                username: data.email,
-                password: data.password
-            }
-        })
-            .then(response => {
-                console.log('serverLogin', response);
-
-                if (response.status === 200) {
-                    const token = response.data.access_token;
-
-                    try {
-                        AsyncStorage.setItem('jwt', token);
-                    } catch (err) {
-                        console.log('serverLogin.saveJWT', err);
-                    }
-
-                    dispatch({ type: LOGIN_SUCCESS, payload: token });
-                    dispatch(fetchUser(token));
-                } else {
-                    dispatch({ type: LOGIN_FAIL });
-                }
-            })
-            .catch(error => {
-                console.log('serverLogin.error', error);
-
-                switch (error.response.status) {
-                    case 400:
-                        dispatch({ type: BAD_PASSWORD });
-                        break;
-
-                    default:
-                        dispatch({ type: LOGIN_FAIL });
-                        break;
+        // axios response
+        let response;
+        // jwt
+        let token;
+        try {
+            response = await axios(URL + '/oauth/token', {
+                method: 'POST',
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                data: {
+                    client_id: CLIENT_ID,
+                    client_secret: CLIENT_SECRET,
+                    grant_type: 'password',
+                    username: data.email,
+                    password: data.password
                 }
             });
+            if (response?.status === 200) {
+                token = response?.data?.access_token;
+
+                // save jwt to AsyncStore if status is 200
+                try {
+                    await AsyncStorage.setItem('jwt', token);
+                } catch (error) {
+                    console.log('serverLogin.saveJWT', error);
+                    throw 'Unable to save token to asyncstore';
+                }
+            } else {
+                throw 'Something went wront';
+            }
+        } catch (error) {
+            if (error?.response) {
+                if (error?.response?.status === 400) {
+                    // handling wrong password response from backend
+                    dispatch({ type: BAD_PASSWORD });
+                    return;
+                } else {
+                    // handling other errors from backend and thrown from try block
+                    dispatch({
+                        type: LOGIN_FAIL,
+                        payload: 'Login Unsuccessful. Please try again.'
+                    });
+                    return;
+                }
+            } else {
+                // Handling network error
+                dispatch({
+                    type: LOGIN_FAIL,
+                    payload:
+                        'Network error, please check internet connection and try again'
+                });
+                return;
+            }
+        }
+        // Dispatch success if no errors
+        dispatch({ type: LOGIN_SUCCESS, payload: token });
+        dispatch(fetchUser(token));
     };
 };
 
