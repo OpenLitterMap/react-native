@@ -206,11 +206,10 @@ class AuthScreen extends Component {
         );
 
         // respond if success, else show error message
-        if (resp.success) {
+        if (resp && resp.success) {
             this.setState({
                 resetPwProcessing: false,
-                serverStatusText:
-                    'We have sent you an email to reset your password.'
+                serverStatusText: resp.msg
             });
         } else {
             this.setState({

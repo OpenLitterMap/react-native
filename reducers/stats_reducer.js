@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-community/async-storage';
 import { STATS_REQUEST_SUCCESS, STATS_REQUEST_ERROR } from '../actions/types';
 
 const INITIAL_STATE = {
+    statsErrorMessage: null,
     totalLitter: 0,
     totalPhotos: 0,
     totalUsers: 0,
@@ -47,9 +48,14 @@ export default function(state = INITIAL_STATE, action) {
                 totalUsers,
                 totalLittercoin,
                 litterTarget,
-                targetPercentage
+                targetPercentage,
+                statsErrorMessage: null
             };
-
+        case STATS_REQUEST_ERROR:
+            return {
+                ...state,
+                statsErrorMessage: action.payload
+            };
         default:
             return state;
     }
