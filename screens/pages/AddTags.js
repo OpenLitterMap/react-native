@@ -569,7 +569,8 @@ class AddTags extends PureComponent {
             // photo_actions
             this.props.addTagsToCameraPhoto({
                 tag,
-                currentIndex
+                currentIndex,
+                quantityChanged: this.props.quantityChanged
             });
         } else if (currentIndex < photosLength + galleryLength) {
             // gallery_actions
@@ -586,6 +587,7 @@ class AddTags extends PureComponent {
         } else {
             console.log('problem@addTag');
         }
+        this.props.changeQuantiyStatus(false);
     }
 }
 
@@ -745,6 +747,7 @@ const mapStateToProps = state => {
         totalTaggedGalleryCount: state.gallery.totalTaggedGalleryCount,
         totalTaggedSessionCount: state.photos.totalTaggedSessionCount,
         q: state.litter.q,
+        quantityChanged: state.litter.quantityChanged,
         // webImages: state.web.images,
         // webNextImage: state.web.nextImage,
         webImagesCount: state.web.count,

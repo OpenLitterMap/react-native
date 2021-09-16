@@ -55,6 +55,7 @@ export default function(state = INITIAL_STATE, action) {
         /**
          * Add or update tags object on a gallery image
          */
+
         case ADD_TAGS_TO_CAMERA_PHOTO:
             let photos = [...state.photos];
             let image = photos[action.payload.currentIndex];
@@ -74,15 +75,22 @@ export default function(state = INITIAL_STATE, action) {
             // we check to see if it exists on the object, if so, we can increment it
             let payloadCategory = action.payload.tag.category;
             let payloadTitle = action.payload.tag.title;
+            let quantityChanged = action.payload.quantityChanged
+                ? action.payload.quantityChanged
+                : false;
 
+            console.log('===> ' + quantityChanged);
             // check if category of incoming payload already exist in image tags
             if (newTags.hasOwnProperty(payloadCategory)) {
                 // check if title of incoming payload already exist
                 if (newTags[payloadCategory].hasOwnProperty(payloadTitle)) {
                     quantity = newTags[payloadCategory][payloadTitle];
-
-                    if (newTags[payloadCategory][payloadTitle] === quantity)
+                    console.log(action.payload.quantityChanged);
+                    if (quantityChanged) {
+                        quantity = action.payload.tag.quantity;
+                    } else {
                         quantity++;
+                    }
                 }
             }
 
