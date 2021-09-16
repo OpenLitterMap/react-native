@@ -33,43 +33,44 @@ export default function(state = INITIAL_STATE, action) {
 
             let image = images[action.payload.currentIndex];
 
-            let newTags = Object.assign({}, image.tags);
+            let newTags = { ...image.tags };
 
-            try {
-                // update tags on image
-                // duplicated by photos_reducer
-                let quantity = 1;
+            // update tags on image
+            let quantity = 1;
 
-                // if quantity exists, assign it
-                if (action.payload.hasOwnProperty('quantity')) {
-                    quantity = action.payload.quantity;
-                }
-
-                const category = action.payload.tag.category;
-                const title = action.payload.tag.title;
-
-                // Increment quantity from the text filter
-                // sometimes (when tag is being added from text-filter, quantity does not exist
-                // we check to see if it exists on the object, if so, we can increment it
-                if (newTags.hasOwnProperty(category)) {
-                    if (newTags[category].hasOwnProperty(title)) {
-                        quantity = newTags[category][title];
-
-                        if (newTags[category][title] === quantity) quantity++;
-                    }
-                }
-
-                // create a new object with the new values
-                newTags = {
-                    ...newTags,
-                    [category]: {
-                        ...newTags[category],
-                        [title]: quantity
-                    }
-                };
-            } catch (e) {
-                console.log({ e });
+            // if quantity exists, assign it
+            if (action.payload.tag.hasOwnProperty('quantity')) {
+                quantity = action.payload.tag.quantity;
             }
+
+            let payloadCategory = action.payload.tag.category;
+            let payloadTitle = action.payload.tag.title;
+            let quantityChanged = action.payload.quantityChanged
+                ? action.payload.quantityChanged
+                : false;
+
+            // check if category of incoming payload already exist in image tags
+            if (newTags.hasOwnProperty(payloadCategory)) {
+                // check if title of incoming payload already exist
+                if (newTags[payloadCategory].hasOwnProperty(payloadTitle)) {
+                    quantity = newTags[payloadCategory][payloadTitle];
+
+                    if (quantityChanged) {
+                        quantity = action.payload.tag.quantity;
+                    } else {
+                        quantity++;
+                    }
+                }
+            }
+
+            // create a new object with the new values
+            newTags = {
+                ...newTags,
+                [payloadCategory]: {
+                    ...newTags[payloadCategory],
+                    [payloadTitle]: quantity
+                }
+            };
 
             image.tags = newTags;
 

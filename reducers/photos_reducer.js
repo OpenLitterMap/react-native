@@ -64,7 +64,6 @@ export default function(state = INITIAL_STATE, action) {
             let newTags = { ...image.tags };
 
             let quantity = 1;
-            console.log(action.payload);
             // if quantity exists, assign it
             if (action.payload.tag.hasOwnProperty('quantity')) {
                 quantity = action.payload.tag.quantity;
@@ -79,13 +78,12 @@ export default function(state = INITIAL_STATE, action) {
                 ? action.payload.quantityChanged
                 : false;
 
-            console.log('===> ' + quantityChanged);
             // check if category of incoming payload already exist in image tags
             if (newTags.hasOwnProperty(payloadCategory)) {
                 // check if title of incoming payload already exist
                 if (newTags[payloadCategory].hasOwnProperty(payloadTitle)) {
                     quantity = newTags[payloadCategory][payloadTitle];
-                    console.log(action.payload.quantityChanged);
+
                     if (quantityChanged) {
                         quantity = action.payload.tag.quantity;
                     } else {
@@ -102,8 +100,6 @@ export default function(state = INITIAL_STATE, action) {
                     [payloadTitle]: quantity
                 }
             };
-
-            console.log({ newTags });
 
             image.tags = newTags;
 

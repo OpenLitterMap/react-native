@@ -576,7 +576,8 @@ class AddTags extends PureComponent {
             // gallery_actions
             this.props.addTagsToGalleryImage({
                 tag,
-                currentIndex: currentIndex - photosLength
+                currentIndex: currentIndex - photosLength,
+                quantityChanged: this.props.quantityChanged
             });
         } else if (currentIndex < photosLength + galleryLength + webLength) {
             // web_actions
