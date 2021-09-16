@@ -15,7 +15,6 @@ import { TransText } from 'react-native-translation';
 import { Button } from 'react-native-elements';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { Header, Title, Body, Colors, SubTitle } from '../components';
-// import * as Progress from 'react-native-progress'
 
 import { connect } from 'react-redux';
 import * as actions from '../../actions';
