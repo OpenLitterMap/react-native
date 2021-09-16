@@ -7,6 +7,7 @@ const Stack = createStackNavigator();
 const GalleryStack = () => {
     return (
         <Stack.Navigator
+            initialRouteName="ALBUM"
             screenOptions={{
                 headerShown: false
             }}>

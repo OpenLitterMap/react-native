@@ -74,6 +74,7 @@ class MainRoutes extends Component {
         } else {
             return (
                 <Stack.Navigator
+                    initialRouteName="AUTH_HOME"
                     screenOptions={{
                         headerShown: false
                     }}>
