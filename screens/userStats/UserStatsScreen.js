@@ -60,7 +60,6 @@ class UserStatsScreen extends Component {
                 littercoinPercentageStart: littercoinPercentage
             });
         }
-        this.setState({ isLoading: false });
         this.fetchUserData();
     }
 
@@ -80,6 +79,7 @@ class UserStatsScreen extends Component {
         // INFO: previous stats saved for animation purpose
         // so value animates from previous viewd and current
         AsyncStorage.setItem('previousUserStats', JSON.stringify(statsObj));
+        this.setState({ isLoading: false });
     }
 
     render() {
@@ -122,47 +122,42 @@ class UserStatsScreen extends Component {
             }
         ];
 
-        // TODO: add a better loading screen add Skeleton Loading screen
-        if (user === null || user === undefined || this.state.isLoading) {
-            return (
-                <View
-                    style={{
-                        flex: 1,
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        backgroundColor: 'white'
-                    }}>
-                    <ActivityIndicator size="small" color={Colors.accent} />
-                </View>
-            );
-        } else {
-            return (
-                <>
-                    <Header
-                        leftContent={
-                            <View>
-                                <Title
-                                    color="white"
-                                    dictionary={`${lang}.user.welcome`}
-                                />
-                                <Body color="white">{user?.username}</Body>
-                            </View>
-                        }
-                        rightContent={
-                            <Pressable>
-                                <Icon
-                                    name="ios-settings-outline"
-                                    color="white"
-                                    size={24}
-                                    onPress={() => {
-                                        this.props.navigation.navigate(
-                                            'SETTING'
-                                        );
-                                    }}
-                                />
-                            </Pressable>
-                        }
-                    />
+        return (
+            <>
+                <Header
+                    leftContent={
+                        <View>
+                            <Title
+                                color="white"
+                                dictionary={`${lang}.user.welcome`}
+                            />
+                            <Body color="white">{user?.username}</Body>
+                        </View>
+                    }
+                    rightContent={
+                        <Pressable>
+                            <Icon
+                                name="ios-settings-outline"
+                                color="white"
+                                size={24}
+                                onPress={() => {
+                                    this.props.navigation.navigate('SETTING');
+                                }}
+                            />
+                        </Pressable>
+                    }
+                />
+                {this.state.isLoading ? (
+                    <View
+                        style={{
+                            flex: 1,
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            backgroundColor: 'white'
+                        }}>
+                        <ActivityIndicator size="small" color={Colors.accent} />
+                    </View>
+                ) : (
                     <ScrollView
                         style={styles.container}
                         showsVerticalScrollIndicator={false}
@@ -186,9 +181,9 @@ class UserStatsScreen extends Component {
 
                         <StatsGrid statsData={statsData} />
                     </ScrollView>
-                </>
-            );
-        }
+                )}
+            </>
+        );
     }
 }
 
