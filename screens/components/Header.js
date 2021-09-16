@@ -30,13 +30,26 @@ const Header = ({
                 style={styles.headerSafeView}>
                 <View style={[styles.headerContainer, containerStyle]}>
                     {/* left icon */}
-
-                    <View>{leftContent}</View>
+                    {leftContent && (
+                        <View style={{ flex: 1 }}>{leftContent}</View>
+                    )}
 
                     {/* center content */}
-                    <View>{centerContent}</View>
+                    {centerContent && (
+                        <View style={{ flex: 1, alignItems: 'center' }}>
+                            {centerContent}
+                        </View>
+                    )}
+
                     {/* right content */}
-                    <View>{rightContent}</View>
+
+                    <View
+                        style={{
+                            flex: 1,
+                            alignItems: 'flex-end'
+                        }}>
+                        {rightContent}
+                    </View>
                 </View>
             </SafeAreaView>
         </>

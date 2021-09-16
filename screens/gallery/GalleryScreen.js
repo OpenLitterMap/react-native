@@ -242,7 +242,11 @@ class GalleryScreen extends Component {
                                 await this.handleDoneClick();
                                 this.props.navigation.navigate('HOME');
                             }}>
-                            <Body color="white">Done</Body>
+                            <Body color="white">
+                                Done
+                                {this.state.selectedImages?.length > 0 &&
+                                    ` (${this.state.selectedImages?.length})`}
+                            </Body>
                         </Pressable>
                     }
                 />

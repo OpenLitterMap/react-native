@@ -1,12 +1,19 @@
 import React, { Component } from 'react';
-import { View, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
+import {
+    View,
+    StyleSheet,
+    ScrollView,
+    ActivityIndicator,
+    Pressable
+} from 'react-native';
 import AsyncStorage from '@react-native-community/async-storage';
 import {
     Header,
     Title,
     Colors,
     AnimatedCircle,
-    StatsGrid
+    StatsGrid,
+    Body
 } from '../components';
 import * as actions from '../../actions';
 import { connect } from 'react-redux';
@@ -33,8 +40,7 @@ class GlobalDataScreen extends Component {
             });
         });
 
-        const token = await this.getDataFormStorage();
-        this.props.getStats(token);
+        this.props.getStats();
     }
 
     componentWillUnmount() {
@@ -60,8 +66,6 @@ class GlobalDataScreen extends Component {
                 littercoinStart: totalLittercoin
             });
         }
-        const token = await AsyncStorage.getItem('token');
-        return token;
     }
 
     render() {
@@ -72,7 +76,8 @@ class GlobalDataScreen extends Component {
             totalLittercoin,
             litterTarget,
             targetPercentage,
-            lang
+            lang,
+            statsErrorMessage
         } = this.props;
 
         const statsData = [
@@ -109,6 +114,35 @@ class GlobalDataScreen extends Component {
                 bgColor: '#E0F2FE'
             }
         ];
+
+        if (statsErrorMessage !== null) {
+            return (
+                <View
+                    style={{
+                        flex: 1,
+                        backgroundColor: 'white',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        paddingHorizontal: 20
+                    }}>
+                    <Body style={{ textAlign: 'center' }}>
+                        {statsErrorMessage}
+                    </Body>
+                    <Pressable
+                        onPress={() => this.props.getStats()}
+                        style={{
+                            paddingHorizontal: 10,
+                            paddingVertical: 6,
+                            borderWidth: 1,
+                            borderRadius: 4,
+                            marginTop: 20
+                        }}>
+                        <Body>Try again</Body>
+                    </Pressable>
+                </View>
+            );
+        }
+
         return (
             <>
                 <Header
@@ -119,6 +153,7 @@ class GlobalDataScreen extends Component {
                         />
                     }
                 />
+
                 {/* INFO: showing loader when there is no previous value in 
                 asyncstore -- only shown on first app load after login */}
                 {(this.state.litterStart === 0 && totalLitter === 0) ||
@@ -184,6 +219,7 @@ const mapStateToProps = state => {
         totalLittercoin: state.stats.totalLittercoin,
         litterTarget: state.stats.litterTarget,
         targetPercentage: state.stats.targetPercentage,
+        statsErrorMessage: state.stats.statsErrorMessage,
         lang: state.auth.lang
     };
 };

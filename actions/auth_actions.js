@@ -229,56 +229,57 @@ export const changeServerStatusText = text => {
 /**
  * The user forgot their password and is submitting their email address to request a link
  */
+// TODO: handle status message with reducers while working on auth screen refactor
 export const sendResetPasswordRequest = email => {
-    return dispatch => {
+    return async dispatch => {
         // setting isSubmitting to true
         // shows loader on button
         dispatch({ type: SUBMIT_START });
-        return axios(URL + '/api/password/email', {
-            method: 'POST',
-            data: {
-                email: email,
-                api: true // we need this to override the response
-            },
-            headers: {
-                Accept: 'application/json',
-                'Content-Type': 'application/json'
-            }
-        })
-            .then(response => {
-                console.log('sendResetPasswordRequest', response.data);
-
-                if (
-                    response.data.message ===
-                    'We have emailed your password reset link!'
-                ) {
-                    // setting isSubmitting to false
-                    dispatch({ type: SUBMIT_END });
-                    return {
-                        success: true
-                    };
+        let response;
+        try {
+            response = await axios(URL + '/api/password/email', {
+                method: 'POST',
+                data: {
+                    email: email,
+                    api: true // we need this to override the response
+                },
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json'
                 }
-            })
-            .catch(error => {
-                console.log('sendResetPasswordRequest', error.response.data);
-
-                if (
-                    error.response.data.message ===
-                    'The given data was invalid.'
-                ) {
-                    // setting isSubmitting to false
-                    dispatch({ type: SUBMIT_END });
-                    return {
-                        success: false,
-                        msg: error.response.data.errors.email // We can't find a user with that email address
-                    };
-                }
-
+            });
+        } catch (error) {
+            if (error?.response) {
+                console.log('sendResetPasswordRequest', error.response?.data);
+                // setting isSubmitting to false
+                dispatch({ type: SUBMIT_END });
                 return {
                     success: false,
-                    msg: 'error'
+                    // We can't find a user with that email address
+                    msg:
+                        error.response?.data?.errors?.email ||
+                        'Error, please try again'
                 };
-            });
+            } else {
+                // Handling mainly network error
+                console.log('sendResetPasswordRequest', error);
+                dispatch({ type: SUBMIT_END });
+                return {
+                    success: false,
+                    msg: 'Network error, please try again'
+                };
+            }
+        }
+        console.log('sendResetPasswordRequest', response?.data);
+
+        if (response?.data) {
+            // setting isSubmitting to false
+            dispatch({ type: SUBMIT_END });
+            return {
+                success: true,
+                msg: 'We have emailed your password reset link!'
+            };
+        }
     };
 };
 
