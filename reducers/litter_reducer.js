@@ -3,6 +3,7 @@ import {
     CHANGE_PHOTO_TYPE,
     CHANGE_ITEM,
     CHANGE_Q,
+    CHANGE_QUANTITY_STATUS,
     CONFIRM_FOR_UPLOAD,
     CHANGE_SWIPER_INDEX,
     REMOVE_TAG,
@@ -41,7 +42,8 @@ const INITIAL_STATE = {
     tags: {},
     tagsModalVisible: false,
     totalImagesToUpload: 0,
-    totalLitterCount: 0
+    totalLitterCount: 0,
+    quantityChanged: false
 };
 
 export default function(state = INITIAL_STATE, action) {
@@ -99,9 +101,20 @@ export default function(state = INITIAL_STATE, action) {
         case CHANGE_Q:
             return {
                 ...state,
-                q: action.payload
+                q: action.payload,
+                quantityChanged: true
             };
 
+        /**
+         * Change Status of quantity change
+         * picker wheel rotated status == True
+         * after tag is added satus set to false
+         */
+        case CHANGE_QUANTITY_STATUS:
+            return {
+                ...state,
+                quantityChanged: action.payload
+            };
         /**
          * Change the index of the Swiper on LitterPicker.Swiper.LitterImage
          */
