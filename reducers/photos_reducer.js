@@ -55,60 +55,57 @@ export default function(state = INITIAL_STATE, action) {
         /**
          * Add or update tags object on a gallery image
          */
-        case ADD_TAGS_TO_CAMERA_PHOTO:
-            let photos4 = [...state.photos];
 
-            let image = photos4[action.payload.currentIndex];
+        case ADD_TAGS_TO_CAMERA_PHOTO:
+            let photos = [...state.photos];
+            let image = photos[action.payload.currentIndex];
 
             // update tags on image
-            let newTags = Object.assign({}, image.tags);
+            let newTags = { ...image.tags };
 
             let quantity = 1;
-
             // if quantity exists, assign it
-            if (action.payload.hasOwnProperty('quantity')) {
-                quantity = action.payload.quantity;
+            if (action.payload.tag.hasOwnProperty('quantity')) {
+                quantity = action.payload.tag.quantity;
             }
 
             // Increment quantity from the text filter
             // sometimes (when tag is being added from text-filter, quantity does not exist
             // we check to see if it exists on the object, if so, we can increment it
-            if (newTags.hasOwnProperty(action.payload.tag.category)) {
-                if (
-                    newTags[action.payload.tag.category].hasOwnProperty(
-                        action.payload.tag.title
-                    )
-                ) {
-                    quantity =
-                        newTags[action.payload.tag.category][
-                            action.payload.tag.title
-                        ];
+            let payloadCategory = action.payload.tag.category;
+            let payloadTitle = action.payload.tag.title;
+            let quantityChanged = action.payload.quantityChanged
+                ? action.payload.quantityChanged
+                : false;
 
-                    if (
-                        newTags[action.payload.tag.category][
-                            action.payload.tag.title
-                        ] === quantity
-                    )
+            // check if category of incoming payload already exist in image tags
+            if (newTags.hasOwnProperty(payloadCategory)) {
+                // check if title of incoming payload already exist
+                if (newTags[payloadCategory].hasOwnProperty(payloadTitle)) {
+                    quantity = newTags[payloadCategory][payloadTitle];
+
+                    if (quantityChanged) {
+                        quantity = action.payload.tag.quantity;
+                    } else {
                         quantity++;
+                    }
                 }
             }
 
             // create a new object with the new values
             newTags = {
                 ...newTags,
-                [action.payload.tag.category]: {
-                    ...newTags[action.payload.tag.category],
-                    [action.payload.tag.title]: quantity
+                [payloadCategory]: {
+                    ...newTags[payloadCategory],
+                    [payloadTitle]: quantity
                 }
             };
-
-            console.log({ newTags });
 
             image.tags = newTags;
 
             return {
                 ...state,
-                photos: photos4
+                photos: photos
             };
 
         case LOAD_CAMERA_PHOTOS_FROM_ASYNC_STORAGE:

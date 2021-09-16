@@ -569,23 +569,27 @@ class AddTags extends PureComponent {
             // photo_actions
             this.props.addTagsToCameraPhoto({
                 tag,
-                currentIndex
+                currentIndex,
+                quantityChanged: this.props.quantityChanged
             });
         } else if (currentIndex < photosLength + galleryLength) {
             // gallery_actions
             this.props.addTagsToGalleryImage({
                 tag,
-                currentIndex: currentIndex - photosLength
+                currentIndex: currentIndex - photosLength,
+                quantityChanged: this.props.quantityChanged
             });
         } else if (currentIndex < photosLength + galleryLength + webLength) {
             // web_actions
             this.props.addTagsToWebImage({
                 tag,
-                currentIndex: currentIndex - photosLength - galleryLength
+                currentIndex: currentIndex - photosLength - galleryLength,
+                quantityChanged: this.props.quantityChanged
             });
         } else {
             console.log('problem@addTag');
         }
+        this.props.changeQuantiyStatus(false);
     }
 }
 
@@ -745,6 +749,7 @@ const mapStateToProps = state => {
         totalTaggedGalleryCount: state.gallery.totalTaggedGalleryCount,
         totalTaggedSessionCount: state.photos.totalTaggedSessionCount,
         q: state.litter.q,
+        quantityChanged: state.litter.quantityChanged,
         // webImages: state.web.images,
         // webNextImage: state.web.nextImage,
         webImagesCount: state.web.count,

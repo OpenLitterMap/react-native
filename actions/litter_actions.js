@@ -5,6 +5,7 @@ import {
     CHANGE_PHOTO_TYPE,
     CHANGE_ITEM,
     CHANGE_Q,
+    CHANGE_QUANTITY_STATUS,
     CHANGE_SWIPER_INDEX,
     REMOVE_TAG,
     RESET_LITTER_STATE,
@@ -58,6 +59,20 @@ export const changeQ = q => {
     return {
         type: CHANGE_Q,
         payload: q
+    };
+};
+
+/**
+ * Change Status of quantity change
+ * picker wheel rotated status == True
+ * after tag is added satus set to false
+ *
+ * @param {boolean} boolValue
+ */
+export const changeQuantiyStatus = boolValue => {
+    return {
+        type: CHANGE_QUANTITY_STATUS,
+        payload: boolValue
     };
 };
 
