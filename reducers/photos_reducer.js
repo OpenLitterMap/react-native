@@ -101,11 +101,15 @@ export default function(state = INITIAL_STATE, action) {
                 }
             };
 
-            image.tags = newTags;
+            image = { ...image, tags: newTags };
 
             return {
                 ...state,
-                photos: photos
+                photos: [
+                    ...photos.slice(0, action.payload.currentIndex),
+                    image,
+                    ...photos.slice(action.payload.currentIndex + 1)
+                ]
             };
 
         case LOAD_CAMERA_PHOTOS_FROM_ASYNC_STORAGE:
