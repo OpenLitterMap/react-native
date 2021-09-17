@@ -24,12 +24,12 @@ const INITIAL_STATE = {
 };
 
 export default function(state = INITIAL_STATE, action) {
-    switch (action.type) {
-        /**
-         * The user has manually taken a photo with the Camera
-         */
-        case ADD_PHOTO:
-            return produce(state, draft => {
+    return produce(state, draft => {
+        switch (action.type) {
+            /**
+             * The user has manually taken a photo with the Camera
+             */
+            case ADD_PHOTO:
                 draft.photos.push({
                     id: draft.photos.length > 0 ? draft.photos.length - 1 : 0,
                     lat: action.payload.lat,
@@ -42,15 +42,13 @@ export default function(state = INITIAL_STATE, action) {
                     tags: {},
                     picked_up: false
                 });
-            });
-            break;
+                break;
 
-        /**
-         * Add or update tags object on a gallery image
-         */
+            /**
+             * Add or update tags object on a gallery image
+             */
 
-        case ADD_TAGS_TO_CAMERA_PHOTO:
-            return produce(state, draft => {
+            case ADD_TAGS_TO_CAMERA_PHOTO:
                 let image = draft.photos[action.payload.currentIndex];
                 let newTags = image.tags;
 
@@ -80,44 +78,39 @@ export default function(state = INITIAL_STATE, action) {
                     image.tags[payloadCategory][payloadTitle] = quantity;
                 } else {
                     // if incoming payload category doesn't exist on image tags add it
-                    image.tags[payloadCategory] = { [payloadTitle]: quantity };
+                    image.tags[payloadCategory] = {
+                        [payloadTitle]: quantity
+                    };
                 }
-            });
-            break;
-        /**
-         * load camera photos from async store
-         */
-        case LOAD_CAMERA_PHOTOS_FROM_ASYNC_STORAGE:
-            return produce(state, draft => {
-                draft.photos = action.payload;
-            });
 
-        /**
-         * When isSelecting is turned off,
-         *
-         * Change selected value on every photo to false
-         */
-        case DESELECT_ALL_CAMERA_PHOTOS:
-            return produce(state, draft => {
+                break;
+            /**
+             * load camera photos from async store
+             */
+            case LOAD_CAMERA_PHOTOS_FROM_ASYNC_STORAGE:
+                draft.photos = action.payload;
+                break;
+
+            /**
+             * When isSelecting is turned off,
+             *
+             * Change selected value on every photo to false
+             */
+            case DESELECT_ALL_CAMERA_PHOTOS:
                 draft.photos.map(photo => {
                     photo.selected = false;
                 });
-            });
-            break;
+                break;
 
-        case DELETE_SELECTED_PHOTO:
-            return produce(state, draft => {
+            case DELETE_SELECTED_PHOTO:
                 draft.photos.splice(action.payload, 1);
                 draft.isSelecting = false;
-            });
-            break;
-
-        /**
-         * A tag has been pressed
-         *
-         */
-        case REMOVE_TAG_FROM_CAMERA_PHOTO:
-            return produce(state, draft => {
+                break;
+            /**
+             * A tag has been pressed
+             *
+             */
+            case REMOVE_TAG_FROM_CAMERA_PHOTO:
                 console.log('remove_tag_from_camera_photo', action.payload);
                 let photo = draft.photos[action.payload.currentIndex];
 
@@ -133,57 +126,48 @@ export default function(state = INITIAL_STATE, action) {
                         action.payload.tag
                     ];
                 }
-            });
 
-            break;
+                break;
 
-        /**
-         * Change the selected value of a photo
-         *
-         * @payload action.payload = index
-         * @param selected = bool
-         */
-        case TOGGLE_SELECTED_PHOTO:
-            return produce(state, draft => {
+            /**
+             * Change the selected value of a photo
+             *
+             * @payload action.payload = index
+             * @param selected = bool
+             */
+            case TOGGLE_SELECTED_PHOTO:
                 draft.photos[action.payload].selected = !draft.photos[
                     action.payload
                 ].selected;
-            });
-            break;
-        /**
-         * Session Photo + Data has been uploaded successfully
-         * TODO: DELETE_SELECTED_PHOTO can be used insted of replicating
-         */
-        case CAMERA_PHOTO_UPLOADED_SUCCESSFULLY:
-            return produce(state, draft => {
+
+                break;
+            /**
+             * Session Photo + Data has been uploaded successfully
+             * TODO: DELETE_SELECTED_PHOTO can be used insted of replicating
+             */
+            case CAMERA_PHOTO_UPLOADED_SUCCESSFULLY:
                 draft.photos.splice(action.payload, 1);
-            });
-            break;
 
-        // FIXME: uniqueValue is probably not useful anymore
-        // check and remove if not useful
-        case TOGGLE_SELECTING:
-            return produce(state, draft => {
-                (draft.isSelecting = !draft.isSelecting),
-                    (draft.uniqueValue = draft.uniqueValue + 1);
-            });
-            break;
+                break;
 
-        // FIXME: Unused reducer and action check and remove
-        case UPDATE_COUNT_REMAINING:
-            return {
-                ...state,
-                remainingCount: action.payload
-            };
+            // FIXME: uniqueValue is probably not useful anymore
+            // check and remove if not useful
+            case TOGGLE_SELECTING:
+                draft.isSelecting = !draft.isSelecting;
+                draft.uniqueValue = draft.uniqueValue + 1;
 
-        // FIXME: Unused reducer and action check and remove
-        case UPDATE_PERCENT:
-            return {
-                ...state,
-                progress: action.payload
-            };
+                break;
 
-        default:
-            return state;
-    }
+            // FIXME: Unused reducer and action check and remove
+            case UPDATE_COUNT_REMAINING:
+                draft.remainingCount = action.payload;
+                break;
+            // FIXME: Unused reducer and action check and remove
+            case UPDATE_PERCENT:
+                draft.progress = action.payload;
+                break;
+            default:
+                return draft;
+        }
+    });
 }
