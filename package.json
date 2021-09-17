@@ -27,6 +27,7 @@
     "babel-plugin-dotenv-import": "^2.2.0",
     "clone-deep": "^4.0.1",
     "i18next": "^19.9.2",
+    "immer": "^9.0.6",
     "install": "^0.13.0",
     "moment": "^2.29.1",
     "npm": "^6.14.13",
