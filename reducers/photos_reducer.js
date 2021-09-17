@@ -1,3 +1,4 @@
+import produce from 'immer';
 import {
     ADD_PHOTO,
     ADD_TAGS_TO_CAMERA_PHOTO,
@@ -124,18 +125,12 @@ export default function(state = INITIAL_STATE, action) {
          * Change selected value on every photo to false
          */
         case DESELECT_ALL_CAMERA_PHOTOS:
-            let photos3 = [...state.photos];
-
-            photos3 = photos3.map(photo => {
-                photo.selected = false;
-
-                return photo;
+            return produce(state, draft => {
+                draft.photos.map(photo => {
+                    photo.selected = false;
+                });
             });
-
-            return {
-                ...state,
-                photos: photos3
-            };
+            break;
 
         case DELETE_SELECTED_PHOTO:
             return {
@@ -193,17 +188,12 @@ export default function(state = INITIAL_STATE, action) {
          * @param selected = bool
          */
         case TOGGLE_SELECTED_PHOTO:
-            let photos2 = [...state.photos];
-
-            let photo = photos2[action.payload];
-
-            photo.selected = !photo.selected;
-
-            return {
-                ...state,
-                photos: photos2
-            };
-
+            return produce(state, draft => {
+                draft.photos[action.payload].selected = !draft.photos[
+                    action.payload
+                ].selected;
+            });
+            break;
         /**
          * Session Photo + Data has been uploaded successfully
          */
