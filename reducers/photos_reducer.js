@@ -30,28 +30,21 @@ export default function(state = INITIAL_STATE, action) {
          * The user has manually taken a photo with the Camera
          */
         case ADD_PHOTO:
-            let photos1 = [...state.photos];
-
-            let id = 0;
-            if (photos1.length > 0) id = photos1[photos1.length - 1].id + 1;
-
-            photos1.push({
-                id,
-                lat: action.payload.lat,
-                lon: action.payload.lon,
-                uri: action.payload.result.uri,
-                filename: action.payload.filename,
-                date: action.payload.date,
-                type: 'camera', // Photos taken from the camera
-                selected: false,
-                tags: {},
-                picked_up: false
+            return produce(state, draft => {
+                draft.photos.push({
+                    id: draft.photos.length > 0 ? draft.photos.length - 1 : 0,
+                    lat: action.payload.lat,
+                    lon: action.payload.lon,
+                    uri: action.payload.result.uri,
+                    filename: action.payload.filename,
+                    date: action.payload.date,
+                    type: 'camera', // Photos taken from the camera
+                    selected: false,
+                    tags: {},
+                    picked_up: false
+                });
             });
-
-            return {
-                ...state,
-                photos: photos1
-            };
+            break;
 
         /**
          * Add or update tags object on a gallery image
