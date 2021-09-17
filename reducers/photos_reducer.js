@@ -134,30 +134,25 @@ export default function(state = INITIAL_STATE, action) {
         /**
          * A tag has been pressed
          *
-         * Bug: Why is this being called from logout? SettingsScreen@logout
          */
         case REMOVE_TAG_FROM_CAMERA_PHOTO:
-            console.log('remove_tag_from_camera_photo', action.payload);
+            return produce(state, draft => {
+                console.log('remove_tag_from_camera_photo', action.payload);
+                let photo = draft.photos[action.payload.currentIndex];
 
-            // For some reason, this is being called on logout.
-            if (action.payload) {
-                let untaggedPhotos = [...state.photos];
-
-                let img = untaggedPhotos[action.payload.currentIndex];
-                delete img.tags[action.payload.category][action.payload.tag];
-
-                // Delete the category if empty
+                // if only one tag in payload category delete the category also
+                // else delete only tag
                 if (
-                    Object.keys(img.tags[action.payload.category]).length === 0
+                    Object.keys(photo.tags[action.payload.category]).length ===
+                    1
                 ) {
-                    delete img.tags[action.payload.category];
+                    delete photo.tags[action.payload.category];
+                } else {
+                    delete photo.tags[action.payload.category][
+                        action.payload.tag
+                    ];
                 }
-
-                return {
-                    ...state,
-                    photos: untaggedPhotos
-                };
-            }
+            });
 
             break;
 
