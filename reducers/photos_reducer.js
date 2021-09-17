@@ -6,7 +6,6 @@ import {
     DELETE_SELECTED_PHOTO,
     DESELECT_ALL_CAMERA_PHOTOS,
     LOGOUT,
-    INCREMENT,
     REMOVE_TAG_FROM_CAMERA_PHOTO,
     CAMERA_PHOTO_UPLOADED_SUCCESSFULLY,
     TOGGLE_SELECTED_PHOTO,
@@ -85,12 +84,13 @@ export default function(state = INITIAL_STATE, action) {
                 }
             });
             break;
-
+        /**
+         * load camera photos from async store
+         */
         case LOAD_CAMERA_PHOTOS_FROM_ASYNC_STORAGE:
-            return {
-                ...state,
-                photos: action.payload
-            };
+            return produce(state, draft => {
+                draft.photos = action.payload;
+            });
 
         /**
          * When isSelecting is turned off,
@@ -106,23 +106,11 @@ export default function(state = INITIAL_STATE, action) {
             break;
 
         case DELETE_SELECTED_PHOTO:
-            return {
-                ...state,
-                photos: [
-                    ...state.photos.slice(0, action.payload),
-                    ...state.photos.slice(action.payload + 1)
-                ],
-                isSelecting: false
-            };
-
-        case INCREMENT:
-            return {
-                ...state,
-                remainingCount: state.remainingCount + 1 // todo make immutable
-            };
-
-        // case LOGOUT:
-        // return INITIAL_STATE;
+            return produce(state, draft => {
+                draft.photos.splice(action.payload, 1);
+                draft.isSelecting = false;
+            });
+            break;
 
         /**
          * A tag has been pressed
@@ -164,47 +152,36 @@ export default function(state = INITIAL_STATE, action) {
             break;
         /**
          * Session Photo + Data has been uploaded successfully
+         * TODO: DELETE_SELECTED_PHOTO can be used insted of replicating
          */
         case CAMERA_PHOTO_UPLOADED_SUCCESSFULLY:
-            return {
-                ...state,
-                photos: [
-                    ...state.photos.slice(0, action.payload),
-                    ...state.photos.slice(action.payload + 1)
-                ]
-            };
+            return produce(state, draft => {
+                draft.photos.splice(action.payload, 1);
+            });
+            break;
 
+        // FIXME: uniqueValue is probably not useful anymore
+        // check and remove if not useful
         case TOGGLE_SELECTING:
-            // console.log('reducer - toggle selecting');
-            return {
-                ...state,
-                isSelecting: !state.isSelecting,
-                uniqueValue: state.uniqueValue + 1
-            };
+            return produce(state, draft => {
+                (draft.isSelecting = !draft.isSelecting),
+                    (draft.uniqueValue = draft.uniqueValue + 1);
+            });
+            break;
 
+        // FIXME: Unused reducer and action check and remove
         case UPDATE_COUNT_REMAINING:
             return {
                 ...state,
                 remainingCount: action.payload
             };
 
+        // FIXME: Unused reducer and action check and remove
         case UPDATE_PERCENT:
             return {
                 ...state,
                 progress: action.payload
             };
-
-        case UPLOAD_COMPLETE_SUCCESS:
-            return {
-                ...state
-                // modalVisible: action.payload.modal
-            };
-
-        // case UNIQUE_VALUE:
-        //   return {
-        //     ...state,
-        //     uniqueValue: state.uniqueValue + 1
-        //   };
 
         default:
             return state;
