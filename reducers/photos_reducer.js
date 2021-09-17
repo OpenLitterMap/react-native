@@ -58,60 +58,40 @@ export default function(state = INITIAL_STATE, action) {
          */
 
         case ADD_TAGS_TO_CAMERA_PHOTO:
-            let photos = [...state.photos];
-            let image = photos[action.payload.currentIndex];
+            return produce(state, draft => {
+                let image = draft.photos[action.payload.currentIndex];
+                let newTags = image.tags;
 
-            // update tags on image
-            let newTags = { ...image.tags };
+                let quantity = 1;
+                // if quantity exists, assign it
+                if (action.payload.tag.hasOwnProperty('quantity')) {
+                    quantity = action.payload.tag.quantity;
+                }
+                let payloadCategory = action.payload.tag.category;
+                let payloadTitle = action.payload.tag.title;
+                let quantityChanged = action.payload.quantityChanged
+                    ? action.payload.quantityChanged
+                    : false;
 
-            let quantity = 1;
-            // if quantity exists, assign it
-            if (action.payload.tag.hasOwnProperty('quantity')) {
-                quantity = action.payload.tag.quantity;
-            }
+                // check if category of incoming payload already exist in image tags
+                if (newTags.hasOwnProperty(payloadCategory)) {
+                    // check if title of incoming payload already exist
+                    if (newTags[payloadCategory].hasOwnProperty(payloadTitle)) {
+                        quantity = newTags[payloadCategory][payloadTitle];
 
-            // Increment quantity from the text filter
-            // sometimes (when tag is being added from text-filter, quantity does not exist
-            // we check to see if it exists on the object, if so, we can increment it
-            let payloadCategory = action.payload.tag.category;
-            let payloadTitle = action.payload.tag.title;
-            let quantityChanged = action.payload.quantityChanged
-                ? action.payload.quantityChanged
-                : false;
-
-            // check if category of incoming payload already exist in image tags
-            if (newTags.hasOwnProperty(payloadCategory)) {
-                // check if title of incoming payload already exist
-                if (newTags[payloadCategory].hasOwnProperty(payloadTitle)) {
-                    quantity = newTags[payloadCategory][payloadTitle];
-
-                    if (quantityChanged) {
-                        quantity = action.payload.tag.quantity;
-                    } else {
-                        quantity++;
+                        // if quantity is changed from picker wheel assign it
+                        // else increase quantity by 1
+                        quantity = quantityChanged
+                            ? action.payload.tag.quantity
+                            : quantity + 1;
                     }
+                    image.tags[payloadCategory][payloadTitle] = quantity;
+                } else {
+                    // if incoming payload category doesn't exist on image tags add it
+                    image.tags[payloadCategory] = { [payloadTitle]: quantity };
                 }
-            }
-
-            // create a new object with the new values
-            newTags = {
-                ...newTags,
-                [payloadCategory]: {
-                    ...newTags[payloadCategory],
-                    [payloadTitle]: quantity
-                }
-            };
-
-            image = { ...image, tags: newTags };
-
-            return {
-                ...state,
-                photos: [
-                    ...photos.slice(0, action.payload.currentIndex),
-                    image,
-                    ...photos.slice(action.payload.currentIndex + 1)
-                ]
-            };
+            });
+            break;
 
         case LOAD_CAMERA_PHOTOS_FROM_ASYNC_STORAGE:
             return {
