@@ -158,14 +158,6 @@ class HomeScreen extends PureComponent {
                                     {this.state.uploaded} / {this.state.total}
                                 </Text>
 
-                                {/* <Progress.Circle
-                                      progress={this.props.galleryUploadProgress}
-                                      showsText={true}
-                                      size={100}
-                                      style={{ marginBottom: 30 }}
-                                    /> */}
-                                {/* Todo - translate cancel */}
-
                                 <Button
                                     onPress={this._toggleUpload.bind(this)}
                                     title="Cancel"
@@ -825,7 +817,6 @@ const mapStateToProps = state => {
     return {
         androidName: state.settings.androidName,
         gallery: state.gallery.gallery,
-        galleryUploadProgress: state.gallery.galleryUploadProgress,
         imageBrowserOpen: state.gallery.imageBrowserOpen,
         isSelecting: state.shared.isSelecting,
         lang: state.auth.lang,
