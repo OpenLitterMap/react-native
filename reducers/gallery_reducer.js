@@ -69,129 +69,90 @@ export default function(state = INITIAL_STATE, action) {
              * Delete selected images from the gallery array
              */
             case DELETE_SELECTED_GALLERY:
-                return {
-                    ...state,
-                    gallery: [
-                        ...state.gallery.slice(0, action.payload),
-                        ...state.gallery.slice(action.payload + 1)
-                    ]
-                };
+                draft.gallery.splice(action.payload, 1);
+                break;
 
             /**
              * Change selected => false for all photos
              */
             case DESELECT_ALL_GALLERY_PHOTOS:
-                let photos1 = [...state.gallery];
-
-                photos1 = photos1.map(photo => {
+                draft.gallery.map(photo => {
                     photo.selected = false;
-                    return photo;
                 });
-
-                return {
-                    ...state,
-                    gallery: photos1
-                };
+                break;
 
             /**
              * Gallery Photo + Data has been uploaded successfully
              */
             case GALLERY_UPLOADED_SUCCESSFULLY:
-                return {
-                    ...state,
-                    gallery: [
-                        ...state.gallery.slice(0, action.payload),
-                        ...state.gallery.slice(action.payload + 1)
-                    ]
-                };
+                draft.gallery.splice(action.payload, 1);
+                break;
 
             /**
              * The users images have finished loading
              */
             case TOGGLE_IMAGES_LOADING:
-                return {
-                    ...state,
-                    imagesLoading: action.payload,
-                    totalGallerySelected: 0
-                };
-
+                draft.imagesLoading = action.payload;
+                break;
             /**
              * Return the selected photos from the Camera Roll
              */
             case PHOTOS_FROM_GALLERY:
-                let photos = [...state.gallery];
-
-                action.payload.forEach(photo => {
-                    photos.push(photo);
-                });
-
-                return {
-                    ...state,
-                    gallery: photos
-                };
-
+                action.payload.forEach(photo => draft.gallery.push(photo));
+                break;
             /**
              * Remove a tag that has been pressed
              */
             case REMOVE_TAG_FROM_GALLERY_PHOTO:
-                let deletedTagGallery = [...state.gallery];
+                let photo = draft.gallery[action.payload.currentIndex];
 
-                let img = deletedTagGallery[action.payload.currentIndex];
-                delete img.tags[action.payload.category][action.payload.tag];
-
-                // Delete the category if empty
+                // if only one tag in payload category delete the category also
+                // else delete only tag
                 if (
-                    Object.keys(img.tags[action.payload.category]).length === 0
+                    Object.keys(photo.tags[action.payload.category]).length ===
+                    1
                 ) {
-                    delete img.tags[action.payload.category];
+                    delete photo.tags[action.payload.category];
+                } else {
+                    delete photo.tags[action.payload.category][
+                        action.payload.tag
+                    ];
                 }
 
-                return {
-                    ...state,
-                    gallery: deletedTagGallery
-                };
+                break;
 
             /**
              * Open or Close the Image Picker for Gallery Photos
              */
             case TOGGLE_IMAGE_BROWSER:
-                return {
-                    ...state,
-                    imageBrowserOpen: !state.imageBrowserOpen
-                };
+                draft.imageBrowserOpen = !draft.imageBrowserOpen;
 
             /**
              * Toggle the value of photo.selected
              */
             case TOGGLE_SELECTED_GALLERY:
-                let gallery = [...state.gallery];
+                draft.gallery[action.payload].selected = !draft.gallery[
+                    action.payload
+                ].selected;
 
-                let photo = gallery[action.payload];
-
-                photo.selected = !photo.selected;
-
-                return {
-                    ...state,
-                    gallery
-                };
+                break;
             /**
              * add array of geotagged images to state
              */
             case ADD_GEOTAGGED_IMAGES:
                 const geotaggedImages = [
                     ...action.payload.geotagged,
-                    ...state.geotaggedImages
+                    ...draft.geotaggedImages
                 ];
-                return {
-                    ...state,
-                    geotaggedImages,
-                    camerarollImageFetched: true,
-                    lastFetchTime: Math.floor(new Date().getTime()),
-                    imagesLoading: false
-                };
+
+                draft.geotaggedImages = geotaggedImages;
+                draft.camerarollImageFetched = true;
+                draft.lastFetchTime = Math.floor(new Date().getTime());
+                draft.imagesLoading = false;
+                break;
 
             default:
-                return state;
+                return draft;
         }
     });
 }
