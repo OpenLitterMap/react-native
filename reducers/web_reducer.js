@@ -1,3 +1,4 @@
+import produce from 'immer';
 import {
     ADD_TAGS_TO_WEB_IMAGE,
     LOAD_MORE_WEB_IMAGES,
@@ -13,130 +14,102 @@ const INITIAL_STATE = {
 };
 
 export default function(state = INITIAL_STATE, action) {
-    switch (action.type) {
-        /**
-         * Apply tags to one of the web images
-         */
-        case ADD_TAGS_TO_WEB_IMAGE:
-            let webPhotos = [...state.photos];
+    return produce(state, draft => {
+        switch (action.type) {
+            /**
+             * Apply tags to one of the web images
+             */
+            case ADD_TAGS_TO_WEB_IMAGE:
+                let image = draft.photos[action.payload.currentIndex];
+                let newTags = image.tags;
 
-            let image = webPhotos[action.payload.currentIndex];
+                let quantity = 1;
+                // if quantity exists, assign it
+                if (action.payload.tag.hasOwnProperty('quantity')) {
+                    quantity = action.payload.tag.quantity;
+                }
+                let payloadCategory = action.payload.tag.category;
+                let payloadTitle = action.payload.tag.title;
+                let quantityChanged = action.payload.quantityChanged
+                    ? action.payload.quantityChanged
+                    : false;
 
-            // update tags on image
-            let newTags = { ...image.tags };
+                // check if category of incoming payload already exist in image tags
+                if (newTags.hasOwnProperty(payloadCategory)) {
+                    // check if title of incoming payload already exist
+                    if (newTags[payloadCategory].hasOwnProperty(payloadTitle)) {
+                        quantity = newTags[payloadCategory][payloadTitle];
 
-            // update tags on image
-            let quantity = 1;
-
-            // if quantity exists, assign it
-            if (action.payload.tag.hasOwnProperty('quantity')) {
-                quantity = action.payload.tag.quantity;
-            }
-
-            let payloadCategory = action.payload.tag.category;
-            let payloadTitle = action.payload.tag.title;
-            let quantityChanged = action.payload.quantityChanged
-                ? action.payload.quantityChanged
-                : false;
-
-            // check if category of incoming payload already exist in image tags
-            if (newTags.hasOwnProperty(payloadCategory)) {
-                // check if title of incoming payload already exist
-                if (newTags[payloadCategory].hasOwnProperty(payloadTitle)) {
-                    quantity = newTags[payloadCategory][payloadTitle];
-
-                    if (quantityChanged) {
-                        quantity = action.payload.tag.quantity;
-                    } else {
-                        quantity++;
+                        // if quantity is changed from picker wheel assign it
+                        // else increase quantity by 1
+                        quantity = quantityChanged
+                            ? action.payload.tag.quantity
+                            : quantity + 1;
                     }
+                    image.tags[payloadCategory][payloadTitle] = quantity;
+                } else {
+                    // if incoming payload category doesn't exist on image tags add it
+                    image.tags[payloadCategory] = {
+                        [payloadTitle]: quantity
+                    };
                 }
-            }
 
-            // create a new object with the new values
-            newTags = {
-                ...newTags,
-                [payloadCategory]: {
-                    ...newTags[payloadCategory],
-                    [payloadTitle]: quantity
+                break;
+            /**
+             * Remove a tag that has been pressed
+             */
+            case REMOVE_TAG_FROM_WEB_IMAGE:
+                let photo = draft.photos[action.payload.currentIndex];
+
+                // if only one tag in payload category delete the category also
+                // else delete only tag
+                if (
+                    Object.keys(photo.tags[action.payload.category]).length ===
+                    1
+                ) {
+                    delete photo.tags[action.payload.category];
+                } else {
+                    delete photo.tags[action.payload.category][
+                        action.payload.tag
+                    ];
                 }
-            };
 
-            image.tags = newTags;
+                break;
 
-            return {
-                ...state,
-                photos: webPhotos
-            };
+            /**
+             * At the end of swiping web.photos, load more images
+             */
+            case LOAD_MORE_WEB_IMAGES:
+                action.payload.map(photo => {
+                    draft.photos.push(photo);
+                    draft.count++;
+                });
+                break;
 
-        /**
-         * Remove a tag that has been pressed
-         */
-        case REMOVE_TAG_FROM_WEB_IMAGE:
-            let updatedWebPhotos = [...state.photos];
+            /**
+             * After submitting an image + tags, we filter it from the photos array
+             *
+             * and decrement the count
+             */
+            case REMOVE_WEB_IMAGE:
+                const index = draft.photos.findIndex(
+                    photo => photo.id === action.payload
+                );
+                if (index !== -1) draft.photos.splice(index, 1);
 
-            let img = updatedWebPhotos[action.payload.currentIndex];
-            delete img.tags[action.payload.category][action.payload.tag];
+                draft.count = draft.count - 1;
 
-            // Delete the category if empty
-            if (Object.keys(img.tags[action.payload.category]).length === 0) {
-                delete img.tags[action.payload.category];
-            }
+                break;
 
-            return {
-                ...state,
-                photos: updatedWebPhotos
-            };
-
-        /**
-         * At the end of swiping web.photos, load more images
-         */
-        case LOAD_MORE_WEB_IMAGES:
-            let web_images = [...state.photos];
-
-            action.payload.photos.forEach(photo => {
-                web_images.push(photo);
-            });
-
-            return {
-                ...state,
-                photos: web_images
-            };
-
-        /**
-         * After submitting an image + tags, we filter it from the photos array
-         *
-         * and decrement the count
-         */
-        case REMOVE_WEB_IMAGE:
-            const filtered = state.photos.filter(
-                photo => photo.id !== action.payload
-            );
-
-            const count = state.count - 1;
-
-            return {
-                ...state,
-                photos: filtered,
-                count
-            };
-
-        /**
-         * Images have been uploaded from the web
-         */
-        case WEB_IMAGES:
-            const photos = (state.photos = [
-                ...state.photos.slice(0, 0),
-                ...state.photos.slice(1)
-            ]);
-
-            return {
-                ...state,
-                count: action.payload.count,
-                photos: action.payload.photos
-            };
-
-        default:
-            return state;
-    }
+            /**
+             * Images have been uploaded from the web
+             */
+            case WEB_IMAGES:
+                draft.photos = action.payload.photos;
+                draft.count = action.payload.count;
+                break;
+            default:
+                return draft;
+        }
+    });
 }

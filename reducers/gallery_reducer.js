@@ -98,7 +98,7 @@ export default function(state = INITIAL_STATE, action) {
              * Return the selected photos from the Camera Roll
              */
             case PHOTOS_FROM_GALLERY:
-                action.payload.forEach(photo => draft.gallery.push(photo));
+                action.payload.map(photo => draft.gallery.push(photo));
                 break;
             /**
              * Remove a tag that has been pressed
