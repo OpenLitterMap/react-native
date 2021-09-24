@@ -530,10 +530,11 @@ class HomeScreen extends PureComponent {
                     isgeotagged
                 ) {
                     let galleryToUpload = new FormData();
-
+                    // INFO: if image is heic change extension to jpg
+                    // use path (uri of jpg ) insted to uri
                     galleryToUpload.append('photo', {
                         name: img.path
-                            ? img.filename.replace(/heic/g, 'jpg')
+                            ? img.filename.replace(/heic|HEIC/g, 'jpg')
                             : img.filename,
                         type: 'image/jpg',
                         uri: img.path ? `file://${img.path}` : img.uri

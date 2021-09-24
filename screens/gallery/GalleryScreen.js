@@ -104,6 +104,8 @@ class GalleryScreen extends Component {
      * sorts the array based on id
      * call action photosFromGallery to save selected images to state
      *
+     * if image is in .heic format convert it to jpg
+     * adds extra property "path" to image object with url to .jpg image
      * saves the selected array of images to Async store
      */
     async handleDoneClick() {
@@ -113,6 +115,8 @@ class GalleryScreen extends Component {
         const result = sortedArray.map(async img => {
             const isHeicFile =
                 img.filename && img.filename.toLowerCase().endsWith('heic');
+            // if image is .heic convert to jpg
+            // add extra path property to img object with url of .jpg image
             if (isHeicFile) {
                 const { path, error, success } = await RNHeicConverter.convert({
                     path: img.uri
