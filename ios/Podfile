@@ -13,6 +13,7 @@ target 'openlittermap' do
   pod 'Permission-Camera', :path => "#{permissions_path}/Camera.podspec"
   pod 'Permission-MediaLibrary', :path => "#{permissions_path}/MediaLibrary.podspec"
   pod 'Permission-PhotoLibrary', :path => "#{permissions_path}/PhotoLibrary.podspec"
+  pod 'react-native-heic-converter', :path => '../node_modules/react-native-heic-converter'
 
   target 'openlittermapTests' do
 

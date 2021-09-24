@@ -1,4 +1,6 @@
 import React, { Component } from 'react';
+import RNHeicConverter from 'react-native-heic-converter';
+
 import {
     StyleSheet,
     View,
@@ -108,8 +110,24 @@ class GalleryScreen extends Component {
         const sortedArray = await this.state.selectedImages.sort(
             (a, b) => a.id - b.id
         );
+        const result = sortedArray.map(async img => {
+            const isHeicFile =
+                img.filename && img.filename.toLowerCase().endsWith('heic');
+            if (isHeicFile) {
+                const { path, error, success } = await RNHeicConverter.convert({
+                    path: img.uri
+                });
+                if (!error && success && path) {
+                    img.path = path;
+                }
 
-        this.props.photosFromGallery(sortedArray);
+                return img;
+            }
+            return img;
+        });
+
+        const arr = await Promise.all(result);
+        this.props.photosFromGallery(arr);
 
         AsyncStorage.setItem(
             'openlittermap-gallery',

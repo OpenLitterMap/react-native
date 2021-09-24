@@ -8,6 +8,8 @@ import {
     View,
     Platform
 } from 'react-native';
+import RNHeicConverter from 'react-native-heic-converter';
+
 import AsyncStorage from '@react-native-community/async-storage';
 
 import { TransText } from 'react-native-translation';
@@ -521,6 +523,7 @@ class HomeScreen extends PureComponent {
             // async loop
             for (const img of this.props.gallery) {
                 const isgeotagged = await isGeotagged(img);
+
                 if (
                     img.tags &&
                     Object.keys(img.tags).length > 0 &&
@@ -529,9 +532,11 @@ class HomeScreen extends PureComponent {
                     let galleryToUpload = new FormData();
 
                     galleryToUpload.append('photo', {
-                        name: img.filename,
-                        type: 'image/jpeg',
-                        uri: img.uri
+                        name: img.path
+                            ? img.filename.replace(/heic/g, 'jpg')
+                            : img.filename,
+                        type: 'image/jpg',
+                        uri: img.path ? `file://${img.path}` : img.uri
                     });
 
                     const date = moment
@@ -543,7 +548,7 @@ class HomeScreen extends PureComponent {
                     galleryToUpload.append('date', date);
                     galleryToUpload.append('presence', img.picked_up);
                     galleryToUpload.append('model', model);
-
+                    console.log(JSON.stringify(galleryToUpload, null, 2));
                     const myIndex = this.props.gallery.indexOf(img);
 
                     // shared_actions.js
