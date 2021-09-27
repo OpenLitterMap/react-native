@@ -1,4 +1,6 @@
 import React from 'react';
+import { v4 as uuidv4 } from 'uuid';
+
 import {
     ActivityIndicator,
     Alert,
@@ -16,6 +18,7 @@ import AsyncStorage from '@react-native-community/async-storage';
 
 import RNLocation from 'react-native-location';
 import { RNCamera } from 'react-native-camera'; // FaceDetector
+import CameraRoll from '@react-native-community/cameraroll';
 
 import { Icon } from 'react-native-elements';
 
@@ -246,21 +249,26 @@ class CameraScreen extends React.Component {
         } else if (this.camera) {
             try {
                 this.animateShutter();
-
+                const options = {
+                    writeExif: {
+                        GPSLatitude: lat,
+                        GPSLongitude: lon
+                    },
+                    exif: true
+                };
                 this.camera
-                    .takePictureAsync()
+                    .takePictureAsync(options)
                     .then(result => {
                         console.log('takePicture', result); // height, uri, width
 
                         const now = moment();
                         const date = moment(now).format('YYYY:MM:DD HH:mm:ss');
-
                         // We need to generate a better filename for android
                         const filename =
                             Platform.OS === 'android'
-                                ? base64.encode(date) + '.jpg'
+                                ? uuidv4() + '.jpg'
                                 : result.uri.split('/').pop();
-
+                        console.log(filename);
                         // Example:
                         // iOS 96790415-6575-4CED-BA64-D6E8B16BF10D.jpg
                         // Android...
@@ -273,7 +281,12 @@ class CameraScreen extends React.Component {
                             filename,
                             date
                         });
-
+                        CameraRoll.save(result.uri, {
+                            type: 'photo',
+                            album: 'OLM'
+                        }).then(data => {
+                            console.log(data);
+                        });
                         // async-storage photos set
                         AsyncStorage.setItem(
                             'openlittermap-photos',
