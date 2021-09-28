@@ -1,5 +1,11 @@
 import { Platform, PermissionsAndroid } from 'react-native';
-import { check, request, PERMISSIONS } from 'react-native-permissions';
+import {
+    check,
+    checkMultiple,
+    request,
+    requestMultiple,
+    PERMISSIONS
+} from 'react-native-permissions';
 
 export const requestCameraRollPermission = async () => {
     let result;
@@ -8,12 +14,16 @@ export const requestCameraRollPermission = async () => {
     }
 
     if (Platform.OS === 'android') {
-        result = await request(PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE);
+        result = await requestMultiple([
+            PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE,
+            PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE
+        ]);
         const mediaLocation = await PermissionsAndroid.request(
             'android.permission.ACCESS_MEDIA_LOCATION'
         );
         if (
-            result === 'granted' &&
+            result['android.permission.READ_EXTERNAL_STORAGE'] === 'granted' &&
+            result['android.permission.WRITE_EXTERNAL_STORAGE'] === 'granted' &&
             mediaLocation !== PermissionsAndroid.RESULTS.DENIED
         ) {
             result = 'granted';
@@ -31,7 +41,10 @@ export const checkCameraRollPermission = async () => {
         result = await check('ios.permission.PHOTO_LIBRARY');
     }
     if (Platform.OS === 'android') {
-        result = await check('android.permission.READ_EXTERNAL_STORAGE');
+        result = await checkMultiple([
+            PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE,
+            PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE
+        ]);
     }
 
     return result;

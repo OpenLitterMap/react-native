@@ -62,7 +62,10 @@ class GalleryPermissionScreen extends Component {
      */
     async checkGalleryPermission() {
         const result = await checkCameraRollPermission();
-        if (result === 'granted') {
+        if (
+            result['android.permission.WRITE_EXTERNAL_STORAGE'] === 'granted' &&
+            result['android.permission.READ_EXTERNAL_STORAGE'] === 'granted'
+        ) {
             this.props.navigation.navigate('HOME');
         }
     }

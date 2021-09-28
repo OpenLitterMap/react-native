@@ -86,7 +86,10 @@ class HomeScreen extends PureComponent {
 
     async checkGalleryPermission() {
         const result = await checkCameraRollPermission();
-        if (result === 'granted') {
+        if (
+            result['android.permission.READ_EXTERNAL_STORAGE'] === 'granted' &&
+            result['android.permission.WRITE_EXTERNAL_STORAGE'] === 'granted'
+        ) {
             this.getImagesFormCameraroll();
         } else {
             this.props.navigation.navigate('PERMISSION', {
@@ -96,16 +99,20 @@ class HomeScreen extends PureComponent {
     }
 
     async checkNewVersion() {
-        const version = DeviceInfo.getVersion();
+        if (!__DEV__) {
+            let version = DeviceInfo.getVersion();
 
-        const platform = Platform.OS;
+            const platform = Platform.OS;
 
-        if (this.props.appVersion === null) {
-            this.props.checkAppVersion();
-        } else if (this.props.appVersion[platform].version !== version) {
-            this.props.navigation.navigate('UPDATE', {
-                url: this.props.appVersion[platform].url
-            });
+            if (this.props.appVersion === null) {
+                this.props.checkAppVersion();
+            } else if (this.props.appVersion[platform].version !== version) {
+                console.log(this.props.appVersion[platform].version);
+                console.log(version);
+                this.props.navigation.navigate('UPDATE', {
+                    url: this.props.appVersion[platform].url
+                });
+            }
         }
     }
 

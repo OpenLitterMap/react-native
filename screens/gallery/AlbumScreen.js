@@ -26,7 +26,10 @@ class AlbumScreen extends Component {
 
     async checkGalleryPermission() {
         const result = await checkCameraRollPermission();
-        if (result === 'granted') {
+        if (
+            result['android.permission.READ_EXTERNAL_STORAGE'] === 'granted' &&
+            result['android.permission.WRITE_EXTERNAL_STORAGE'] === 'granted'
+        ) {
             this.setState({ hasPermission: true, loading: false });
         } else {
             this.props.navigation.navigate('PERMISSION', {
