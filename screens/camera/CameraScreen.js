@@ -1,5 +1,4 @@
 import React from 'react';
-import { v4 as uuidv4 } from 'uuid';
 
 import {
     ActivityIndicator,
@@ -32,7 +31,6 @@ import {
 } from '../../utils/permissions';
 
 import DeviceInfo from 'react-native-device-info';
-import base64 from 'react-native-base64';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -219,7 +217,7 @@ class CameraScreen extends React.Component {
      *
      * We attach the users current GPS to the image
      */
-    takePicture() {
+    async takePicture() {
         const lat = this.state.lat;
         const lon = this.state.lon;
         if (lat === null || lon === null) {
@@ -256,46 +254,35 @@ class CameraScreen extends React.Component {
                     },
                     exif: true
                 };
-                this.camera
-                    .takePictureAsync(options)
-                    .then(result => {
-                        console.log('takePicture', result); // height, uri, width
+                const result = await this.camera.takePictureAsync(options);
 
-                        const now = moment();
-                        const date = moment(now).format('YYYY:MM:DD HH:mm:ss');
-                        // We need to generate a better filename for android
-                        const filename =
-                            Platform.OS === 'android'
-                                ? uuidv4() + '.jpg'
-                                : result.uri.split('/').pop();
-                        console.log(filename);
-                        // Example:
-                        // iOS 96790415-6575-4CED-BA64-D6E8B16BF10D.jpg
-                        // Android...
+                console.log(JSON.stringify(result, null, 2)); // height, uri, width: ;
 
-                        // photo_action.js, photos_reducer
-                        this.props.addPhoto({
-                            result,
-                            lat,
-                            lon,
-                            filename,
-                            date
-                        });
-                        CameraRoll.save(result.uri, {
-                            type: 'photo',
-                            album: 'OLM'
-                        }).then(data => {
-                            console.log(data);
-                        });
-                        // async-storage photos set
-                        AsyncStorage.setItem(
-                            'openlittermap-photos',
-                            JSON.stringify(this.props.photos)
-                        );
-                    })
-                    .catch(error => {
-                        console.error('camera.takePicture', error);
-                    });
+                const now = moment();
+                const date = moment(now).format('YYYY:MM:DD HH:mm:ss');
+                // We need to generate a better filename for android
+                const filename = result.uri.split('/').pop();
+
+                // photo_action.js, photos_reducer
+                this.props.addPhoto({
+                    result,
+                    lat,
+                    lon,
+                    filename,
+                    date
+                });
+                CameraRoll.save(result.uri, {
+                    type: 'photo',
+                    album: 'OLM'
+                }).then(data => {
+                    console.log('===>');
+                    console.log(data);
+                });
+                // async-storage photos set
+                AsyncStorage.setItem(
+                    'openlittermap-photos',
+                    JSON.stringify(this.props.photos)
+                );
 
                 // later:
                 // check settings - does the user want to save these images to their camera roll?

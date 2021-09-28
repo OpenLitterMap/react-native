@@ -141,7 +141,8 @@ export const getPhotosFromCameraroll = () => async (dispatch, getState) => {
                 item.node?.location?.longitude !== undefined &&
                 item.node?.location?.longitude !== null &&
                 item.node?.location?.latitude !== undefined &&
-                item.node?.location?.latitude !== null
+                item.node?.location?.latitude !== null &&
+                !item.node?.image?.uri.includes('/OLM/')
             ) {
                 geotagged.push({
                     id,

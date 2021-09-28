@@ -126,7 +126,7 @@ export default function(state = INITIAL_STATE, action) {
              */
             case TOGGLE_IMAGE_BROWSER:
                 draft.imageBrowserOpen = !draft.imageBrowserOpen;
-
+                break;
             /**
              * Toggle the value of photo.selected
              */
