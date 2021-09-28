@@ -171,6 +171,7 @@ export const getPhotosFromCameraroll = () => async (dispatch, getState) => {
  * Add selected photos from gallery to redux
  */
 export const photosFromGallery = photos => {
+    console.log(photos);
     return {
         type: PHOTOS_FROM_GALLERY,
         payload: photos

@@ -1,3 +1,4 @@
+import produce from 'immer';
 import {
     ADD_PHOTO,
     ADD_TAGS_TO_CAMERA_PHOTO,
@@ -5,7 +6,6 @@ import {
     DELETE_SELECTED_PHOTO,
     DESELECT_ALL_CAMERA_PHOTOS,
     LOGOUT,
-    INCREMENT,
     REMOVE_TAG_FROM_CAMERA_PHOTO,
     CAMERA_PHOTO_UPLOADED_SUCCESSFULLY,
     TOGGLE_SELECTED_PHOTO,
@@ -24,227 +24,150 @@ const INITIAL_STATE = {
 };
 
 export default function(state = INITIAL_STATE, action) {
-    switch (action.type) {
-        /**
-         * The user has manually taken a photo with the Camera
-         */
-        case ADD_PHOTO:
-            let photos1 = [...state.photos];
+    return produce(state, draft => {
+        switch (action.type) {
+            /**
+             * The user has manually taken a photo with the Camera
+             */
+            case ADD_PHOTO:
+                draft.photos.push({
+                    id: draft.photos.length > 0 ? draft.photos.length - 1 : 0,
+                    lat: action.payload.lat,
+                    lon: action.payload.lon,
+                    uri: action.payload.result.uri,
+                    filename: action.payload.filename,
+                    date: action.payload.date,
+                    type: 'camera', // Photos taken from the camera
+                    selected: false,
+                    tags: {},
+                    picked_up: false
+                });
+                break;
 
-            let id = 0;
-            if (photos1.length > 0) id = photos1[photos1.length - 1].id + 1;
+            /**
+             * Add or update tags object on a gallery image
+             */
 
-            photos1.push({
-                id,
-                lat: action.payload.lat,
-                lon: action.payload.lon,
-                uri: action.payload.result.uri,
-                filename: action.payload.filename,
-                date: action.payload.date,
-                type: 'camera', // Photos taken from the camera
-                selected: false,
-                tags: {},
-                picked_up: false
-            });
+            case ADD_TAGS_TO_CAMERA_PHOTO:
+                let image = draft.photos[action.payload.currentIndex];
+                let newTags = image.tags;
 
-            return {
-                ...state,
-                photos: photos1
-            };
+                let quantity = 1;
+                // if quantity exists, assign it
+                if (action.payload.tag.hasOwnProperty('quantity')) {
+                    quantity = action.payload.tag.quantity;
+                }
+                let payloadCategory = action.payload.tag.category;
+                let payloadTitle = action.payload.tag.title;
+                let quantityChanged = action.payload.quantityChanged
+                    ? action.payload.quantityChanged
+                    : false;
 
-        /**
-         * Add or update tags object on a gallery image
-         */
+                // check if category of incoming payload already exist in image tags
+                if (newTags.hasOwnProperty(payloadCategory)) {
+                    // check if title of incoming payload already exist
+                    if (newTags[payloadCategory].hasOwnProperty(payloadTitle)) {
+                        quantity = newTags[payloadCategory][payloadTitle];
 
-        case ADD_TAGS_TO_CAMERA_PHOTO:
-            let photos = [...state.photos];
-            let image = photos[action.payload.currentIndex];
-
-            // update tags on image
-            let newTags = { ...image.tags };
-
-            let quantity = 1;
-            // if quantity exists, assign it
-            if (action.payload.tag.hasOwnProperty('quantity')) {
-                quantity = action.payload.tag.quantity;
-            }
-
-            // Increment quantity from the text filter
-            // sometimes (when tag is being added from text-filter, quantity does not exist
-            // we check to see if it exists on the object, if so, we can increment it
-            let payloadCategory = action.payload.tag.category;
-            let payloadTitle = action.payload.tag.title;
-            let quantityChanged = action.payload.quantityChanged
-                ? action.payload.quantityChanged
-                : false;
-
-            // check if category of incoming payload already exist in image tags
-            if (newTags.hasOwnProperty(payloadCategory)) {
-                // check if title of incoming payload already exist
-                if (newTags[payloadCategory].hasOwnProperty(payloadTitle)) {
-                    quantity = newTags[payloadCategory][payloadTitle];
-
-                    if (quantityChanged) {
-                        quantity = action.payload.tag.quantity;
-                    } else {
-                        quantity++;
+                        // if quantity is changed from picker wheel assign it
+                        // else increase quantity by 1
+                        quantity = quantityChanged
+                            ? action.payload.tag.quantity
+                            : quantity + 1;
                     }
+                    image.tags[payloadCategory][payloadTitle] = quantity;
+                } else {
+                    // if incoming payload category doesn't exist on image tags add it
+                    image.tags[payloadCategory] = {
+                        [payloadTitle]: quantity
+                    };
                 }
-            }
 
-            // create a new object with the new values
-            newTags = {
-                ...newTags,
-                [payloadCategory]: {
-                    ...newTags[payloadCategory],
-                    [payloadTitle]: quantity
-                }
-            };
+                break;
+            /**
+             * load camera photos from async store
+             */
+            case LOAD_CAMERA_PHOTOS_FROM_ASYNC_STORAGE:
+                draft.photos = action.payload;
+                break;
 
-            image.tags = newTags;
+            /**
+             * When isSelecting is turned off,
+             *
+             * Change selected value on every photo to false
+             */
+            case DESELECT_ALL_CAMERA_PHOTOS:
+                draft.photos.map(photo => {
+                    photo.selected = false;
+                });
+                break;
 
-            return {
-                ...state,
-                photos: photos
-            };
+            case DELETE_SELECTED_PHOTO:
+                draft.photos.splice(action.payload, 1);
+                draft.isSelecting = false;
+                break;
+            /**
+             * A tag has been pressed
+             *
+             */
+            case REMOVE_TAG_FROM_CAMERA_PHOTO:
+                console.log('remove_tag_from_camera_photo', action.payload);
+                let photo = draft.photos[action.payload.currentIndex];
 
-        case LOAD_CAMERA_PHOTOS_FROM_ASYNC_STORAGE:
-            return {
-                ...state,
-                photos: action.payload
-            };
-
-        /**
-         * When isSelecting is turned off,
-         *
-         * Change selected value on every photo to false
-         */
-        case DESELECT_ALL_CAMERA_PHOTOS:
-            let photos3 = [...state.photos];
-
-            photos3 = photos3.map(photo => {
-                photo.selected = false;
-
-                return photo;
-            });
-
-            return {
-                ...state,
-                photos: photos3
-            };
-
-        case DELETE_SELECTED_PHOTO:
-            return {
-                ...state,
-                photos: [
-                    ...state.photos.slice(0, action.payload),
-                    ...state.photos.slice(action.payload + 1)
-                ],
-                isSelecting: false
-            };
-
-        case INCREMENT:
-            return {
-                ...state,
-                remainingCount: state.remainingCount + 1 // todo make immutable
-            };
-
-        // case LOGOUT:
-        // return INITIAL_STATE;
-
-        /**
-         * A tag has been pressed
-         *
-         * Bug: Why is this being called from logout? SettingsScreen@logout
-         */
-        case REMOVE_TAG_FROM_CAMERA_PHOTO:
-            console.log('remove_tag_from_camera_photo', action.payload);
-
-            // For some reason, this is being called on logout.
-            if (action.payload) {
-                let untaggedPhotos = [...state.photos];
-
-                let img = untaggedPhotos[action.payload.currentIndex];
-                delete img.tags[action.payload.category][action.payload.tag];
-
-                // Delete the category if empty
+                // if only one tag in payload category delete the category also
+                // else delete only tag
                 if (
-                    Object.keys(img.tags[action.payload.category]).length === 0
+                    Object.keys(photo.tags[action.payload.category]).length ===
+                    1
                 ) {
-                    delete img.tags[action.payload.category];
+                    delete photo.tags[action.payload.category];
+                } else {
+                    delete photo.tags[action.payload.category][
+                        action.payload.tag
+                    ];
                 }
 
-                return {
-                    ...state,
-                    photos: untaggedPhotos
-                };
-            }
+                break;
 
-            break;
+            /**
+             * Change the selected value of a photo
+             *
+             * @payload action.payload = index
+             * @param selected = bool
+             */
+            case TOGGLE_SELECTED_PHOTO:
+                draft.photos[action.payload].selected = !draft.photos[
+                    action.payload
+                ].selected;
 
-        /**
-         * Change the selected value of a photo
-         *
-         * @payload action.payload = index
-         * @param selected = bool
-         */
-        case TOGGLE_SELECTED_PHOTO:
-            let photos2 = [...state.photos];
+                break;
+            /**
+             * Session Photo + Data has been uploaded successfully
+             * TODO: DELETE_SELECTED_PHOTO can be used insted of replicating
+             */
+            case CAMERA_PHOTO_UPLOADED_SUCCESSFULLY:
+                draft.photos.splice(action.payload, 1);
 
-            let photo = photos2[action.payload];
+                break;
 
-            photo.selected = !photo.selected;
+            // FIXME: uniqueValue is probably not useful anymore
+            // check and remove if not useful
+            case TOGGLE_SELECTING:
+                draft.isSelecting = !draft.isSelecting;
+                draft.uniqueValue = draft.uniqueValue + 1;
 
-            return {
-                ...state,
-                photos: photos2
-            };
+                break;
 
-        /**
-         * Session Photo + Data has been uploaded successfully
-         */
-        case CAMERA_PHOTO_UPLOADED_SUCCESSFULLY:
-            return {
-                ...state,
-                photos: [
-                    ...state.photos.slice(0, action.payload),
-                    ...state.photos.slice(action.payload + 1)
-                ]
-            };
-
-        case TOGGLE_SELECTING:
-            // console.log('reducer - toggle selecting');
-            return {
-                ...state,
-                isSelecting: !state.isSelecting,
-                uniqueValue: state.uniqueValue + 1
-            };
-
-        case UPDATE_COUNT_REMAINING:
-            return {
-                ...state,
-                remainingCount: action.payload
-            };
-
-        case UPDATE_PERCENT:
-            return {
-                ...state,
-                progress: action.payload
-            };
-
-        case UPLOAD_COMPLETE_SUCCESS:
-            return {
-                ...state
-                // modalVisible: action.payload.modal
-            };
-
-        // case UNIQUE_VALUE:
-        //   return {
-        //     ...state,
-        //     uniqueValue: state.uniqueValue + 1
-        //   };
-
-        default:
-            return state;
-    }
+            // FIXME: Unused reducer and action check and remove
+            case UPDATE_COUNT_REMAINING:
+                draft.remainingCount = action.payload;
+                break;
+            // FIXME: Unused reducer and action check and remove
+            case UPDATE_PERCENT:
+                draft.progress = action.payload;
+                break;
+            default:
+                return draft;
+        }
+    });
 }

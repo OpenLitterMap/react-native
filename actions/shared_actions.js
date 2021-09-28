@@ -126,16 +126,6 @@ export const uploadPhoto = (token, image) => {
                     'Content-Type': 'multipart/form-data'
                 },
                 data: image
-                // need to debug this and make it smooth
-                // onUploadProgress: (p) => {
-                //    progress = p.loaded / p.total; // ( total ) / 2
-                //    progress = Math.round(progress * 100);
-                //    console.log(progress);
-                //    dispatch({
-                //      type: CHANGE_UPLOAD_PROGRESS,
-                //      payload: progress
-                //    });
-                //  }
             });
         } catch (error) {
             if (error.response) {
