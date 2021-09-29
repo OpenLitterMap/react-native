@@ -45,6 +45,15 @@ export const checkCameraRollPermission = async () => {
             PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE,
             PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE
         ]);
+        if (
+            result['android.permission.READ_EXTERNAL_STORAGE'] === 'granted' &&
+            result['android.permission.WRITE_EXTERNAL_STORAGE'] === 'granted' &&
+            mediaLocation !== PermissionsAndroid.RESULTS.DENIED
+        ) {
+            result = 'granted';
+        } else {
+            result = 'denied';
+        }
     }
 
     return result;

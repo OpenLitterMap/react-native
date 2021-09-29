@@ -86,10 +86,7 @@ class HomeScreen extends PureComponent {
 
     async checkGalleryPermission() {
         const result = await checkCameraRollPermission();
-        if (
-            result['android.permission.READ_EXTERNAL_STORAGE'] === 'granted' &&
-            result['android.permission.WRITE_EXTERNAL_STORAGE'] === 'granted'
-        ) {
+        if (result === 'granted') {
             this.getImagesFormCameraroll();
         } else {
             this.props.navigation.navigate('PERMISSION', {
