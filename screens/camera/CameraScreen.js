@@ -232,7 +232,7 @@ class CameraScreen extends React.Component {
                             // take user to location setting
                             // INFO: IOS only
                             // TODO: find a way to do the same in android without external libs
-                            iosUrl = 'App-Prefs:Privacy&path=LOCATION';
+                            const iosUrl = 'App-Prefs:Privacy&path=LOCATION';
                             if (Platform.OS === 'ios') {
                                 const result = await Linking.canOpenURL(iosUrl);
                                 result &&
@@ -256,7 +256,7 @@ class CameraScreen extends React.Component {
                 };
                 const result = await this.camera.takePictureAsync(options);
 
-                console.log(JSON.stringify(result, null, 2)); // height, uri, width: ;
+                // console.log(JSON.stringify(result, null, 2)); // height, uri, width: ;
 
                 const now = moment();
                 const date = moment(now).format('YYYY:MM:DD HH:mm:ss');
@@ -264,19 +264,21 @@ class CameraScreen extends React.Component {
                 const filename = result.uri.split('/').pop();
 
                 // photo_action.js, photos_reducer
-                this.props.addPhoto({
-                    result,
-                    lat,
-                    lon,
-                    filename,
-                    date
-                });
+
                 CameraRoll.save(result.uri, {
                     type: 'photo',
                     album: 'OLM'
                 }).then(data => {
                     console.log('===>');
                     console.log(data);
+                    result.uri = data;
+                    this.props.addPhoto({
+                        result,
+                        lat,
+                        lon,
+                        filename,
+                        date
+                    });
                 });
                 // async-storage photos set
                 AsyncStorage.setItem(
