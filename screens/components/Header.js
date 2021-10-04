@@ -15,7 +15,10 @@ const Header = ({
     leftContent,
     centerContent,
     rightContent,
-    containerStyle
+    containerStyle,
+    leftContainerStyle,
+    centerContainerStyle,
+    rightContainerStyle
 }) => {
     return (
         <>
@@ -31,12 +34,18 @@ const Header = ({
                 <View style={[styles.headerContainer, containerStyle]}>
                     {/* left icon */}
                     {leftContent && (
-                        <View style={{ flex: 1 }}>{leftContent}</View>
+                        <View style={[{ flex: 1 }, leftContainerStyle]}>
+                            {leftContent}
+                        </View>
                     )}
 
                     {/* center content */}
                     {centerContent && (
-                        <View style={{ flex: 1, alignItems: 'center' }}>
+                        <View
+                            style={[
+                                { flex: 1, alignItems: 'center' },
+                                centerContainerStyle
+                            ]}>
                             {centerContent}
                         </View>
                     )}
@@ -44,10 +53,13 @@ const Header = ({
                     {/* right content */}
 
                     <View
-                        style={{
-                            flex: 1,
-                            alignItems: 'flex-end'
-                        }}>
+                        style={[
+                            {
+                                flex: 1,
+                                alignItems: 'flex-end'
+                            },
+                            rightContainerStyle
+                        ]}>
                         {rightContent}
                     </View>
                 </View>
@@ -60,7 +72,19 @@ Header.propTypes = {
     leftContent: PropTypes.element,
     rightContent: PropTypes.element,
     centerContent: PropTypes.element,
-    containerStyle: PropTypes.oneOfType([PropTypes.object, PropTypes.array])
+    containerStyle: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
+    leftContainerStyle: PropTypes.oneOfType([
+        PropTypes.object,
+        PropTypes.array
+    ]),
+    rightContainerStyle: PropTypes.oneOfType([
+        PropTypes.object,
+        PropTypes.array
+    ]),
+    centerContainerStyle: PropTypes.oneOfType([
+        PropTypes.object,
+        PropTypes.array
+    ])
 };
 
 export default Header;

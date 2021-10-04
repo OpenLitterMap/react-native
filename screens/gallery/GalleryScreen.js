@@ -236,6 +236,7 @@ class GalleryScreen extends Component {
                         </Pressable>
                     }
                     centerContent={<SubTitle color="white">Geotagged</SubTitle>}
+                    centerContainerStyle={{ flex: 2 }}
                     rightContent={
                         <Pressable
                             onPress={async () => {

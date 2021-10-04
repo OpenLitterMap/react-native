@@ -46,11 +46,11 @@ class SettingsScreen extends Component {
                     }
                     centerContent={
                         <Title
-                            style={{ marginLeft: 20 }}
                             color="white"
                             dictionary={`${lang}.settings.settings`}
                         />
                     }
+                    centerContainerStyle={{ flex: 2 }}
                     rightContent={
                         <Pressable onPress={() => this.props.logout()}>
                             <Body
