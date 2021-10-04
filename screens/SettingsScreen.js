@@ -259,22 +259,36 @@ class SettingsScreen extends Component {
 
     /**
      * Get the True or False value for a Switch
+     * INFO: show_name and show_username have boolean values
+     * rest have 0 & 1
      */
     _getSwitchValue(id) {
-        if (id === 4) {
-            return this.props.user.show_name_maps;
-        } else if (id === 5) {
-            return this.props.user.show_username_maps;
-        } else if (id === 6) {
-            return this.props.user.show_name;
-        } else if (id === 7) {
-            return this.props.user.show_username;
-        } else if (id === 8) {
-            return this.props.user.show_name_createdby;
-        } else if (id === 9) {
-            return this.props.user.show_username_createdby;
-        } else if (id === 10) {
-            return this.props.user.previous_tag;
+        switch (id) {
+            case 4:
+                return this.props.user.show_name_maps === 0 ? false : true;
+                break;
+            case 5:
+                return this.props.user.show_username_maps === 0 ? false : true;
+                break;
+            case 6:
+                return this.props.user.show_name;
+                break;
+            case 7:
+                return this.props.user.show_username;
+                break;
+            case 8:
+                return this.props.user.show_name_createdby === 0 ? false : true;
+                break;
+            case 9:
+                return this.props.user.show_username_createdby === 0
+                    ? false
+                    : true;
+                break;
+            case 10:
+                return this.props.user.previous_tag === 0 ? false : true;
+                break;
+            default:
+                break;
         }
     }
 }
