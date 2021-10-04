@@ -31,7 +31,7 @@ import {
 } from '../../utils/permissions';
 
 import DeviceInfo from 'react-native-device-info';
-
+import piexif from 'piexifjs';
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
@@ -248,43 +248,68 @@ class CameraScreen extends React.Component {
             try {
                 this.animateShutter();
                 const options = {
-                    writeExif: {
-                        GPSLatitude: lat,
-                        GPSLongitude: lon
-                    },
-                    exif: true
+                    // writeExif: {
+                    //     GPSLatitude: lat,
+                    //     GPSLongitude: lon
+                    // },
+                    base64: true
+                    // exif: true,
                 };
                 const result = await this.camera.takePictureAsync(options);
 
-                // console.log(JSON.stringify(result, null, 2)); // height, uri, width: ;
+                console.log(JSON.stringify(result, null, 2)); // height, uri, width: ;
 
                 const now = moment();
                 const date = moment(now).format('YYYY:MM:DD HH:mm:ss');
                 // We need to generate a better filename for android
                 const filename = result.uri.split('/').pop();
 
+                const exifData = await piexif.load(
+                    `data:image/jpeg;base64,${result.base64}`
+                );
+
+                const newExif = {
+                    '0th': { ...exifData['0th'] },
+                    Exif: { ...exifData['Exif'] },
+                    GPS: { ...exifData['GPS'] },
+                    Interop: { ...exifData['Interop'] },
+                    '1st': { ...exifData['1st'] },
+                    thumbnail: null
+                };
+                newExif['GPS'][piexif.GPSIFD.GPSLatitude] = lat;
+                newExif['GPS'][piexif.GPSIFD.GPSLatitudeRef] = 'N';
+
+                newExif['GPS'][piexif.GPSIFD.GPSLongitude] = lon - 2 * lon;
+                newExif['GPS'][piexif.GPSIFD.GPSLongitudeRef] = 'W';
+
+                console.log(newExif);
+                const newExifBinary = piexif.dump(newExif);
+                const newPhotoData = await piexif.insert(
+                    newExifBinary,
+                    newImageData
+                );
                 // photo_action.js, photos_reducer
 
-                CameraRoll.save(result.uri, {
-                    type: 'photo',
-                    album: 'OLM'
-                }).then(data => {
-                    console.log('===>');
-                    console.log(data);
-                    result.uri = data;
-                    this.props.addPhoto({
-                        result,
-                        lat,
-                        lon,
-                        filename,
-                        date
-                    });
-                });
+                // CameraRoll.save(newPhotoData, {
+                //     type: 'photo',
+                //     album: 'OLM'
+                // }).then(data => {
+                //     console.log('===>');
+                //     console.log(data);
+                //     result.uri = data;
+                //     // this.props.addPhoto({
+                //     //     result,
+                //     //     lat,
+                //     //     lon,
+                //     //     filename,
+                //     //     date
+                //     // });
+                // });
                 // async-storage photos set
-                AsyncStorage.setItem(
-                    'openlittermap-photos',
-                    JSON.stringify(this.props.photos)
-                );
+                // AsyncStorage.setItem(
+                //     'openlittermap-photos',
+                //     JSON.stringify(this.props.photos)
+                // );
 
                 // later:
                 // check settings - does the user want to save these images to their camera roll?
