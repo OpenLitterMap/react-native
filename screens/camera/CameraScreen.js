@@ -257,7 +257,7 @@ class CameraScreen extends React.Component {
                 };
                 const result = await this.camera.takePictureAsync(options);
 
-                console.log(JSON.stringify(result, null, 2)); // height, uri, width: ;
+                // console.log(JSON.stringify(result, null, 2)); // height, uri, width: ;
 
                 const now = moment();
                 const date = moment(now).format('YYYY:MM:DD HH:mm:ss');
@@ -283,28 +283,29 @@ class CameraScreen extends React.Component {
                 newExif['GPS'][piexif.GPSIFD.GPSLongitudeRef] = 'W';
 
                 console.log(newExif);
-                const newExifBinary = piexif.dump(newExif);
+                const newExifBinary = await piexif.dump(newExif);
+                // console.log(newExifBinary);
                 const newPhotoData = await piexif.insert(
                     newExifBinary,
-                    newImageData
+                    `data:image/jpeg;base64,${result.base64}`
                 );
                 // photo_action.js, photos_reducer
 
-                // CameraRoll.save(newPhotoData, {
-                //     type: 'photo',
-                //     album: 'OLM'
-                // }).then(data => {
-                //     console.log('===>');
-                //     console.log(data);
-                //     result.uri = data;
-                //     // this.props.addPhoto({
-                //     //     result,
-                //     //     lat,
-                //     //     lon,
-                //     //     filename,
-                //     //     date
-                //     // });
-                // });
+                CameraRoll.save(newPhotoData, {
+                    type: 'photo',
+                    album: 'OLM'
+                }).then(data => {
+                    console.log('===>');
+                    console.log(data);
+                    result.uri = data;
+                    // this.props.addPhoto({
+                    //     result,
+                    //     lat,
+                    //     lon,
+                    //     filename,
+                    //     date
+                    // });
+                });
                 // async-storage photos set
                 // AsyncStorage.setItem(
                 //     'openlittermap-photos',
