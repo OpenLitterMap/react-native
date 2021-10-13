@@ -16,9 +16,11 @@ const INITIAL_STATE = {
 export default function(state = INITIAL_STATE, action) {
     return produce(state, draft => {
         switch (action.type) {
+
             /**
              * Apply tags to one of the web images
              */
+
             case ADD_TAGS_TO_WEB_IMAGE:
                 let image = draft.photos[action.payload.currentIndex];
                 let newTags = image.tags;
@@ -55,9 +57,11 @@ export default function(state = INITIAL_STATE, action) {
                 }
 
                 break;
+
             /**
              * Remove a tag that has been pressed
              */
+
             case REMOVE_TAG_FROM_WEB_IMAGE:
                 let photo = draft.photos[action.payload.currentIndex];
 
@@ -79,11 +83,13 @@ export default function(state = INITIAL_STATE, action) {
             /**
              * At the end of swiping web.photos, load more images
              */
+
             case LOAD_MORE_WEB_IMAGES:
                 action.payload.map(photo => {
                     draft.photos.push(photo);
                     draft.count++;
                 });
+                
                 break;
 
             /**
@@ -91,6 +97,7 @@ export default function(state = INITIAL_STATE, action) {
              *
              * and decrement the count
              */
+
             case REMOVE_WEB_IMAGE:
                 const index = draft.photos.findIndex(
                     photo => photo.id === action.payload
@@ -104,10 +111,13 @@ export default function(state = INITIAL_STATE, action) {
             /**
              * Images have been uploaded from the web
              */
+
             case WEB_IMAGES:
                 draft.photos = action.payload.photos;
                 draft.count = action.payload.count;
+
                 break;
+
             default:
                 return draft;
         }

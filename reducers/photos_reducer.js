@@ -31,7 +31,7 @@ export default function(state = INITIAL_STATE, action) {
              */
             case ADD_PHOTO:
                 draft.photos.push({
-                    id: draft.photos.length > 0 ? draft.photos.length - 1 : 0,
+                    id: draft.photos.length === 0 ? 0 : draft.photos.length - 1 ,
                     lat: action.payload.lat,
                     lon: action.payload.lon,
                     uri: action.payload.result.uri,
@@ -42,6 +42,7 @@ export default function(state = INITIAL_STATE, action) {
                     tags: {},
                     picked_up: false
                 });
+
                 break;
 
             /**
@@ -89,6 +90,7 @@ export default function(state = INITIAL_STATE, action) {
              */
             case LOAD_CAMERA_PHOTOS_FROM_ASYNC_STORAGE:
                 draft.photos = action.payload;
+
                 break;
 
             /**
@@ -100,11 +102,13 @@ export default function(state = INITIAL_STATE, action) {
                 draft.photos.map(photo => {
                     photo.selected = false;
                 });
+
                 break;
 
             case DELETE_SELECTED_PHOTO:
                 draft.photos.splice(action.payload, 1);
                 draft.isSelecting = false;
+
                 break;
             /**
              * A tag has been pressed
@@ -165,7 +169,9 @@ export default function(state = INITIAL_STATE, action) {
             // FIXME: Unused reducer and action check and remove
             case UPDATE_PERCENT:
                 draft.progress = action.payload;
+
                 break;
+                
             default:
                 return draft;
         }
