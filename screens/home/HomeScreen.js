@@ -461,6 +461,38 @@ class HomeScreen extends PureComponent {
     }
 
     /**
+     * Fn to create form data for upload
+     * @param {} img object
+     * @param  {('CAMERA' | 'GALLERY')} type of image
+     * @returns - multipart formData for image upload
+     */
+
+    createFormData = async (img, type) => {
+        const model = this.props.model;
+        let dataToUpload = new FormData();
+
+        dataToUpload.append('photo', {
+            name: img.filename,
+            type: 'image/jpeg',
+            uri: img.uri
+        });
+
+        const date =
+            type === 'GALLERY'
+                ? moment.unix(img.timestamp).format('YYYY:MM:DD HH:mm:ss')
+                : img.date;
+
+        dataToUpload.append('lat', img.lat);
+        dataToUpload.append('lon', img.lon);
+        dataToUpload.append('date', date);
+        dataToUpload.append('presence', img.presence);
+        dataToUpload.append('model', model);
+        dataToUpload.append('tags', JSON.stringify(img.tags));
+
+        return dataToUpload;
+    };
+
+    /**
      * Upload photos, 1 photo per request
      *
      * - status - images being sent across
@@ -473,8 +505,6 @@ class HomeScreen extends PureComponent {
             uploaded: 0,
             failedUpload: 0
         });
-
-        const model = this.props.model;
 
         let galleryCount = 0;
         let photosCount = 0;
@@ -518,25 +548,11 @@ class HomeScreen extends PureComponent {
                     Object.keys(img.tags).length > 0 &&
                     isgeotagged
                 ) {
-                    let galleryToUpload = new FormData();
-
-                    galleryToUpload.append('photo', {
-                        name: img.filename,
-                        type: 'image/jpeg',
-                        uri: img.uri
-                    });
-
-                    const date = moment
-                        .unix(img.timestamp)
-                        .format('YYYY:MM:DD HH:mm:ss');
-
-                    galleryToUpload.append('lat', img.lat);
-                    galleryToUpload.append('lon', img.lon);
-                    galleryToUpload.append('date', date);
-                    galleryToUpload.append('presence', img.picked_up);
-                    galleryToUpload.append('model', model);
-                    galleryToUpload.append('tags', JSON.stringify(img.tags));
-
+                    // creating multipart formData for upload
+                    const galleryToUpload = await this.createFormData(
+                        img,
+                        'GALLERY'
+                    );
                     const myIndex = this.props.gallery.indexOf(img);
 
                     // shared_actions.js
@@ -575,23 +591,13 @@ class HomeScreen extends PureComponent {
                     Object.keys(img.tags).length > 0 &&
                     isgeotagged
                 ) {
-                    // Formdata
-                    let cameraPhoto = new FormData();
+                    // creating multipart formData for upload
+                    const cameraPhoto = await this.createFormData(
+                        img,
+                        'CAMERA'
+                    );
 
-                    cameraPhoto.append('photo', {
-                        name: img.filename,
-                        type: 'image/jpeg',
-                        uri: img.uri
-                    });
-
-                    cameraPhoto.append('lat', img.lat);
-                    cameraPhoto.append('lon', img.lon);
-                    cameraPhoto.append('date', img.date);
-                    cameraPhoto.append('presence', img.picked_up);
-                    cameraPhoto.append('model', model);
-                    cameraPhoto.append('tags', JSON.stringify(img.tags));
                     const myIndex = this.props.photos.indexOf(img);
-                    console.log(JSON.stringify(cameraPhoto, null, 2));
                     // uploading images with tags
                     const response = await this.props.uploadImage(
                         this.props.token,

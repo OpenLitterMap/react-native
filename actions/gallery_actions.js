@@ -154,7 +154,7 @@ export const getPhotosFromCameraroll = () => async (dispatch, getState) => {
                     lon: item.node.location.longitude,
                     timestamp: item.node.timestamp,
                     selected: false,
-                    picked_up: false,
+                    presence: false,
                     tags: {},
                     type: 'gallery'
                 });
@@ -171,7 +171,6 @@ export const getPhotosFromCameraroll = () => async (dispatch, getState) => {
  * Add selected photos from gallery to redux
  */
 export const photosFromGallery = photos => {
-   
     return {
         type: PHOTOS_FROM_GALLERY,
         payload: photos

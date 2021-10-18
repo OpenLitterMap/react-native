@@ -169,7 +169,6 @@ export const uploadImage = (token, image) => {
                 success: false
             };
         }
-        console.log(JSON.stringify(response, null, 2));
         console.log('Response: shared_actions.uploadPhoto', response?.data);
 
         if (response && response.data?.success) {
