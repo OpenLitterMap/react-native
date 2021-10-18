@@ -535,33 +535,23 @@ class HomeScreen extends PureComponent {
                     galleryToUpload.append('date', date);
                     galleryToUpload.append('presence', img.picked_up);
                     galleryToUpload.append('model', model);
+                    galleryToUpload.append('tags', img.tags);
 
                     const myIndex = this.props.gallery.indexOf(img);
 
                     // shared_actions.js
-                    const response = await this.props.uploadPhoto(
+                    const response = await this.props.uploadImage(
                         this.props.token,
                         galleryToUpload
                     );
 
                     if (response && response.success) {
-                        // shared_actions.js
-                        const resp = await this.props.uploadTags(
-                            this.props.token,
-                            img.tags,
-                            response.photo_id
-                        );
+                        // Remove the image
+                        this.props.galleryPhotoUploadedSuccessfully(myIndex);
 
-                        if (resp && resp.success) {
-                            // Remove the image
-                            this.props.galleryPhotoUploadedSuccessfully(
-                                myIndex
-                            );
-
-                            this.setState(previousState => ({
-                                uploaded: previousState.uploaded + 1
-                            }));
-                        }
+                        this.setState(previousState => ({
+                            uploaded: previousState.uploaded + 1
+                        }));
                     } else {
                         this.setState(previousState => ({
                             failedUpload: previousState.failedUpload + 1
@@ -585,6 +575,7 @@ class HomeScreen extends PureComponent {
                     Object.keys(img.tags).length > 0 &&
                     isgeotagged
                 ) {
+                    // Formdata
                     let cameraPhoto = new FormData();
 
                     cameraPhoto.append('photo', {
@@ -596,33 +587,24 @@ class HomeScreen extends PureComponent {
                     cameraPhoto.append('lat', img.lat);
                     cameraPhoto.append('lon', img.lon);
                     cameraPhoto.append('date', img.date);
-                    cameraPhoto.append('presence', img.presence);
+                    cameraPhoto.append('presence', img.picked_up);
                     cameraPhoto.append('model', model);
-
+                    cameraPhoto.append('tags', img.tags);
                     const myIndex = this.props.photos.indexOf(img);
-
-                    // shared_actions
-                    const response = await this.props.uploadPhoto(
+                    console.log(JSON.stringify(cameraPhoto, null, 2));
+                    // uploading images with tags
+                    const response = await this.props.uploadImage(
                         this.props.token,
                         cameraPhoto
                     );
 
                     if (response && response.success) {
-                        // shared_actions
-                        const resp = await this.props.uploadTags(
-                            this.props.token,
-                            img.tags,
-                            response.photo_id
-                        );
+                        // Remove the image
+                        this.props.cameraPhotoUploadedSuccessfully(myIndex);
 
-                        if (resp && resp.success) {
-                            // Remove the image
-                            this.props.cameraPhotoUploadedSuccessfully(myIndex);
-
-                            this.setState(previousState => ({
-                                uploaded: previousState.uploaded + 1
-                            }));
-                        }
+                        this.setState(previousState => ({
+                            uploaded: previousState.uploaded + 1
+                        }));
                     } else {
                         this.setState(previousState => ({
                             failedUpload: previousState.failedUpload + 1

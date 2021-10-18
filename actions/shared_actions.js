@@ -114,46 +114,46 @@ export const toggleSelecting = () => {
  * todo - try and upload the tags and the image data in 1 request
  * todo - upload images earlier as a background process
  */
-export const uploadPhoto = (token, image) => {
-    // let progress = null;
-    let response;
-    return async dispatch => {
-        try {
-            response = await axios(URL + '/api/photos/submit', {
-                method: 'POST',
-                headers: {
-                    Authorization: 'Bearer ' + token,
-                    'Content-Type': 'multipart/form-data'
-                },
-                data: image
-            });
-        } catch (error) {
-            if (error.response) {
-                console.log(
-                    'ERROR: shared_actions.upload_photo',
-                    JSON.stringify(error?.response?.data, null, 2)
-                );
-            } else {
-                // Other errors -- NETWORK ERROR
-                console.log(error);
-            }
+// export const uploadPhoto = (token, image) => {
+//     // let progress = null;
+//     let response;
+//     return async dispatch => {
+//         try {
+//             response = await axios(URL + '/api/photos/submit', {
+//                 method: 'POST',
+//                 headers: {
+//                     Authorization: 'Bearer ' + token,
+//                     'Content-Type': 'multipart/form-data'
+//                 },
+//                 data: image
+//             });
+//         } catch (error) {
+//             if (error.response) {
+//                 console.log(
+//                     'ERROR: shared_actions.upload_photo',
+//                     JSON.stringify(error?.response?.data, null, 2)
+//                 );
+//             } else {
+//                 // Other errors -- NETWORK ERROR
+//                 console.log(error);
+//             }
 
-            return {
-                success: false
-            };
-        }
+//             return {
+//                 success: false
+//             };
+//         }
 
-        console.log('Response: shared_actions.uploadPhoto', response?.data);
+//         console.log('Response: shared_actions.uploadPhoto', response?.data);
 
-        if (response && response.data?.success) {
-            // return the photo.id that has been created on the backend
-            return {
-                success: true,
-                photo_id: response.data.photo_id
-            };
-        }
-    };
-};
+//         if (response && response.data?.success) {
+//             // return the photo.id that has been created on the backend
+//             return {
+//                 success: true,
+//                 photo_id: response.data.photo_id
+//             };
+//         }
+//     };
+// };
 
 /**
  * Upload the tags that were applied to an image
@@ -184,6 +184,51 @@ export const uploadTags = (token, tags, photo_id) => {
         if (response && response?.data?.success) {
             return {
                 success: true
+            };
+        }
+    };
+};
+/**
+ * fn to upload images along with tags
+ * @param {string} token
+ * @param  image form data
+ * @returns
+ */
+export const uploadImage = (token, image) => {
+    let response;
+    return async dispatch => {
+        try {
+            response = await axios(URL + '/api/photos/submit-with-tags', {
+                method: 'POST',
+                headers: {
+                    Authorization: 'Bearer ' + token,
+                    'Content-Type': 'multipart/form-data'
+                },
+                data: image
+            });
+        } catch (error) {
+            if (error.response) {
+                console.log(
+                    'ERROR: shared_actions.upload_photo',
+                    JSON.stringify(error?.response?.data, null, 2)
+                );
+            } else {
+                // Other errors -- NETWORK ERROR
+                console.log(error);
+            }
+
+            return {
+                success: false
+            };
+        }
+        console.log(JSON.stringify(response, null, 2));
+        console.log('Response: shared_actions.uploadPhoto', response?.data);
+
+        if (response && response.data?.success) {
+            // return the photo.id that has been created on the backend
+            return {
+                success: true,
+                photo_id: response.data.photo_id
             };
         }
     };
