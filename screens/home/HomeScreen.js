@@ -535,7 +535,7 @@ class HomeScreen extends PureComponent {
                     galleryToUpload.append('date', date);
                     galleryToUpload.append('presence', img.picked_up);
                     galleryToUpload.append('model', model);
-                    galleryToUpload.append('tags', img.tags);
+                    galleryToUpload.append('tags', JSON.stringify(img.tags));
 
                     const myIndex = this.props.gallery.indexOf(img);
 
@@ -589,7 +589,7 @@ class HomeScreen extends PureComponent {
                     cameraPhoto.append('date', img.date);
                     cameraPhoto.append('presence', img.picked_up);
                     cameraPhoto.append('model', model);
-                    cameraPhoto.append('tags', img.tags);
+                    cameraPhoto.append('tags', JSON.stringify(img.tags));
                     const myIndex = this.props.photos.indexOf(img);
                     console.log(JSON.stringify(cameraPhoto, null, 2));
                     // uploading images with tags
