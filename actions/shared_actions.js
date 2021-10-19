@@ -116,8 +116,8 @@ export const uploadTags = (token, tags, photo_id) => {
                     Authorization: 'Bearer ' + token
                 },
                 data: {
-                    litter: tags,
-                    photo_id: photo_id
+                    tags,
+                    photo_id
                 }
             });
         } catch (error) {
