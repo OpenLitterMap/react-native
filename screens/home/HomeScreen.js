@@ -688,7 +688,6 @@ class HomeScreen extends PureComponent {
      *
      */
     _toggleThankYou() {
-        console.log('toggleThankYou');
         this.props.toggleThankYou();
     }
 

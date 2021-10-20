@@ -40,7 +40,6 @@ export const USERNAME_ERROR = 'USERNAME_ERROR';
 // Photos - Taken from OLM Camera
 export const ADD_PHOTO = 'ADD_PHOTO';
 export const ADD_TAGS_TO_CAMERA_PHOTO = 'ADD_TAGS_TO_CAMERA_PHOTO';
-export const CLOSE_LITTER_MODAL = 'CLOSE_LITTER_MODAL';
 export const CONFIRM_SESSION_TAGS = 'CONFIRM_SESSION_TAGS';
 export const DELETE_SELECTED_PHOTO = 'DELETE_SELECTED_PHOTO'; // from current session
 export const DELETE_SELECTED_GALLERY = 'DELETE_SELECTED_GALLERY'; // from camera roll
