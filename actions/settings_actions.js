@@ -1,6 +1,5 @@
 import React from 'react';
 import {
-    CLOSE_ALL_SETTINGS_MODALS,
     CLOSE_SECOND_SETTING_MODAL,
     SAVE_SETTING,
     SETTINGS_INIT,
@@ -20,15 +19,6 @@ import {
 import AsyncStorage from '@react-native-community/async-storage';
 import axios from 'axios';
 
-/**
- * Close All Settings' Modals
- */
-export const closeAllSettingModals = () => {
-    return {
-        type: CLOSE_ALL_SETTINGS_MODALS
-    };
-};
-
 export const closeSecondSettingModal = () => {
     return {
         type: CLOSE_SECOND_SETTING_MODAL
@@ -37,6 +27,9 @@ export const closeSecondSettingModal = () => {
 
 /**
  * Initialize settings edit value to update
+ *
+ * when user selects a field to edit current value of that field is set in settingsEditProp
+ * to be used as initial value in textfield in edit modal
  */
 export const initalizeSettingsValue = prop => {
     return {
@@ -46,7 +39,7 @@ export const initalizeSettingsValue = prop => {
 };
 
 /**
- * Set Model
+ * fn to set device modal
  */
 export const setModel = model => {
     return {
