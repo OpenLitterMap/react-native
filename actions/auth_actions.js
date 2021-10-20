@@ -8,7 +8,6 @@ import {
     CLIENT_ID,
     CHANGE_LANG,
     SUBMIT_START,
-    SERVER_STATUS,
     LOGIN_OR_SIGNUP_RESET,
     LOGIN_SUCCESS,
     LOGIN_FAIL,
@@ -155,14 +154,14 @@ export const createAccount = data => {
                 }
 
                 dispatch({
-                    type: SERVER_STATUS,
+                    type: CHANGE_SERVER_STATUS_TEXT,
                     payload: payload
                 });
                 return;
             } else {
                 // handling Network Error
                 dispatch({
-                    type: SERVER_STATUS,
+                    type: CHANGE_SERVER_STATUS_TEXT,
                     payload:
                         'Network error, please check internet connection and try again'
                 });

@@ -1,3 +1,4 @@
+import produce from 'immer';
 import AsyncStorage from '@react-native-community/async-storage';
 import {
     ACCOUNT_CREATED,
@@ -17,13 +18,10 @@ import {
     USER_FOUND,
     USERNAME_ERROR,
     ON_SEEN_FEATURE_TOUR,
-    SERVER_STATUS,
     SUBMIT_END,
     SUBMIT_START
 } from '../actions/types';
 import { XPLEVEL } from '../screens/pages/data/xpLevel';
-// import AsyncStorage from '@react-native-community/async-storage';
-// import { Map, List } from 'immutable';
 
 import * as RNLocalize from 'react-native-localize';
 let lang = RNLocalize.getLocales()['languageCode'];
@@ -50,207 +48,232 @@ const INITIAL_STATE = {
 };
 
 export default function(state = INITIAL_STATE, action) {
-    switch (action.type) {
-        /**
-         * Status 400 : The user entered the wrong password
-         */
-        case BAD_PASSWORD:
-            return {
-                ...state,
-                password: '',
-                token: null,
-                serverStatusText:
-                    'Your password is incorrect. Please try again or reset it.',
-                isSubmitting: false
-            };
+    return produce(state, draft => {
+        switch (action.type) {
+            /**
+             * Status 400 : The user entered the wrong password
+             */
+            // TODO: User LOGIN_FAIL reducer and remove this
+            case BAD_PASSWORD:
+                draft.password = '';
+                draft.serverStatusText =
+                    'Your password is incorrect. Please try again or reset it.';
+                draft.isSubmitting = false;
 
-        case CHANGE_LANG:
-            return {
-                ...state,
-                lang: action.payload
-            };
+                break;
 
-        case CHANGE_SERVER_STATUS_TEXT:
-            return {
-                ...state,
-                serverStatusText: action.payload
-            };
+            /**
+             * Change app language
+             * Language changeable from WelcomeScreen -- LanguageFlags.js
+             */
 
-        case STORE_CURRENT_APP_VERSION:
-            return {
-                ...state,
-                appVersion: action.payload
-            };
+            case CHANGE_LANG:
+                draft.lang = action.payload;
 
-        case ON_SEEN_FEATURE_TOUR:
-            return {
-                ...state,
-                appVersion: action.payload,
-                hasSeenFeatureTour: true
-            };
-        case SUBMIT_END:
-            return {
-                ...state,
-                isSubmitting: false
-            };
+                break;
 
-        case SUBMIT_START:
-            return {
-                ...state,
-                isSubmitting: true
-            };
+            /**
+             * Change auth form messages/errors
+             */
 
-        case ACCOUNT_CREATED:
-            // todo - log the user in
-            // redirect them to main screen
-            return {
-                ...state,
-                success: action.payload,
-                //isLoggingIn: !state.isLoggingIn,
-                buttonDisabled: false,
-                isLoggingIn: true,
-                isSubmitting: false,
-                modalUsernameVisible: false
-            };
+            case CHANGE_SERVER_STATUS_TEXT:
+                draft.serverStatusText = action.payload;
+                draft.isSubmitting = false;
 
-        case SERVER_STATUS:
-            return {
-                ...state,
-                serverStatusText: action.payload,
-                isSubmitting: false
-            };
+                break;
 
-        /**
-         * The user wants to log out. JWT has been deleted.
-         */
-        case LOGOUT:
+            // FIXME: unused reducer/action
+
+            case STORE_CURRENT_APP_VERSION:
+                return {
+                    ...state,
+                    appVersion: action.payload
+                };
+
+            // FIXME: unused reducer/action
+
+            case ON_SEEN_FEATURE_TOUR:
+                return {
+                    ...state,
+                    appVersion: action.payload,
+                    hasSeenFeatureTour: true
+                };
+
+            /**
+             * Auth API request /  form submit end
+             * makes submit button active again
+             */
+
+            case SUBMIT_END:
+                draft.isSubmitting = false;
+
+                break;
+
+            /**
+             * Auth API request /  form submit start
+             * makes submit button inactive
+             */
+
+            case SUBMIT_START:
+                draft.isSubmitting = true;
+
+                break;
+
+            case ACCOUNT_CREATED:
+                draft.success = action.payload;
+                draft.buttonDisabled = false;
+                draft.isLoggingIn = true;
+                draft.isSubmitting = false;
+                draft.modalUsernameVisible = false;
+
+                break;
+
+            /**
+             * Logout user
+             * Reset app language to en
+             * reset state to initial
+             * remove jwt token
+             */
+            // TODO: Test This
+            case LOGOUT:
+                return INITIAL_STATE;
             // we need to init lang again
-            if (!lang) lang = 'en';
+            // if (!lang) lang = 'en';
 
-            return {
-                state: INITIAL_STATE,
-                lang: lang,
-                token: null
-            };
+            // return {
+            //     state: INITIAL_STATE,
+            //     lang: lang,
+            //     token: null
+            // };
 
-        /**
-         * There was a problem during login
-         */
-        case LOGIN_FAIL:
-            return {
-                ...state,
-                password: '',
-                token: null,
-                serverStatusText: action.payload,
-                isSubmitting: false
-            };
+            /**
+             * There was a problem during login
+             */
 
-        case LOGIN_OR_SIGNUP_RESET:
-            // console.log('Reducer - login or signup reset.');
-            return {
-                ...state,
-                email: '',
-                password: '',
-                emailError: '',
-                passwordError: '',
-                buttonPressed: false,
-                buttonDisabled: false,
-                success: '',
-                isSubmitting: false,
-                modalUsernameVisible: false,
-                username: '',
-                usernameError: ''
-            };
+            case LOGIN_FAIL:
+                draft.password = '';
+                draft.serverStatusText = action.payload;
+                draft.isSubmitting = false;
 
-        /**
-         * After a successful login
-         */
-        case LOGIN_SUCCESS:
-            return {
-                ...state,
-                token: action.payload,
-                appLoading: !state.appLoading,
-                isSubmitting: false
-            };
+                break;
 
-        case PASSWORD_ERROR:
-            return {
-                ...state,
-                passwordError: action.payload,
-                modalUsernameVisible: false,
-                isSubmitting: false
-            };
+            /**
+             * Resets the auth form and display messages
+             */
+            case LOGIN_OR_SIGNUP_RESET:
+                draft.email = '';
+                draft.password = '';
+                draft.emailError = '';
+                draft.passwordError = '';
+                draft.buttonPressed = false;
+                draft.buttonDisabled = false;
+                draft.success = '';
+                draft.isSubmitting = false;
+                draft.modalUsernameVisible = false;
+                draft.username = '';
+                draft.usernameError = '';
 
-        case TOGGLE_USERNAME_MODAL:
-            return {
-                ...state,
-                modalUsernameVisible: !state.modalUsernameVisible
-            };
+                break;
 
-        /**
-         * When the app loads, we check if the JWT is valid
-         */
-        case TOKEN_IS_VALID:
-            return {
-                ...state,
-                tokenIsValid: action.payload
-            };
+            /**
+             * After a successful login
+             */
+            case LOGIN_SUCCESS:
+                draft.token = action.payload;
+                draft.appLoading = !draft.appLoading;
+                draft.isSubmitting = false;
 
-        case USER_FOUND:
-            let user;
-            if (action.payload === 'string') {
-                user = JSON.parse(action.payload);
-            } else {
-                user = action.payload.userObj;
-            }
-            const level = XPLEVEL.findIndex(xp => xp > user.xp);
-            const xpRequired = XPLEVEL[level] - user.xp;
-            const previousTarget = level > 0 ? XPLEVEL[level - 1] : 0;
-            const targetPercentage =
-                ((user.xp - previousTarget) /
-                    (XPLEVEL[level] - previousTarget)) *
-                100;
-            user.level = level;
-            user.xpRequired = xpRequired;
-            user.targetPercentage = targetPercentage;
-            user.totalTags = user.total_brands + user.total_tags;
-            user.totalLittercoin =
-                (user.littercoin_allowance || 0) + (user.littercoin_owed || 0);
+                break;
 
-            AsyncStorage.setItem('user', JSON.stringify(user));
-            return {
-                ...state,
-                user
-                // buttonDisabled: true
-            };
+            // FIXME: Remove Unused reducer
+            case PASSWORD_ERROR:
+                return {
+                    ...state,
+                    passwordError: action.payload,
+                    modalUsernameVisible: false,
+                    isSubmitting: false
+                };
 
-        case UPDATE_USER_OBJECT:
-            const newUser = Object.assign({}, action.payload);
+            // FIXME: unused reducer/action
+            case TOGGLE_USERNAME_MODAL:
+                return {
+                    ...state,
+                    modalUsernameVisible: !state.modalUsernameVisible
+                };
 
-            return {
-                ...state,
-                user: newUser
-            };
+            /**
+             * When the app loads, we check if the JWT is valid
+             */
+            case TOKEN_IS_VALID:
+                draft.tokenIsValid = action.payload;
 
-        /**
-         * Todo - check, is this immutable?
-         */
-        case USERNAME_CHANGED:
-            const username = action.payload;
+                break;
 
-            return {
-                ...state,
-                username: username,
-                usernameError: ''
-            };
+            /**
+             * If user logged in
+             * process user data and calculate
+             * user level -- based on user xp breakdown from ../screens/pages/data/xpLevel
+             * targetPercentage -- percentage completed to reach next level from prev level xp
+             * totalTags added by user
+             * totalLittercoin of user -- littercoin_allowance + littercoin_owed
+             */
 
-        case USERNAME_ERROR:
-            return {
-                ...state,
-                usernameError: action.payload
-            };
+            case USER_FOUND:
+                let user = action.payload.userObj;
 
-        default:
-            return state;
-    }
+                const level = XPLEVEL.findIndex(xp => xp > user.xp);
+                const xpRequired = XPLEVEL[level] - user.xp;
+                const previousTarget = level > 0 ? XPLEVEL[level - 1] : 0;
+                const targetPercentage =
+                    ((user.xp - previousTarget) /
+                        (XPLEVEL[level] - previousTarget)) *
+                    100;
+
+                user = {
+                    ...user,
+                    level: level,
+                    xpRequired: xpRequired,
+                    targetPercentage: targetPercentage,
+                    totalTags: user.total_tags,
+                    totalLittercoin:
+                        (user.littercoin_allowance || 0) +
+                        (user.littercoin_owed || 0)
+                };
+
+                AsyncStorage.setItem('user', JSON.stringify(user));
+
+                draft.user = user;
+
+                break;
+
+            /**
+             * Update user object after userdata changed from settings
+             */
+            case UPDATE_USER_OBJECT:
+                draft.user = action.payload;
+
+                return;
+
+            // FIXME: unused reducer/action
+
+            case USERNAME_CHANGED:
+                const username = action.payload;
+
+                return {
+                    ...state,
+                    username: username,
+                    usernameError: ''
+                };
+
+            // FIXME: unused reducer
+            case USERNAME_ERROR:
+                return {
+                    ...state,
+                    usernameError: action.payload
+                };
+
+            default:
+                return draft;
+        }
+    });
 }
