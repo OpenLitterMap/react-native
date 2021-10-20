@@ -40,6 +40,7 @@ class GlobalDataScreen extends Component {
             });
         });
 
+        this.getDataFormStorage();
         this.props.getStats();
     }
 
