@@ -2,22 +2,15 @@ import produce from 'immer';
 import AsyncStorage from '@react-native-community/async-storage';
 import {
     ACCOUNT_CREATED,
-    BAD_PASSWORD,
     CHANGE_LANG,
     CHANGE_SERVER_STATUS_TEXT,
-    PASSWORD_ERROR,
     LOGIN_OR_SIGNUP_RESET,
     LOGIN_SUCCESS,
     LOGIN_FAIL,
     LOGOUT,
-    TOGGLE_USERNAME_MODAL,
     TOKEN_IS_VALID,
-    STORE_CURRENT_APP_VERSION,
     UPDATE_USER_OBJECT,
-    USERNAME_CHANGED,
     USER_FOUND,
-    USERNAME_ERROR,
-    ON_SEEN_FEATURE_TOUR,
     SUBMIT_END,
     SUBMIT_START
 } from '../actions/types';
@@ -36,7 +29,6 @@ const INITIAL_STATE = {
     isLoggingIn: false,
     isSubmitting: false,
     loading: false,
-    modalUsernameVisible: false,
     password: '',
     success: '',
     token: null,
@@ -50,18 +42,6 @@ const INITIAL_STATE = {
 export default function(state = INITIAL_STATE, action) {
     return produce(state, draft => {
         switch (action.type) {
-            /**
-             * Status 400 : The user entered the wrong password
-             */
-            // TODO: User LOGIN_FAIL reducer and remove this
-            case BAD_PASSWORD:
-                draft.password = '';
-                draft.serverStatusText =
-                    'Your password is incorrect. Please try again or reset it.';
-                draft.isSubmitting = false;
-
-                break;
-
             /**
              * Change app language
              * Language changeable from WelcomeScreen -- LanguageFlags.js
@@ -81,23 +61,6 @@ export default function(state = INITIAL_STATE, action) {
                 draft.isSubmitting = false;
 
                 break;
-
-            // FIXME: unused reducer/action
-
-            case STORE_CURRENT_APP_VERSION:
-                return {
-                    ...state,
-                    appVersion: action.payload
-                };
-
-            // FIXME: unused reducer/action
-
-            case ON_SEEN_FEATURE_TOUR:
-                return {
-                    ...state,
-                    appVersion: action.payload,
-                    hasSeenFeatureTour: true
-                };
 
             /**
              * Auth API request /  form submit end
@@ -124,30 +87,22 @@ export default function(state = INITIAL_STATE, action) {
                 draft.buttonDisabled = false;
                 draft.isLoggingIn = true;
                 draft.isSubmitting = false;
-                draft.modalUsernameVisible = false;
 
                 break;
 
             /**
              * Logout user
-             * Reset app language to en
              * reset state to initial
-             * remove jwt token
+             
              */
-            // TODO: Test This
+
             case LOGOUT:
                 return INITIAL_STATE;
-            // we need to init lang again
-            // if (!lang) lang = 'en';
-
-            // return {
-            //     state: INITIAL_STATE,
-            //     lang: lang,
-            //     token: null
-            // };
 
             /**
              * There was a problem during login
+             * Wrong password
+             * Network/Server error
              */
 
             case LOGIN_FAIL:
@@ -160,16 +115,14 @@ export default function(state = INITIAL_STATE, action) {
             /**
              * Resets the auth form and display messages
              */
+
             case LOGIN_OR_SIGNUP_RESET:
                 draft.email = '';
                 draft.password = '';
-                draft.emailError = '';
-                draft.passwordError = '';
                 draft.buttonPressed = false;
                 draft.buttonDisabled = false;
                 draft.success = '';
                 draft.isSubmitting = false;
-                draft.modalUsernameVisible = false;
                 draft.username = '';
                 draft.usernameError = '';
 
@@ -178,6 +131,7 @@ export default function(state = INITIAL_STATE, action) {
             /**
              * After a successful login
              */
+
             case LOGIN_SUCCESS:
                 draft.token = action.payload;
                 draft.appLoading = !draft.appLoading;
@@ -185,25 +139,10 @@ export default function(state = INITIAL_STATE, action) {
 
                 break;
 
-            // FIXME: Remove Unused reducer
-            case PASSWORD_ERROR:
-                return {
-                    ...state,
-                    passwordError: action.payload,
-                    modalUsernameVisible: false,
-                    isSubmitting: false
-                };
-
-            // FIXME: unused reducer/action
-            case TOGGLE_USERNAME_MODAL:
-                return {
-                    ...state,
-                    modalUsernameVisible: !state.modalUsernameVisible
-                };
-
             /**
              * When the app loads, we check if the JWT is valid
              */
+
             case TOKEN_IS_VALID:
                 draft.tokenIsValid = action.payload;
 
@@ -249,28 +188,11 @@ export default function(state = INITIAL_STATE, action) {
             /**
              * Update user object after userdata changed from settings
              */
+
             case UPDATE_USER_OBJECT:
                 draft.user = action.payload;
 
-                return;
-
-            // FIXME: unused reducer/action
-
-            case USERNAME_CHANGED:
-                const username = action.payload;
-
-                return {
-                    ...state,
-                    username: username,
-                    usernameError: ''
-                };
-
-            // FIXME: unused reducer
-            case USERNAME_ERROR:
-                return {
-                    ...state,
-                    usernameError: action.payload
-                };
+                break;
 
             default:
                 return draft;
