@@ -1,14 +1,11 @@
 import React from 'react';
 import {
     CLOSE_SECOND_SETTING_MODAL,
-    SAVE_SETTING,
     SETTINGS_INIT,
     SET_MODEL,
     SETTINGS_UPDATE_STATUS_MESSAGE,
     START_UPDATING_SETTINGS,
     TOGGLE_SETTINGS_MODAL,
-    TOGGLE_SECOND_SETINGS_MODAL,
-    TOGGLE_SETTINGS_SWITCH,
     TOGGLE_SETTINGS_WAIT,
     UPDATE_SETTINGS_PROP,
     UPDATE_USER_OBJECT,
@@ -170,7 +167,14 @@ export const toggleSettingsSwitch = (id, token) => {
 
                 if (response.status === 200) {
                     const key = Object.keys(response.data)[0];
-                    const value = Object.values(response.data)[0];
+                    let value = Object.values(response.data)[0];
+
+                    //  INFO: show_name and show_username have boolean values
+                    //  rest have 0 & 1
+
+                    if (key !== 'show_name' && key !== 'show_username') {
+                        value = value === false ? 0 : 1;
+                    }
 
                     let user = await AsyncStorage.getItem('user');
 
