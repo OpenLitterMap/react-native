@@ -8,9 +8,11 @@ const ProgressCircleCard = ({
     lang,
     level,
     levelPercentage,
+    levelPercentageStart,
     xpRequired,
     totalLittercoin,
-    littercoinPercentage
+    littercoinPercentage,
+    littercoinPercentageStart
 }) => {
     return (
         <View style={styles.container}>
@@ -20,9 +22,10 @@ const ProgressCircleCard = ({
                         isValueDisplayed={false}
                         strokeWidth={10}
                         percentage={levelPercentage}
+                        startPercentage={levelPercentageStart}
                         color="#e268b3"
                         value={levelPercentage}
-                        delay={500}
+                        delay={0}
                         duration={5000}
                         radius={(width - 40) / 4 - 16}
                     />
@@ -33,9 +36,10 @@ const ProgressCircleCard = ({
                         isValueDisplayed={false}
                         strokeWidth={10}
                         percentage={littercoinPercentage}
+                        startPercentage={littercoinPercentageStart}
                         color="#A46EDA"
                         value={littercoinPercentage}
-                        delay={500}
+                        delay={0}
                         duration={5000}
                         radius={(width - 40) / 4}
                     />

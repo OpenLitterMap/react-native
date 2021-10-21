@@ -6,6 +6,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import IconStatsCard from './IconStatsCard';
 
 const StatsGrid = ({ statsData }) => {
+    // console.log(statsData);
     return (
         <View style={styles.statsContainer}>
             <View style={styles.statsRow}>

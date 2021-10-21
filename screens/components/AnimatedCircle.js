@@ -9,6 +9,7 @@ const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
 
 const AnimatedCircle = ({
     percentage = 0,
+    startPercentage = 0,
     radius = 150,
     strokeWidth = 10,
     duration = 500,
@@ -16,6 +17,7 @@ const AnimatedCircle = ({
     delay = 0,
     textColor,
     value = 0,
+    startValue = 0,
     valueSuffix,
     valueStyles,
     max = 100,
@@ -24,8 +26,9 @@ const AnimatedCircle = ({
     taglineStyles,
     isValueDisplayed = true
 }) => {
-    const animated = React.useRef(new Animated.Value(0)).current;
-    const textAnimated = React.useRef(new Animated.Value(0)).current;
+    // console.log({ startPercentage });
+    const animated = React.useRef(new Animated.Value(startPercentage)).current;
+    const textAnimated = React.useRef(new Animated.Value(startValue)).current;
     const circleRef = React.useRef();
     const inputRef = React.useRef();
     const circumference = 2 * Math.PI * radius;
@@ -175,6 +178,7 @@ const AnimatedCircle = ({
 
 AnimatedCircle.proptypes = {
     percentage: PropTypes.number,
+    startPercentage: PropTypes.number,
     radius: PropTypes.number,
     strokeWidth: PropTypes.number,
     duration: PropTypes.number,
@@ -182,6 +186,7 @@ AnimatedCircle.proptypes = {
     delay: PropTypes.number,
     textColor: PropTypes.string,
     value: PropTypes.number,
+    startValue: PropTypes.number,
     valueSuffix: PropTypes.string,
     valueStyles: PropTypes.oneOfType([PropTypes.array, PropTypes.object]),
     tagline: PropTypes.string,
