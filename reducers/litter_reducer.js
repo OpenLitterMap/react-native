@@ -74,7 +74,7 @@ export default function(state = INITIAL_STATE, action) {
              */
             case CHANGE_ITEM:
                 draft.item = action.payload;
-                draft.q = '1';
+                draft.q = 1;
 
                 break;
 
@@ -112,26 +112,9 @@ export default function(state = INITIAL_STATE, action) {
                 break;
 
             // Reset tags to null and close LitterPicker modal
-            // TODO: test this
             case RESET_LITTER_STATE:
                 return INITIAL_STATE;
-                // const category1 = CATEGORIES[0];
-                // const items1 = LITTERKEYS[category1.title];
-                // const item1 = items1[0].key;
 
-                // return Object.assign({}, state, {
-                //     category: category1,
-                //     items: items1,
-                //     item: item1,
-                //     q: '1',
-                //     tags: {},
-                //     switchValue: true,
-                //     totalLitterCount: 0,
-                //     // collectionModalVisible: false,
-                //     tagsModalVisible: false,
-                //     collectionLength: 0,
-                //     hasLitter: false
-                // });
                 break;
 
             /**

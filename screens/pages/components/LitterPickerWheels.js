@@ -6,12 +6,13 @@ import { connect } from 'react-redux';
 
 import DeviceInfo from 'react-native-device-info';
 
-import QUANTITIES from '../data/quantities';
 import * as actions from '../../../actions';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 
+// Creating array of quantities [1 --- 100]
+const QUANTITIES = [...Array(100).keys()].map(i => i + 1);
 class LitterPickerWheels extends PureComponent {
     /**
      *
@@ -67,7 +68,7 @@ class LitterPickerWheels extends PureComponent {
                     selectedValue={this.props.q}
                     onValueChange={q => this.props.changeQ(q)}>
                     {QUANTITIES.map((q, i) => (
-                        <Picker.Item label={q} value={q} key={i} />
+                        <Picker.Item label={q.toString()} value={q} key={i} />
                     ))}
                 </Picker>
             </View>

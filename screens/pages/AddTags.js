@@ -554,7 +554,7 @@ class AddTags extends PureComponent {
         const tag = {
             category: this.props.category.title.toString(),
             title: this.props.item.toString(),
-            quantity: parseInt(this.props.q)
+            quantity: this.props.q
         };
 
         const photosLength = this.props.photos.length;
