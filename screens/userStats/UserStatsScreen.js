@@ -22,7 +22,9 @@ class UserStatsScreen extends Component {
             positionStart: 0,
             totalImagesStart: 0,
             totalTagsStart: 0,
+            levelStart: 0,
             levelPercentageStart: 0,
+            littercoinStart: 0,
             littercoinPercentageStart: 0,
             isLoading: true
         };
@@ -42,7 +44,9 @@ class UserStatsScreen extends Component {
                 position,
                 totalImages,
                 totalTags,
+                level,
                 levelPercentage,
+                littercoin,
                 littercoinPercentage
             } = JSON.parse(previousStats);
             this.setState({
@@ -50,7 +54,9 @@ class UserStatsScreen extends Component {
                 positionStart: position,
                 totalImagesStart: totalImages,
                 totalTagsStart: totalTags,
+                levelStart: level,
                 levelPercentageStart: levelPercentage,
+                littercoinStart: littercoin,
                 littercoinPercentageStart: littercoinPercentage
             });
         }
@@ -66,7 +72,9 @@ class UserStatsScreen extends Component {
             position: user?.position,
             totalImages: user?.total_images || 0,
             totalTags: user?.totalTags,
+            level: user?.level,
             levelPercentage: user?.targetPercentage,
+            littercoin: user?.totalLittercoin,
             littercoinPercentage: user?.total_images % 100
         };
         // INFO: previous stats saved for animation purpose
@@ -157,12 +165,14 @@ class UserStatsScreen extends Component {
                         <ProgressCircleCard
                             lang={lang}
                             level={user?.level}
+                            levelStart={this.state.levelStart}
                             levelPercentage={user?.targetPercentage}
                             levelPercentageStart={
                                 this.state.levelPercentageStart
                             }
                             xpRequired={user?.xpRequired}
                             totalLittercoin={user?.totalLittercoin}
+                            littercoinStart={this.state.littercoinStart}
                             littercoinPercentage={user?.total_images % 100}
                             littercoinPercentageStart={
                                 this.state.littercoinPercentageStart
