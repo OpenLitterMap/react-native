@@ -15,6 +15,7 @@ import DeviceInfo from 'react-native-device-info';
 import { connect } from 'react-redux';
 import * as actions from '../../../actions';
 import { Body, SubTitle } from '../../components';
+import { isGeotagged } from '../../../utils/isGeotagged';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -137,7 +138,7 @@ class UploadImagesGrid extends PureComponent {
      * Render photos taken with the OLM camera
      */
     renderCameraPhoto = ({ item, index }) => {
-        // console.log('renderCameraPhoto', item, index);
+        const itemIsGeotagged = isGeotagged(item);
 
         let width;
         let mgn = 0;
@@ -180,7 +181,7 @@ class UploadImagesGrid extends PureComponent {
                             />
                         </View>
                     )}
-                    {Object.keys(item.tags).length > 0 && (
+                    {item.tags && Object.keys(item.tags).length > 0 && (
                         <View
                             style={{
                                 position: 'absolute',
@@ -194,19 +195,16 @@ class UploadImagesGrid extends PureComponent {
                             />
                         </View>
                     )}
-                    {item.lat !== undefined &&
-                        item.lat !== null &&
-                        item.lon !== undefined &&
-                        item.lon !== null && (
-                            <View
-                                style={{
-                                    position: 'absolute',
-                                    top: 5,
-                                    right: 5
-                                }}>
-                                <Icon name="place" size={28} color="#00aced" />
-                            </View>
-                        )}
+                    {itemIsGeotagged && (
+                        <View
+                            style={{
+                                position: 'absolute',
+                                top: 5,
+                                right: 5
+                            }}>
+                            <Icon name="place" size={28} color="#00aced" />
+                        </View>
+                    )}
                 </View>
             </TouchableWithoutFeedback>
         );
@@ -217,7 +215,7 @@ class UploadImagesGrid extends PureComponent {
      */
     renderGalleryPhoto = ({ item, index }) => {
         // console.log('renderGalleryPhoto', item);
-
+        const itemIsGeotagged = isGeotagged(item);
         let width;
         let mgn = 0;
 
@@ -261,7 +259,7 @@ class UploadImagesGrid extends PureComponent {
                         </View>
                     )}
 
-                    {Object.keys(item.tags).length > 0 && (
+                    {item.tags && Object.keys(item.tags).length > 0 && (
                         <View
                             style={{
                                 position: 'absolute',
@@ -275,19 +273,16 @@ class UploadImagesGrid extends PureComponent {
                             />
                         </View>
                     )}
-                    {item.lat !== undefined &&
-                        item.lat !== null &&
-                        item.lon !== undefined &&
-                        item.lon !== null && (
-                            <View
-                                style={{
-                                    position: 'absolute',
-                                    top: 5,
-                                    right: 5
-                                }}>
-                                <Icon name="place" size={28} color="#00aced" />
-                            </View>
-                        )}
+                    {itemIsGeotagged && (
+                        <View
+                            style={{
+                                position: 'absolute',
+                                top: 5,
+                                right: 5
+                            }}>
+                            <Icon name="place" size={28} color="#00aced" />
+                        </View>
+                    )}
                 </View>
             </TouchableWithoutFeedback>
         );
