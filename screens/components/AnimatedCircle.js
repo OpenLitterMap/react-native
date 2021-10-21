@@ -39,7 +39,7 @@ const AnimatedCircle = ({
         return Animated.timing(animated, {
             delay: delay,
             toValue,
-            duration,
+            duration: startPercentage === percentage ? 0 : duration,
             useNativeDriver: true
             // easing: Easing.out(Easing.ease)
         }).start();
@@ -49,7 +49,7 @@ const AnimatedCircle = ({
         return Animated.timing(textAnimated, {
             delay: delay,
             toValue,
-            duration,
+            duration: startValue === value ? 0 : duration,
             useNativeDriver: true
             // easing: Easing.out(Easing.ease)
         }).start();
