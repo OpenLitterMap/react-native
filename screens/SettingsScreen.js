@@ -215,7 +215,7 @@ class SettingsScreen extends Component {
                 return (
                     <Switch
                         onValueChange={() => this._toggleSwitch(id)}
-                        value={this._getSwitchValue(id)}
+                        value={this._getSwitchValue(id) === 0 ? false : true}
                     />
                 );
             }
@@ -265,27 +265,25 @@ class SettingsScreen extends Component {
     _getSwitchValue(id) {
         switch (id) {
             case 4:
-                return this.props.user.show_name_maps === 0 ? false : true;
+                return this.props.user.show_name_maps;
                 break;
             case 5:
-                return this.props.user.show_username_maps === 0 ? false : true;
+                return this.props.user.show_username_maps;
                 break;
             case 6:
-                return this.props.user.show_name;
+                return this.props.user.show_name === false ? 0 : 1;
                 break;
             case 7:
-                return this.props.user.show_username;
+                return this.props.user.show_username === false ? 0 : 1;
                 break;
             case 8:
-                return this.props.user.show_name_createdby === 0 ? false : true;
+                return this.props.user.show_name_createdby;
                 break;
             case 9:
-                return this.props.user.show_username_createdby === 0
-                    ? false
-                    : true;
+                return this.props.user.show_username_createdby;
                 break;
             case 10:
-                return this.props.user.previous_tag === 0 ? false : true;
+                return this.props.user.previous_tag;
                 break;
             default:
                 break;
