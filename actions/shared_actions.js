@@ -1,7 +1,6 @@
 import React from 'react';
 import {
     CHECK_APP_VERSION,
-    CLOSE_LITTER_MODAL,
     DECREMENT_SELECTED,
     INCREMENT_SELECTED,
     TOGGLE_LITTER,
@@ -40,18 +39,7 @@ export const checkAppVersion = () => {
 };
 
 /**
- * Close the Litter Picker Modal
- */
-export const closeLitterModal = () => {
-    return {
-        type: CLOSE_LITTER_MODAL
-    };
-};
-
-/**
- * Decrement the amount of photos selected
- * also - update random variable to change state
- *      - not sure if this is actually necessary?
+ * Decrement the amount of photos selected for deletion
  */
 export const decrementSelected = () => {
     return {
@@ -60,10 +48,9 @@ export const decrementSelected = () => {
 };
 
 /**
- * Increment the amount of photos selected
- * also - update random variable to change state
- *      - not sure if this is actually necessary?
+ * Increment the amount of photos selected for deletion
  */
+
 export const incrementSelected = () => {
     return {
         type: INCREMENT_SELECTED
@@ -78,6 +65,10 @@ export const toggleLitter = () => {
         type: TOGGLE_LITTER
     };
 };
+
+/**
+ * Toggles thank you modal after image uploaded
+ */
 
 export const toggleThankYou = () => {
     return {

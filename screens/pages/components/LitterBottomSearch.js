@@ -100,7 +100,7 @@ class LitterBottomSearch extends PureComponent {
         this.props.resetLitterTags();
 
         // shared_reducer
-        this.props.closeLitterModal();
+        this.props.toggleLitter();
     }
 
     /**
