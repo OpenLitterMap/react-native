@@ -27,7 +27,8 @@ class GlobalDataScreen extends Component {
             litterStart: 0,
             photosStart: 0,
             littercoinStart: 0,
-            usersStart: 0
+            usersStart: 0,
+            targetPercentageStart: 0
         };
     }
 
@@ -40,6 +41,7 @@ class GlobalDataScreen extends Component {
             });
         });
 
+        this.getDataFormStorage();
         this.props.getStats();
     }
 
@@ -57,13 +59,15 @@ class GlobalDataScreen extends Component {
                 totalLitter,
                 totalPhotos,
                 totalUsers,
+                targetPercentage,
                 totalLittercoin
             } = JSON.parse(stats);
             this.setState({
                 litterStart: totalLitter,
                 photosStart: totalPhotos,
                 usersStart: totalUsers,
-                littercoinStart: totalLittercoin
+                littercoinStart: totalLittercoin,
+                targetPercentageStart: targetPercentage
             });
         }
     }
@@ -178,9 +182,11 @@ class GlobalDataScreen extends Component {
                         <AnimatedCircle
                             strokeWidth={30}
                             percentage={targetPercentage}
+                            startPercentage={this.state.targetPercentageStart}
                             color={`${Colors.accent}`}
                             value={targetPercentage}
-                            delay={500}
+                            startValue={this.state.targetPercentageStart}
+                            delay={0}
                             duration={5000}
                             radius={160}
                             tagline={`${this.props.lang}.stats.next-target`}

@@ -5,6 +5,7 @@ import { Title, Body, Caption } from '../../components';
 
 const ProgressStatCard = ({
     value,
+    startValue,
     title,
     tagline,
     color,
@@ -23,7 +24,8 @@ const ProgressStatCard = ({
             ]}>
             <Title style={{ color }}>
                 <CountUp
-                    isCounting
+                    isCounting={startValue === value ? false : true}
+                    start={startValue}
                     end={value}
                     duration={5}
                     shouldUseToLocaleString
