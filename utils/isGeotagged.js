@@ -1,4 +1,4 @@
-export const isGeotagged = async img => {
+export const isGeotagged = img => {
     const result =
         img.lat !== undefined &&
         img.lat !== null &&
