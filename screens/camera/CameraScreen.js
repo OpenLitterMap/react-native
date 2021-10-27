@@ -271,7 +271,12 @@ class CameraScreen extends React.Component {
                             lat,
                             lon,
                             filename,
-                            date
+                            date,
+                            // presence false --> item NOT picked up
+                            presence:
+                                this.props.user.items_remaining === 0
+                                    ? false
+                                    : true
                         });
 
                         // async-storage photos set

@@ -533,7 +533,7 @@ class HomeScreen extends PureComponent {
                     galleryToUpload.append('lat', img.lat);
                     galleryToUpload.append('lon', img.lon);
                     galleryToUpload.append('date', date);
-                    galleryToUpload.append('presence', img.picked_up);
+                    galleryToUpload.append('presence', img.presence);
                     galleryToUpload.append('model', model);
 
                     const myIndex = this.props.gallery.indexOf(img);

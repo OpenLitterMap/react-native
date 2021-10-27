@@ -31,7 +31,7 @@ export default function(state = INITIAL_STATE, action) {
              */
             case ADD_PHOTO:
                 draft.photos.push({
-                    id: draft.photos.length === 0 ? 0 : draft.photos.length - 1 ,
+                    id: draft.photos.length === 0 ? 0 : draft.photos.length - 1,
                     lat: action.payload.lat,
                     lon: action.payload.lon,
                     uri: action.payload.result.uri,
@@ -40,7 +40,7 @@ export default function(state = INITIAL_STATE, action) {
                     type: 'camera', // Photos taken from the camera
                     selected: false,
                     tags: {},
-                    picked_up: false
+                    presence: action.payload.presence
                 });
 
                 break;
@@ -171,7 +171,7 @@ export default function(state = INITIAL_STATE, action) {
                 draft.progress = action.payload;
 
                 break;
-                
+
             default:
                 return draft;
         }
