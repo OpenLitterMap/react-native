@@ -3,6 +3,7 @@ import {
     Dimensions,
     Keyboard,
     Platform,
+    Pressable,
     SafeAreaView,
     StatusBar,
     TouchableOpacity,
@@ -13,7 +14,7 @@ import { Icon } from 'react-native-elements';
 import Swiper from 'react-native-swiper';
 import { connect } from 'react-redux';
 import * as actions from '../../actions';
-
+import { Body, Colors } from '../components';
 import CATEGORIES from './data/categories';
 
 import LitterCategories from './components/LitterCategories';
@@ -207,8 +208,6 @@ class AddTags extends PureComponent {
      * The LitterPicker component
      */
     render() {
-        console.log('Rendering: AddTags');
-
         const { lang, swiperIndex } = this.props;
 
         // Todo - save these globally
@@ -229,6 +228,27 @@ class AddTags extends PureComponent {
                         lang={this.props.lang}
                         callback={this.categoryClicked}
                     />
+                    <Pressable
+                        style={{
+                            backgroundColor:
+                                this.props.user.items_remaining === 0
+                                    ? Colors.accent
+                                    : Colors.error,
+
+                            paddingVertical: 8,
+                            paddingHorizontal: 16,
+                            position: 'absolute',
+                            right: 20,
+                            borderRadius: 100,
+                            top: SCREEN_HEIGHT * 0.18,
+                            zIndex: 1
+                        }}>
+                        <Body color="white">
+                            {this.props.user.items_remaining === 0
+                                ? 'Litter was picked up'
+                                : 'Litter is still there'}
+                        </Body>
+                    </Pressable>
 
                     {/* Second - Image. Height: 80% */}
                     <Swiper
@@ -754,7 +774,8 @@ const mapStateToProps = state => {
         // webNextImage: state.web.nextImage,
         webImagesCount: state.web.count,
         webPhotos: state.web.photos,
-        webImageSuccess: state.web.webImageSuccess
+        webImageSuccess: state.web.webImageSuccess,
+        user: state.auth.user
     };
 };
 

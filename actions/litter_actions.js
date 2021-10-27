@@ -46,6 +46,12 @@ export const changeQ = q => {
     };
 };
 
+export const changeLitterPickedUp = image => {
+    return {
+        type: CHANGE_PICKED_UP,
+        payload: image
+    };
+};
 /**
  * Change Status of quantity change
  * picker wheel rotated status == True
