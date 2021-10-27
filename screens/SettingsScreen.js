@@ -140,6 +140,15 @@ class SettingsScreen extends Component {
                                                 'settings.show-username-createdby'
                                         }
                                     ]
+                                },
+                                {
+                                    title: 'settings.litter-presence',
+                                    data: [
+                                        {
+                                            id: 11,
+                                            title: 'settings.litter-picked-up'
+                                        }
+                                    ]
                                 }
                                 // Temp commented out. This feature will be fixed in a future release.
                                 // {
@@ -241,8 +250,20 @@ class SettingsScreen extends Component {
             [
                 {
                     text: ok,
-                    onPress: () =>
-                        this.props.toggleSettingsSwitch(id, this.props.token)
+                    onPress: () => {
+                        if (id === 11) {
+                            this.props.saveSettings(
+                                { id: 11, key: 'items_remaining' },
+                                !this.props.user.items_remaining,
+                                this.props.token
+                            );
+                        } else {
+                            this.props.toggleSettingsSwitch(
+                                id,
+                                this.props.token
+                            );
+                        }
+                    }
                 },
                 { text: cancel, onPress: () => console.log('cancel pressed') }
             ],
@@ -284,6 +305,16 @@ class SettingsScreen extends Component {
                 break;
             case 10:
                 return this.props.user.previous_tag;
+                break;
+            case 11:
+                // items_remaining === 0 ---> then litter is picked up
+                // items_remaining === 1 --> litter is not picked up
+                /**
+                 * have this conditional here because the sentence shown is "Litter is picked up"
+                 * where switch onn means items_remaining === 0 i.e items_remaining === false
+                 */
+
+                return this.props.user.items_remaining === 0 ? 1 : 0;
                 break;
             default:
                 break;

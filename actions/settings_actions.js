@@ -53,7 +53,6 @@ export const saveSettings = (data, value, token) => {
         dispatch({
             type: START_UPDATING_SETTINGS
         });
-
         let key = '';
         switch (data.key) {
             case 'name':
@@ -64,6 +63,9 @@ export const saveSettings = (data, value, token) => {
                 break;
             case 'email':
                 key = 'Email';
+                break;
+            case 'items_remaining':
+                key = 'items_remaining';
                 break;
         }
 
@@ -87,7 +89,11 @@ export const saveSettings = (data, value, token) => {
                     user = JSON.parse(user);
 
                     // update user object
-                    user[data.key] = value;
+                    if (data.key === 'items_remaining') {
+                        user[data.key] = value === false ? 0 : 1;
+                    } else {
+                        user[data.key] = value;
+                    }
                     // save updated user data
                     AsyncStorage.setItem('user', JSON.stringify(user));
 

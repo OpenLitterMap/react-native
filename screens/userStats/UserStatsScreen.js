@@ -16,7 +16,7 @@ import { ProgressCircleCard } from './userComponents';
 class UserStatsScreen extends Component {
     constructor(props) {
         super(props);
-        // console.log(JSON.stringify(this.props.user, null, '\t'));
+
         this.state = {
             xpStart: 0,
             positionStart: 0,
