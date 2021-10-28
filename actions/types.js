@@ -37,6 +37,9 @@ export const TOKEN_IS_VALID = 'TOKEN_IS_VALID';
 export const USERNAME_CHANGED = 'USERNAME_CHANGED';
 export const USERNAME_ERROR = 'USERNAME_ERROR';
 
+// Images - Single array for Photos/Gallery/Web
+export const ADD_IMAGE = 'ADD_IMAGE';
+
 // Photos - Taken from OLM Camera
 export const ADD_PHOTO = 'ADD_PHOTO';
 export const ADD_TAGS_TO_CAMERA_PHOTO = 'ADD_TAGS_TO_CAMERA_PHOTO';

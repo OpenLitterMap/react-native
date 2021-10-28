@@ -266,13 +266,18 @@ class CameraScreen extends React.Component {
                         // Android...
 
                         // photo_action.js, photos_reducer
-                        this.props.addPhoto({
-                            result,
-                            lat,
-                            lon,
-                            filename,
-                            date
-                        });
+                        this.props.addImage(
+                            [
+                                {
+                                    result,
+                                    lat,
+                                    lon,
+                                    filename,
+                                    date
+                                }
+                            ],
+                            'CAMERA'
+                        );
 
                         // async-storage photos set
                         AsyncStorage.setItem(
