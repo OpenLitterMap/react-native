@@ -11,21 +11,23 @@ export default function(state = INITIAL_STATE, action) {
         switch (action.type) {
             //
             case ADD_IMAGE:
-                // console.log(JSON.stringify(action.payload, null, 2));
-                action.payload.images.map(image => {
-                    draft.images.push({
-                        id: draft.images.length,
-                        lat: image.lat,
-                        lon: image.lon,
-                        uri: image.result.uri,
-                        filename: image.filename,
-                        date: image.date,
-                        type: action.payload.type,
-                        selected: false,
-                        tags: {},
-                        picked_up: false
+                console.log(JSON.stringify(action.payload, null, 2));
+                const images = action.payload.images;
+                images &&
+                    images.map(image => {
+                        draft.images.push({
+                            id: draft.images.length,
+                            lat: image.lat,
+                            lon: image.lon,
+                            uri: image.uri,
+                            filename: image.filename,
+                            date: image.date,
+                            type: action.payload.type,
+                            selected: false,
+                            tags: {},
+                            picked_up: false
+                        });
                     });
-                });
 
                 break;
 

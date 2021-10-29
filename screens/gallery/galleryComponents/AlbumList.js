@@ -44,7 +44,8 @@ const mapStateToProps = state => {
     return {
         imagesLoading: state.gallery.imagesLoading,
         gallery: state.gallery.gallery,
-        geotaggedImages: state.gallery.geotaggedImages
+        geotaggedImages: state.gallery.geotaggedImages,
+        images: state.images.images
     };
 };
 

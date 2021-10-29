@@ -25,7 +25,6 @@ const INITIAL_STATE = {
 export default function(state = INITIAL_STATE, action) {
     return produce(state, draft => {
         switch (action.type) {
-
             /**
              * Add or update tags object on a gallery image
              */
@@ -124,7 +123,8 @@ export default function(state = INITIAL_STATE, action) {
                 // if only one tag in payload category delete the category also
                 // else delete only tag
                 if (
-                    Object.keys(photo.tags[action.payload.category]).length === 1
+                    Object.keys(photo.tags[action.payload.category]).length ===
+                    1
                 ) {
                     delete photo.tags[action.payload.category];
                 } else {
@@ -169,7 +169,7 @@ export default function(state = INITIAL_STATE, action) {
                 draft.camerarollImageFetched = true;
                 draft.lastFetchTime = Math.floor(new Date().getTime());
                 draft.imagesLoading = false;
-                
+
                 break;
 
             default:

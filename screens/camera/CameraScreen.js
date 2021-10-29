@@ -269,7 +269,7 @@ class CameraScreen extends React.Component {
                         this.props.addImage(
                             [
                                 {
-                                    result,
+                                    uri: result.uri,
                                     lat,
                                     lon,
                                     filename,

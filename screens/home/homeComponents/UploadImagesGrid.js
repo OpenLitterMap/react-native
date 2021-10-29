@@ -20,51 +20,6 @@ import { isGeotagged } from '../../../utils/isGeotagged';
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 class UploadImagesGrid extends PureComponent {
-    /**
-     * Camera photo data
-     *
-     * - id
-     * - date
-     * - filename
-     * - lat
-     * - lon
-     * - presence
-     * - selected
-     * - tags
-     * - type
-     * - url
-     */
-
-    /**
-     * Gallery photo data
-     *
-     * - id
-     * - filename
-     * - height
-     * - width
-     * - uri
-     * - lat
-     * - lon
-     * - pickedup
-     * - selected
-     * - tags
-     * - timestamp
-     * - type
-     */
-
-    /**
-     * Web photo data
-     *
-     * todo
-     */
-
-    /**
-     * A photo uploaded to web needs to be tagged
-     *
-     * Can only be pressed when the user is not selecting images to delete
-     *
-     * Load the first web image
-     */
     _webImagePressed() {
         if (!this.props.isSelecting) {
             // shared.js
@@ -140,29 +95,21 @@ class UploadImagesGrid extends PureComponent {
     renderCameraPhoto = ({ item, index }) => {
         const itemIsGeotagged = isGeotagged(item);
 
-        let width;
-        let mgn = 0;
-
-        // middle image
-        if (index % 3 === 1) {
-            width = SCREEN_WIDTH / 3.1;
-            mgn = SCREEN_WIDTH * 0.005;
-        } // left & right images
-        else {
-            width = SCREEN_WIDTH / 3;
-        }
-
         return (
             <TouchableWithoutFeedback
                 onPress={this.cameraPhotoPressed.bind(this, index)}>
-                <View>
+                <View
+                    style={{
+                        width: SCREEN_WIDTH / 3 - 2,
+                        height: SCREEN_WIDTH / 3 - 2,
+                        marginHorizontal: 0.5,
+                        marginTop: 1
+                    }}>
                     <Image
                         style={{
-                            height: 135,
-                            width: width,
-                            marginLeft: mgn,
-                            marginRight: mgn,
-                            paddingBottom: SCREEN_HEIGHT * 0.01
+                            width: SCREEN_WIDTH / 3 - 2,
+                            height: SCREEN_WIDTH / 3 - 2
+                            // margin: 0.5
                         }}
                         source={{ uri: item.uri }}
                         resizeMode="cover"
@@ -181,84 +128,6 @@ class UploadImagesGrid extends PureComponent {
                             />
                         </View>
                     )}
-                    {item.tags && Object.keys(item.tags).length > 0 && (
-                        <View
-                            style={{
-                                position: 'absolute',
-                                left: 5,
-                                bottom: 0
-                            }}>
-                            <Icon
-                                name="attachment"
-                                size={SCREEN_HEIGHT * 0.04}
-                                color="#00aced"
-                            />
-                        </View>
-                    )}
-                    {itemIsGeotagged && (
-                        <View
-                            style={{
-                                position: 'absolute',
-                                top: 5,
-                                right: 5
-                            }}>
-                            <Icon name="place" size={28} color="#00aced" />
-                        </View>
-                    )}
-                </View>
-            </TouchableWithoutFeedback>
-        );
-    };
-
-    /**
-     * Render photos selected from the users geotagged album
-     */
-    renderGalleryPhoto = ({ item, index }) => {
-        // console.log('renderGalleryPhoto', item);
-        const itemIsGeotagged = isGeotagged(item);
-        let width;
-        let mgn = 0;
-
-        // middle image
-        if (index % 3 === 1) {
-            width = SCREEN_WIDTH / 3.1;
-            mgn = 2;
-        }
-        // left & right image
-        else {
-            width = SCREEN_WIDTH / 3;
-        }
-
-        return (
-            <TouchableWithoutFeedback
-                onPress={this.galleryPhotoPressed.bind(this, index)}>
-                <View>
-                    <Image
-                        style={{
-                            height: 135,
-                            width: width,
-                            marginLeft: mgn,
-                            marginRight: mgn
-                        }}
-                        source={{ uri: item.uri }}
-                        resizeMode="cover"
-                    />
-
-                    {item.selected && (
-                        <View
-                            style={{
-                                position: 'absolute',
-                                right: 5,
-                                bottom: 5
-                            }}>
-                            <Icon
-                                name="check-circle"
-                                size={SCREEN_HEIGHT * 0.03}
-                                color="#00aced"
-                            />
-                        </View>
-                    )}
-
                     {item.tags && Object.keys(item.tags).length > 0 && (
                         <View
                             style={{
@@ -301,12 +170,6 @@ class UploadImagesGrid extends PureComponent {
             />
         );
     };
-
-    _marginWhenPhotos() {
-        if (this.props.photos.length > 0) {
-            return styles.smallTopMargin;
-        }
-    }
 
     /**
      * Style of webText tag
@@ -377,8 +240,12 @@ class UploadImagesGrid extends PureComponent {
         // Photos are taken the in-app camera
         // Gallery from albums
         return (
-            <View style={this._marginWhenPhotos()}>
-                {this.props.webPhotos.length > 0 && (
+            <View
+                style={{
+                    paddingTop: 1,
+                    paddingHorizontal: 0.5
+                }}>
+                {/* {this.props.webPhotos.length > 0 && (
                     <View style={styles.webImageContainer}>
                         <TouchableWithoutFeedback
                             onPress={this._webImagePressed.bind(this)}>
@@ -403,7 +270,7 @@ class UploadImagesGrid extends PureComponent {
                             </View>
                         </View>
                     </View>
-                )}
+                )} */}
 
                 {this.props.photos && (
                     <FlatList
@@ -412,21 +279,6 @@ class UploadImagesGrid extends PureComponent {
                         keyExtractor={(item, index) => item + index}
                         numColumns={3}
                         renderItem={this.renderCameraPhoto}
-                        ItemSeparatorComponent={this.renderSeparator}
-                        keyboardShouldPersistTaps="handled"
-                    />
-                )}
-
-                {/* Empty space between camera & gallery photos */}
-                <View style={{ height: SCREEN_HEIGHT * 0.003 }} />
-
-                {this.props.gallery && (
-                    <FlatList
-                        data={this.props.gallery}
-                        extraData={this.props.uniqueValue}
-                        keyExtractor={(item, index) => item + index}
-                        numColumns={3}
-                        renderItem={this.renderGalleryPhoto}
                         ItemSeparatorComponent={this.renderSeparator}
                         keyboardShouldPersistTaps="handled"
                     />
@@ -449,7 +301,7 @@ const styles = {
         paddingTop: SCREEN_WIDTH * 0.01
     },
     smallTopMargin: {
-        marginTop: SCREEN_HEIGHT * 0.003
+        marginTop: 1
     },
     webImage: {
         width: SCREEN_WIDTH / 3,

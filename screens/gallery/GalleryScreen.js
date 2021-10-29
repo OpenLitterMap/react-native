@@ -109,7 +109,7 @@ class GalleryScreen extends Component {
             (a, b) => a.id - b.id
         );
 
-        this.props.photosFromGallery(sortedArray);
+        this.props.addImage(sortedArray);
 
         AsyncStorage.setItem(
             'openlittermap-gallery',

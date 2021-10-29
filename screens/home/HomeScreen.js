@@ -63,6 +63,9 @@ class HomeScreen extends PureComponent {
 
         // settings_actions, settings_reducer
         this.props.setModel(model);
+
+        // TODO: REMOVE THIS LOG
+        console.log(this.props.images);
     }
 
     /**
@@ -232,7 +235,7 @@ class HomeScreen extends PureComponent {
 
                     <UploadImagesGrid
                         gallery={this.props.gallery}
-                        photos={this.props.photos}
+                        photos={this.props.images}
                         lang={this.props.lang}
                         uniqueValue={this.props.uniqueValue}
                         isSelecting={this.props.isSelecting}
@@ -840,7 +843,9 @@ const mapStateToProps = state => {
         //webNextImage: state.web.nextImage
         webPhotos: state.web.photos,
         totalWebImagesUpdated: state.web.totalWebImagesUpdated,
-        appVersion: state.shared.appVersion
+        appVersion: state.shared.appVersion,
+        // new image reducer
+        images: state.images.images
     };
 };
 
