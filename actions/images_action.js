@@ -1,6 +1,7 @@
 import {
     ADD_IMAGE,
     DECREMENT_SELECTED,
+    DELETE_IMAGE,
     DELETE_SELECTED_IMAGES,
     DESELECT_ALL_IMAGES,
     INCREMENT_SELECTED,
@@ -28,6 +29,18 @@ export const addImage = (images, type) => {
 export const decrementSelected = () => {
     return {
         type: DECREMENT_SELECTED
+    };
+};
+
+/**
+ * delete image by id
+ * @param {number} id
+ */
+
+export const deleteImage = id => {
+    return {
+        type: DELETE_IMAGE,
+        payload: id
     };
 };
 

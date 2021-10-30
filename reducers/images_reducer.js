@@ -3,6 +3,7 @@ import produce from 'immer';
 import {
     ADD_IMAGE,
     DECREMENT_SELECTED,
+    DELETE_IMAGE,
     DELETE_SELECTED_IMAGES,
     DESELECT_ALL_IMAGES,
     INCREMENT_SELECTED,
@@ -48,6 +49,17 @@ export default function(state = INITIAL_STATE, action) {
 
                 break;
 
+            /**
+             * delete image by id
+             *
+             * here id  ===  index
+             */
+
+            case DELETE_IMAGE:
+                console.log('================');
+                console.log(action.payload);
+                draft.images.splice(action.payload, 1);
+                break;
             /**
              * Delete selected images -- all images with property selected set to true
              */

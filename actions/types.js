@@ -40,6 +40,7 @@ export const USERNAME_ERROR = 'USERNAME_ERROR';
 // Images - Single array for Photos/Gallery/Web
 export const ADD_IMAGE = 'ADD_IMAGE';
 export const DECREMENT_SELECTED = 'DECREMENT_SELECTED';
+export const DELETE_IMAGE = 'DELETE_IMAGE';
 export const DELETE_SELECTED_IMAGES = 'DELETE_SELECTED_IMAGES';
 export const DESELECT_ALL_IMAGES = 'DESELECT_ALL_IMAGES';
 export const INCREMENT_SELECTED = 'INCREMENT_SELECTED';

@@ -111,7 +111,6 @@ class LitterBottomSearch extends PureComponent {
      */
     deleteImage() {
         const currentIndex = this.props.swiperIndex;
-        const { photosLength, galleryLength, webLength } = this.props;
 
         Alert.alert(
             'Alert',
@@ -120,49 +119,14 @@ class LitterBottomSearch extends PureComponent {
                 {
                     text: 'OK',
                     onPress: async () => {
-                        this.props.swiperIndexChanged(
-                            currentIndex > 0 ? currentIndex - 1 : 0
-                        );
-                        if (currentIndex < photosLength) {
-                            this.props.deleteSelectedPhoto(
-                                currentIndex > 0 ? currentIndex - 1 : 0
-                            );
-                        } else if (
-                            currentIndex <
-                            galleryLength + photosLength
-                        ) {
-                            this.props.deleteSelectedGallery(
-                                currentIndex - photosLength
-                            );
-                        } else if (
-                            currentIndex <
-                            photosLength + galleryLength + webLength
-                        ) {
-                            // web_actions delete web image
-                            await this.props.deleteSelectedWebImages(
-                                this.props.token,
-                                this.props.webPhotos[
-                                    currentIndex - photosLength - galleryLength
-                                ].id
-                            );
+                        // TODO: delete web image
+                        this.props.deleteImage(currentIndex);
+
+                        if (currentIndex === 0) {
+                            this.closeLitterPicker();
                         } else {
-                            console.log('problem @ deleteImage');
-
-                            return {};
+                            this.props.swiperIndexChanged(currentIndex - 1);
                         }
-
-                        // async-storage photos & gallery set
-                        setTimeout(() => {
-                            AsyncStorage.setItem(
-                                'openlittermap-photos',
-                                JSON.stringify(this.props.photos)
-                            );
-                            AsyncStorage.setItem(
-                                'openlittermap-gallery',
-                                JSON.stringify(this.props.gallery)
-                            );
-                        }, 500);
-                        this.closeLitterPicker();
                     }
                 },
                 {

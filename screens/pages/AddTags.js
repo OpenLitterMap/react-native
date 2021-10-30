@@ -207,15 +207,13 @@ class AddTags extends PureComponent {
      * The LitterPicker component
      */
     render() {
-        console.log('Rendering: AddTags');
-
         const { lang, swiperIndex } = this.props;
 
         // Todo - save these globally
         const photosLength = this.props.photos.length;
         const galleryLength = this.props.gallery.length;
         const webLength = this.props.webPhotos.length;
-        const IMAGES_COUNT = photosLength + galleryLength + webLength;
+        const IMAGES_COUNT = this.props.images.length;
 
         return (
             <View style={{ flex: 1 }}>
@@ -524,24 +522,15 @@ class AddTags extends PureComponent {
     _renderLitterImage = () => {
         console.log('renderLitterImage index:', this.props.swiperIndex);
 
-        // Put all the data we want to display into an array
-        const photos = [].concat(
-            this.props.photos,
-            this.props.gallery,
-            this.props.webPhotos
-        );
-
         // Return an array of all photos
-        return photos.map((photo, index) => {
+        return this.props.images.map((image, index) => {
             // Only render one image
             if (index === this.props.swiperIndex) {
-                return (
-                    <LitterImage key={photos.length} photoSelected={photo} />
-                );
+                return <LitterImage key={image.id} photoSelected={image} />;
             }
 
             // Otherwise, just return an empty view
-            return <View key={photos.length} />;
+            return <View key={image.id} />;
         });
     };
 
@@ -754,7 +743,8 @@ const mapStateToProps = state => {
         // webNextImage: state.web.nextImage,
         webImagesCount: state.web.count,
         webPhotos: state.web.photos,
-        webImageSuccess: state.web.webImageSuccess
+        webImageSuccess: state.web.webImageSuccess,
+        images: state.images.images
     };
 };
 
