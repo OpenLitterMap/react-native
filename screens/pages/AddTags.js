@@ -42,7 +42,6 @@ class AddTags extends PureComponent {
             height: 0
         };
 
-        this._checkForPhotos = this._checkForPhotos.bind(this);
         this.closeKeyboardAndroid = this.closeKeyboardAndroid.bind(this);
     }
 
@@ -243,7 +242,7 @@ class AddTags extends PureComponent {
 
                     {/* Third - Tags. position: absolute */}
                     <LitterTags
-                        tags={this.getTags()}
+                        tags={this.props.images[this.props.swiperIndex]?.tags}
                         previousTags={this.props.previousTags}
                         positions={this.props.positions}
                         item={this.props.item}
@@ -291,7 +290,7 @@ class AddTags extends PureComponent {
                             <TouchableOpacity
                                 onPress={this.addTag.bind(this)}
                                 style={styles.addTagButtonOuter}
-                                disabled={this._checkForPhotos()}>
+                                disabled={this.props.images.length === 0}>
                                 <View style={styles.addTagButtonInner}>
                                     <Icon
                                         name="add"
@@ -338,17 +337,6 @@ class AddTags extends PureComponent {
                 </View>
                 <SafeAreaView style={{ flex: 0 }} />
             </View>
-        );
-    }
-
-    /**
-     * Return True or False
-     */
-    _checkForPhotos() {
-        return (
-            this.props.gallery.length === 0 &&
-            this.props.photos.length === 0 &&
-            this.props.webImagesCount === 0
         );
     }
 
@@ -546,38 +534,15 @@ class AddTags extends PureComponent {
             quantity: this.props.q
         };
 
-        const photosLength = this.props.photos.length;
-        const galleryLength = this.props.gallery.length;
-        const webLength = this.props.webPhotos.length;
-
         // currentGlobalIndex
         const currentIndex = this.props.swiperIndex;
 
-        // Add tag to image
-        if (currentIndex < photosLength) {
-            // photo_actions
-            this.props.addTagsToCameraPhoto({
-                tag,
-                currentIndex,
-                quantityChanged: this.props.quantityChanged
-            });
-        } else if (currentIndex < photosLength + galleryLength) {
-            // gallery_actions
-            this.props.addTagsToGalleryImage({
-                tag,
-                currentIndex: currentIndex - photosLength,
-                quantityChanged: this.props.quantityChanged
-            });
-        } else if (currentIndex < photosLength + galleryLength + webLength) {
-            // web_actions
-            this.props.addTagsToWebImage({
-                tag,
-                currentIndex: currentIndex - photosLength - galleryLength,
-                quantityChanged: this.props.quantityChanged
-            });
-        } else {
-            console.log('problem@addTag');
-        }
+        this.props.addTagsToImages({
+            tag,
+            currentIndex,
+            quantityChanged: this.props.quantityChanged
+        });
+
         this.props.changeQuantiyStatus(false);
     }
 }

@@ -44,6 +44,7 @@ class LitterBottomSearch extends PureComponent {
      * A tag has been selected
      */
     addTag(tag) {
+        console.log(tag);
         // update selected tag to execute scrollTo
         this.props.changeItem(tag.key);
 
@@ -59,28 +60,11 @@ class LitterBottomSearch extends PureComponent {
         // currentGlobalIndex
         const currentIndex = this.props.swiperIndex;
 
-        // Add tag to image
-        if (currentIndex < photosLength) {
-            // photo_actions
-            this.props.addTagsToCameraPhoto({
-                tag: newTag,
-                currentIndex
-            });
-        } else if (currentIndex < photosLength + galleryLength) {
-            // gallery_actions
-            this.props.addTagsToGalleryImage({
-                tag: newTag,
-                currentIndex: currentIndex - photosLength
-            });
-        } else if (currentIndex < photosLength + galleryLength + webLength) {
-            // web_actions
-            this.props.addTagsToWebImage({
-                tag: newTag,
-                currentIndex: currentIndex - photosLength - galleryLength
-            });
-        } else {
-            console.log('problem@addTag');
-        }
+        this.props.addTagsToImages({
+            tag: newTag,
+            currentIndex
+        });
+
         // clears text filed after one tag is selected
         this.setState({ text: '' });
     }

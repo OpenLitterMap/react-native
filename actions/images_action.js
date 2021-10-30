@@ -1,5 +1,6 @@
 import {
     ADD_IMAGE,
+    ADD_TAGS_TO_IMAGE,
     DECREMENT_SELECTED,
     DELETE_IMAGE,
     DELETE_SELECTED_IMAGES,
@@ -20,6 +21,17 @@ export const addImage = (images, type) => {
     return {
         type: ADD_IMAGE,
         payload: { images, type }
+    };
+};
+
+/**
+ * Add tags to images
+ */
+
+export const addTagsToImages = payload => {
+    return {
+        type: ADD_TAGS_TO_IMAGE,
+        payload: payload
     };
 };
 

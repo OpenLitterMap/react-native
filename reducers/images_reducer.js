@@ -7,6 +7,7 @@ import {
     DELETE_SELECTED_IMAGES,
     DESELECT_ALL_IMAGES,
     INCREMENT_SELECTED,
+    ADD_TAGS_TO_IMAGE,
     TOGGLE_SELECTING,
     TOGGLE_SELECTED_IMAGES
 } from '../actions/types';
@@ -42,6 +43,47 @@ export default function(state = INITIAL_STATE, action) {
                 break;
 
             /**
+             * Add or update tags object on a gallery image
+             */
+
+            case ADD_TAGS_TO_IMAGE:
+                let image = draft.images[action.payload.currentIndex];
+                let newTags = image.tags;
+
+                let quantity = 1;
+                // if quantity exists, assign it
+                if (action.payload.tag.hasOwnProperty('quantity')) {
+                    quantity = action.payload.tag.quantity;
+                }
+                let payloadCategory = action.payload.tag.category;
+                let payloadTitle = action.payload.tag.title;
+                let quantityChanged = action.payload.quantityChanged
+                    ? action.payload.quantityChanged
+                    : false;
+
+                // check if category of incoming payload already exist in image tags
+                if (newTags.hasOwnProperty(payloadCategory)) {
+                    // check if title of incoming payload already exist
+                    if (newTags[payloadCategory].hasOwnProperty(payloadTitle)) {
+                        quantity = newTags[payloadCategory][payloadTitle];
+
+                        // if quantity is changed from picker wheel assign it
+                        // else increase quantity by 1
+                        quantity = quantityChanged
+                            ? action.payload.tag.quantity
+                            : quantity + 1;
+                    }
+                    image.tags[payloadCategory][payloadTitle] = quantity;
+                } else {
+                    // if incoming payload category doesn't exist on image tags add it
+                    image.tags[payloadCategory] = {
+                        [payloadTitle]: quantity
+                    };
+                }
+
+                break;
+
+            /**
              * Decrement the count of images selected for deletion
              */
             case DECREMENT_SELECTED:
@@ -56,8 +98,6 @@ export default function(state = INITIAL_STATE, action) {
              */
 
             case DELETE_IMAGE:
-                console.log('================');
-                console.log(action.payload);
                 draft.images.splice(action.payload, 1);
                 break;
             /**
