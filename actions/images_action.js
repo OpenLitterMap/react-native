@@ -1,4 +1,4 @@
-import { ADD_IMAGE } from './types';
+import { ADD_IMAGE, DELETE_SELECTED_IMAGES } from './types';
 
 /**
  * action to add images to state
@@ -10,5 +10,15 @@ export const addImage = (images, type) => {
     return {
         type: ADD_IMAGE,
         payload: { images, type }
+    };
+};
+
+/**
+ * Delete selected images -- all images with property selected set to true
+ */
+export const deleteSelectedImages = () => {
+    return {
+        type: DELETE_SELECTED_IMAGES,
+        payload: ids
     };
 };

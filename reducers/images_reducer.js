@@ -1,6 +1,6 @@
 import produce from 'immer';
 
-import { ADD_IMAGE } from '../actions/types';
+import { ADD_IMAGE, DELETE_SELECTED_IMAGES } from '../actions/types';
 
 const INITIAL_STATE = {
     images: []
@@ -11,7 +11,6 @@ export default function(state = INITIAL_STATE, action) {
         switch (action.type) {
             //
             case ADD_IMAGE:
-                console.log(JSON.stringify(action.payload, null, 2));
                 const images = action.payload.images;
                 images &&
                     images.map(image => {
@@ -30,6 +29,13 @@ export default function(state = INITIAL_STATE, action) {
                     });
 
                 break;
+
+            /**
+             * Delete selected images -- all images with property selected set to true
+             */
+
+            case DELETE_SELECTED_IMAGES:
+                return draft.images.filter(image => !image.selected);
 
             default:
                 return draft;

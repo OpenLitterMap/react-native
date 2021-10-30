@@ -232,7 +232,7 @@ class HomeScreen extends PureComponent {
                             </View>
                         )}
                     </Modal>
-
+                    {/* Grid to display images -- 3 columns */}
                     <UploadImagesGrid
                         gallery={this.props.gallery}
                         photos={this.props.images}
@@ -383,7 +383,7 @@ class HomeScreen extends PureComponent {
             );
         }
 
-        if (this.props.photos.length > 0 || this.props.gallery.length > 0) {
+        if (this.props.images.length > 0) {
             return (
                 <TransText
                     style={styles.normalWhiteText}
@@ -817,7 +817,6 @@ const styles = {
 
 const mapStateToProps = state => {
     return {
-        androidName: state.settings.androidName,
         gallery: state.gallery.gallery,
         imageBrowserOpen: state.gallery.imageBrowserOpen,
         isSelecting: state.shared.isSelecting,
