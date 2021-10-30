@@ -2,12 +2,13 @@ import produce from 'immer';
 
 import {
     ADD_IMAGE,
+    ADD_TAGS_TO_IMAGE,
     DECREMENT_SELECTED,
     DELETE_IMAGE,
     DELETE_SELECTED_IMAGES,
     DESELECT_ALL_IMAGES,
     INCREMENT_SELECTED,
-    ADD_TAGS_TO_IMAGE,
+    REMOVE_TAG_FROM_IMAGE,
     TOGGLE_SELECTING,
     TOGGLE_SELECTED_IMAGES
 } from '../actions/types';
@@ -128,6 +129,29 @@ export default function(state = INITIAL_STATE, action) {
 
             case INCREMENT_SELECTED:
                 draft.selected = draft.selected + 1;
+
+                break;
+
+            /**
+             * remove the tag from image based on index
+             */
+
+            case REMOVE_TAG_FROM_IMAGE:
+                console.log('remove_tag_from_camera_photo', action.payload);
+                let photo = draft.images[action.payload.currentIndex];
+
+                // if only one tag in payload category delete the category also
+                // else delete only tag
+                if (
+                    Object.keys(photo.tags[action.payload.category]).length ===
+                    1
+                ) {
+                    delete photo.tags[action.payload.category];
+                } else {
+                    delete photo.tags[action.payload.category][
+                        action.payload.tag
+                    ];
+                }
 
                 break;
 

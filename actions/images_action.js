@@ -6,6 +6,7 @@ import {
     DELETE_SELECTED_IMAGES,
     DESELECT_ALL_IMAGES,
     INCREMENT_SELECTED,
+    REMOVE_TAG_FROM_IMAGE,
     TOGGLE_SELECTING,
     TOGGLE_SELECTED_IMAGES
 } from './types';
@@ -82,6 +83,17 @@ export const deselectAllImages = () => {
 export const incrementSelected = () => {
     return {
         type: INCREMENT_SELECTED
+    };
+};
+
+/**
+ * remove a tag from image
+ */
+export const removeTagFromImage = data => {
+    console.log('action.removeTagFromCameraPhoto');
+    return {
+        type: REMOVE_TAG_FROM_IMAGE,
+        payload: data
     };
 };
 

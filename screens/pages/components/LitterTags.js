@@ -114,40 +114,14 @@ class LitterTags extends Component {
      * Remove a tag from a category,
      *
      * From a specific image.
-     *
-     * @litter_actions
-     * @gallery_actions
-     * @web_actions
      */
     removeTag(category, tag) {
-        console.log('LitterTag@removeTag', category, tag);
         const currentIndex = this.props.swiperIndex;
-        const { photosLength, galleryLength, webLength } = this.props;
-
-        if (currentIndex < photosLength) {
-            // photo_actions
-            this.props.removeTagFromCameraPhoto({
-                category,
-                tag,
-                currentIndex
-            });
-        } else if (currentIndex < photosLength + galleryLength) {
-            // gallery_actions
-            this.props.removeTagFromGalleryPhoto({
-                category,
-                tag,
-                currentIndex: currentIndex - photosLength
-            });
-        } else if (currentIndex < photosLength + galleryLength + webLength) {
-            // web_actions
-            this.props.removeTagFromWebImage({
-                category,
-                tag,
-                currentIndex: currentIndex - photosLength - galleryLength
-            });
-        } else {
-            console.log('problem@removeTag');
-        }
+        this.props.removeTagFromImage({
+            category,
+            tag,
+            currentIndex
+        });
     }
 
     /**
