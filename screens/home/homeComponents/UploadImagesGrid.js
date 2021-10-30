@@ -1,20 +1,9 @@
 import React, { PureComponent } from 'react';
-import {
-    Dimensions,
-    FlatList,
-    Image,
-    Platform,
-    Text,
-    View,
-    Pressable
-} from 'react-native';
-
-import { Icon } from 'react-native-elements';
-import DeviceInfo from 'react-native-device-info';
-
+import { Dimensions, FlatList, Image, View, Pressable } from 'react-native';
+import Icon from 'react-native-vector-icons/Ionicons';
 import { connect } from 'react-redux';
 import * as actions from '../../../actions';
-import { Body, SubTitle } from '../../components';
+import { Body, Colors, SubTitle } from '../../components';
 import { isGeotagged } from '../../../utils/isGeotagged';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -60,9 +49,9 @@ class UploadImagesGrid extends PureComponent {
                                 bottom: 5
                             }}>
                             <Icon
-                                name="check-circle"
-                                size={SCREEN_HEIGHT * 0.03}
-                                color="#00aced"
+                                name="ios-checkmark-circle"
+                                size={24}
+                                color={Colors.accent}
                             />
                         </View>
                     )}
@@ -74,9 +63,9 @@ class UploadImagesGrid extends PureComponent {
                                 bottom: 0
                             }}>
                             <Icon
-                                name="attachment"
-                                size={SCREEN_HEIGHT * 0.04}
-                                color="#00aced"
+                                name="attach"
+                                size={24}
+                                color={Colors.accent}
                             />
                         </View>
                     )}
@@ -87,7 +76,11 @@ class UploadImagesGrid extends PureComponent {
                                 top: 5,
                                 right: 5
                             }}>
-                            <Icon name="place" size={28} color="#00aced" />
+                            <Icon
+                                name="ios-location"
+                                size={24}
+                                color={Colors.accent}
+                            />
                         </View>
                     )}
                 </View>
@@ -162,7 +155,6 @@ const styles = {
     gridImageStyle: {
         width: SCREEN_WIDTH / 3 - 2,
         height: SCREEN_WIDTH / 3 - 2
-        // margin: 0.5
     }
 };
 
