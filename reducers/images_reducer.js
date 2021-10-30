@@ -2,12 +2,17 @@ import produce from 'immer';
 
 import {
     ADD_IMAGE,
+    DECREMENT_SELECTED,
     DELETE_SELECTED_IMAGES,
+    INCREMENT_SELECTED,
+    TOGGLE_SELECTING,
     TOGGLE_SELECTED_IMAGES
 } from '../actions/types';
 
 const INITIAL_STATE = {
-    images: []
+    images: [],
+    isSelecting: false,
+    selected: 0
 };
 
 export default function(state = INITIAL_STATE, action) {
@@ -40,6 +45,33 @@ export default function(state = INITIAL_STATE, action) {
 
             case DELETE_SELECTED_IMAGES:
                 draft.images = draft.images.filter(image => !image.selected);
+                draft.selected = 0;
+                break;
+
+            /**
+             * Decrement the count of images selected for deletion
+             */
+            case DECREMENT_SELECTED:
+                draft.selected = draft.selected - 1;
+
+                break;
+
+            /**
+             * Increment the count of images selected for deletion
+             */
+
+            case INCREMENT_SELECTED:
+                draft.selected = draft.selected + 1;
+
+                break;
+
+            /**
+             * Toggles isSelecting -- selecting images for deletion
+             */
+            case TOGGLE_SELECTING:
+                draft.selected = 0;
+                draft.isSelecting = !draft.isSelecting;
+
                 break;
 
             /**

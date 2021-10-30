@@ -1,6 +1,9 @@
 import {
     ADD_IMAGE,
+    DECREMENT_SELECTED,
     DELETE_SELECTED_IMAGES,
+    INCREMENT_SELECTED,
+    TOGGLE_SELECTING,
     TOGGLE_SELECTED_IMAGES
 } from './types';
 
@@ -25,6 +28,34 @@ export const addImage = (images, type) => {
 export const deleteSelectedImages = () => {
     return {
         type: DELETE_SELECTED_IMAGES
+    };
+};
+
+/**
+ * Decrement the amount of photos selected for deletion
+ */
+export const decrementSelected = () => {
+    return {
+        type: DECREMENT_SELECTED
+    };
+};
+
+/**
+ * Increment the amount of photos selected for deletion
+ */
+
+export const incrementSelected = () => {
+    return {
+        type: INCREMENT_SELECTED
+    };
+};
+
+/**
+ * Toggle if the user wants to Select images for deletion
+ */
+export const toggleSelecting = () => {
+    return {
+        type: TOGGLE_SELECTING
     };
 };
 

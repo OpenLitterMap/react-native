@@ -239,40 +239,6 @@ class HomeScreen extends PureComponent {
         );
     }
 
-    // /**
-    //  * Delete Selected Images
-    //  * todo - check if we need to async await before closing.
-    //  * other loops returning bugs when deleting multiple indexes
-    //  */
-    // deleteSelectedImages = () => {
-    //     for (let i = this.props.photos.length - 1; i >= 0; --i) {
-    //         if (this.props.photos[i]['selected']) {
-    //             this.props.deleteSelectedPhoto(i);
-    //         }
-    //     }
-
-    //     for (let i = this.props.gallery.length - 1; i >= 0; --i) {
-    //         if (this.props.gallery[i]['selected']) {
-    //             this.props.deleteSelectedGallery(i);
-    //         }
-    //     }
-
-    //     // when all this is done, async await...then
-    //     this.props.toggleSelecting();
-
-    //     // async-storage photos & gallery set
-    //     setTimeout(() => {
-    //         AsyncStorage.setItem(
-    //             'openlittermap-photos',
-    //             JSON.stringify(this.props.photos)
-    //         );
-    //         AsyncStorage.setItem(
-    //             'openlittermap-gallery',
-    //             JSON.stringify(this.props.gallery)
-    //         );
-    //     }, 1000);
-    // };
-
     /**
      * Navigate to album screen
      *
@@ -808,9 +774,9 @@ const mapStateToProps = state => {
     return {
         gallery: state.gallery.gallery,
         imageBrowserOpen: state.gallery.imageBrowserOpen,
-        isSelecting: state.shared.isSelecting,
+        isSelecting: state.images.isSelecting,
         lang: state.auth.lang,
-        selected: state.shared.selected,
+        selected: state.images.selected,
         photos: state.photos.photos,
         progress: state.photos.progress,
         modalVisible: state.shared.modalVisible,

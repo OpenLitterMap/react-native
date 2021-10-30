@@ -39,25 +39,6 @@ export const checkAppVersion = () => {
 };
 
 /**
- * Decrement the amount of photos selected for deletion
- */
-export const decrementSelected = () => {
-    return {
-        type: DECREMENT_SELECTED
-    };
-};
-
-/**
- * Increment the amount of photos selected for deletion
- */
-
-export const incrementSelected = () => {
-    return {
-        type: INCREMENT_SELECTED
-    };
-};
-
-/**
  * Toggle Litter content inside Modal on / off
  */
 export const toggleLitter = () => {
@@ -82,15 +63,6 @@ export const toggleThankYou = () => {
 export const toggleUpload = () => {
     return {
         type: TOGGLE_UPLOAD
-    };
-};
-
-/**
- * Toggle if the user wnts to Select + Delete a photo
- */
-export const toggleSelecting = () => {
-    return {
-        type: TOGGLE_SELECTING
     };
 };
 
