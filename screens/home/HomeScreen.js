@@ -401,15 +401,7 @@ class HomeScreen extends PureComponent {
      * Toggle Selecting - header right
      */
     toggleSelecting() {
-        if (this.props.isSelecting) {
-            if (this.props.photos.length > 0) {
-                this.props.deselectAllCameraPhotos();
-            }
-            if (this.props.gallery.length > 0) {
-                this.props.deselectAllGalleryPhotos();
-            }
-        }
-
+        this.props.deselectAllImages();
         this.props.toggleSelecting();
     }
 

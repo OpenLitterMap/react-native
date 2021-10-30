@@ -2,6 +2,7 @@ import {
     ADD_IMAGE,
     DECREMENT_SELECTED,
     DELETE_SELECTED_IMAGES,
+    DESELECT_ALL_IMAGES,
     INCREMENT_SELECTED,
     TOGGLE_SELECTING,
     TOGGLE_SELECTED_IMAGES
@@ -22,6 +23,15 @@ export const addImage = (images, type) => {
 };
 
 /**
+ * Decrement the amount of photos selected for deletion
+ */
+export const decrementSelected = () => {
+    return {
+        type: DECREMENT_SELECTED
+    };
+};
+
+/**
  * Delete selected images -- all images with property selected set to true
  */
 
@@ -32,11 +42,11 @@ export const deleteSelectedImages = () => {
 };
 
 /**
- * Decrement the amount of photos selected for deletion
+ * Change selected => false on all photos
  */
-export const decrementSelected = () => {
+export const deselectAllImages = () => {
     return {
-        type: DECREMENT_SELECTED
+        type: DESELECT_ALL_IMAGES
     };
 };
 

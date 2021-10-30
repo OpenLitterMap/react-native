@@ -4,6 +4,7 @@ import {
     ADD_IMAGE,
     DECREMENT_SELECTED,
     DELETE_SELECTED_IMAGES,
+    DESELECT_ALL_IMAGES,
     INCREMENT_SELECTED,
     TOGGLE_SELECTING,
     TOGGLE_SELECTED_IMAGES
@@ -40,6 +41,14 @@ export default function(state = INITIAL_STATE, action) {
                 break;
 
             /**
+             * Decrement the count of images selected for deletion
+             */
+            case DECREMENT_SELECTED:
+                draft.selected = draft.selected - 1;
+
+                break;
+
+            /**
              * Delete selected images -- all images with property selected set to true
              */
 
@@ -49,10 +58,15 @@ export default function(state = INITIAL_STATE, action) {
                 break;
 
             /**
-             * Decrement the count of images selected for deletion
+             * When isSelecting is turned off,
+             *
+             * Change selected value on every image to false
              */
-            case DECREMENT_SELECTED:
-                draft.selected = draft.selected - 1;
+
+            case DESELECT_ALL_IMAGES:
+                draft.images.map(image => {
+                    image.selected = false;
+                });
 
                 break;
 
