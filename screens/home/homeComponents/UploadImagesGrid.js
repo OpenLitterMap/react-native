@@ -20,14 +20,7 @@ import { isGeotagged } from '../../../utils/isGeotagged';
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 class UploadImagesGrid extends PureComponent {
-    /**
-     * A photo taken by the Camera was pressed
-     *
-     * if this.props.isSelected is true, we want to select photos to delete
-     *
-     * otherwise, open an image for tagging
-     */
-    cameraPhotoPressed(index) {
+    imagePressed(index) {
         const image = this.props.photos[index];
 
         if (this.props.isSelecting) {
@@ -35,7 +28,7 @@ class UploadImagesGrid extends PureComponent {
                 ? this.props.decrementSelected()
                 : this.props.incrementSelected();
 
-            this.props.toggleSelectedPhoto(index);
+            this.props.toggleSelectedImage(index);
         } else {
             // shared_reducer - Open LitterPicker modal
             this.props.toggleLitter();
@@ -52,7 +45,7 @@ class UploadImagesGrid extends PureComponent {
         const itemIsGeotagged = isGeotagged(item);
 
         return (
-            <Pressable onPress={this.cameraPhotoPressed.bind(this, index)}>
+            <Pressable onPress={() => this.imagePressed(index)}>
                 <View style={styles.gridImageContainer}>
                     <Image
                         style={styles.gridImageStyle}

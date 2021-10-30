@@ -40,6 +40,7 @@ export const USERNAME_ERROR = 'USERNAME_ERROR';
 // Images - Single array for Photos/Gallery/Web
 export const ADD_IMAGE = 'ADD_IMAGE';
 export const DELETE_SELECTED_IMAGES = 'DELETE_SELECTED_IMAGES';
+export const TOGGLE_SELECTED_IMAGES = 'TOGGLE_SELECTED_IMAGES';
 
 // Photos - Taken from OLM Camera
 export const ADD_PHOTO = 'ADD_PHOTO';

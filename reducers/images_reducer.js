@@ -1,6 +1,10 @@
 import produce from 'immer';
 
-import { ADD_IMAGE, DELETE_SELECTED_IMAGES } from '../actions/types';
+import {
+    ADD_IMAGE,
+    DELETE_SELECTED_IMAGES,
+    TOGGLE_SELECTED_IMAGES
+} from '../actions/types';
 
 const INITIAL_STATE = {
     images: []
@@ -36,6 +40,18 @@ export default function(state = INITIAL_STATE, action) {
 
             case DELETE_SELECTED_IMAGES:
                 return draft.images.filter(image => !image.selected);
+                break;
+
+            /**
+             * toggle selected property of a image object
+             */
+
+            case TOGGLE_SELECTED_IMAGES:
+                draft.images[action.payload].selected = !draft.images[
+                    action.payload
+                ].selected;
+
+                break;
 
             default:
                 return draft;
