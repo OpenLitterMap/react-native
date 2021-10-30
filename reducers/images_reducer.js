@@ -39,7 +39,7 @@ export default function(state = INITIAL_STATE, action) {
              */
 
             case DELETE_SELECTED_IMAGES:
-                return draft.images.filter(image => !image.selected);
+                draft.images = draft.images.filter(image => !image.selected);
                 break;
 
             /**

@@ -199,7 +199,6 @@ class CameraScreen extends React.Component {
     /**
      * Render No Permissions
      *
-     * Todo - When permissions are denied: Add Button to request permissions again
      */
     renderNoPermissions() {
         return (
@@ -277,12 +276,6 @@ class CameraScreen extends React.Component {
                                 }
                             ],
                             'CAMERA'
-                        );
-
-                        // async-storage photos set
-                        AsyncStorage.setItem(
-                            'openlittermap-photos',
-                            JSON.stringify(this.props.photos)
                         );
                     })
                     .catch(error => {

@@ -44,28 +44,12 @@ class HomeScreen extends PureComponent {
 
         // Bind any functions that call props
         this.toggleSelecting = this.toggleSelecting.bind(this);
-
-        // Photos selected from the Photos Album
-        AsyncStorage.getItem('openlittermap-gallery').then(gallery => {
-            if (gallery && gallery !== '[]') {
-                this.props.photosFromGallery(JSON.parse(gallery));
-            }
-        });
-
-        // Photos taken from the OLM Camera
-        AsyncStorage.getItem('openlittermap-photos').then(photos => {
-            if (photos && photos !== '[]') {
-                this.props.loadCameraPhotosFromAsyncStorage(JSON.parse(photos));
-            }
-        });
+        this.deleteImages = this.deleteImages.bind(this);
 
         const model = DeviceInfo.getModel();
 
         // settings_actions, settings_reducer
         this.props.setModel(model);
-
-        // TODO: REMOVE THIS LOG
-        console.log(this.props.images);
     }
 
     /**
@@ -255,39 +239,39 @@ class HomeScreen extends PureComponent {
         );
     }
 
-    /**
-     * Delete Selected Images
-     * todo - check if we need to async await before closing.
-     * other loops returning bugs when deleting multiple indexes
-     */
-    deleteSelectedImages = () => {
-        for (let i = this.props.photos.length - 1; i >= 0; --i) {
-            if (this.props.photos[i]['selected']) {
-                this.props.deleteSelectedPhoto(i);
-            }
-        }
+    // /**
+    //  * Delete Selected Images
+    //  * todo - check if we need to async await before closing.
+    //  * other loops returning bugs when deleting multiple indexes
+    //  */
+    // deleteSelectedImages = () => {
+    //     for (let i = this.props.photos.length - 1; i >= 0; --i) {
+    //         if (this.props.photos[i]['selected']) {
+    //             this.props.deleteSelectedPhoto(i);
+    //         }
+    //     }
 
-        for (let i = this.props.gallery.length - 1; i >= 0; --i) {
-            if (this.props.gallery[i]['selected']) {
-                this.props.deleteSelectedGallery(i);
-            }
-        }
+    //     for (let i = this.props.gallery.length - 1; i >= 0; --i) {
+    //         if (this.props.gallery[i]['selected']) {
+    //             this.props.deleteSelectedGallery(i);
+    //         }
+    //     }
 
-        // when all this is done, async await...then
-        this.props.toggleSelecting();
+    //     // when all this is done, async await...then
+    //     this.props.toggleSelecting();
 
-        // async-storage photos & gallery set
-        setTimeout(() => {
-            AsyncStorage.setItem(
-                'openlittermap-photos',
-                JSON.stringify(this.props.photos)
-            );
-            AsyncStorage.setItem(
-                'openlittermap-gallery',
-                JSON.stringify(this.props.gallery)
-            );
-        }, 1000);
-    };
+    //     // async-storage photos & gallery set
+    //     setTimeout(() => {
+    //         AsyncStorage.setItem(
+    //             'openlittermap-photos',
+    //             JSON.stringify(this.props.photos)
+    //         );
+    //         AsyncStorage.setItem(
+    //             'openlittermap-gallery',
+    //             JSON.stringify(this.props.gallery)
+    //         );
+    //     }, 1000);
+    // };
 
     /**
      * Navigate to album screen
@@ -460,6 +444,11 @@ class HomeScreen extends PureComponent {
             }
         }
 
+        this.props.toggleSelecting();
+    }
+
+    deleteImages() {
+        this.props.deleteSelectedImages();
         this.props.toggleSelecting();
     }
 
@@ -713,7 +702,7 @@ class HomeScreen extends PureComponent {
             status = 'SELECTING';
             if (this.props.selected > 0) {
                 status = 'SELECTED';
-                fabFunction = this.deleteSelectedImages;
+                fabFunction = this.deleteImages;
             }
         }
 
