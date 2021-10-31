@@ -53,10 +53,6 @@ class LitterBottomSearch extends PureComponent {
             title: tag.key
         };
 
-        const photosLength = this.props.photosLength;
-        const galleryLength = this.props.galleryLength;
-        const webLength = this.props.webLength;
-
         // currentGlobalIndex
         const currentIndex = this.props.swiperIndex;
 
@@ -95,6 +91,7 @@ class LitterBottomSearch extends PureComponent {
      */
     deleteImage() {
         const currentIndex = this.props.swiperIndex;
+        const id = this.props.images[this.props.swiperIndex].id;
 
         Alert.alert(
             'Alert',
@@ -104,7 +101,7 @@ class LitterBottomSearch extends PureComponent {
                     text: 'OK',
                     onPress: async () => {
                         // TODO: delete web image
-                        this.props.deleteImage(currentIndex);
+                        this.props.deleteImage(id);
 
                         if (currentIndex === 0) {
                             this.closeLitterPicker();
@@ -439,7 +436,8 @@ const mapStateToProps = state => {
         photos: state.photos.photos,
         photoSelected: state.litter.photoSelected,
         token: state.auth.token,
-        webPhotos: state.web.photos
+        webPhotos: state.web.photos,
+        images: state.images.images
     };
 };
 

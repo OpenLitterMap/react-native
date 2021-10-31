@@ -128,11 +128,14 @@ export default function(state = INITIAL_STATE, action) {
                 break;
 
             /**
-             * delete image by index
+             * delete image by id
              */
 
             case DELETE_IMAGE:
-                draft.images.splice(action.payload, 1);
+                const index = draft.images.findIndex(
+                    image => image.id === action.payload
+                );
+                if (index !== -1) draft.images.splice(index, 1);
                 break;
             /**
              * Delete selected images -- all images with property selected set to true

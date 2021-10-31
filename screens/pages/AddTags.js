@@ -208,10 +208,6 @@ class AddTags extends PureComponent {
     render() {
         const { lang, swiperIndex } = this.props;
 
-        // Todo - save these globally
-        const photosLength = this.props.photos.length;
-        const galleryLength = this.props.gallery.length;
-        const webLength = this.props.webPhotos.length;
         const IMAGES_COUNT = this.props.images.length;
 
         return (
@@ -249,9 +245,6 @@ class AddTags extends PureComponent {
                         keyboardOpen={this.state.keyboardOpen}
                         lang={this.props.lang}
                         swiperIndex={swiperIndex}
-                        photosLength={photosLength}
-                        galleryLength={galleryLength}
-                        webLength={webLength}
                     />
 
                     {/* Fourth - bottomContainer 20% height */}
@@ -330,9 +323,6 @@ class AddTags extends PureComponent {
                         presence={this.props.presence}
                         lang={this.props.lang}
                         swiperIndex={swiperIndex}
-                        photosLength={photosLength}
-                        galleryLength={galleryLength}
-                        webLength={webLength}
                     />
                 </View>
                 <SafeAreaView style={{ flex: 0 }} />

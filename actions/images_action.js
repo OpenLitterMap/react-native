@@ -46,14 +46,14 @@ export const decrementSelected = () => {
 };
 
 /**
- * delete image by index
- * @param {number} index
+ * delete image by id
+ * @param {number} id
  */
 
-export const deleteImage = index => {
+export const deleteImage = id => {
     return {
         type: DELETE_IMAGE,
-        payload: index
+        payload: id
     };
 };
 
