@@ -16,7 +16,8 @@ import {
 const INITIAL_STATE = {
     images: [],
     isSelecting: false,
-    selected: 0
+    selected: 0,
+    selectedImages: []
 };
 
 export default function(state = INITIAL_STATE, action) {

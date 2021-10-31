@@ -279,28 +279,11 @@ class HomeScreen extends PureComponent {
      * ... if images exist and at least 1 image has a tag
      */
     renderUploadButton() {
-        if (
-            (this.props.photos?.length === 0 &&
-                this.props.gallery?.length === 0 &&
-                this.props.webPhotos?.length === 0) ||
-            this.props.isSelecting
-        ) {
+        if (this.props.images?.length === 0 || this.props.isSelecting) {
             return;
         } else {
             let tagged = 0;
-            this.props.photos.map(img => {
-                if (img.tags && Object.keys(img.tags)?.length > 0) {
-                    tagged++;
-                }
-            });
-
-            this.props.gallery.map(img => {
-                if (img.tags && Object.keys(img.tags)?.length > 0) {
-                    tagged++;
-                }
-            });
-
-            this.props.webPhotos.map(img => {
+            this.props.images.map(img => {
                 if (img.tags && Object.keys(img.tags)?.length > 0) {
                     tagged++;
                 }
@@ -426,148 +409,64 @@ class HomeScreen extends PureComponent {
 
         const model = this.props.model;
 
-        let galleryCount = 0;
-        let photosCount = 0;
-        let webCount = 0;
+        let imagesCount = 0;
 
-        this.props.gallery.map(item => {
+        this.props.images.map(item => {
             if (item.tags && Object.keys(item.tags)?.length > 0) {
-                galleryCount++;
+                imagesCount++;
             }
         });
 
-        this.props.photos.map(item => {
-            if (item.tags && Object.keys(item.tags)?.length > 0) {
-                photosCount++;
-            }
-        });
-
-        this.props.webPhotos.map(item => {
-            if (item.tags && Object.keys(item.tags)?.length > 0) {
-                webCount++;
-            }
-        });
-
-        const total = galleryCount + photosCount + webCount;
-
-        console.log({ total });
+        console.log({ imagesCount });
 
         this.setState({
-            total
+            total: imagesCount
         });
 
         // shared.js
         this.props.toggleUpload();
 
-        if (galleryCount > 0) {
+        if (imagesCount > 0) {
             // async loop
-            for (const img of this.props.gallery) {
-                const isgeotagged = await isGeotagged(img);
+            for (const img of this.props.images) {
+                const isgeotagged = isGeotagged(img);
+                const myIndex = this.props.images.indexOf(img);
                 if (
+                    img.type !== 'WEB' &&
                     img.tags &&
                     Object.keys(img.tags).length > 0 &&
                     isgeotagged
                 ) {
-                    let galleryToUpload = new FormData();
+                    let ImageData = new FormData();
 
-                    galleryToUpload.append('photo', {
+                    ImageData.append('photo', {
                         name: img.filename,
                         type: 'image/jpeg',
                         uri: img.uri
                     });
 
-                    const date = moment
-                        .unix(img.timestamp)
-                        .format('YYYY:MM:DD HH:mm:ss');
-
-                    galleryToUpload.append('lat', img.lat);
-                    galleryToUpload.append('lon', img.lon);
-                    galleryToUpload.append('date', date);
-                    galleryToUpload.append('presence', img.picked_up);
-                    galleryToUpload.append('model', model);
-
-                    const myIndex = this.props.gallery.indexOf(img);
-
-                    // shared_actions.js
-                    const response = await this.props.uploadPhoto(
-                        this.props.token,
-                        galleryToUpload
-                    );
-
-                    if (response && response.success) {
-                        // shared_actions.js
-                        const resp = await this.props.uploadTags(
-                            this.props.token,
-                            img.tags,
-                            response.photo_id
-                        );
-
-                        if (resp && resp.success) {
-                            // Remove the image
-                            this.props.galleryPhotoUploadedSuccessfully(
-                                myIndex
-                            );
-
-                            this.setState(previousState => ({
-                                uploaded: previousState.uploaded + 1
-                            }));
-                        }
-                    } else {
-                        this.setState(previousState => ({
-                            failedUpload: previousState.failedUpload + 1
-                        }));
-                    }
-                } else if (!isgeotagged) {
-                    this.setState(previousState => ({
-                        failedUpload: previousState.failedUpload + 1
-                    }));
-                }
-            }
-        }
-
-        if (photosCount > 0) {
-            // async loop
-            for (const img of this.props.photos) {
-                const isgeotagged = await isGeotagged(img);
-
-                if (
-                    img.tags &&
-                    Object.keys(img.tags).length > 0 &&
-                    isgeotagged
-                ) {
-                    let cameraPhoto = new FormData();
-
-                    cameraPhoto.append('photo', {
-                        name: img.filename,
-                        type: 'image/jpeg',
-                        uri: img.uri
-                    });
-
-                    cameraPhoto.append('lat', img.lat);
-                    cameraPhoto.append('lon', img.lon);
-                    cameraPhoto.append('date', img.date);
-                    cameraPhoto.append('presence', img.presence);
-                    cameraPhoto.append('model', model);
-
-                    const myIndex = this.props.photos.indexOf(img);
+                    ImageData.append('lat', img.lat);
+                    ImageData.append('lon', img.lon);
+                    ImageData.append('date', img.date);
+                    ImageData.append('presence', img.presence);
+                    ImageData.append('model', model);
 
                     // shared_actions
                     const response = await this.props.uploadPhoto(
                         this.props.token,
-                        cameraPhoto
+                        ImageData
                     );
 
                     if (response && response.success) {
                         // shared_actions
                         const resp = await this.props.uploadTags(
                             this.props.token,
-                            img.tags,
-                            response.photo_id
+                            img.tags
+                            // response.photo_id
                         );
-
                         if (resp && resp.success) {
                             // Remove the image
-                            this.props.cameraPhotoUploadedSuccessfully(myIndex);
+                            this.props.deleteImage(myIndex);
 
                             this.setState(previousState => ({
                                 uploaded: previousState.uploaded + 1
@@ -578,26 +477,19 @@ class HomeScreen extends PureComponent {
                             failedUpload: previousState.failedUpload + 1
                         }));
                     }
-                } else if (!isgeotagged) {
-                    this.setState(previousState => ({
-                        failedUpload: previousState.failedUpload + 1
-                    }));
-                }
-            }
-        }
-
-        if (webCount > 0) {
-            // async loop
-            for (const img of this.props.webPhotos) {
-                if (img.tags && Object.keys(img.tags).length > 0) {
+                } else if (
+                    img.type === 'WEB' &&
+                    img.tags &&
+                    Object.keys(img.tags).length > 0
+                ) {
                     const response = await this.props.uploadTags(
                         this.props.token,
                         img.tags,
-                        img.id
+                        img.photoId
                     );
 
                     if (response && response.success) {
-                        this.props.removeWebImage(img.id);
+                        this.props.deleteImage(myIndex);
 
                         this.setState(previousState => ({
                             uploaded: previousState.uploaded + 1
@@ -607,6 +499,10 @@ class HomeScreen extends PureComponent {
                             failedUpload: previousState.failedUpload + 1
                         }));
                     }
+                } else if (!isgeotagged) {
+                    this.setState(previousState => ({
+                        failedUpload: previousState.failedUpload + 1
+                    }));
                 }
             }
         }
@@ -621,17 +517,6 @@ class HomeScreen extends PureComponent {
             this.props.toggleThankYou();
             // this.state.uploaded > 0 && this.props.toggleThankYou();
         }
-
-        setTimeout(() => {
-            AsyncStorage.setItem(
-                'openlittermap-photos',
-                JSON.stringify(this.props.photos)
-            );
-            AsyncStorage.setItem(
-                'openlittermap-gallery',
-                JSON.stringify(this.props.gallery)
-            );
-        }, 1000);
     };
 
     /**
@@ -648,11 +533,7 @@ class HomeScreen extends PureComponent {
     renderActionButton() {
         let status = 'NO_IMAGES';
         let fabFunction = this.loadGallery;
-        if (
-            this.props.photos.length === 0 &&
-            this.props.gallery.length === 0 &&
-            this.props.webImagesCount === 0
-        ) {
+        if (this.props.images.length === 0) {
             status = 'NO_IMAGES';
             fabFunction = this.loadGallery;
         }

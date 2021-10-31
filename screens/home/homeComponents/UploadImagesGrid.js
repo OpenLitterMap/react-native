@@ -28,9 +28,9 @@ class UploadImagesGrid extends PureComponent {
     }
 
     /**
-     * Render photos taken with the OLM camera
+     * Render images
      */
-    renderCameraPhoto = ({ item, index }) => {
+    renderImage = ({ item, index }) => {
         const itemIsGeotagged = isGeotagged(item);
 
         return (
@@ -127,7 +127,7 @@ class UploadImagesGrid extends PureComponent {
                         extraData={this.props.uniqueValue}
                         keyExtractor={(item, index) => item + index}
                         numColumns={3}
-                        renderItem={this.renderCameraPhoto}
+                        renderItem={this.renderImage}
                         keyboardShouldPersistTaps="handled"
                     />
                 )}
