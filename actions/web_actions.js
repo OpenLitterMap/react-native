@@ -1,4 +1,5 @@
 import {
+    ADD_IMAGE,
     ADD_TAGS_TO_WEB_IMAGE,
     LOAD_MORE_WEB_IMAGES,
     INCREMENT_WEB_IMAGES_UPLOADED,
@@ -50,18 +51,18 @@ export const checkForImagesOnWeb = token => {
                 if (resp.data.photos) {
                     // Todo - load Tags: {} with the data
                     let photos = resp.data.photos ? resp.data.photos : null;
-
-                    photos = photos.map(photo => {
-                        photo.tags = {};
-                        return photo;
-                    });
+                    console.log(JSON.stringify(photos, null, 2));
+                    // photos = photos.map(photo => {
+                    //     photo.tags = {};
+                    //     return photo;
+                    // });
 
                     // if photos is null, pass empty array
                     dispatch({
-                        type: WEB_IMAGES,
+                        type: ADD_IMAGE,
                         payload: {
-                            count: resp.data.count,
-                            photos
+                            images: photos,
+                            type: 'WEB'
                         }
                     });
                 }

@@ -22,23 +22,57 @@ const INITIAL_STATE = {
 export default function(state = INITIAL_STATE, action) {
     return produce(state, draft => {
         switch (action.type) {
-            //
+            /**
+             * Add images to state
+             *
+             * Three type of images --
+             * "CAMERA" --> Image taken from OLM App camera
+             * "GALLERY" --> Selected from phone gallery
+             * "WEB" --> Uploaded from web app but not yet tagged
+             *
+             * CAMERA & GALLERY image have same shape object
+             *
+             * if WEB --> check if image with same photoId already exist in state
+             * if not add it to images array
+             *
+             * WEB images dont have lat/long properties but they are geotagged because
+             * web app only accepts geotagged images.
+             *
+             */
             case ADD_IMAGE:
                 const images = action.payload.images;
                 images &&
                     images.map(image => {
-                        draft.images.push({
-                            id: draft.images.length,
-                            lat: image.lat,
-                            lon: image.lon,
-                            uri: image.uri,
-                            filename: image.filename,
-                            date: image.date,
-                            type: action.payload.type,
-                            selected: false,
-                            tags: {},
-                            picked_up: false
-                        });
+                        if (action.payload.type === 'WEB') {
+                            const index = draft.images.findIndex(
+                                webimg => webimg.photoId === image.id
+                            );
+                            if (index === -1) {
+                                draft.images.push({
+                                    id: draft.images.length,
+                                    uri: image.filename,
+                                    filename: image.filename,
+                                    type: action.payload.type,
+                                    selected: false,
+                                    tags: {},
+                                    picked_up: false,
+                                    photoId: image.id
+                                });
+                            }
+                        } else {
+                            draft.images.push({
+                                id: draft.images.length,
+                                lat: image.lat,
+                                lon: image.lon,
+                                uri: image.uri,
+                                filename: image.filename,
+                                date: image.date,
+                                type: action.payload.type,
+                                selected: false,
+                                tags: {},
+                                picked_up: false
+                            });
+                        }
                     });
 
                 break;
@@ -93,9 +127,7 @@ export default function(state = INITIAL_STATE, action) {
                 break;
 
             /**
-             * delete image by id
-             *
-             * here id  ===  index
+             * delete image by index
              */
 
             case DELETE_IMAGE:
