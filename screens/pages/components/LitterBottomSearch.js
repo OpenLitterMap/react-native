@@ -91,7 +91,8 @@ class LitterBottomSearch extends PureComponent {
      */
     deleteImage() {
         const currentIndex = this.props.swiperIndex;
-        const id = this.props.images[this.props.swiperIndex].id;
+
+        const { id, type } = this.props.images[currentIndex];
 
         Alert.alert(
             'Alert',

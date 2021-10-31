@@ -49,15 +49,9 @@ export const checkForImagesOnWeb = token => {
                 console.log('RESPONSE: checkForImagesOnWeb', resp.data.photos);
 
                 if (resp.data.photos) {
-                    // Todo - load Tags: {} with the data
-                    let photos = resp.data.photos ? resp.data.photos : null;
-                    console.log(JSON.stringify(photos, null, 2));
-                    // photos = photos.map(photo => {
-                    //     photo.tags = {};
-                    //     return photo;
-                    // });
+                    let photos = [];
+                    photos = resp.data.photos ? resp.data.photos : null;
 
-                    // if photos is null, pass empty array
                     dispatch({
                         type: ADD_IMAGE,
                         payload: {

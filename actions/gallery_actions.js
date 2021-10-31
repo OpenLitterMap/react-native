@@ -152,7 +152,7 @@ export const getPhotosFromCameraroll = () => async (dispatch, getState) => {
                     width: item.node.image.width,
                     lat: item.node.location.latitude,
                     lon: item.node.location.longitude,
-                    timestamp: item.node.timestamp,
+                    date: item.node.timestamp,
                     selected: false,
                     picked_up: false,
                     tags: {},

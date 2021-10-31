@@ -19,13 +19,13 @@ import { Header, SubTitle, Body } from '../components';
 
 const { width } = Dimensions.get('window');
 
-export const placeInTime = timestamp => {
+export const placeInTime = date => {
     let today = moment().startOf('day');
     let thisWeek = moment().startOf('week');
     let thisMonth = moment().startOf('month');
     let thisYear = moment().startOf('year');
 
-    const momentOfFile = moment(timestamp);
+    const momentOfFile = moment(date);
 
     if (momentOfFile.isSameOrAfter(today)) {
         return 'today';
@@ -59,8 +59,8 @@ class GalleryScreen extends Component {
     async splitIntoRows(images) {
         let temp = {};
         images.map(image => {
-            const timestampOfImage = image.timestamp * 1000;
-            const placeInTimeOfImage = placeInTime(timestampOfImage);
+            const dateOfImage = image.date * 1000;
+            const placeInTimeOfImage = placeInTime(dateOfImage);
 
             if (temp[placeInTimeOfImage] === undefined) {
                 temp[placeInTimeOfImage] = [];
@@ -108,8 +108,7 @@ class GalleryScreen extends Component {
         const sortedArray = await this.state.selectedImages.sort(
             (a, b) => a.id - b.id
         );
-
-        this.props.addImage(sortedArray);
+        this.props.addImage(sortedArray, 'GALLERY');
     }
 
     /**
