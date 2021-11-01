@@ -46,17 +46,6 @@ class AddTags extends PureComponent {
     }
 
     /**
-     *
-     */
-    UNSAFE_componentWillMount() {
-        if (this.props.rightPage) {
-            this.setState({
-                loading: true
-            });
-        }
-    }
-
-    /**
      * Check if the user has any photos on web
      *
      * @photo_actions.js
