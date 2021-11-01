@@ -2,23 +2,17 @@ import React from 'react';
 import AsyncStorage from '@react-native-community/async-storage';
 import {
     ACCOUNT_CREATED,
-    BAD_PASSWORD,
     CHANGE_SERVER_STATUS_TEXT,
     CLIENT_SECRET,
     CLIENT_ID,
     CHANGE_LANG,
     SUBMIT_START,
-    SERVER_STATUS,
     LOGIN_OR_SIGNUP_RESET,
     LOGIN_SUCCESS,
     LOGIN_FAIL,
     LOGOUT,
     USER_FOUND,
-    USERNAME_CHANGED,
-    TOGGLE_USERNAME_MODAL,
     SUBMIT_END,
-    STORE_CURRENT_APP_VERSION,
-    ON_SEEN_FEATURE_TOUR,
     URL
 } from './types';
 import axios from 'axios';
@@ -70,20 +64,6 @@ export const checkValidToken = token => {
                     payload: false
                 });
             });
-    };
-};
-
-export const storeCurrentAppVersion = text => {
-    return {
-        type: STORE_CURRENT_APP_VERSION,
-        payload: text
-    };
-};
-
-export const onSeenFeatureTour = text => {
-    return {
-        type: ON_SEEN_FEATURE_TOUR,
-        payload: text
     };
 };
 
@@ -155,14 +135,14 @@ export const createAccount = data => {
                 }
 
                 dispatch({
-                    type: SERVER_STATUS,
+                    type: CHANGE_SERVER_STATUS_TEXT,
                     payload: payload
                 });
                 return;
             } else {
                 // handling Network Error
                 dispatch({
-                    type: SERVER_STATUS,
+                    type: CHANGE_SERVER_STATUS_TEXT,
                     payload:
                         'Network error, please check internet connection and try again'
                 });
@@ -326,7 +306,11 @@ export const serverLogin = data => {
             if (error?.response) {
                 if (error?.response?.status === 400) {
                     // handling wrong password response from backend
-                    dispatch({ type: BAD_PASSWORD });
+                    dispatch({
+                        type: LOGIN_FAIL,
+                        payload:
+                            'Your password is incorrect. Please try again or reset it.'
+                    });
                     return;
                 } else {
                     // handling other errors from backend and thrown from try block
@@ -349,12 +333,6 @@ export const serverLogin = data => {
         // Dispatch success if no errors
         dispatch({ type: LOGIN_SUCCESS, payload: token });
         dispatch(fetchUser(token));
-    };
-};
-
-export const toggleUsernameModal = () => {
-    return {
-        type: TOGGLE_USERNAME_MODAL
     };
 };
 
@@ -415,16 +393,6 @@ export const userFound = data => {
     return {
         type: USER_FOUND,
         payload: data
-    };
-};
-
-/**
- * Update the username
- */
-export const usernameChanged = text => {
-    return {
-        type: USERNAME_CHANGED,
-        payload: text
     };
 };
 
