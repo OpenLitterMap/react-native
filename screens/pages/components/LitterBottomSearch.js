@@ -444,7 +444,6 @@ const styles = {
 const mapStateToProps = state => {
     return {
         token: state.auth.token,
-        webPhotos: state.web.photos,
         images: state.images.images
     };
 };

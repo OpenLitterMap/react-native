@@ -2,8 +2,6 @@ import produce from 'immer';
 import { ADD_GEOTAGGED_IMAGES, TOGGLE_IMAGES_LOADING } from '../actions/types';
 
 const INITIAL_STATE = {
-    gallery: [], // array of selected images
-    // imagesLoading: true, // inside the photo gallery, turn on to show spinner
     imagesLoading: false,
     geotaggedImages: [], // array of geotagged images
     camerarollImageFetched: false,

@@ -222,9 +222,6 @@ class HomeScreen extends PureComponent {
                         lang={this.props.lang}
                         uniqueValue={this.props.uniqueValue}
                         isSelecting={this.props.isSelecting}
-                        //webNextImage={this.props.webNextImage}
-                        webImagesCount={this.props.webImagesCount}
-                        webPhotos={this.props.webPhotos}
                     />
 
                     <View style={styles.bottomContainer}>
@@ -624,9 +621,6 @@ const mapStateToProps = state => {
         uploadVisible: state.shared.uploadVisible,
         uniqueValue: state.shared.uniqueValue,
         user: state.auth.user,
-        webImagesCount: state.web.count,
-        webPhotos: state.web.photos,
-        totalWebImagesUpdated: state.web.totalWebImagesUpdated,
         appVersion: state.shared.appVersion,
         // new image reducer
         images: state.images.images

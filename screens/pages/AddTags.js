@@ -638,11 +638,6 @@ const mapStateToProps = state => {
         token: state.auth.token,
         q: state.litter.q,
         quantityChanged: state.litter.quantityChanged,
-        // webImages: state.web.images,
-        // webNextImage: state.web.nextImage,
-        webImagesCount: state.web.count,
-        webPhotos: state.web.photos,
-        webImageSuccess: state.web.webImageSuccess,
         images: state.images.images
     };
 };
