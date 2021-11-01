@@ -43,7 +43,6 @@ class AlbumList extends Component {
 const mapStateToProps = state => {
     return {
         imagesLoading: state.gallery.imagesLoading,
-        gallery: state.gallery.gallery,
         geotaggedImages: state.gallery.geotaggedImages,
         images: state.images.images
     };

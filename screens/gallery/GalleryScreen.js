@@ -100,9 +100,8 @@ class GalleryScreen extends Component {
     /**
      * fn that is called when "done" is pressed
      * sorts the array based on id
-     * call action photosFromGallery to save selected images to state
+     * call action addImage to save selected images to state
      *
-     * saves the selected array of images to Async store
      */
     async handleDoneClick() {
         const sortedArray = await this.state.selectedImages.sort(

@@ -452,8 +452,6 @@ class AddTags extends PureComponent {
      */
 
     _renderLitterImage = () => {
-        console.log('renderLitterImage index:', this.props.swiperIndex);
-
         // Return an array of all photos
         return this.props.images.map((image, index) => {
             // Only render one image
@@ -621,9 +619,6 @@ const mapStateToProps = state => {
         collectionLength: state.litter.collectionLength,
         currentTotalItems: state.litter.currentTotalItems,
         displayAllTags: state.litter.displayAllTags,
-        gallery: state.gallery.gallery,
-        galleryTaggedCount: state.gallery.galleryTaggedCount,
-        galleryTotalCount: state.gallery.galleryTotalCount,
         indexSelected: state.litter.indexSelected, // index of photos, gallery, web
         item: state.litter.item,
         items: state.litter.items,
@@ -635,14 +630,12 @@ const mapStateToProps = state => {
         presence: state.litter.presence,
         previous_tags: state.auth.user.previous_tags,
         previousTags: state.litter.previousTags,
-        selectedGalleryIndex: state.gallery.indexSelected,
         suggestedTags: state.litter.suggestedTags,
         swiperIndex: state.litter.swiperIndex,
         totalLitterCount: state.litter.totalLitterCount,
         tags: state.litter.tags,
         tagsModalVisible: state.litter.tagsModalVisible,
         token: state.auth.token,
-        totalTaggedGalleryCount: state.gallery.totalTaggedGalleryCount,
         q: state.litter.q,
         quantityChanged: state.litter.quantityChanged,
         // webImages: state.web.images,

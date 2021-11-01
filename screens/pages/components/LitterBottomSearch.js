@@ -443,8 +443,6 @@ const styles = {
 
 const mapStateToProps = state => {
     return {
-        gallery: state.gallery.gallery,
-        galleryTotalCount: state.gallery.galleryTotalCount,
         token: state.auth.token,
         webPhotos: state.web.photos,
         images: state.images.images

@@ -218,7 +218,6 @@ class HomeScreen extends PureComponent {
                     </Modal>
                     {/* Grid to display images -- 3 columns */}
                     <UploadImagesGrid
-                        gallery={this.props.gallery}
                         photos={this.props.images}
                         lang={this.props.lang}
                         uniqueValue={this.props.uniqueValue}
@@ -613,8 +612,6 @@ const styles = {
 
 const mapStateToProps = state => {
     return {
-        gallery: state.gallery.gallery,
-        imageBrowserOpen: state.gallery.imageBrowserOpen,
         isSelecting: state.images.isSelecting,
         lang: state.auth.lang,
         selected: state.images.selected,
@@ -622,10 +619,8 @@ const mapStateToProps = state => {
         model: state.settings.model,
         litterVisible: state.shared.litterVisible,
         token: state.auth.token,
-        totalGalleryUploaded: state.gallery.totalGalleryUploaded,
         thankYouVisible: state.shared.thankYouVisible,
         totalImagesToUpload: state.shared.totalImagesToUpload,
-        totalTaggedGalleryCount: state.gallery.totalTaggedGalleryCount,
         uploadVisible: state.shared.uploadVisible,
         uniqueValue: state.shared.uniqueValue,
         user: state.auth.user,

@@ -38,9 +38,7 @@ class RightPage extends PureComponent {
 const styles = {};
 
 const mapStateToProps = state => {
-    return {
-        gallery: state.gallery.gallery
-    };
+    return {};
 };
 
 export default connect(
