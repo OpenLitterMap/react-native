@@ -42,16 +42,11 @@ class UploadImagesGrid extends PureComponent {
                         resizeMode="cover"
                     />
                     {item.selected && (
-                        <View
-                            style={{
-                                position: 'absolute',
-                                right: 5,
-                                bottom: 5
-                            }}>
+                        <View style={styles.checkCircleContainer}>
                             <Icon
-                                name="ios-checkmark-circle"
-                                size={24}
-                                color={Colors.accent}
+                                name="ios-checkmark-outline"
+                                size={18}
+                                color="white"
                             />
                         </View>
                     )}
@@ -59,13 +54,13 @@ class UploadImagesGrid extends PureComponent {
                         <View
                             style={{
                                 position: 'absolute',
-                                left: 5,
-                                bottom: 0
+                                right: 30,
+                                top: 5
                             }}>
                             <Icon
-                                name="attach"
-                                size={24}
-                                color={Colors.accent}
+                                name="ios-pricetags-sharp"
+                                size={20}
+                                color={Colors.accentLight}
                             />
                         </View>
                     )}
@@ -78,8 +73,8 @@ class UploadImagesGrid extends PureComponent {
                             }}>
                             <Icon
                                 name="ios-location"
-                                size={24}
-                                color={Colors.accent}
+                                size={20}
+                                color={Colors.accentLight}
                             />
                         </View>
                     )}
@@ -155,6 +150,17 @@ const styles = {
     gridImageStyle: {
         width: SCREEN_WIDTH / 3 - 2,
         height: SCREEN_WIDTH / 3 - 2
+    },
+    checkCircleContainer: {
+        position: 'absolute',
+        width: 24,
+        height: 24,
+        backgroundColor: '#0984e3',
+        right: 10,
+        bottom: 10,
+        borderRadius: 100,
+        justifyContent: 'center',
+        alignItems: 'center'
     }
 };
 

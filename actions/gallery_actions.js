@@ -20,13 +20,12 @@ import { ADD_GEOTAGGED_IMAGES, TOGGLE_IMAGES_LOADING } from './types';
 
 export const getPhotosFromCameraroll = () => async (dispatch, getState) => {
     const {
-        gallery,
         geotaggedImages,
         camerarollImageFetched,
         lastFetchTime,
         imagesLoading
     } = getState().gallery;
-    let id = gallery?.length === 0 ? 0 : gallery[gallery?.length - 1].id + 1;
+    let id = geotaggedImages.length;
 
     let camerarollData;
     let fetchType = 'INITIAL';

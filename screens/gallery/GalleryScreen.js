@@ -189,8 +189,8 @@ class GalleryScreen extends Component {
                                     <View
                                         style={{
                                             position: 'absolute',
-                                            width: 30,
-                                            height: 30,
+                                            width: 24,
+                                            height: 24,
                                             backgroundColor: '#0984e3',
                                             right: 10,
                                             bottom: 10,
@@ -200,7 +200,7 @@ class GalleryScreen extends Component {
                                         }}>
                                         <Icon
                                             name="ios-checkmark-outline"
-                                            size={24}
+                                            size={20}
                                             color="white"
                                         />
                                     </View>
