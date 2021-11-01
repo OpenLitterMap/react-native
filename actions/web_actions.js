@@ -1,6 +1,7 @@
 import {
     ADD_IMAGE,
     ADD_TAGS_TO_WEB_IMAGE,
+    DELETE_IMAGE,
     LOAD_MORE_WEB_IMAGES,
     INCREMENT_WEB_IMAGES_UPLOADED,
     REMOVE_TAG_FROM_WEB_IMAGE,
@@ -131,7 +132,7 @@ export const removeWebImage = id => {
  * Delete selected web image
  * web image - image that are uploaded from web but not tagged
  */
-export const deleteSelectedWebImages = (token, photoId) => {
+export const deleteSelectedWebImages = (token, photoId, id) => {
     return dispatch => {
         return axios({
             url: URL + '/api/photos/delete',
@@ -144,8 +145,8 @@ export const deleteSelectedWebImages = (token, photoId) => {
         })
             .then(resp => {
                 dispatch({
-                    type: REMOVE_WEB_IMAGE,
-                    payload: photoId
+                    type: DELETE_IMAGE,
+                    payload: id
                 });
             })
             .catch(err => {

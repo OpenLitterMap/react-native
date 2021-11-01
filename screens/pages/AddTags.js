@@ -417,8 +417,6 @@ class AddTags extends PureComponent {
     nextImage() {
         const currentIndex = this.props.swiperIndex;
 
-        // todo - check total length of all camera_photos, gallery_photos and web_photos
-
         this.props.swiperIndexChanged(currentIndex + 1);
     }
 

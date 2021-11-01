@@ -388,8 +388,26 @@ class HomeScreen extends PureComponent {
         this.props.toggleSelecting();
     }
 
+    /**
+     * if image is of type WEB -- hit api to delete uploaded image
+     * then delete from state
+     *
+     * else
+     * delete images from state based on id
+     */
     deleteImages() {
-        this.props.deleteSelectedImages();
+        this.props.images.map(image => {
+            if (image.type !== 'WEB' && image.selected) {
+                this.props.deleteImage(image.id);
+            } else if (image.type === 'WEB' && image.selected) {
+                this.props.deleteSelectedWebImages(
+                    this.props.token,
+                    image.photoId,
+                    image.id
+                );
+            }
+        });
+        // this.props.deleteSelectedImages();
         this.props.toggleSelecting();
     }
 
