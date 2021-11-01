@@ -1,30 +1,6 @@
-import {
-    ADD_TAGS_TO_WEB_IMAGE,
-    LOAD_MORE_WEB_IMAGES,
-    INCREMENT_WEB_IMAGES_UPLOADED,
-    REMOVE_TAG_FROM_WEB_IMAGE,
-    REMOVE_WEB_IMAGE,
-    WEB_IMAGES,
-    URL
-} from './types';
+import { ADD_IMAGE, DELETE_IMAGE, LOAD_MORE_WEB_IMAGES, URL } from './types';
 import axios from 'axios';
 
-/**
- * Apply these tags to one of the web images
- */
-export const addTagsToWebImage = data => {
-    return {
-        type: ADD_TAGS_TO_WEB_IMAGE,
-        payload: data
-    };
-};
-
-export const removeTagFromWebImage = data => {
-    return {
-        type: REMOVE_TAG_FROM_WEB_IMAGE,
-        payload: data
-    };
-};
 /**
  * When LeftPage didMount, check web for any images
  *
@@ -48,20 +24,14 @@ export const checkForImagesOnWeb = token => {
                 console.log('RESPONSE: checkForImagesOnWeb', resp.data.photos);
 
                 if (resp.data.photos) {
-                    // Todo - load Tags: {} with the data
-                    let photos = resp.data.photos ? resp.data.photos : null;
+                    let photos = [];
+                    photos = resp.data.photos ? resp.data.photos : null;
 
-                    photos = photos.map(photo => {
-                        photo.tags = {};
-                        return photo;
-                    });
-
-                    // if photos is null, pass empty array
                     dispatch({
-                        type: WEB_IMAGES,
+                        type: ADD_IMAGE,
                         payload: {
-                            count: resp.data.count,
-                            photos
+                            images: photos,
+                            type: 'WEB'
                         }
                     });
                 }
@@ -113,30 +83,11 @@ export const loadMoreWebImages = (token, photo_id) => {
 };
 
 /**
- * When the tags for a web image have been uploaded
- *
- * We increment this to update the counter that shows when uploading images
- *
- * @returns {{payload, type: string}}
- */
-export const incrementWebImagesUploaded = () => {
-    return {
-        type: INCREMENT_WEB_IMAGES_UPLOADED
-    };
-};
-
-export const removeWebImage = id => {
-    return {
-        type: REMOVE_WEB_IMAGE,
-        payload: id
-    };
-};
-
-/**
  * Delete selected web image
  * web image - image that are uploaded from web but not tagged
  */
-export const deleteSelectedWebImages = (token, photoId) => {
+export const deleteSelectedWebImages = (token, photoId, id) => {
+    console.log(token, photoId, id);
     return dispatch => {
         return axios({
             url: URL + '/api/photos/delete',
@@ -149,8 +100,8 @@ export const deleteSelectedWebImages = (token, photoId) => {
         })
             .then(resp => {
                 dispatch({
-                    type: REMOVE_WEB_IMAGE,
-                    payload: photoId
+                    type: DELETE_IMAGE,
+                    payload: id
                 });
             })
             .catch(err => {

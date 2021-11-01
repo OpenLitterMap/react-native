@@ -44,6 +44,7 @@ class LitterBottomSearch extends PureComponent {
      * A tag has been selected
      */
     addTag(tag) {
+        console.log(tag);
         // update selected tag to execute scrollTo
         this.props.changeItem(tag.key);
 
@@ -52,35 +53,14 @@ class LitterBottomSearch extends PureComponent {
             title: tag.key
         };
 
-        const photosLength = this.props.photosLength;
-        const galleryLength = this.props.galleryLength;
-        const webLength = this.props.webLength;
-
         // currentGlobalIndex
         const currentIndex = this.props.swiperIndex;
 
-        // Add tag to image
-        if (currentIndex < photosLength) {
-            // photo_actions
-            this.props.addTagsToCameraPhoto({
-                tag: newTag,
-                currentIndex
-            });
-        } else if (currentIndex < photosLength + galleryLength) {
-            // gallery_actions
-            this.props.addTagsToGalleryImage({
-                tag: newTag,
-                currentIndex: currentIndex - photosLength
-            });
-        } else if (currentIndex < photosLength + galleryLength + webLength) {
-            // web_actions
-            this.props.addTagsToWebImage({
-                tag: newTag,
-                currentIndex: currentIndex - photosLength - galleryLength
-            });
-        } else {
-            console.log('problem@addTag');
-        }
+        this.props.addTagsToImages({
+            tag: newTag,
+            currentIndex
+        });
+
         // clears text filed after one tag is selected
         this.setState({ text: '' });
     }
@@ -111,7 +91,8 @@ class LitterBottomSearch extends PureComponent {
      */
     deleteImage() {
         const currentIndex = this.props.swiperIndex;
-        const { photosLength, galleryLength, webLength } = this.props;
+
+        const { id, type } = this.props.images[currentIndex];
 
         Alert.alert(
             'Alert',
@@ -120,49 +101,25 @@ class LitterBottomSearch extends PureComponent {
                 {
                     text: 'OK',
                     onPress: async () => {
-                        this.props.swiperIndexChanged(
-                            currentIndex > 0 ? currentIndex - 1 : 0
-                        );
-                        if (currentIndex < photosLength) {
-                            this.props.deleteSelectedPhoto(
-                                currentIndex > 0 ? currentIndex - 1 : 0
-                            );
-                        } else if (
-                            currentIndex <
-                            galleryLength + photosLength
-                        ) {
-                            this.props.deleteSelectedGallery(
-                                currentIndex - photosLength
-                            );
-                        } else if (
-                            currentIndex <
-                            photosLength + galleryLength + webLength
-                        ) {
-                            // web_actions delete web image
+                        // if WEB image hit api and delete uploaded image and then delete from state
+                        // else delete from state by id
+                        if (type === 'WEB') {
+                            const photoId = this.props.images[currentIndex]
+                                .photoId;
                             await this.props.deleteSelectedWebImages(
                                 this.props.token,
-                                this.props.webPhotos[
-                                    currentIndex - photosLength - galleryLength
-                                ].id
+                                photoId,
+                                id
                             );
                         } else {
-                            console.log('problem @ deleteImage');
-
-                            return {};
+                            this.props.deleteImage(id);
                         }
 
-                        // async-storage photos & gallery set
-                        setTimeout(() => {
-                            AsyncStorage.setItem(
-                                'openlittermap-photos',
-                                JSON.stringify(this.props.photos)
-                            );
-                            AsyncStorage.setItem(
-                                'openlittermap-gallery',
-                                JSON.stringify(this.props.gallery)
-                            );
-                        }, 500);
-                        this.closeLitterPicker();
+                        if (currentIndex === 0) {
+                            this.closeLitterPicker();
+                        } else {
+                            this.props.swiperIndexChanged(currentIndex - 1);
+                        }
                     }
                 },
                 {
@@ -486,12 +443,8 @@ const styles = {
 
 const mapStateToProps = state => {
     return {
-        gallery: state.gallery.gallery,
-        galleryTotalCount: state.gallery.galleryTotalCount,
-        photos: state.photos.photos,
-        photoSelected: state.litter.photoSelected,
         token: state.auth.token,
-        webPhotos: state.web.photos
+        images: state.images.images
     };
 };
 
