@@ -445,8 +445,6 @@ const mapStateToProps = state => {
     return {
         gallery: state.gallery.gallery,
         galleryTotalCount: state.gallery.galleryTotalCount,
-        photos: state.photos.photos,
-        photoSelected: state.litter.photoSelected,
         token: state.auth.token,
         webPhotos: state.web.photos,
         images: state.images.images

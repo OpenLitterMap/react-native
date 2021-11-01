@@ -39,9 +39,7 @@ const styles = {};
 
 const mapStateToProps = state => {
     return {
-        photos: state.photos.photos,
-        gallery: state.gallery.gallery,
-        photoSelected: state.photos.photoSelected
+        gallery: state.gallery.gallery
     };
 };
 

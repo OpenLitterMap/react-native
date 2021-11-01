@@ -173,7 +173,6 @@ export default function(state = INITIAL_STATE, action) {
              */
 
             case REMOVE_TAG_FROM_IMAGE:
-                console.log('remove_tag_from_camera_photo', action.payload);
                 let photo = draft.images[action.payload.currentIndex];
 
                 // if only one tag in payload category delete the category also

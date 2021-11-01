@@ -330,57 +330,6 @@ class HomeScreen extends PureComponent {
     }
 
     /**
-     * Render Header Title
-     *
-     * My Account || x photos selected
-     */
-    renderCenterTitle() {
-        if (this.props.isSelecting) {
-            return (
-                <TransText
-                    dictionary={`${this.props.lang}.leftpage.selected`}
-                    values={{ photos: this.props.selected }}
-                />
-            );
-        }
-
-        if (this.props.gallery.length > 0 || this.props.photos.length > 0) {
-            for (let i = 0; i < this.props.gallery.length; i++) {
-                if (this.props.gallery[i].hasOwnProperty('litter')) {
-                    return (
-                        <TransText
-                            style={styles.normalText}
-                            dictionary={`${
-                                this.props.lang
-                            }.leftpage.press-upload`}
-                        />
-                    );
-                }
-            }
-
-            for (let i = 0; i < this.props.photos.length; i++) {
-                if (this.props.photos[i].hasOwnProperty('litter')) {
-                    return (
-                        <TransText
-                            style={styles.normalText}
-                            dictionary={`${
-                                this.props.lang
-                            }.leftpage.press-upload`}
-                        />
-                    );
-                }
-            }
-
-            return (
-                <TransText
-                    style={styles.normalText}
-                    dictionary={`${this.props.lang}.leftpage.select-a-photo`}
-                />
-            );
-        }
-    }
-
-    /**
      * Toggle Selecting - header right
      */
     toggleSelecting() {
@@ -480,8 +429,8 @@ class HomeScreen extends PureComponent {
                         // shared_actions
                         const resp = await this.props.uploadTags(
                             this.props.token,
-                            img.tags
-                            // response.photo_id
+                            img.tags,
+                            response.photo_id
                         );
                         if (resp && resp.success) {
                             // Remove the image
@@ -669,24 +618,18 @@ const mapStateToProps = state => {
         isSelecting: state.images.isSelecting,
         lang: state.auth.lang,
         selected: state.images.selected,
-        photos: state.photos.photos,
-        progress: state.photos.progress,
         modalVisible: state.shared.modalVisible,
         model: state.settings.model,
         litterVisible: state.shared.litterVisible,
-        remainingCount: state.photos.remainingCount,
         token: state.auth.token,
         totalGalleryUploaded: state.gallery.totalGalleryUploaded,
-        totalCameraPhotosUploaded: state.photos.totalCameraPhotosUploaded,
         thankYouVisible: state.shared.thankYouVisible,
         totalImagesToUpload: state.shared.totalImagesToUpload,
         totalTaggedGalleryCount: state.gallery.totalTaggedGalleryCount,
-        totalTaggedSessionCount: state.photos.totalTaggedSessionCount,
         uploadVisible: state.shared.uploadVisible,
         uniqueValue: state.shared.uniqueValue,
         user: state.auth.user,
         webImagesCount: state.web.count,
-        //webNextImage: state.web.nextImage
         webPhotos: state.web.photos,
         totalWebImagesUpdated: state.web.totalWebImagesUpdated,
         appVersion: state.shared.appVersion,

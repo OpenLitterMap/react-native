@@ -90,7 +90,6 @@ export const incrementSelected = () => {
  * remove a tag from image
  */
 export const removeTagFromImage = data => {
-    console.log('action.removeTagFromCameraPhoto');
     return {
         type: REMOVE_TAG_FROM_IMAGE,
         payload: data

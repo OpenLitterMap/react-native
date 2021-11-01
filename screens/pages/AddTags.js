@@ -67,10 +67,6 @@ class AddTags extends PureComponent {
             await this.setState({ height: SCREEN_HEIGHT * 0.1 });
         }
 
-        if (this.state.loading) {
-            await this.props.checkForWebUpload(this.props.token);
-        }
-
         this.keyboardDidShowListener = Keyboard.addListener(
             'keyboardDidShow',
             this._keyboardDidShow.bind(this)
@@ -425,9 +421,6 @@ class AddTags extends PureComponent {
      *
      * This function gives us the new index the user has swiped to.
      *
-     * this.props.photos = from in-app camera.
-     * this.props.gallery = chosen by user.
-     * this.pros.web = uploaded to web, tag with the app.
      *
      * @param newGlobalIndex (int): the global index across all photo types.
      */
@@ -624,7 +617,6 @@ const styles = {
 
 const mapStateToProps = state => {
     return {
-        selectedCameraPhotosIndex: state.photos.indexSelected,
         category: state.litter.category,
         collectionLength: state.litter.collectionLength,
         currentTotalItems: state.litter.currentTotalItems,
@@ -637,7 +629,6 @@ const mapStateToProps = state => {
         items: state.litter.items,
         lang: state.auth.lang,
         model: state.settings.model,
-        photos: state.photos.photos,
         photoSelected: state.litter.photoSelected,
         photoType: state.litter.photoType,
         positions: state.litter.positions,
@@ -652,7 +643,6 @@ const mapStateToProps = state => {
         tagsModalVisible: state.litter.tagsModalVisible,
         token: state.auth.token,
         totalTaggedGalleryCount: state.gallery.totalTaggedGalleryCount,
-        totalTaggedSessionCount: state.photos.totalTaggedSessionCount,
         q: state.litter.q,
         quantityChanged: state.litter.quantityChanged,
         // webImages: state.web.images,
