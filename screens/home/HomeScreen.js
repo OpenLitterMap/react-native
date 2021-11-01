@@ -395,6 +395,7 @@ class HomeScreen extends PureComponent {
      * else
      * delete images from state based on id
      */
+
     deleteImages() {
         this.props.images.map(image => {
             if (image.type !== 'WEB' && image.selected) {

@@ -101,8 +101,19 @@ class LitterBottomSearch extends PureComponent {
                 {
                     text: 'OK',
                     onPress: async () => {
-                        // TODO: delete web image
-                        this.props.deleteImage(id);
+                        // if WEB image hit api and delete uploaded image and then delete from state
+                        // else delete from state by id
+                        if (type === 'WEB') {
+                            const photoId = this.props.images[currentIndex]
+                                .photoId;
+                            await this.props.deleteSelectedWebImages(
+                                this.props.token,
+                                photoId,
+                                id
+                            );
+                        } else {
+                            this.props.deleteImage(id);
+                        }
 
                         if (currentIndex === 0) {
                             this.closeLitterPicker();
