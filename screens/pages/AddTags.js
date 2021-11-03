@@ -42,19 +42,7 @@ class AddTags extends PureComponent {
             height: 0
         };
 
-        this._checkForPhotos = this._checkForPhotos.bind(this);
         this.closeKeyboardAndroid = this.closeKeyboardAndroid.bind(this);
-    }
-
-    /**
-     *
-     */
-    UNSAFE_componentWillMount() {
-        if (this.props.rightPage) {
-            this.setState({
-                loading: true
-            });
-        }
     }
 
     /**
@@ -66,10 +54,6 @@ class AddTags extends PureComponent {
         // this is necessary to allow the user to click on text input because of a bug with keyboardAvoidingView on Android
         if (Platform.OS === 'android') {
             await this.setState({ height: SCREEN_HEIGHT * 0.1 });
-        }
-
-        if (this.state.loading) {
-            await this.props.checkForWebUpload(this.props.token);
         }
 
         this.keyboardDidShowListener = Keyboard.addListener(
@@ -207,15 +191,9 @@ class AddTags extends PureComponent {
      * The LitterPicker component
      */
     render() {
-        console.log('Rendering: AddTags');
-
         const { lang, swiperIndex } = this.props;
 
-        // Todo - save these globally
-        const photosLength = this.props.photos.length;
-        const galleryLength = this.props.gallery.length;
-        const webLength = this.props.webPhotos.length;
-        const IMAGES_COUNT = photosLength + galleryLength + webLength;
+        const IMAGES_COUNT = this.props.images.length;
 
         return (
             <View style={{ flex: 1 }}>
@@ -245,16 +223,13 @@ class AddTags extends PureComponent {
 
                     {/* Third - Tags. position: absolute */}
                     <LitterTags
-                        tags={this.getTags()}
+                        tags={this.props.images[this.props.swiperIndex]?.tags}
                         previousTags={this.props.previousTags}
                         positions={this.props.positions}
                         item={this.props.item}
                         keyboardOpen={this.state.keyboardOpen}
                         lang={this.props.lang}
                         swiperIndex={swiperIndex}
-                        photosLength={photosLength}
-                        galleryLength={galleryLength}
-                        webLength={webLength}
                     />
 
                     {/* Fourth - bottomContainer 20% height */}
@@ -293,7 +268,7 @@ class AddTags extends PureComponent {
                             <TouchableOpacity
                                 onPress={this.addTag.bind(this)}
                                 style={styles.addTagButtonOuter}
-                                disabled={this._checkForPhotos()}>
+                                disabled={this.props.images.length === 0}>
                                 <View style={styles.addTagButtonInner}>
                                     <Icon
                                         name="add"
@@ -333,24 +308,10 @@ class AddTags extends PureComponent {
                         presence={this.props.presence}
                         lang={this.props.lang}
                         swiperIndex={swiperIndex}
-                        photosLength={photosLength}
-                        galleryLength={galleryLength}
-                        webLength={webLength}
                     />
                 </View>
                 <SafeAreaView style={{ flex: 0 }} />
             </View>
-        );
-    }
-
-    /**
-     * Return True or False
-     */
-    _checkForPhotos() {
-        return (
-            this.props.gallery.length === 0 &&
-            this.props.photos.length === 0 &&
-            this.props.webImagesCount === 0
         );
     }
 
@@ -441,8 +402,6 @@ class AddTags extends PureComponent {
     nextImage() {
         const currentIndex = this.props.swiperIndex;
 
-        // todo - check total length of all camera_photos, gallery_photos and web_photos
-
         this.props.swiperIndexChanged(currentIndex + 1);
     }
 
@@ -451,9 +410,6 @@ class AddTags extends PureComponent {
      *
      * This function gives us the new index the user has swiped to.
      *
-     * this.props.photos = from in-app camera.
-     * this.props.gallery = chosen by user.
-     * this.pros.web = uploaded to web, tag with the app.
      *
      * @param newGlobalIndex (int): the global index across all photo types.
      */
@@ -481,67 +437,19 @@ class AddTags extends PureComponent {
     };
 
     /**
-     * Return the tags for an image at a specific index
-     */
-
-    getTags() {
-        const currentGlobalIndex = this.props.swiperIndex;
-
-        console.log(
-            'Rendering: getTags at currentGlobalIndex: ',
-            currentGlobalIndex
-        );
-
-        const photosLength = this.props.photos.length;
-        const galleryLength = this.props.gallery.length;
-        const webLength = this.props.webPhotos.length;
-
-        if (currentGlobalIndex < photosLength) {
-            return this.props.photos[currentGlobalIndex]?.tags;
-        } else if (currentGlobalIndex < galleryLength + photosLength) {
-            return this.props.gallery[currentGlobalIndex - photosLength]?.tags;
-        } else if (
-            currentGlobalIndex >= galleryLength + photosLength &&
-            webLength !== 0
-        ) {
-            const webIndex =
-                currentGlobalIndex - (photosLength + galleryLength);
-            return this.props.webPhotos[webIndex]?.tags;
-        } else {
-            return {};
-        }
-    }
-
-    /**
      * Array of images to swipe through
-     *
-     * this.props.swiperIndex is the current index across all available photo types
-     *
-     * this.props.photos are from the app camera
-     * this.props.gallery are selected from the users photo album
-     * this.props.webPhotos were uploaded to web and in the app for tagging
      */
+
     _renderLitterImage = () => {
-        console.log('renderLitterImage index:', this.props.swiperIndex);
-
-        // Put all the data we want to display into an array
-        const photos = [].concat(
-            this.props.photos,
-            this.props.gallery,
-            this.props.webPhotos
-        );
-
         // Return an array of all photos
-        return photos.map((photo, index) => {
+        return this.props.images.map((image, index) => {
             // Only render one image
             if (index === this.props.swiperIndex) {
-                return (
-                    <LitterImage key={photos.length} photoSelected={photo} />
-                );
+                return <LitterImage key={image.id} photoSelected={image} />;
             }
 
             // Otherwise, just return an empty view
-            return <View key={photos.length} />;
+            return <View key={image.id} />;
         });
     };
 
@@ -557,38 +465,15 @@ class AddTags extends PureComponent {
             quantity: this.props.q
         };
 
-        const photosLength = this.props.photos.length;
-        const galleryLength = this.props.gallery.length;
-        const webLength = this.props.webPhotos.length;
-
         // currentGlobalIndex
         const currentIndex = this.props.swiperIndex;
 
-        // Add tag to image
-        if (currentIndex < photosLength) {
-            // photo_actions
-            this.props.addTagsToCameraPhoto({
-                tag,
-                currentIndex,
-                quantityChanged: this.props.quantityChanged
-            });
-        } else if (currentIndex < photosLength + galleryLength) {
-            // gallery_actions
-            this.props.addTagsToGalleryImage({
-                tag,
-                currentIndex: currentIndex - photosLength,
-                quantityChanged: this.props.quantityChanged
-            });
-        } else if (currentIndex < photosLength + galleryLength + webLength) {
-            // web_actions
-            this.props.addTagsToWebImage({
-                tag,
-                currentIndex: currentIndex - photosLength - galleryLength,
-                quantityChanged: this.props.quantityChanged
-            });
-        } else {
-            console.log('problem@addTag');
-        }
+        this.props.addTagsToImages({
+            tag,
+            currentIndex,
+            quantityChanged: this.props.quantityChanged
+        });
+
         this.props.changeQuantiyStatus(false);
     }
 }
@@ -719,42 +604,30 @@ const styles = {
 
 const mapStateToProps = state => {
     return {
-        selectedCameraPhotosIndex: state.photos.indexSelected,
         category: state.litter.category,
         collectionLength: state.litter.collectionLength,
         currentTotalItems: state.litter.currentTotalItems,
         displayAllTags: state.litter.displayAllTags,
-        gallery: state.gallery.gallery,
-        galleryTaggedCount: state.gallery.galleryTaggedCount,
-        galleryTotalCount: state.gallery.galleryTotalCount,
         indexSelected: state.litter.indexSelected, // index of photos, gallery, web
         item: state.litter.item,
         items: state.litter.items,
         lang: state.auth.lang,
         model: state.settings.model,
-        photos: state.photos.photos,
         photoSelected: state.litter.photoSelected,
         photoType: state.litter.photoType,
         positions: state.litter.positions,
         presence: state.litter.presence,
         previous_tags: state.auth.user.previous_tags,
         previousTags: state.litter.previousTags,
-        selectedGalleryIndex: state.gallery.indexSelected,
         suggestedTags: state.litter.suggestedTags,
         swiperIndex: state.litter.swiperIndex,
         totalLitterCount: state.litter.totalLitterCount,
         tags: state.litter.tags,
         tagsModalVisible: state.litter.tagsModalVisible,
         token: state.auth.token,
-        totalTaggedGalleryCount: state.gallery.totalTaggedGalleryCount,
-        totalTaggedSessionCount: state.photos.totalTaggedSessionCount,
         q: state.litter.q,
         quantityChanged: state.litter.quantityChanged,
-        // webImages: state.web.images,
-        // webNextImage: state.web.nextImage,
-        webImagesCount: state.web.count,
-        webPhotos: state.web.photos,
-        webImageSuccess: state.web.webImageSuccess
+        images: state.images.images
     };
 };
 

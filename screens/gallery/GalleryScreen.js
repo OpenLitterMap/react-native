@@ -19,13 +19,13 @@ import { Header, SubTitle, Body } from '../components';
 
 const { width } = Dimensions.get('window');
 
-export const placeInTime = timestamp => {
+export const placeInTime = date => {
     let today = moment().startOf('day');
     let thisWeek = moment().startOf('week');
     let thisMonth = moment().startOf('month');
     let thisYear = moment().startOf('year');
 
-    const momentOfFile = moment(timestamp);
+    const momentOfFile = moment(date);
 
     if (momentOfFile.isSameOrAfter(today)) {
         return 'today';
@@ -59,8 +59,8 @@ class GalleryScreen extends Component {
     async splitIntoRows(images) {
         let temp = {};
         images.map(image => {
-            const timestampOfImage = image.timestamp * 1000;
-            const placeInTimeOfImage = placeInTime(timestampOfImage);
+            const dateOfImage = image.date * 1000;
+            const placeInTimeOfImage = placeInTime(dateOfImage);
 
             if (temp[placeInTimeOfImage] === undefined) {
                 temp[placeInTimeOfImage] = [];
@@ -100,23 +100,14 @@ class GalleryScreen extends Component {
     /**
      * fn that is called when "done" is pressed
      * sorts the array based on id
-     * call action photosFromGallery to save selected images to state
+     * call action addImage to save selected images to state
      *
-     * saves the selected array of images to Async store
      */
     async handleDoneClick() {
         const sortedArray = await this.state.selectedImages.sort(
             (a, b) => a.id - b.id
         );
-
-        this.props.photosFromGallery(sortedArray);
-
-        AsyncStorage.setItem(
-            'openlittermap-gallery',
-            JSON.stringify(this.state.selectedImages)
-        ).then(_ => {
-            return true;
-        });
+        this.props.addImage(sortedArray, 'GALLERY');
     }
 
     /**
@@ -198,8 +189,8 @@ class GalleryScreen extends Component {
                                     <View
                                         style={{
                                             position: 'absolute',
-                                            width: 30,
-                                            height: 30,
+                                            width: 24,
+                                            height: 24,
                                             backgroundColor: '#0984e3',
                                             right: 10,
                                             bottom: 10,
@@ -209,7 +200,7 @@ class GalleryScreen extends Component {
                                         }}>
                                         <Icon
                                             name="ios-checkmark-outline"
-                                            size={24}
+                                            size={20}
                                             color="white"
                                         />
                                     </View>
