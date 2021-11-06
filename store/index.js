@@ -7,7 +7,7 @@ import reducers from '../reducers';
 const config = {
     key: 'root',
     storage: AsyncStorage,
-    whitelist: ['auth']
+    whitelist: ['auth', 'images']
 };
 
 const middleware = __DEV__

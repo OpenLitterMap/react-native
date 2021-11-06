@@ -32,23 +32,6 @@ export default function(state = INITIAL_STATE, action) {
                 break;
 
             /**
-             * Decrement the count of images selected for deletion
-             */
-            case DECREMENT_SELECTED:
-                draft.selected = draft.selected - 1;
-
-                break;
-
-            /**
-             * Increment the count of images selected for deletion
-             */
-
-            case INCREMENT_SELECTED:
-                draft.selected = draft.selected + 1;
-
-                break;
-
-            /**
              * Toggle the modal and the litter (Add tags) component
              */
             case TOGGLE_LITTER:
@@ -72,15 +55,6 @@ export default function(state = INITIAL_STATE, action) {
             case TOGGLE_UPLOAD:
                 draft.modalVisible = !draft.modalVisible;
                 draft.uploadVisible = !draft.uploadVisible;
-
-                break;
-
-            /**
-             * Toggles isSelecting -- selecting images for deletion
-             */
-            case TOGGLE_SELECTING:
-                draft.selected = 0;
-                draft.isSelecting = !draft.isSelecting;
 
                 break;
 
