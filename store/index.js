@@ -7,13 +7,20 @@ import reducers from '../reducers';
 const config = {
     key: 'root',
     storage: AsyncStorage,
-    whitelist: ['auth']
+    whitelist: ['auth', 'images']
 };
 
-const reducer = persistCombineReducers(config, reducers);
+const middleware = __DEV__
+    ? [require('redux-immutable-state-invariant').default(), thunk]
+    : [thunk];
 
+const reducer = persistCombineReducers(config, reducers);
 export default function configurationStore(initialState = {}) {
-    const store = createStore(reducer, initialState, applyMiddleware(thunk));
+    const store = createStore(
+        reducer,
+        initialState,
+        applyMiddleware(...middleware)
+    );
 
     const persistor = persistStore(store);
 

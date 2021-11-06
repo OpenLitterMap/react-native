@@ -44,20 +44,7 @@ class HomeScreen extends PureComponent {
 
         // Bind any functions that call props
         this.toggleSelecting = this.toggleSelecting.bind(this);
-
-        // Photos selected from the Photos Album
-        AsyncStorage.getItem('openlittermap-gallery').then(gallery => {
-            if (gallery && gallery !== '[]') {
-                this.props.photosFromGallery(JSON.parse(gallery));
-            }
-        });
-
-        // Photos taken from the OLM Camera
-        AsyncStorage.getItem('openlittermap-photos').then(photos => {
-            if (photos && photos !== '[]') {
-                this.props.loadCameraPhotosFromAsyncStorage(JSON.parse(photos));
-            }
-        });
+        this.deleteImages = this.deleteImages.bind(this);
 
         const model = DeviceInfo.getModel();
 
@@ -158,14 +145,6 @@ class HomeScreen extends PureComponent {
                                     {this.state.uploaded} / {this.state.total}
                                 </Text>
 
-                                {/* <Progress.Circle
-                                      progress={this.props.galleryUploadProgress}
-                                      showsText={true}
-                                      size={100}
-                                      style={{ marginBottom: 30 }}
-                                    /> */}
-                                {/* Todo - translate cancel */}
-
                                 <Button
                                     onPress={this._toggleUpload.bind(this)}
                                     title="Cancel"
@@ -237,16 +216,12 @@ class HomeScreen extends PureComponent {
                             </View>
                         )}
                     </Modal>
-
+                    {/* Grid to display images -- 3 columns */}
                     <UploadImagesGrid
-                        gallery={this.props.gallery}
-                        photos={this.props.photos}
+                        photos={this.props.images}
                         lang={this.props.lang}
                         uniqueValue={this.props.uniqueValue}
                         isSelecting={this.props.isSelecting}
-                        //webNextImage={this.props.webNextImage}
-                        webImagesCount={this.props.webImagesCount}
-                        webPhotos={this.props.webPhotos}
                     />
 
                     <View style={styles.bottomContainer}>
@@ -259,40 +234,6 @@ class HomeScreen extends PureComponent {
             </>
         );
     }
-
-    /**
-     * Delete Selected Images
-     * todo - check if we need to async await before closing.
-     * other loops returning bugs when deleting multiple indexes
-     */
-    deleteSelectedImages = () => {
-        for (let i = this.props.photos.length - 1; i >= 0; --i) {
-            if (this.props.photos[i]['selected']) {
-                this.props.deleteSelectedPhoto(i);
-            }
-        }
-
-        for (let i = this.props.gallery.length - 1; i >= 0; --i) {
-            if (this.props.gallery[i]['selected']) {
-                this.props.deleteSelectedGallery(i);
-            }
-        }
-
-        // when all this is done, async await...then
-        this.props.toggleSelecting();
-
-        // async-storage photos & gallery set
-        setTimeout(() => {
-            AsyncStorage.setItem(
-                'openlittermap-photos',
-                JSON.stringify(this.props.photos)
-            );
-            AsyncStorage.setItem(
-                'openlittermap-gallery',
-                JSON.stringify(this.props.gallery)
-            );
-        }, 1000);
-    };
 
     /**
      * Navigate to album screen
@@ -334,28 +275,11 @@ class HomeScreen extends PureComponent {
      * ... if images exist and at least 1 image has a tag
      */
     renderUploadButton() {
-        if (
-            (this.props.photos?.length === 0 &&
-                this.props.gallery?.length === 0 &&
-                this.props.webPhotos?.length === 0) ||
-            this.props.isSelecting
-        ) {
+        if (this.props.images?.length === 0 || this.props.isSelecting) {
             return;
         } else {
             let tagged = 0;
-            this.props.photos.map(img => {
-                if (img.tags && Object.keys(img.tags)?.length > 0) {
-                    tagged++;
-                }
-            });
-
-            this.props.gallery.map(img => {
-                if (img.tags && Object.keys(img.tags)?.length > 0) {
-                    tagged++;
-                }
-            });
-
-            this.props.webPhotos.map(img => {
+            this.props.images.map(img => {
                 if (img.tags && Object.keys(img.tags)?.length > 0) {
                     tagged++;
                 }
@@ -388,7 +312,7 @@ class HomeScreen extends PureComponent {
             );
         }
 
-        if (this.props.photos.length > 0 || this.props.gallery.length > 0) {
+        if (this.props.images.length > 0) {
             return (
                 <TransText
                     style={styles.normalWhiteText}
@@ -402,69 +326,34 @@ class HomeScreen extends PureComponent {
     }
 
     /**
-     * Render Header Title
-     *
-     * My Account || x photos selected
-     */
-    renderCenterTitle() {
-        if (this.props.isSelecting) {
-            return (
-                <TransText
-                    dictionary={`${this.props.lang}.leftpage.selected`}
-                    values={{ photos: this.props.selected }}
-                />
-            );
-        }
-
-        if (this.props.gallery.length > 0 || this.props.photos.length > 0) {
-            for (let i = 0; i < this.props.gallery.length; i++) {
-                if (this.props.gallery[i].hasOwnProperty('litter')) {
-                    return (
-                        <TransText
-                            style={styles.normalText}
-                            dictionary={`${
-                                this.props.lang
-                            }.leftpage.press-upload`}
-                        />
-                    );
-                }
-            }
-
-            for (let i = 0; i < this.props.photos.length; i++) {
-                if (this.props.photos[i].hasOwnProperty('litter')) {
-                    return (
-                        <TransText
-                            style={styles.normalText}
-                            dictionary={`${
-                                this.props.lang
-                            }.leftpage.press-upload`}
-                        />
-                    );
-                }
-            }
-
-            return (
-                <TransText
-                    style={styles.normalText}
-                    dictionary={`${this.props.lang}.leftpage.select-a-photo`}
-                />
-            );
-        }
-    }
-
-    /**
      * Toggle Selecting - header right
      */
     toggleSelecting() {
-        if (this.props.isSelecting) {
-            if (this.props.photos.length > 0) {
-                this.props.deselectAllCameraPhotos();
-            }
-            if (this.props.gallery.length > 0) {
-                this.props.deselectAllGalleryPhotos();
-            }
-        }
+        this.props.deselectAllImages();
+        this.props.toggleSelecting();
+    }
 
+    /**
+     * if image is of type WEB -- hit api to delete uploaded image
+     * then delete from state
+     *
+     * else
+     * delete images from state based on id
+     */
+
+    deleteImages() {
+        this.props.images.map(image => {
+            if (image.type !== 'WEB' && image.selected) {
+                this.props.deleteImage(image.id);
+            } else if (image.type === 'WEB' && image.selected) {
+                this.props.deleteSelectedWebImages(
+                    this.props.token,
+                    image.photoId,
+                    image.id
+                );
+            }
+        });
+        // this.props.deleteSelectedImages();
         this.props.toggleSelecting();
     }
 
@@ -484,135 +373,52 @@ class HomeScreen extends PureComponent {
 
         const model = this.props.model;
 
-        let galleryCount = 0;
-        let photosCount = 0;
-        let webCount = 0;
+        let imagesCount = 0;
 
-        this.props.gallery.map(item => {
+        this.props.images.map(item => {
             if (item.tags && Object.keys(item.tags)?.length > 0) {
-                galleryCount++;
+                imagesCount++;
             }
         });
 
-        this.props.photos.map(item => {
-            if (item.tags && Object.keys(item.tags)?.length > 0) {
-                photosCount++;
-            }
-        });
-
-        this.props.webPhotos.map(item => {
-            if (item.tags && Object.keys(item.tags)?.length > 0) {
-                webCount++;
-            }
-        });
-
-        const total = galleryCount + photosCount + webCount;
-
-        console.log({ total });
+        console.log({ imagesCount });
 
         this.setState({
-            total
+            total: imagesCount
         });
 
         // shared.js
         this.props.toggleUpload();
 
-        if (galleryCount > 0) {
+        if (imagesCount > 0) {
             // async loop
-            for (const img of this.props.gallery) {
-                const isgeotagged = await isGeotagged(img);
+            for (const img of this.props.images) {
+                const isgeotagged = isGeotagged(img);
+                const myIndex = this.props.images.indexOf(img);
                 if (
+                    img.type !== 'WEB' &&
                     img.tags &&
                     Object.keys(img.tags).length > 0 &&
                     isgeotagged
                 ) {
-                    let galleryToUpload = new FormData();
+                    let ImageData = new FormData();
 
-                    galleryToUpload.append('photo', {
+                    ImageData.append('photo', {
                         name: img.filename,
                         type: 'image/jpeg',
                         uri: img.uri
                     });
 
-                    const date = moment
-                        .unix(img.timestamp)
-                        .format('YYYY:MM:DD HH:mm:ss');
-
-                    galleryToUpload.append('lat', img.lat);
-                    galleryToUpload.append('lon', img.lon);
-                    galleryToUpload.append('date', date);
-                    galleryToUpload.append('presence', img.picked_up);
-                    galleryToUpload.append('model', model);
-
-                    const myIndex = this.props.gallery.indexOf(img);
-
-                    // shared_actions.js
-                    const response = await this.props.uploadPhoto(
-                        this.props.token,
-                        galleryToUpload
-                    );
-
-                    if (response && response.success) {
-                        // shared_actions.js
-                        const resp = await this.props.uploadTags(
-                            this.props.token,
-                            img.tags,
-                            response.photo_id
-                        );
-
-                        if (resp && resp.success) {
-                            // Remove the image
-                            this.props.galleryPhotoUploadedSuccessfully(
-                                myIndex
-                            );
-
-                            this.setState(previousState => ({
-                                uploaded: previousState.uploaded + 1
-                            }));
-                        }
-                    } else {
-                        this.setState(previousState => ({
-                            failedUpload: previousState.failedUpload + 1
-                        }));
-                    }
-                } else if (!isgeotagged) {
-                    this.setState(previousState => ({
-                        failedUpload: previousState.failedUpload + 1
-                    }));
-                }
-            }
-        }
-
-        if (photosCount > 0) {
-            // async loop
-            for (const img of this.props.photos) {
-                const isgeotagged = await isGeotagged(img);
-
-                if (
-                    img.tags &&
-                    Object.keys(img.tags).length > 0 &&
-                    isgeotagged
-                ) {
-                    let cameraPhoto = new FormData();
-
-                    cameraPhoto.append('photo', {
-                        name: img.filename,
-                        type: 'image/jpeg',
-                        uri: img.uri
-                    });
-
-                    cameraPhoto.append('lat', img.lat);
-                    // cameraPhoto.append('lon', img.lon);
-                    cameraPhoto.append('date', img.date);
-                    cameraPhoto.append('presence', img.presence);
-                    cameraPhoto.append('model', model);
-
-                    const myIndex = this.props.photos.indexOf(img);
+                    ImageData.append('lat', img.lat);
+                    ImageData.append('lon', img.lon);
+                    ImageData.append('date', img.date);
+                    ImageData.append('presence', img.presence);
+                    ImageData.append('model', model);
 
                     // shared_actions
                     const response = await this.props.uploadPhoto(
                         this.props.token,
-                        cameraPhoto
+                        ImageData
                     );
 
                     if (response && response.success) {
@@ -622,10 +428,9 @@ class HomeScreen extends PureComponent {
                             img.tags,
                             response.photo_id
                         );
-
                         if (resp && resp.success) {
                             // Remove the image
-                            this.props.cameraPhotoUploadedSuccessfully(myIndex);
+                            this.props.deleteImage(myIndex);
 
                             this.setState(previousState => ({
                                 uploaded: previousState.uploaded + 1
@@ -636,26 +441,19 @@ class HomeScreen extends PureComponent {
                             failedUpload: previousState.failedUpload + 1
                         }));
                     }
-                } else if (!isgeotagged) {
-                    this.setState(previousState => ({
-                        failedUpload: previousState.failedUpload + 1
-                    }));
-                }
-            }
-        }
-
-        if (webCount > 0) {
-            // async loop
-            for (const img of this.props.webPhotos) {
-                if (img.tags && Object.keys(img.tags).length > 0) {
+                } else if (
+                    img.type === 'WEB' &&
+                    img.tags &&
+                    Object.keys(img.tags).length > 0
+                ) {
                     const response = await this.props.uploadTags(
                         this.props.token,
                         img.tags,
-                        img.id
+                        img.photoId
                     );
 
                     if (response && response.success) {
-                        this.props.removeWebImage(img.id);
+                        this.props.deleteImage(myIndex);
 
                         this.setState(previousState => ({
                             uploaded: previousState.uploaded + 1
@@ -665,6 +463,10 @@ class HomeScreen extends PureComponent {
                             failedUpload: previousState.failedUpload + 1
                         }));
                     }
+                } else if (!isgeotagged) {
+                    this.setState(previousState => ({
+                        failedUpload: previousState.failedUpload + 1
+                    }));
                 }
             }
         }
@@ -679,24 +481,12 @@ class HomeScreen extends PureComponent {
             this.props.toggleThankYou();
             // this.state.uploaded > 0 && this.props.toggleThankYou();
         }
-
-        setTimeout(() => {
-            AsyncStorage.setItem(
-                'openlittermap-photos',
-                JSON.stringify(this.props.photos)
-            );
-            AsyncStorage.setItem(
-                'openlittermap-gallery',
-                JSON.stringify(this.props.gallery)
-            );
-        }, 1000);
     };
 
     /**
      *
      */
     _toggleThankYou() {
-        console.log('toggleThankYou');
         this.props.toggleThankYou();
     }
 
@@ -707,11 +497,7 @@ class HomeScreen extends PureComponent {
     renderActionButton() {
         let status = 'NO_IMAGES';
         let fabFunction = this.loadGallery;
-        if (
-            this.props.photos.length === 0 &&
-            this.props.gallery.length === 0 &&
-            this.props.webImagesCount === 0
-        ) {
+        if (this.props.images.length === 0) {
             status = 'NO_IMAGES';
             fabFunction = this.loadGallery;
         }
@@ -719,7 +505,7 @@ class HomeScreen extends PureComponent {
             status = 'SELECTING';
             if (this.props.selected > 0) {
                 status = 'SELECTED';
-                fabFunction = this.deleteSelectedImages;
+                fabFunction = this.deleteImages;
             }
         }
 
@@ -823,34 +609,21 @@ const styles = {
 
 const mapStateToProps = state => {
     return {
-        androidName: state.settings.androidName,
-        gallery: state.gallery.gallery,
-        galleryUploadProgress: state.gallery.galleryUploadProgress,
-        imageBrowserOpen: state.gallery.imageBrowserOpen,
-        isSelecting: state.shared.isSelecting,
+        isSelecting: state.images.isSelecting,
         lang: state.auth.lang,
-        selected: state.shared.selected,
-        photos: state.photos.photos,
-        progress: state.photos.progress,
+        selected: state.images.selected,
         modalVisible: state.shared.modalVisible,
         model: state.settings.model,
         litterVisible: state.shared.litterVisible,
-        remainingCount: state.photos.remainingCount,
         token: state.auth.token,
-        totalGalleryUploaded: state.gallery.totalGalleryUploaded,
-        totalCameraPhotosUploaded: state.photos.totalCameraPhotosUploaded,
         thankYouVisible: state.shared.thankYouVisible,
         totalImagesToUpload: state.shared.totalImagesToUpload,
-        totalTaggedGalleryCount: state.gallery.totalTaggedGalleryCount,
-        totalTaggedSessionCount: state.photos.totalTaggedSessionCount,
         uploadVisible: state.shared.uploadVisible,
         uniqueValue: state.shared.uniqueValue,
         user: state.auth.user,
-        webImagesCount: state.web.count,
-        //webNextImage: state.web.nextImage
-        webPhotos: state.web.photos,
-        totalWebImagesUpdated: state.web.totalWebImagesUpdated,
-        appVersion: state.shared.appVersion
+        appVersion: state.shared.appVersion,
+        // new image reducer
+        images: state.images.images
     };
 };
 

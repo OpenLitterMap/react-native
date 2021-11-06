@@ -169,7 +169,7 @@ const LITTERKEYS = {
         { id: 19, key: 'haribo' }, // Haribo
         { id: 20, key: 'heineken' }, // Heineken
         { id: 21, key: 'insomnia' }, // Insomnia
-        { id: 22, key: 'kellogs:' }, // Kellogs
+        { id: 22, key: 'kellogs' }, // Kellogs
         { id: 23, key: 'kfc' }, // KFC
         // { id: 24, key: 'lego' },             //  'Lego', -> duplicated by Coast
         { id: 25, key: 'lidl' }, // Lidl

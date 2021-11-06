@@ -25,7 +25,7 @@
         "smokingOther": "Fumer-Autre",
         "vape_pen": "Stylo Vape",
         "vape_oil": "Vape huile"
-   },
+    },
     "alcohol": {
         "beerBottle": "Bouteilles de bière",
         "spiritBottle": "Bouteilles spiritueuses",
@@ -191,6 +191,7 @@
         "nescafe": "Nescafe",
         "nestle": "Nestle",
         "marlboro": "Marlboro",
+        "mars": "Mars",
         "mcdonalds": "McDonalds",
         "nike": "Nike",
         "obriens": "O-Briens",

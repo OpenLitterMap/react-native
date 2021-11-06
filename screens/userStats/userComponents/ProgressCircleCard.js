@@ -7,10 +7,14 @@ const { width } = Dimensions.get('window');
 const ProgressCircleCard = ({
     lang,
     level,
+    levelStart,
     levelPercentage,
+    levelPercentageStart,
     xpRequired,
     totalLittercoin,
-    littercoinPercentage
+    littercoinStart,
+    littercoinPercentage,
+    littercoinPercentageStart
 }) => {
     return (
         <View style={styles.container}>
@@ -20,9 +24,10 @@ const ProgressCircleCard = ({
                         isValueDisplayed={false}
                         strokeWidth={10}
                         percentage={levelPercentage}
+                        startPercentage={levelPercentageStart}
                         color="#e268b3"
                         value={levelPercentage}
-                        delay={500}
+                        delay={0}
                         duration={5000}
                         radius={(width - 40) / 4 - 16}
                     />
@@ -33,9 +38,10 @@ const ProgressCircleCard = ({
                         isValueDisplayed={false}
                         strokeWidth={10}
                         percentage={littercoinPercentage}
+                        startPercentage={littercoinPercentageStart}
                         color="#A46EDA"
                         value={littercoinPercentage}
-                        delay={500}
+                        delay={0}
                         duration={5000}
                         radius={(width - 40) / 4}
                     />
@@ -46,6 +52,7 @@ const ProgressCircleCard = ({
                 <ProgressStatCard
                     color="#e268b3"
                     value={level}
+                    startValue={levelStart}
                     title={`${lang}.user.level`}
                     tagline={`${lang}.user.level-up`}
                     taglineCount={xpRequired}
@@ -54,6 +61,7 @@ const ProgressCircleCard = ({
                     style={{ marginTop: 20 }}
                     color="#A46EDA"
                     value={totalLittercoin}
+                    startValue={littercoinStart}
                     title={`${lang}.user.littercoin`}
                     tagline={`${lang}.user.next-littercoin`}
                     taglineCount={littercoinPercentage}

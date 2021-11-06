@@ -199,7 +199,6 @@ class CameraScreen extends React.Component {
     /**
      * Render No Permissions
      *
-     * Todo - When permissions are denied: Add Button to request permissions again
      */
     renderNoPermissions() {
         return (
@@ -265,19 +264,17 @@ class CameraScreen extends React.Component {
                         // iOS 96790415-6575-4CED-BA64-D6E8B16BF10D.jpg
                         // Android...
 
-                        // photo_action.js, photos_reducer
-                        this.props.addPhoto({
-                            result,
-                            lat,
-                            lon,
-                            filename,
-                            date
-                        });
-
-                        // async-storage photos set
-                        AsyncStorage.setItem(
-                            'openlittermap-photos',
-                            JSON.stringify(this.props.photos)
+                        this.props.addImage(
+                            [
+                                {
+                                    uri: result.uri,
+                                    lat,
+                                    lon,
+                                    filename,
+                                    date
+                                }
+                            ],
+                            'CAMERA'
                         );
                     })
                     .catch(error => {
@@ -368,7 +365,6 @@ const mapStateToProps = state => {
         autoFocus: state.camera.autoFocus,
         lat: state.camera.lat,
         lon: state.camera.lon,
-        photos: state.photos.photos,
         token: state.auth.token,
         type: state.camera.type,
         user: state.auth.user,

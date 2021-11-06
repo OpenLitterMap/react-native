@@ -46,11 +46,11 @@ class SettingsScreen extends Component {
                     }
                     centerContent={
                         <Title
-                            style={{ marginLeft: 20 }}
                             color="white"
                             dictionary={`${lang}.settings.settings`}
                         />
                     }
+                    centerContainerStyle={{ flex: 2 }}
                     rightContent={
                         <Pressable onPress={() => this.props.logout()}>
                             <Body
@@ -215,7 +215,7 @@ class SettingsScreen extends Component {
                 return (
                     <Switch
                         onValueChange={() => this._toggleSwitch(id)}
-                        value={this._getSwitchValue(id)}
+                        value={this._getSwitchValue(id) === 0 ? false : true}
                     />
                 );
             }
@@ -259,22 +259,34 @@ class SettingsScreen extends Component {
 
     /**
      * Get the True or False value for a Switch
+     * INFO: show_name and show_username have boolean values
+     * rest have 0 & 1
      */
     _getSwitchValue(id) {
-        if (id === 4) {
-            return this.props.user.show_name_maps;
-        } else if (id === 5) {
-            return this.props.user.show_username_maps;
-        } else if (id === 6) {
-            return this.props.user.show_name;
-        } else if (id === 7) {
-            return this.props.user.show_username;
-        } else if (id === 8) {
-            return this.props.user.show_name_createdby;
-        } else if (id === 9) {
-            return this.props.user.show_username_createdby;
-        } else if (id === 10) {
-            return this.props.user.previous_tag;
+        switch (id) {
+            case 4:
+                return this.props.user.show_name_maps;
+                break;
+            case 5:
+                return this.props.user.show_username_maps;
+                break;
+            case 6:
+                return this.props.user.show_name === false ? 0 : 1;
+                break;
+            case 7:
+                return this.props.user.show_username === false ? 0 : 1;
+                break;
+            case 8:
+                return this.props.user.show_name_createdby;
+                break;
+            case 9:
+                return this.props.user.show_username_createdby;
+                break;
+            case 10:
+                return this.props.user.previous_tag;
+                break;
+            default:
+                break;
         }
     }
 }

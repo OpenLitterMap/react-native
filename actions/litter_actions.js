@@ -2,20 +2,16 @@ import React from 'react';
 
 import {
     CHANGE_CATEGORY,
-    CHANGE_PHOTO_TYPE,
     CHANGE_ITEM,
     CHANGE_Q,
     CHANGE_QUANTITY_STATUS,
     CHANGE_SWIPER_INDEX,
-    REMOVE_TAG,
     RESET_LITTER_STATE,
-    RESET_TAGS,
     UPDATE_PREVIOUS_TAGS,
     SHOW_ALL_TAGS,
     SHOW_INNER_MODAL,
     SUGGEST_TAGS,
     TOGGLE_SWITCH,
-    UPDATE_TAGS,
     UPDATE_TAGS_X_POS,
     UPDATE_QUANTITY
 } from './types';
@@ -37,18 +33,6 @@ export const changeItem = item => {
     return {
         type: CHANGE_ITEM,
         payload: item
-    };
-};
-
-/**
- * Change the type of photo being selected for tagging
- *
- * @param payload string : "camera", "gallery", or "web".
- */
-export const changePhotoType = payload => {
-    return {
-        type: CHANGE_PHOTO_TYPE,
-        action: payload
     };
 };
 
@@ -102,42 +86,11 @@ export const suggestTags = data => {
 };
 
 /**
- * Remove a tag and its quantity
- */
-export const removeTag = tags => {
-    return {
-        type: REMOVE_TAG,
-        payload: tags
-    };
-};
-
-/**
- * Reset the tags only
- *
- * Used when web-image is submitted with tags
- */
-export const resetTags = () => {
-    return {
-        type: RESET_TAGS
-    };
-};
-
-/**
  * Reset the state
  */
 export const resetLitterTags = () => {
     return {
         type: RESET_LITTER_STATE
-    };
-};
-
-/**
- * User.previous_tags is true
- */
-export const updateTags = tags => {
-    return {
-        type: UPDATE_TAGS,
-        payload: tags
     };
 };
 
@@ -168,16 +121,6 @@ export const setLitterPickerModal = bool => {
 export const toggleSwitch = () => {
     return {
         type: TOGGLE_SWITCH
-    };
-};
-
-/**
- * Change the quantity of an existing piece of litter
- */
-export const updateLitterQuantity = tags => {
-    return {
-        type: UPDATE_QUANTITY,
-        payload: tags
     };
 };
 

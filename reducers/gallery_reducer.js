@@ -1,217 +1,44 @@
-import {
-    ADD_GEOTAGGED_IMAGES,
-    ADD_TAGS_TO_GALLERY_IMAGE,
-    CHANGE_UPLOAD_PROGRESS,
-    DELETE_SELECTED_GALLERY,
-    DESELECT_ALL_GALLERY_PHOTOS,
-    GALLERY_UPLOADED_SUCCESSFULLY,
-    TOGGLE_IMAGES_LOADING,
-    PHOTOS_FROM_GALLERY,
-    REMOVE_TAG_FROM_GALLERY_PHOTO,
-    TOGGLE_IMAGE_BROWSER,
-    TOGGLE_SELECTED_GALLERY
-} from '../actions/types';
+import produce from 'immer';
+import { ADD_GEOTAGGED_IMAGES, TOGGLE_IMAGES_LOADING } from '../actions/types';
 
 const INITIAL_STATE = {
-    gallery: [], // array of selected images
-    imageBrowserOpen: false,
-    // imagesLoading: true, // inside the photo gallery, turn on to show spinner
     imagesLoading: false,
-    galleryUploadProgress: 0,
     geotaggedImages: [], // array of geotagged images
     camerarollImageFetched: false,
     lastFetchTime: null
 };
 
 export default function(state = INITIAL_STATE, action) {
-    switch (action.type) {
-        /**
-         * Add or update tags object on a gallery image
-         */
-        case ADD_TAGS_TO_GALLERY_IMAGE:
-            let images = [...state.gallery];
+    return produce(state, draft => {
+        switch (action.type) {
+            /**
+             * The users images have finished loading
+             */
 
-            let image = images[action.payload.currentIndex];
+            case TOGGLE_IMAGES_LOADING:
+                draft.imagesLoading = action.payload;
 
-            let newTags = { ...image.tags };
+                break;
 
-            // update tags on image
-            let quantity = 1;
+            /**
+             * add array of geotagged images to state
+             */
 
-            // if quantity exists, assign it
-            if (action.payload.tag.hasOwnProperty('quantity')) {
-                quantity = action.payload.tag.quantity;
-            }
+            case ADD_GEOTAGGED_IMAGES:
+                const geotaggedImages = [
+                    ...action.payload.geotagged,
+                    ...draft.geotaggedImages
+                ];
 
-            let payloadCategory = action.payload.tag.category;
-            let payloadTitle = action.payload.tag.title;
-            let quantityChanged = action.payload.quantityChanged
-                ? action.payload.quantityChanged
-                : false;
+                draft.geotaggedImages = geotaggedImages;
+                draft.camerarollImageFetched = true;
+                draft.lastFetchTime = Math.floor(new Date().getTime());
+                draft.imagesLoading = false;
 
-            // check if category of incoming payload already exist in image tags
-            if (newTags.hasOwnProperty(payloadCategory)) {
-                // check if title of incoming payload already exist
-                if (newTags[payloadCategory].hasOwnProperty(payloadTitle)) {
-                    quantity = newTags[payloadCategory][payloadTitle];
+                break;
 
-                    if (quantityChanged) {
-                        quantity = action.payload.tag.quantity;
-                    } else {
-                        quantity++;
-                    }
-                }
-            }
-
-            // create a new object with the new values
-            newTags = {
-                ...newTags,
-                [payloadCategory]: {
-                    ...newTags[payloadCategory],
-                    [payloadTitle]: quantity
-                }
-            };
-
-            image.tags = newTags;
-
-            return {
-                ...state,
-                gallery: images
-            };
-
-        /**
-         * User is uploading photos
-         */
-        case CHANGE_UPLOAD_PROGRESS:
-            return {
-                ...state,
-                galleryUploadProgress: action.payload
-            };
-
-        /**
-         * Delete selected images from the gallery array
-         */
-        case DELETE_SELECTED_GALLERY:
-            return {
-                ...state,
-                gallery: [
-                    ...state.gallery.slice(0, action.payload),
-                    ...state.gallery.slice(action.payload + 1)
-                ]
-            };
-
-        /**
-         * Change selected => false for all photos
-         */
-        case DESELECT_ALL_GALLERY_PHOTOS:
-            let photos1 = [...state.gallery];
-
-            photos1 = photos1.map(photo => {
-                photo.selected = false;
-                return photo;
-            });
-
-            return {
-                ...state,
-                gallery: photos1
-            };
-
-        /**
-         * Gallery Photo + Data has been uploaded successfully
-         */
-        case GALLERY_UPLOADED_SUCCESSFULLY:
-            return {
-                ...state,
-                gallery: [
-                    ...state.gallery.slice(0, action.payload),
-                    ...state.gallery.slice(action.payload + 1)
-                ]
-            };
-
-        /**
-         * The users images have finished loading
-         */
-        case TOGGLE_IMAGES_LOADING:
-            return {
-                ...state,
-                imagesLoading: action.payload,
-                totalGallerySelected: 0
-            };
-
-        /**
-         * Return the selected photos from the Camera Roll
-         */
-        case PHOTOS_FROM_GALLERY:
-            let photos = [...state.gallery];
-
-            action.payload.forEach(photo => {
-                photos.push(photo);
-            });
-
-            return {
-                ...state,
-                gallery: photos
-            };
-
-        /**
-         * Remove a tag that has been pressed
-         */
-        case REMOVE_TAG_FROM_GALLERY_PHOTO:
-            let deletedTagGallery = [...state.gallery];
-
-            let img = deletedTagGallery[action.payload.currentIndex];
-            delete img.tags[action.payload.category][action.payload.tag];
-
-            // Delete the category if empty
-            if (Object.keys(img.tags[action.payload.category]).length === 0) {
-                delete img.tags[action.payload.category];
-            }
-
-            return {
-                ...state,
-                gallery: deletedTagGallery
-            };
-
-        /**
-         * Open or Close the Image Picker for Gallery Photos
-         */
-        case TOGGLE_IMAGE_BROWSER:
-            return {
-                ...state,
-                imageBrowserOpen: !state.imageBrowserOpen
-            };
-
-        /**
-         * Toggle the value of photo.selected
-         */
-        case TOGGLE_SELECTED_GALLERY:
-            let gallery = [...state.gallery];
-
-            let photo = gallery[action.payload];
-
-            photo.selected = !photo.selected;
-
-            return {
-                ...state,
-                gallery
-            };
-        /**
-         * add array of geotagged images to state
-         */
-        case ADD_GEOTAGGED_IMAGES:
-            const geotaggedImages = [
-                ...action.payload.geotagged,
-                ...state.geotaggedImages
-            ];
-            return {
-                ...state,
-                geotaggedImages,
-                camerarollImageFetched: true,
-                lastFetchTime: Math.floor(new Date().getTime()),
-                imagesLoading: false
-            };
-
-        default:
-            return state;
-    }
+            default:
+                return draft;
+        }
+    });
 }

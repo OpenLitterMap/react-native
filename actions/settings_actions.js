@@ -1,15 +1,11 @@
 import React from 'react';
 import {
-    CLOSE_ALL_SETTINGS_MODALS,
     CLOSE_SECOND_SETTING_MODAL,
-    SAVE_SETTING,
     SETTINGS_INIT,
     SET_MODEL,
     SETTINGS_UPDATE_STATUS_MESSAGE,
     START_UPDATING_SETTINGS,
     TOGGLE_SETTINGS_MODAL,
-    TOGGLE_SECOND_SETINGS_MODAL,
-    TOGGLE_SETTINGS_SWITCH,
     TOGGLE_SETTINGS_WAIT,
     UPDATE_SETTINGS_PROP,
     UPDATE_USER_OBJECT,
@@ -20,15 +16,6 @@ import {
 import AsyncStorage from '@react-native-community/async-storage';
 import axios from 'axios';
 
-/**
- * Close All Settings' Modals
- */
-export const closeAllSettingModals = () => {
-    return {
-        type: CLOSE_ALL_SETTINGS_MODALS
-    };
-};
-
 export const closeSecondSettingModal = () => {
     return {
         type: CLOSE_SECOND_SETTING_MODAL
@@ -37,6 +24,9 @@ export const closeSecondSettingModal = () => {
 
 /**
  * Initialize settings edit value to update
+ *
+ * when user selects a field to edit current value of that field is set in settingsEditProp
+ * to be used as initial value in textfield in edit modal
  */
 export const initalizeSettingsValue = prop => {
     return {
@@ -46,7 +36,7 @@ export const initalizeSettingsValue = prop => {
 };
 
 /**
- * Set Model
+ * fn to set device modal
  */
 export const setModel = model => {
     return {
@@ -177,7 +167,14 @@ export const toggleSettingsSwitch = (id, token) => {
 
                 if (response.status === 200) {
                     const key = Object.keys(response.data)[0];
-                    const value = Object.values(response.data)[0];
+                    let value = Object.values(response.data)[0];
+
+                    //  INFO: show_name and show_username have boolean values
+                    //  rest have 0 & 1
+
+                    if (key !== 'show_name' && key !== 'show_username') {
+                        value = value === false ? 0 : 1;
+                    }
 
                     let user = await AsyncStorage.getItem('user');
 

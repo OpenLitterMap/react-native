@@ -49,19 +49,6 @@ class LitterImage extends PureComponent {
         }
     };
 
-    /**
-     * If web
-     *   return filename
-     *
-     * Else
-     *   return uri
-     */
-    _getFilenameOrUri() {
-        return this.props.photoSelected.type === 'web'
-            ? this.props.photoSelected.filename
-            : this.props.photoSelected.uri;
-    }
-
     _imageLoaded() {
         this.setState({ imageLoaded: true });
     }
@@ -74,7 +61,6 @@ class LitterImage extends PureComponent {
      * and again when imageLoaded is true
      */
     render() {
-        console.log('LitterImage', this.props.photoSelected);
         return (
             <View>
                 <ScrollView
@@ -91,7 +77,7 @@ class LitterImage extends PureComponent {
                     style={{ overflow: 'hidden' }}>
                     <Image
                         resizeMode="cover"
-                        source={{ uri: this._getFilenameOrUri() }}
+                        source={{ uri: this.props.photoSelected.uri }}
                         style={styles.image}
                         onLoad={this._imageLoaded.bind(this)}
                     />
