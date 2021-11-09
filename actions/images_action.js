@@ -1,3 +1,4 @@
+import axios from 'axios';
 import {
     ADD_IMAGE,
     ADD_TAGS_TO_IMAGE,
@@ -8,7 +9,8 @@ import {
     INCREMENT_SELECTED,
     REMOVE_TAG_FROM_IMAGE,
     TOGGLE_SELECTING,
-    TOGGLE_SELECTED_IMAGES
+    TOGGLE_SELECTED_IMAGES,
+    URL
 } from './types';
 
 /**
@@ -114,5 +116,93 @@ export const toggleSelectedImage = (id) => {
     return {
         type: TOGGLE_SELECTED_IMAGES,
         payload: id
+    };
+};
+
+/**
+ * fn to upload images along with tags
+ * @param {string} token
+ * @param  image form data
+ * @returns
+ */
+export const uploadImage = (token, image, imageId) => {
+    let response;
+    return async (dispatch) => {
+        try {
+            response = await axios(URL + '/api/photos/submit-with-tags', {
+                method: 'POST',
+                headers: {
+                    Authorization: 'Bearer ' + token,
+                    'Content-Type': 'multipart/form-data'
+                },
+                data: image
+            });
+        } catch (error) {
+            if (error.response) {
+                console.log(
+                    'ERROR: shared_actions.upload_photo',
+                    JSON.stringify(error?.response?.data, null, 2)
+                );
+            } else {
+                // Other errors -- NETWORK ERROR
+                console.log(error);
+            }
+
+            return {
+                success: false
+            };
+        }
+        console.log('Response: shared_actions.uploadPhoto', response?.data);
+
+        if (response && response.data?.success) {
+            dispatch({
+                type: DELETE_IMAGE,
+                payload: imageId
+            });
+            // return the photo.id that has been created on the backend
+            return {
+                success: true,
+                photo_id: response.data.photo_id
+            };
+        }
+    };
+};
+
+/**
+ * Upload the tags that were applied to an image
+ * @param {string} token
+ * @param  tags
+ * @param photoId - id of uploaded web image
+ * @param imageId - id of image in state -- images array
+ */
+export const uploadTags = (token, tags, photoId, imageId) => {
+    return async (dispatch) => {
+        let response;
+        try {
+            response = await axios(URL + '/api/add-tags', {
+                method: 'POST',
+                headers: {
+                    Authorization: 'Bearer ' + token
+                },
+                data: {
+                    litter: tags,
+                    photo_id: photoId
+                }
+            });
+        } catch (error) {
+            return {
+                success: false
+            };
+        }
+
+        if (response && response?.data?.success) {
+            dispatch({
+                type: DELETE_IMAGE,
+                payload: imageId
+            });
+            return {
+                success: true
+            };
+        }
     };
 };

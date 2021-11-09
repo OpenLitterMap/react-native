@@ -138,6 +138,7 @@ export default function (state = INITIAL_STATE, action) {
                 );
                 if (index !== -1) draft.images.splice(index, 1);
                 break;
+
             /**
              * Delete selected images -- all images with property selected set to true
              */

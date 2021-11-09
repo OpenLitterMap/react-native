@@ -393,13 +393,18 @@ class HomeScreen extends PureComponent {
             // async loop
             for (const img of this.props.images) {
                 const isgeotagged = isGeotagged(img);
-                const myIndex = this.props.images.indexOf(img);
                 if (
                     img.type !== 'WEB' &&
                     img.tags &&
                     Object.keys(img.tags).length > 0 &&
                     isgeotagged
                 ) {
+                    const date =
+                        img.type === 'GALLERY'
+                            ? moment
+                                  .unix(img.date)
+                                  .format('YYYY:MM:DD HH:mm:ss')
+                            : img.date;
                     let ImageData = new FormData();
 
                     ImageData.append('photo', {
@@ -410,30 +415,26 @@ class HomeScreen extends PureComponent {
 
                     ImageData.append('lat', img.lat);
                     ImageData.append('lon', img.lon);
-                    ImageData.append('date', img.date);
+                    ImageData.append('date', date);
                     ImageData.append('picked_up', img.pickedUp);
                     ImageData.append('model', model);
-                    // shared_actions
-                    const response = await this.props.uploadPhoto(
+                    ImageData.append('tags', JSON.stringify(img.tags));
+
+                    console.log(JSON.stringify(ImageData, null, 2));
+
+                    // Upload image
+                    const response = await this.props.uploadImage(
                         this.props.token,
-                        ImageData
+                        ImageData,
+                        img.id
                     );
 
-                    if (response && response.success) {
-                        // shared_actions
-                        const resp = await this.props.uploadTags(
-                            this.props.token,
-                            img.tags,
-                            response.photo_id
-                        );
-                        if (resp && resp.success) {
-                            // Remove the image
-                            this.props.deleteImage(myIndex);
+                    // if success upload++ else failed++
 
-                            this.setState((previousState) => ({
-                                uploaded: previousState.uploaded + 1
-                            }));
-                        }
+                    if (response && response.success) {
+                        this.setState((previousState) => ({
+                            uploaded: previousState.uploaded + 1
+                        }));
                     } else {
                         this.setState((previousState) => ({
                             failedUpload: previousState.failedUpload + 1
@@ -447,12 +448,11 @@ class HomeScreen extends PureComponent {
                     const response = await this.props.uploadTags(
                         this.props.token,
                         img.tags,
-                        img.photoId
+                        img.photoId,
+                        img.id
                     );
 
                     if (response && response.success) {
-                        this.props.deleteImage(myIndex);
-
                         this.setState((previousState) => ({
                             uploaded: previousState.uploaded + 1
                         }));
