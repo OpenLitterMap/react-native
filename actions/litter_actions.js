@@ -19,7 +19,7 @@ import {
 /**
  * Change the category of litter eg Smoking, Alcohol
  */
-export const changeCategory = id => {
+export const changeCategory = (id) => {
     return {
         type: CHANGE_CATEGORY,
         payload: id
@@ -29,7 +29,7 @@ export const changeCategory = id => {
 /**
  * Change the item of litter in a category eg butts, lighters
  */
-export const changeItem = item => {
+export const changeItem = (item) => {
     return {
         type: CHANGE_ITEM,
         payload: item
@@ -39,19 +39,13 @@ export const changeItem = item => {
 /**
  * Change Quantity of litter
  */
-export const changeQ = q => {
+export const changeQ = (q) => {
     return {
         type: CHANGE_Q,
         payload: q
     };
 };
 
-export const changeLitterPickedUp = image => {
-    return {
-        type: CHANGE_PICKED_UP,
-        payload: image
-    };
-};
 /**
  * Change Status of quantity change
  * picker wheel rotated status == True
@@ -59,7 +53,7 @@ export const changeLitterPickedUp = image => {
  *
  * @param {boolean} boolValue
  */
-export const changeQuantiyStatus = boolValue => {
+export const changeQuantiyStatus = (boolValue) => {
     return {
         type: CHANGE_QUANTITY_STATUS,
         payload: boolValue
@@ -71,7 +65,7 @@ export const changeQuantiyStatus = boolValue => {
  *
  * Needs to be extracted to Redux as the number of web-photos changes when 1 is submitted
  */
-export const swiperIndexChanged = index => {
+export const swiperIndexChanged = (index) => {
     return {
         type: CHANGE_SWIPER_INDEX,
         payload: index
@@ -81,7 +75,7 @@ export const swiperIndexChanged = index => {
 /**
  * Text to suggest tags by
  */
-export const suggestTags = data => {
+export const suggestTags = (data) => {
     return {
         type: SUGGEST_TAGS,
         payload: {
@@ -104,7 +98,7 @@ export const resetLitterTags = () => {
  * Content to show in LitterPicker modal
  * @show allTags
  */
-export const showAllTags = bool => {
+export const showAllTags = (bool) => {
     return {
         type: SHOW_ALL_TAGS,
         payload: bool
@@ -114,7 +108,7 @@ export const showAllTags = bool => {
 /**
  * Open / Close the modal on LitterPicker.js
  */
-export const setLitterPickerModal = bool => {
+export const setLitterPickerModal = (bool) => {
     return {
         type: SHOW_INNER_MODAL,
         payload: bool
@@ -133,7 +127,7 @@ export const toggleSwitch = () => {
 /**
  *
  */
-export const updatePreviousTags = tags => {
+export const updatePreviousTags = (tags) => {
     return {
         type: UPDATE_PREVIOUS_TAGS,
         payload: tags
@@ -143,7 +137,7 @@ export const updatePreviousTags = tags => {
 /**
  * Capture the X positions of the tags when they are added / change
  */
-export const updateTagXPosition = data => {
+export const updateTagXPosition = (data) => {
     return {
         type: UPDATE_TAGS_X_POS,
         payload: data
