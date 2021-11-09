@@ -11,8 +11,6 @@
     "show-username-leaderboards": "Show Username on Leaderboards",
     "show-name-createdby": "Show Name on Created By",
     "show-username-createdby": "Show Username on Created By",
-    "picked-up": "Picked Up",
-    "litter-picked-up": "Litter is picked up",
     "tags": "TAGS",
     "show-previous-tags": "Show Previous Tags",
     "logout": "Logout",
@@ -26,5 +24,7 @@
     "alert": "Alert",
     "do-you-really-want-to-change": "Do you really want to change this setting?",
     "ok": "OK",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "picked-up": "Picked Up",
+    "litter-picked-up": "Litter is picked up"
 }

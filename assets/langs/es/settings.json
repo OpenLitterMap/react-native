@@ -24,5 +24,7 @@
     "alert": "Alerta",
     "do-you-really-want-to-change": "¿De verdad quieres cambiar esta configuración?",
     "ok": "Okay",
-    "cancel": "Cancelar"
+    "cancel": "Cancelar",
+    "picked-up": "Recogido",
+    "litter-picked-up": "La basura se recoge"
 }
