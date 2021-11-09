@@ -2,17 +2,12 @@ import { ADD_IMAGE, DELETE_IMAGE, LOAD_MORE_WEB_IMAGES, URL } from './types';
 import axios from 'axios';
 
 /**
- * When LeftPage didMount, check web for any images
+ * @param token - jwt
+ * @param pickedUp - default user setting if litter is pickedUp or not
  *
- * if photo_id exists
- *   Load the next 10 images from the photo_id
- * else
- *   Load the first 10 images
- *
- * @return [id, filename]
  */
-export const checkForImagesOnWeb = token => {
-    return dispatch => {
+export const checkForImagesOnWeb = (token, pickedUp) => {
+    return (dispatch) => {
         return axios({
             url: URL + '/api/v2/photos/web/index',
             method: 'GET',
@@ -20,7 +15,7 @@ export const checkForImagesOnWeb = token => {
                 Authorization: 'Bearer ' + token
             }
         })
-            .then(resp => {
+            .then((resp) => {
                 console.log('RESPONSE: checkForImagesOnWeb', resp.data.photos);
 
                 if (resp.data.photos) {
@@ -31,12 +26,13 @@ export const checkForImagesOnWeb = token => {
                         type: ADD_IMAGE,
                         payload: {
                             images: photos,
-                            type: 'WEB'
+                            type: 'WEB',
+                            pickedUp
                         }
                     });
                 }
             })
-            .catch(err => {
+            .catch((err) => {
                 console.log('checkForImagesOnWeb', err.response.data);
             });
     };
@@ -48,7 +44,7 @@ export const checkForImagesOnWeb = token => {
  * Executed when the user swipes to their last image on web_photos
  */
 export const loadMoreWebImages = (token, photo_id) => {
-    return dispatch => {
+    return (dispatch) => {
         return axios({
             url: URL + '/api/v2/photos/web/load-more',
             method: 'GET',
@@ -57,13 +53,13 @@ export const loadMoreWebImages = (token, photo_id) => {
             },
             params: { photo_id }
         })
-            .then(resp => {
+            .then((resp) => {
                 console.log('load_more_web_images', resp.data);
 
                 if (resp.data) {
                     let photos = resp.data;
 
-                    photos = photos.map(photo => {
+                    photos = photos.map((photo) => {
                         photo.tags = null;
                         return photo;
                     });
@@ -76,7 +72,7 @@ export const loadMoreWebImages = (token, photo_id) => {
                     });
                 }
             })
-            .catch(err => {
+            .catch((err) => {
                 console.log('load_more_web_images', err.response.data);
             });
     };
@@ -87,8 +83,7 @@ export const loadMoreWebImages = (token, photo_id) => {
  * web image - image that are uploaded from web but not tagged
  */
 export const deleteSelectedWebImages = (token, photoId, id) => {
-    console.log(token, photoId, id);
-    return dispatch => {
+    return (dispatch) => {
         return axios({
             url: URL + '/api/photos/delete',
             method: 'DELETE',
@@ -98,13 +93,13 @@ export const deleteSelectedWebImages = (token, photoId, id) => {
             },
             params: { photoId }
         })
-            .then(resp => {
+            .then((resp) => {
                 dispatch({
                     type: DELETE_IMAGE,
                     payload: id
                 });
             })
-            .catch(err => {
+            .catch((err) => {
                 console.log('delete web image', err);
             });
     };

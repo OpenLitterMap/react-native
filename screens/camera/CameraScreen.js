@@ -274,7 +274,8 @@ class CameraScreen extends React.Component {
                                     date
                                 }
                             ],
-                            'CAMERA'
+                            'CAMERA',
+                            this.props.user.picked_up
                         );
                     })
                     .catch((error) => {

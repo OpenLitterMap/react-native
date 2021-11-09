@@ -107,7 +107,7 @@ class GalleryScreen extends Component {
         const sortedArray = await this.state.selectedImages.sort(
             (a, b) => a.id - b.id
         );
-        this.props.addImage(sortedArray, 'GALLERY');
+        this.props.addImage(sortedArray, 'GALLERY', this.props.user.picked_up);
     }
 
     /**
@@ -266,7 +266,8 @@ class GalleryScreen extends Component {
 
 const mapStateToProps = (state) => {
     return {
-        geotaggedImages: state.gallery.geotaggedImages
+        geotaggedImages: state.gallery.geotaggedImages,
+        user: state.auth.user
     };
 };
 

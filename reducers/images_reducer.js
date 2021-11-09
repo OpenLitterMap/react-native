@@ -57,7 +57,7 @@ export default function (state = INITIAL_STATE, action) {
                                     type: action.payload.type,
                                     selected: false,
                                     tags: {},
-                                    pickedUp: image.pickedUp,
+                                    pickedUp: action.payload.pickedUp,
                                     photoId: image.id
                                 });
                             }
@@ -72,7 +72,7 @@ export default function (state = INITIAL_STATE, action) {
                                 type: action.payload.type,
                                 selected: false,
                                 tags: {},
-                                pickedUp: image.pickedUp
+                                pickedUp: action.payload.pickedUp
                             });
                         }
                     });

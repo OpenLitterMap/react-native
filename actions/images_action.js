@@ -17,11 +17,11 @@ import {
  * @param {('CAMERA' | 'GALLERY' | 'WEB')} type
  */
 
-export const addImage = (images, type) => {
+export const addImage = (images, type, pickedUp) => {
     // console.log(images);
     return {
         type: ADD_IMAGE,
-        payload: { images, type }
+        payload: { images, type, pickedUp }
     };
 };
 

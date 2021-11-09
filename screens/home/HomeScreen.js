@@ -59,7 +59,10 @@ class HomeScreen extends PureComponent {
      */
     async componentDidMount() {
         // web_actions, web_reducer
-        await this.props.checkForImagesOnWeb(this.props.token);
+        await this.props.checkForImagesOnWeb(
+            this.props.token,
+            this.props.user.picked_up
+        );
 
         this.checkNewVersion();
         this.checkGalleryPermission();
@@ -379,8 +382,6 @@ class HomeScreen extends PureComponent {
             }
         });
 
-        console.log({ imagesCount });
-
         this.setState({
             total: imagesCount
         });
@@ -410,9 +411,8 @@ class HomeScreen extends PureComponent {
                     ImageData.append('lat', img.lat);
                     ImageData.append('lon', img.lon);
                     ImageData.append('date', img.date);
-                    ImageData.append('presence', img.presence);
+                    ImageData.append('picked_up', img.pickedUp);
                     ImageData.append('model', model);
-
                     // shared_actions
                     const response = await this.props.uploadPhoto(
                         this.props.token,
