@@ -25,6 +25,8 @@ export const getPhotosFromCameraroll = () => async (dispatch, getState) => {
         lastFetchTime,
         imagesLoading
     } = getState().gallery;
+    const { user } = getState().auth;
+
     let id = geotaggedImages.length;
 
     let camerarollData;
@@ -93,7 +95,9 @@ export const getPhotosFromCameraroll = () => async (dispatch, getState) => {
                     lon: item.node.location.longitude,
                     date: item.node.timestamp,
                     selected: false,
-                    presence: user.items_remaining === 0 ? false : true,
+                    // when uploading images we need to send boolean value for picked_up
+                    // but items_remaining is binary
+                    pickedUp: user.items_remaining === 0 ? true : false,
                     tags: {},
                     type: 'gallery'
                 });

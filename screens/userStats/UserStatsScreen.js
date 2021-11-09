@@ -28,6 +28,7 @@ class UserStatsScreen extends Component {
             littercoinPercentageStart: 0,
             isLoading: true
         };
+        console.log(JSON.stringify(this.props.user, null, 2));
     }
 
     async componentDidMount() {
@@ -202,7 +203,7 @@ const styles = StyleSheet.create({
     }
 });
 
-const mapStateToProps = state => {
+const mapStateToProps = (state) => {
     return {
         lang: state.auth.lang,
         token: state.auth.token,
@@ -210,7 +211,4 @@ const mapStateToProps = state => {
     };
 };
 
-export default connect(
-    mapStateToProps,
-    actions
-)(UserStatsScreen);
+export default connect(mapStateToProps, actions)(UserStatsScreen);

@@ -29,7 +29,7 @@ export const addImage = (images, type) => {
  * Add tags to images
  */
 
-export const addTagsToImages = payload => {
+export const addTagsToImages = (payload) => {
     return {
         type: ADD_TAGS_TO_IMAGE,
         payload: payload
@@ -50,7 +50,7 @@ export const decrementSelected = () => {
  * @param {number} id
  */
 
-export const deleteImage = id => {
+export const deleteImage = (id) => {
     return {
         type: DELETE_IMAGE,
         payload: id
@@ -89,7 +89,7 @@ export const incrementSelected = () => {
 /**
  * remove a tag from image
  */
-export const removeTagFromImage = data => {
+export const removeTagFromImage = (data) => {
     return {
         type: REMOVE_TAG_FROM_IMAGE,
         payload: data
@@ -110,7 +110,7 @@ export const toggleSelecting = () => {
  * @param {number} id
  */
 
-export const toggleSelectedImage = id => {
+export const toggleSelectedImage = (id) => {
     return {
         type: TOGGLE_SELECTED_IMAGES,
         payload: id

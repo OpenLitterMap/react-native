@@ -121,28 +121,24 @@ class SettingsScreen extends Component {
                                         },
                                         {
                                             id: 6,
-                                            title:
-                                                'settings.show-name-leaderboards'
+                                            title: 'settings.show-name-leaderboards'
                                         },
                                         {
                                             id: 7,
-                                            title:
-                                                'settings.show-username-leaderboards'
+                                            title: 'settings.show-username-leaderboards'
                                         },
                                         {
                                             id: 8,
-                                            title:
-                                                'settings.show-name-createdby'
+                                            title: 'settings.show-name-createdby'
                                         },
                                         {
                                             id: 9,
-                                            title:
-                                                'settings.show-username-createdby'
+                                            title: 'settings.show-username-createdby'
                                         }
                                     ]
                                 },
                                 {
-                                    title: 'settings.litter-presence',
+                                    title: 'settings.picked-up',
                                     data: [
                                         {
                                             id: 11,
@@ -253,8 +249,8 @@ class SettingsScreen extends Component {
                     onPress: () => {
                         if (id === 11) {
                             this.props.saveSettings(
-                                { id: 11, key: 'items_remaining' },
-                                !this.props.user.items_remaining,
+                                { id: 11, key: 'picked_up' },
+                                !this.props.user.picked_up,
                                 this.props.token
                             );
                         } else {
@@ -279,8 +275,9 @@ class SettingsScreen extends Component {
     }
 
     /**
-     * Get the True or False value for a Switch
-     * INFO: show_name and show_username have boolean values
+     * Get the 0 or 1 value for a Switch
+     *
+     * INFO: show_name , show_username and picked_up have boolean values
      * rest have 0 & 1
      */
     _getSwitchValue(id) {
@@ -307,14 +304,7 @@ class SettingsScreen extends Component {
                 return this.props.user.previous_tag;
                 break;
             case 11:
-                // items_remaining === 0 ---> then litter is picked up
-                // items_remaining === 1 --> litter is not picked up
-                /**
-                 * have this conditional here because the sentence shown is "Litter is picked up"
-                 * where switch onn means items_remaining === 0 i.e items_remaining === false
-                 */
-
-                return this.props.user.items_remaining === 0 ? 1 : 0;
+                return this.props.user.picked_up === false ? 0 : 1;
                 break;
             default:
                 break;
@@ -393,7 +383,7 @@ const styles = {
     }
 };
 
-const mapStateToProps = state => {
+const mapStateToProps = (state) => {
     return {
         lang: state.auth.lang,
         settingsModalVisible: state.settings.settingsModalVisible,
@@ -404,7 +394,4 @@ const mapStateToProps = state => {
     };
 };
 
-export default connect(
-    mapStateToProps,
-    actions
-)(SettingsScreen);
+export default connect(mapStateToProps, actions)(SettingsScreen);
