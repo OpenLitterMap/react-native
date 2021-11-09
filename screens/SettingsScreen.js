@@ -10,7 +10,8 @@ import {
     Text,
     TouchableHighlight,
     View,
-    Pressable
+    Pressable,
+    StyleSheet
 } from 'react-native';
 import { getTranslation, TransText } from 'react-native-translation';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -312,7 +313,7 @@ class SettingsScreen extends Component {
     }
 }
 
-const styles = {
+const styles = StyleSheet.create({
     bottomImageContainer: {
         backgroundColor: '#ccc',
         flex: 1,
@@ -366,7 +367,8 @@ const styles = {
     sectionHeaderTitle: {
         paddingLeft: 10,
         paddingTop: 20,
-        paddingBottom: 5
+        paddingBottom: 5,
+        textTransform: 'uppercase'
     },
     switchRow: {
         flex: 1,
@@ -381,7 +383,7 @@ const styles = {
         alignItems: 'center',
         justifyContent: 'center'
     }
-};
+});
 
 const mapStateToProps = (state) => {
     return {

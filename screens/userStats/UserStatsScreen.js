@@ -28,7 +28,6 @@ class UserStatsScreen extends Component {
             littercoinPercentageStart: 0,
             isLoading: true
         };
-        console.log(JSON.stringify(this.props.user, null, 2));
     }
 
     async componentDidMount() {
