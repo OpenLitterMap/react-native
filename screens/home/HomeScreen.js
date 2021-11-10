@@ -416,11 +416,9 @@ class HomeScreen extends PureComponent {
                     ImageData.append('lat', img.lat);
                     ImageData.append('lon', img.lon);
                     ImageData.append('date', date);
-                    ImageData.append('picked_up', img.pickedUp);
+                    ImageData.append('picked_up', img.pickedUp ? 1 : 0);
                     ImageData.append('model', model);
                     ImageData.append('tags', JSON.stringify(img.tags));
-
-                    console.log(JSON.stringify(ImageData, null, 2));
 
                     // Upload image
                     const response = await this.props.uploadImage(
@@ -445,11 +443,13 @@ class HomeScreen extends PureComponent {
                     img.tags &&
                     Object.keys(img.tags).length > 0
                 ) {
+                    /**
+                     * Upload tags
+                     * Only need to upload tags and 'picked_up' value for WEB images
+                     */
                     const response = await this.props.uploadTags(
                         this.props.token,
-                        img.tags,
-                        img.photoId,
-                        img.id
+                        img
                     );
 
                     if (response && response.success) {

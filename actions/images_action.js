@@ -171,11 +171,9 @@ export const uploadImage = (token, image, imageId) => {
 /**
  * Upload the tags that were applied to an image
  * @param {string} token
- * @param  tags
- * @param photoId - id of uploaded web image
- * @param imageId - id of image in state -- images array
+ * @param  image - the image object
  */
-export const uploadTags = (token, tags, photoId, imageId) => {
+export const uploadTags = (token, image) => {
     return async (dispatch) => {
         let response;
         try {
@@ -185,11 +183,13 @@ export const uploadTags = (token, tags, photoId, imageId) => {
                     Authorization: 'Bearer ' + token
                 },
                 data: {
-                    litter: tags,
-                    photo_id: photoId
+                    litter: image.tags,
+                    photo_id: image.photoId,
+                    picked_up: image.pickedUp ? 1 : 0
                 }
             });
         } catch (error) {
+            console.log(error);
             return {
                 success: false
             };
@@ -198,7 +198,7 @@ export const uploadTags = (token, tags, photoId, imageId) => {
         if (response && response?.data?.success) {
             dispatch({
                 type: DELETE_IMAGE,
-                payload: imageId
+                payload: image.id
             });
             return {
                 success: true
