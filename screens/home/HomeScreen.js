@@ -347,7 +347,7 @@ class HomeScreen extends PureComponent {
             if (image.type !== 'WEB' && image.selected) {
                 this.props.deleteImage(image.id);
             } else if (image.type === 'WEB' && image.selected) {
-                this.props.deleteSelectedWebImages(
+                this.props.deleteWebImage(
                     this.props.token,
                     image.photoId,
                     image.id

@@ -11,7 +11,6 @@ const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 class UploadImagesGrid extends PureComponent {
     imagePressed(index) {
         const image = this.props.photos[index];
-        console.log(JSON.stringify(image, null, 2));
         if (this.props.isSelecting) {
             image.selected
                 ? this.props.decrementSelected()

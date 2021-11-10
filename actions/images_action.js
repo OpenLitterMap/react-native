@@ -39,6 +39,46 @@ export const addTagsToImages = (payload) => {
 };
 
 /**
+ * Get images uploaded from website but not yet tagged
+ *
+ * @param token - jwt
+ * @param pickedUp - default user setting if litter is pickedUp or not
+ *
+ */
+export const checkForImagesOnWeb = (token, pickedUp) => {
+    return async (dispatch) => {
+        let response;
+
+        try {
+            response = await axios({
+                url: URL + '/api/v2/photos/web/index',
+                method: 'GET',
+                headers: {
+                    Authorization: 'Bearer ' + token
+                }
+            });
+        } catch (error) {
+            if (error?.response) {
+                console.log('checkForImagesOnWeb', error?.response?.data);
+            } else {
+                console.log('checkForImagesOnWeb -- Network Error');
+            }
+        }
+        if (response && response?.data?.photos) {
+            let photos = response.data.photos;
+            dispatch({
+                type: ADD_IMAGE,
+                payload: {
+                    images: photos,
+                    type: 'WEB',
+                    pickedUp
+                }
+            });
+        }
+    };
+};
+
+/**
  * Decrement the amount of photos selected for deletion
  */
 export const decrementSelected = () => {
@@ -79,9 +119,39 @@ export const deselectAllImages = () => {
 };
 
 /**
+ * Delete selected web image
+ * web image - image that are uploaded from web but not tagged
+ */
+export const deleteWebImage = (token, photoId, id) => {
+    return async (dispatch) => {
+        let response;
+
+        try {
+            response = await axios({
+                url: URL + '/api/photos/delete',
+                method: 'DELETE',
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                params: { photoId }
+            });
+        } catch (error) {
+            console.log('delete web image', error);
+        }
+        console.log(response.data);
+        if (response && response?.data?.success) {
+            dispatch({
+                type: DELETE_IMAGE,
+                payload: id
+            });
+        }
+    };
+};
+
+/**
  * Increment the amount of photos selected for deletion
  */
-
 export const incrementSelected = () => {
     return {
         type: INCREMENT_SELECTED
