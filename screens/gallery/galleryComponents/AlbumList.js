@@ -40,18 +40,15 @@ class AlbumList extends Component {
     }
 }
 
-const mapStateToProps = state => {
+const mapStateToProps = (state) => {
     return {
         imagesLoading: state.gallery.imagesLoading,
         geotaggedImages: state.gallery.geotaggedImages,
-        images: state.images.images
+        images: state.images.imagesArray
     };
 };
 
-export default connect(
-    mapStateToProps,
-    actions
-)(AlbumList);
+export default connect(mapStateToProps, actions)(AlbumList);
 
 const styles = StyleSheet.create({
     container: {
