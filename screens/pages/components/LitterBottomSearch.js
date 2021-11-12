@@ -44,15 +44,13 @@ class LitterBottomSearch extends PureComponent {
      * A tag has been selected
      */
     addTag(tag) {
-        console.log(tag);
         // update selected tag to execute scrollTo
-        this.props.changeItem(tag.key);
+        this.props.changeItem(tag);
 
         const newTag = {
             category: tag.category,
             title: tag.key
         };
-
         // currentGlobalIndex
         const currentIndex = this.props.swiperIndex;
 
@@ -220,10 +218,7 @@ class LitterBottomSearch extends PureComponent {
     updateText(text) {
         this.setState({ text });
 
-        this.props.suggestTags({
-            text,
-            lang: this.props.lang
-        });
+        this.props.suggestTags(text, this.props.lang);
     }
 
     /**
@@ -314,9 +309,7 @@ class LitterBottomSearch extends PureComponent {
                                     data={this.props.suggestedTags}
                                     horizontal={true}
                                     renderItem={this.renderTag}
-                                    keyExtractor={(item, index) =>
-                                        item.key + index
-                                    }
+                                    keyExtractor={(item, index) => item + index}
                                     keyboardShouldPersistTaps="handled"
                                 />
                             </View>

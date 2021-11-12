@@ -59,7 +59,7 @@ export default function(state = INITIAL_STATE, action) {
                     cat => cat.title === action.payload
                 );
                 const items = LITTERKEYS[category.title];
-                const item = items[0].key;
+                const item = items[0];
                 draft.category = category;
                 draft.items = items;
                 draft.item = item;
@@ -145,15 +145,11 @@ export default function(state = INITIAL_STATE, action) {
             case SUGGEST_TAGS:
                 // return array of suggested tags based on payload text
                 let suggestedTagsArray = [];
-
                 Object.entries(LITTERKEYS).some(tags => {
                     tags[1].some(tag => {
                         const translatedText = getTranslation(
-                            `${action.payload.lang}.litter.${tags[0]}.${
-                                tag.key
-                            }`
+                            `${action.payload.lang}.litter.${tags[0]}.${tag}`
                         );
-
                         if (
                             translatedText
                                 .toLowerCase()
@@ -161,7 +157,7 @@ export default function(state = INITIAL_STATE, action) {
                         ) {
                             suggestedTagsArray.push({
                                 category: tags[0],
-                                key: tag.key
+                                key: tag
                             });
                         }
                     });
