@@ -1,6 +1,6 @@
 import {
     ADD_IMAGE,
-    ADD_TAGS_TO_IMAGE,
+    ADD_TAG_TO_IMAGE,
     DECREMENT_SELECTED,
     DELETE_IMAGE,
     DELETE_SELECTED_IMAGES,
@@ -16,9 +16,7 @@ import {
  * @param {Array} images
  * @param {('CAMERA' | 'GALLERY' | 'WEB')} type
  */
-
 export const addImage = (images, type) => {
-    // console.log(images);
     return {
         type: ADD_IMAGE,
         payload: { images, type }
@@ -26,12 +24,11 @@ export const addImage = (images, type) => {
 };
 
 /**
- * Add tags to images
+ * Add tag to image
  */
-
-export const addTagsToImages = payload => {
+export const addTagToImage = (payload) => {
     return {
-        type: ADD_TAGS_TO_IMAGE,
+        type: ADD_TAG_TO_IMAGE,
         payload: payload
     };
 };
@@ -49,8 +46,7 @@ export const decrementSelected = () => {
  * delete image by id
  * @param {number} id
  */
-
-export const deleteImage = id => {
+export const deleteImage = (id) => {
     return {
         type: DELETE_IMAGE,
         payload: id
@@ -60,7 +56,6 @@ export const deleteImage = id => {
 /**
  * Delete selected images -- all images with property selected set to true
  */
-
 export const deleteSelectedImages = () => {
     return {
         type: DELETE_SELECTED_IMAGES
@@ -79,7 +74,6 @@ export const deselectAllImages = () => {
 /**
  * Increment the amount of photos selected for deletion
  */
-
 export const incrementSelected = () => {
     return {
         type: INCREMENT_SELECTED
@@ -89,7 +83,7 @@ export const incrementSelected = () => {
 /**
  * remove a tag from image
  */
-export const removeTagFromImage = data => {
+export const removeTagFromImage = (data) => {
     return {
         type: REMOVE_TAG_FROM_IMAGE,
         payload: data
@@ -109,8 +103,7 @@ export const toggleSelecting = () => {
  * toggle selected property of a image object
  * @param {number} id
  */
-
-export const toggleSelectedImage = id => {
+export const toggleSelectedImage = (id) => {
     return {
         type: TOGGLE_SELECTED_IMAGES,
         payload: id
