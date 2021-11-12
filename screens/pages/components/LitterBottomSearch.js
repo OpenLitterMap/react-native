@@ -309,7 +309,9 @@ class LitterBottomSearch extends PureComponent {
                                     data={this.props.suggestedTags}
                                     horizontal={true}
                                     renderItem={this.renderTag}
-                                    keyExtractor={(item, index) => item + index}
+                                    keyExtractor={(item, index) =>
+                                        item.key + index
+                                    }
                                     keyboardShouldPersistTaps="handled"
                                 />
                             </View>
