@@ -15,8 +15,8 @@ import {
     UPDATE_QUANTITY
 } from '../actions/types';
 
-import CATEGORIES from '../screens/pages/data/categories';
-import LITTERKEYS from '../screens/pages/data/litterkeys';
+import CATEGORIES from '../assets/data/categories';
+import LITTERKEYS from '../assets/data/litterkeys';
 
 import { getTranslation } from 'react-native-translation';
 

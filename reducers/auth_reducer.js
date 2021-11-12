@@ -14,7 +14,7 @@ import {
     SUBMIT_END,
     SUBMIT_START
 } from '../actions/types';
-import { XPLEVEL } from '../screens/pages/data/xpLevel';
+import { XPLEVEL } from '../assets/data/xpLevel';
 
 import * as RNLocalize from 'react-native-localize';
 let lang = RNLocalize.getLocales()['languageCode'];
@@ -39,8 +39,8 @@ const INITIAL_STATE = {
     serverStatusText: ''
 };
 
-export default function(state = INITIAL_STATE, action) {
-    return produce(state, draft => {
+export default function (state = INITIAL_STATE, action) {
+    return produce(state, (draft) => {
         switch (action.type) {
             /**
              * Change app language
@@ -160,7 +160,7 @@ export default function(state = INITIAL_STATE, action) {
             case USER_FOUND:
                 let user = action.payload.userObj;
 
-                const level = XPLEVEL.findIndex(xp => xp > user.xp);
+                const level = XPLEVEL.findIndex((xp) => xp > user.xp);
                 const xpRequired = XPLEVEL[level] - user.xp;
                 const previousTarget = level > 0 ? XPLEVEL[level - 1] : 0;
                 const targetPercentage =
