@@ -122,19 +122,23 @@ class SettingsScreen extends Component {
                                         },
                                         {
                                             id: 6,
-                                            title: 'settings.show-name-leaderboards'
+                                            title:
+                                                'settings.show-name-leaderboards'
                                         },
                                         {
                                             id: 7,
-                                            title: 'settings.show-username-leaderboards'
+                                            title:
+                                                'settings.show-username-leaderboards'
                                         },
                                         {
                                             id: 8,
-                                            title: 'settings.show-name-createdby'
+                                            title:
+                                                'settings.show-name-createdby'
                                         },
                                         {
                                             id: 9,
-                                            title: 'settings.show-username-createdby'
+                                            title:
+                                                'settings.show-username-createdby'
                                         }
                                     ]
                                 },
@@ -249,6 +253,9 @@ class SettingsScreen extends Component {
                     text: ok,
                     onPress: () => {
                         if (id === 11) {
+                            // Toggle picked_up value
+                            // sending opposite of current value to api
+
                             this.props.saveSettings(
                                 { id: 11, key: 'picked_up' },
                                 !this.props.user.picked_up,
@@ -385,7 +392,7 @@ const styles = StyleSheet.create({
     }
 });
 
-const mapStateToProps = (state) => {
+const mapStateToProps = state => {
     return {
         lang: state.auth.lang,
         settingsModalVisible: state.settings.settingsModalVisible,
@@ -396,4 +403,7 @@ const mapStateToProps = (state) => {
     };
 };
 
-export default connect(mapStateToProps, actions)(SettingsScreen);
+export default connect(
+    mapStateToProps,
+    actions
+)(SettingsScreen);

@@ -17,7 +17,7 @@ import {
 } from './types';
 import axios from 'axios';
 
-export const changeLang = (lang) => {
+export const changeLang = lang => {
     return {
         type: CHANGE_LANG,
         payload: lang
@@ -31,8 +31,8 @@ export const changeLang = (lang) => {
  *
  * Or  "Unauthenticated." if they are logged out / not valid
  */
-export const checkValidToken = (token) => {
-    return async (dispatch) => {
+export const checkValidToken = token => {
+    return async dispatch => {
         await axios({
             url: URL + '/api/validate-token',
             method: 'POST',
@@ -41,7 +41,7 @@ export const checkValidToken = (token) => {
                 Accept: 'application/json'
             }
         })
-            .then((response) => {
+            .then(response => {
                 console.log('checkValidToken.response', response.data);
 
                 if (
@@ -54,7 +54,7 @@ export const checkValidToken = (token) => {
                     });
                 }
             })
-            .catch((error) => {
+            .catch(error => {
                 console.log(error);
                 //  token is critical data
                 // for any type of error that occurs during validating token
@@ -72,7 +72,7 @@ export const checkValidToken = (token) => {
  **  - fired on AuthScreen componentDidMount
  */
 
-export const checkForToken = () => async (dispatch) => {
+export const checkForToken = () => async dispatch => {
     console.log('auth_actions - checkForToken');
     let jwt;
 
@@ -95,9 +95,9 @@ export const checkForToken = () => async (dispatch) => {
 /**
  * Create an Account
  */
-export const createAccount = (data) => {
+export const createAccount = data => {
     // console.log('action - attempting to create an account');
-    return async (dispatch) => {
+    return async dispatch => {
         // setting isSubmitting to true
         // shows loader on button
         dispatch({ type: SUBMIT_START });
@@ -199,7 +199,7 @@ export const logout = () => {
  *
  * @param text: string
  */
-export const changeServerStatusText = (text) => {
+export const changeServerStatusText = text => {
     return {
         type: CHANGE_SERVER_STATUS_TEXT,
         payload: text
@@ -210,8 +210,8 @@ export const changeServerStatusText = (text) => {
  * The user forgot their password and is submitting their email address to request a link
  */
 // TODO: handle status message with reducers while working on auth screen refactor
-export const sendResetPasswordRequest = (email) => {
-    return async (dispatch) => {
+export const sendResetPasswordRequest = email => {
+    return async dispatch => {
         // setting isSubmitting to true
         // shows loader on button
         dispatch({ type: SUBMIT_START });
@@ -266,8 +266,8 @@ export const sendResetPasswordRequest = (email) => {
 /**
  * A user is trying to login with email and password
  */
-export const serverLogin = (data) => {
-    return async (dispatch) => {
+export const serverLogin = data => {
+    return async dispatch => {
         // initial dispatch to show form isSubmitting state
         dispatch({ type: SUBMIT_START });
         // axios response
@@ -330,8 +330,9 @@ export const serverLogin = (data) => {
                 return;
             }
         }
+
         // Dispatch success if no errors
-        dispatch({ type: LOGIN_SUCCESS, payload: token });
+        // fetch user object before navigating
         dispatch(fetchUser(token));
     };
 };
@@ -341,22 +342,22 @@ export const serverLogin = (data) => {
  *
  * Todo - move this to axios, and use await
  */
-export const fetchUser = (token) => {
-    return async (dispatch) => {
+export const fetchUser = token => {
+    return async dispatch => {
         await fetch(URL + '/api/user', {
             method: 'GET',
             headers: {
                 Authorization: 'Bearer ' + token
             }
         })
-            .then((response) => {
+            .then(response => {
                 // console.log(response);
                 // console.log(response.data);
                 if (response.status === 200) {
                     // console.log("=== fetchUser - 200 ===");
                     const responseJson = response
                         .text() // returns a promise
-                        .then(async (responseJson) => {
+                        .then(async responseJson => {
                             const userObj = JSON.parse(responseJson);
 
                             dispatch({
@@ -365,22 +366,20 @@ export const fetchUser = (token) => {
                             });
                             // INFO: no need to manually navigate -- handled in mainRoutes.js
                         })
-                        .catch((error) => {
+                        .catch(error => {
                             // console.log('fetch user - error 2');
                             // console.log(error);
                         });
                 } else {
                     // response.status not 200
-                    const errorJson = response
-                        .text()
-                        .then(async (errorJson) => {
-                            const errorObj = JSON.parse(errorJson);
-                            // console.log('Error object');
-                            // console.log(errorObj);
-                        });
+                    const errorJson = response.text().then(async errorJson => {
+                        const errorObj = JSON.parse(errorJson);
+                        // console.log('Error object');
+                        // console.log(errorObj);
+                    });
                 }
             })
-            .catch((err) => {
+            .catch(err => {
                 // console.log('error 1');
                 // console.log(err);
             });
@@ -390,7 +389,7 @@ export const fetchUser = (token) => {
 /**
  * User found in AsyncStorage - update state props
  */
-export const userFound = (data) => {
+export const userFound = data => {
     // console.log("action - user found");
     return {
         type: USER_FOUND,
