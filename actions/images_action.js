@@ -19,11 +19,11 @@ import {
  * @param {('CAMERA' | 'GALLERY' | 'WEB')} type
  */
 
-export const addImage = (images, type, pickedUp) => {
+export const addImage = (images, type, picked_up) => {
     // console.log(images);
     return {
         type: ADD_IMAGE,
-        payload: { images, type, pickedUp }
+        payload: { images, type, picked_up }
     };
 };
 
@@ -31,7 +31,7 @@ export const addImage = (images, type, pickedUp) => {
  * Add tags to images
  */
 
-export const addTagsToImages = (payload) => {
+export const addTagsToImages = payload => {
     return {
         type: ADD_TAGS_TO_IMAGE,
         payload: payload
@@ -42,11 +42,11 @@ export const addTagsToImages = (payload) => {
  * Get images uploaded from website but not yet tagged
  *
  * @param token - jwt
- * @param pickedUp - default user setting if litter is pickedUp or not
+ * @param picked_up - default user setting if litter is picked_up or not
  *
  */
-export const checkForImagesOnWeb = (token, pickedUp) => {
-    return async (dispatch) => {
+export const checkForImagesOnWeb = (token, picked_up) => {
+    return async dispatch => {
         let response;
 
         try {
@@ -71,7 +71,7 @@ export const checkForImagesOnWeb = (token, pickedUp) => {
                 payload: {
                     images: photos,
                     type: 'WEB',
-                    pickedUp
+                    picked_up
                 }
             });
         }
@@ -92,7 +92,7 @@ export const decrementSelected = () => {
  * @param {number} id
  */
 
-export const deleteImage = (id) => {
+export const deleteImage = id => {
     return {
         type: DELETE_IMAGE,
         payload: id
@@ -123,7 +123,7 @@ export const deselectAllImages = () => {
  * web image - image that are uploaded from web but not tagged
  */
 export const deleteWebImage = (token, photoId, id) => {
-    return async (dispatch) => {
+    return async dispatch => {
         let response;
 
         try {
@@ -161,7 +161,7 @@ export const incrementSelected = () => {
 /**
  * remove a tag from image
  */
-export const removeTagFromImage = (data) => {
+export const removeTagFromImage = data => {
     return {
         type: REMOVE_TAG_FROM_IMAGE,
         payload: data
@@ -182,7 +182,7 @@ export const toggleSelecting = () => {
  * @param {number} id
  */
 
-export const toggleSelectedImage = (id) => {
+export const toggleSelectedImage = id => {
     return {
         type: TOGGLE_SELECTED_IMAGES,
         payload: id
@@ -197,7 +197,7 @@ export const toggleSelectedImage = (id) => {
  */
 export const uploadImage = (token, image, imageId) => {
     let response;
-    return async (dispatch) => {
+    return async dispatch => {
         try {
             response = await axios(URL + '/api/photos/submit-with-tags', {
                 method: 'POST',
@@ -244,7 +244,7 @@ export const uploadImage = (token, image, imageId) => {
  * @param  image - the image object
  */
 export const uploadTags = (token, image) => {
-    return async (dispatch) => {
+    return async dispatch => {
         let response;
         try {
             response = await axios(URL + '/api/add-tags', {
@@ -255,7 +255,7 @@ export const uploadTags = (token, image) => {
                 data: {
                     litter: image.tags,
                     photo_id: image.photoId,
-                    picked_up: image.pickedUp ? 1 : 0
+                    picked_up: image.picked_up ? 1 : 0
                 }
             });
         } catch (error) {

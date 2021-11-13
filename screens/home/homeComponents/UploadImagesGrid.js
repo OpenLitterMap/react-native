@@ -11,6 +11,7 @@ const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 class UploadImagesGrid extends PureComponent {
     imagePressed(index) {
         const image = this.props.photos[index];
+
         if (this.props.isSelecting) {
             image.selected
                 ? this.props.decrementSelected()
@@ -163,4 +164,7 @@ const styles = {
     }
 };
 
-export default connect(null, actions)(UploadImagesGrid);
+export default connect(
+    null,
+    actions
+)(UploadImagesGrid);

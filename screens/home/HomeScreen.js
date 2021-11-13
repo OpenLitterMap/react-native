@@ -262,7 +262,9 @@ class HomeScreen extends PureComponent {
                         <Body
                             style={{ marginLeft: 10 }}
                             color="muted"
-                            dictionary={`${this.props.lang}.leftpage.select-to-delete`}
+                            dictionary={`${
+                                this.props.lang
+                            }.leftpage.select-to-delete`}
                         />
                     </View>
                 );
@@ -280,7 +282,7 @@ class HomeScreen extends PureComponent {
             return;
         } else {
             let tagged = 0;
-            this.props.images.map((img) => {
+            this.props.images.map(img => {
                 if (img.tags && Object.keys(img.tags)?.length > 0) {
                     tagged++;
                 }
@@ -343,7 +345,7 @@ class HomeScreen extends PureComponent {
      */
 
     deleteImages() {
-        this.props.images.map((image) => {
+        this.props.images.map(image => {
             if (image.type !== 'WEB' && image.selected) {
                 this.props.deleteImage(image.id);
             } else if (image.type === 'WEB' && image.selected) {
@@ -376,7 +378,7 @@ class HomeScreen extends PureComponent {
 
         let imagesCount = 0;
 
-        this.props.images.map((item) => {
+        this.props.images.map(item => {
             if (item.tags && Object.keys(item.tags)?.length > 0) {
                 imagesCount++;
             }
@@ -416,7 +418,7 @@ class HomeScreen extends PureComponent {
                     ImageData.append('lat', img.lat);
                     ImageData.append('lon', img.lon);
                     ImageData.append('date', date);
-                    ImageData.append('picked_up', img.pickedUp ? 1 : 0);
+                    ImageData.append('picked_up', img.picked_up ? 1 : 0);
                     ImageData.append('model', model);
                     ImageData.append('tags', JSON.stringify(img.tags));
 
@@ -430,11 +432,11 @@ class HomeScreen extends PureComponent {
                     // if success upload++ else failed++
 
                     if (response && response.success) {
-                        this.setState((previousState) => ({
+                        this.setState(previousState => ({
                             uploaded: previousState.uploaded + 1
                         }));
                     } else {
-                        this.setState((previousState) => ({
+                        this.setState(previousState => ({
                             failedUpload: previousState.failedUpload + 1
                         }));
                     }
@@ -453,16 +455,16 @@ class HomeScreen extends PureComponent {
                     );
 
                     if (response && response.success) {
-                        this.setState((previousState) => ({
+                        this.setState(previousState => ({
                             uploaded: previousState.uploaded + 1
                         }));
                     } else {
-                        this.setState((previousState) => ({
+                        this.setState(previousState => ({
                             failedUpload: previousState.failedUpload + 1
                         }));
                     }
                 } else if (!isgeotagged) {
-                    this.setState((previousState) => ({
+                    this.setState(previousState => ({
                         failedUpload: previousState.failedUpload + 1
                     }));
                 }
@@ -605,7 +607,7 @@ const styles = {
     }
 };
 
-const mapStateToProps = (state) => {
+const mapStateToProps = state => {
     return {
         isSelecting: state.images.isSelecting,
         lang: state.auth.lang,
@@ -625,4 +627,7 @@ const mapStateToProps = (state) => {
     };
 };
 
-export default connect(mapStateToProps, actions)(HomeScreen);
+export default connect(
+    mapStateToProps,
+    actions
+)(HomeScreen);

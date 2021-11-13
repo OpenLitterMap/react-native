@@ -20,8 +20,8 @@ const INITIAL_STATE = {
     selectedImages: []
 };
 
-export default function (state = INITIAL_STATE, action) {
-    return produce(state, (draft) => {
+export default function(state = INITIAL_STATE, action) {
+    return produce(state, draft => {
         switch (action.type) {
             /**
              * Add images to state
@@ -44,10 +44,10 @@ export default function (state = INITIAL_STATE, action) {
                 const images = action.payload.images;
 
                 images &&
-                    images.map((image) => {
+                    images.map(image => {
                         if (action.payload.type === 'WEB') {
                             const index = draft.images.findIndex(
-                                (webimg) => webimg.photoId === image.id
+                                webimg => webimg.photoId === image.id
                             );
                             if (index === -1) {
                                 draft.images.push({
@@ -57,7 +57,7 @@ export default function (state = INITIAL_STATE, action) {
                                     type: action.payload.type,
                                     selected: false,
                                     tags: {},
-                                    pickedUp: action.payload.pickedUp,
+                                    picked_up: action.payload.picked_up,
                                     photoId: image.id
                                 });
                             }
@@ -72,7 +72,7 @@ export default function (state = INITIAL_STATE, action) {
                                 type: action.payload.type,
                                 selected: false,
                                 tags: {},
-                                pickedUp: action.payload.pickedUp
+                                picked_up: action.payload.picked_up
                             });
                         }
                     });
@@ -134,7 +134,7 @@ export default function (state = INITIAL_STATE, action) {
 
             case DELETE_IMAGE:
                 const index = draft.images.findIndex(
-                    (image) => image.id === action.payload
+                    image => image.id === action.payload
                 );
                 if (index !== -1) draft.images.splice(index, 1);
                 break;
@@ -144,7 +144,7 @@ export default function (state = INITIAL_STATE, action) {
              */
 
             case DELETE_SELECTED_IMAGES:
-                draft.images = draft.images.filter((image) => !image.selected);
+                draft.images = draft.images.filter(image => !image.selected);
                 draft.selected = 0;
                 break;
 
@@ -155,7 +155,7 @@ export default function (state = INITIAL_STATE, action) {
              */
 
             case DESELECT_ALL_IMAGES:
-                draft.images.map((image) => {
+                draft.images.map(image => {
                     image.selected = false;
                 });
 
@@ -206,8 +206,9 @@ export default function (state = INITIAL_STATE, action) {
              */
 
             case TOGGLE_SELECTED_IMAGES:
-                draft.images[action.payload].selected =
-                    !draft.images[action.payload].selected;
+                draft.images[action.payload].selected = !draft.images[
+                    action.payload
+                ].selected;
 
                 break;
 
