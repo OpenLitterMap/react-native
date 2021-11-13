@@ -145,6 +145,7 @@ export default function(state = INITIAL_STATE, action) {
             case SUGGEST_TAGS:
                 // return array of suggested tags based on payload text
                 let suggestedTagsArray = [];
+
                 Object.entries(LITTERKEYS).some(tags => {
                     tags[1].some(tag => {
                         const translatedText = getTranslation(

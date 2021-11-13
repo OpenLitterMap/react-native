@@ -51,6 +51,7 @@ class LitterBottomSearch extends PureComponent {
             category: tag.category,
             title: tag.key
         };
+
         // currentGlobalIndex
         const currentIndex = this.props.swiperIndex;
 
