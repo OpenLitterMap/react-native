@@ -14,7 +14,7 @@ import Swiper from 'react-native-swiper';
 import { connect } from 'react-redux';
 import * as actions from '../../actions';
 
-import CATEGORIES from './data/categories';
+import CATEGORIES from '../../assets/data/categories';
 
 import LitterCategories from './components/LitterCategories';
 import LitterImage from './components/LitterImage';
@@ -26,7 +26,7 @@ const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 
 import DeviceInfo from 'react-native-device-info';
-import LITTERKEYS from './data/litterkeys';
+import LITTERKEYS from '../../assets/data/litterkeys';
 const cloneDeep = require('clone-deep');
 
 class AddTags extends PureComponent {
