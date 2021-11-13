@@ -104,7 +104,7 @@ class CameraScreen extends React.Component {
         const locationPermission = await checkLocationPermission();
         if (locationPermission === 'granted') {
             this.locationSubscription = RNLocation.subscribeToLocationUpdates(
-                (locations) => {
+                locations => {
                     !this.state.loading &&
                         this.setState({
                             lat: locations[0].latitude,
@@ -162,7 +162,7 @@ class CameraScreen extends React.Component {
         return (
             <>
                 <RNCamera
-                    ref={(ref) => {
+                    ref={ref => {
                         this.camera = ref;
                     }}
                     style={{ flex: 1 }}
@@ -248,11 +248,11 @@ class CameraScreen extends React.Component {
 
                 this.camera
                     .takePictureAsync()
-                    .then((result) => {
+                    .then(result => {
                         console.log('takePicture', result); // height, uri, width
 
-                        const now = moment();
-                        const date = moment(now).format('YYYY:MM:DD HH:mm:ss');
+                        // timestamp in seconds
+                        const date = Date.now() / 1000;
 
                         // We need to generate a better filename for android
                         const filename =
@@ -278,7 +278,7 @@ class CameraScreen extends React.Component {
                             this.props.user.picked_up
                         );
                     })
-                    .catch((error) => {
+                    .catch(error => {
                         console.error('camera.takePicture', error);
                     });
 
@@ -361,7 +361,7 @@ const styles = StyleSheet.create({
     }
 });
 
-const mapStateToProps = (state) => {
+const mapStateToProps = state => {
     return {
         autoFocus: state.camera.autoFocus,
         lat: state.camera.lat,
@@ -373,4 +373,7 @@ const mapStateToProps = (state) => {
     };
 };
 
-export default connect(mapStateToProps, actions)(CameraScreen);
+export default connect(
+    mapStateToProps,
+    actions
+)(CameraScreen);

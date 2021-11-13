@@ -401,12 +401,6 @@ class HomeScreen extends PureComponent {
                     Object.keys(img.tags).length > 0 &&
                     isgeotagged
                 ) {
-                    const date =
-                        img.type === 'GALLERY'
-                            ? moment
-                                  .unix(img.date)
-                                  .format('YYYY:MM:DD HH:mm:ss')
-                            : img.date;
                     let ImageData = new FormData();
 
                     ImageData.append('photo', {
@@ -417,7 +411,7 @@ class HomeScreen extends PureComponent {
 
                     ImageData.append('lat', img.lat);
                     ImageData.append('lon', img.lon);
-                    ImageData.append('date', date);
+                    ImageData.append('date', img.date);
                     ImageData.append('picked_up', img.picked_up ? 1 : 0);
                     ImageData.append('model', model);
                     ImageData.append('tags', JSON.stringify(img.tags));
