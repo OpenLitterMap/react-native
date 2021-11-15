@@ -1,7 +1,7 @@
 import axios from 'axios';
 import {
     ADD_IMAGES,
-    ADD_TAGS_TO_IMAGE,
+    ADD_TAG_TO_IMAGE,
     DECREMENT_SELECTED,
     DELETE_IMAGE,
     DELETE_SELECTED_IMAGES,
@@ -18,9 +18,7 @@ import {
  * @param {Array} images
  * @param {('CAMERA' | 'GALLERY' | 'WEB')} type
  */
-
 export const addImages = (images, type, picked_up) => {
-    // console.log(images);
     return {
         type: ADD_IMAGES,
         payload: { images, type, picked_up }
@@ -28,12 +26,11 @@ export const addImages = (images, type, picked_up) => {
 };
 
 /**
- * Add tags to images
+ * Add tag to image
  */
-
-export const addTagsToImages = payload => {
+export const addTagToImage = (payload) => {
     return {
-        type: ADD_TAGS_TO_IMAGE,
+        type: ADD_TAG_TO_IMAGE,
         payload: payload
     };
 };
@@ -91,8 +88,7 @@ export const decrementSelected = () => {
  * delete image by id
  * @param {number} id
  */
-
-export const deleteImage = id => {
+export const deleteImage = (id) => {
     return {
         type: DELETE_IMAGE,
         payload: id
@@ -102,7 +98,6 @@ export const deleteImage = id => {
 /**
  * Delete selected images -- all images with property selected set to true
  */
-
 export const deleteSelectedImages = () => {
     return {
         type: DELETE_SELECTED_IMAGES
@@ -161,7 +156,7 @@ export const incrementSelected = () => {
 /**
  * remove a tag from image
  */
-export const removeTagFromImage = data => {
+export const removeTagFromImage = (data) => {
     return {
         type: REMOVE_TAG_FROM_IMAGE,
         payload: data
@@ -181,8 +176,7 @@ export const toggleSelecting = () => {
  * toggle selected property of a image object
  * @param {number} id
  */
-
-export const toggleSelectedImage = id => {
+export const toggleSelectedImage = (id) => {
     return {
         type: TOGGLE_SELECTED_IMAGES,
         payload: id

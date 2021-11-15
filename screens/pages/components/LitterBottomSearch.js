@@ -44,9 +44,8 @@ class LitterBottomSearch extends PureComponent {
      * A tag has been selected
      */
     addTag(tag) {
-        console.log(tag);
         // update selected tag to execute scrollTo
-        this.props.changeItem(tag.key);
+        this.props.changeItem(tag);
 
         const newTag = {
             category: tag.category,
@@ -56,7 +55,7 @@ class LitterBottomSearch extends PureComponent {
         // currentGlobalIndex
         const currentIndex = this.props.swiperIndex;
 
-        this.props.addTagsToImages({
+        this.props.addTagToImage({
             tag: newTag,
             currentIndex
         });
@@ -106,6 +105,7 @@ class LitterBottomSearch extends PureComponent {
                         if (type === 'WEB') {
                             const photoId =
                                 this.props.images[currentIndex].photoId;
+
                             await this.props.deleteWebImage(
                                 this.props.token,
                                 photoId,
@@ -216,10 +216,7 @@ class LitterBottomSearch extends PureComponent {
     updateText(text) {
         this.setState({ text });
 
-        this.props.suggestTags({
-            text,
-            lang: this.props.lang
-        });
+        this.props.suggestTags(text, this.props.lang);
     }
 
     /**
@@ -440,7 +437,7 @@ const styles = {
 const mapStateToProps = (state) => {
     return {
         token: state.auth.token,
-        images: state.images.images
+        images: state.images.imagesArray
     };
 };
 

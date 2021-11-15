@@ -14,7 +14,7 @@ import {
     SUBMIT_END,
     SUBMIT_START
 } from '../actions/types';
-import { XPLEVEL } from '../screens/pages/data/xpLevel';
+import { XPLEVEL } from '../assets/data/xpLevel';
 
 import * as RNLocalize from 'react-native-localize';
 let lang = RNLocalize.getLocales()['languageCode'];

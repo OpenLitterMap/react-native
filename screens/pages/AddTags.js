@@ -13,8 +13,7 @@ import { Icon } from 'react-native-elements';
 import Swiper from 'react-native-swiper';
 import { connect } from 'react-redux';
 import * as actions from '../../actions';
-import CATEGORIES from './data/categories';
-
+import CATEGORIES from '../../assets/data/categories';
 import LitterCategories from './components/LitterCategories';
 import LitterImage from './components/LitterImage';
 import LitterPickerWheels from './components/LitterPickerWheels';
@@ -25,7 +24,7 @@ const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 
 import DeviceInfo from 'react-native-device-info';
-import LITTERKEYS from './data/litterkeys';
+import LITTERKEYS from '../../assets/data/litterkeys';
 const cloneDeep = require('clone-deep');
 
 class AddTags extends PureComponent {
@@ -214,7 +213,7 @@ class AddTags extends PureComponent {
                         showsPagination={false}
                         keyboardShouldPersistTaps="handled"
                         ref="imageSwiper"
-                        onIndexChanged={index =>
+                        onIndexChanged={(index) =>
                             this.swiperIndexChanged(index)
                         }>
                         {this._renderLitterImage()}
@@ -412,7 +411,7 @@ class AddTags extends PureComponent {
      *
      * @param newGlobalIndex (int): the global index across all photo types.
      */
-    swiperIndexChanged = newGlobalIndex => {
+    swiperIndexChanged = (newGlobalIndex) => {
         console.log('swiperIndexChanged', newGlobalIndex);
 
         // Without this, we get "cannot update a component from within the function body of another component"
@@ -467,7 +466,7 @@ class AddTags extends PureComponent {
         // currentGlobalIndex
         const currentIndex = this.props.swiperIndex;
 
-        this.props.addTagsToImages({
+        this.props.addTagToImage({
             tag,
             currentIndex,
             quantityChanged: this.props.quantityChanged
@@ -601,7 +600,7 @@ const styles = {
     }
 };
 
-const mapStateToProps = state => {
+const mapStateToProps = (state) => {
     return {
         category: state.litter.category,
         collectionLength: state.litter.collectionLength,
@@ -626,11 +625,8 @@ const mapStateToProps = state => {
         token: state.auth.token,
         q: state.litter.q,
         quantityChanged: state.litter.quantityChanged,
-        images: state.images.images
+        images: state.images.imagesArray
     };
 };
 
-export default connect(
-    mapStateToProps,
-    actions
-)(AddTags);
+export default connect(mapStateToProps, actions)(AddTags);

@@ -75,12 +75,12 @@ export const swiperIndexChanged = (index) => {
 /**
  * Text to suggest tags by
  */
-export const suggestTags = (data) => {
+export const suggestTags = (text, lang) => {
     return {
         type: SUGGEST_TAGS,
         payload: {
-            text: data.text,
-            lang: data.lang
+            text: text,
+            lang: lang
         }
     };
 };
