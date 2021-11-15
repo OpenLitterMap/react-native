@@ -464,10 +464,8 @@ class HomeScreen extends PureComponent {
         }
 
         //  Last step - if all photos have been deleted, close modal
-        if (
-            this.state.uploaded + this.state.failedUpload ===
-            this.state.total
-        ) {
+        if (this.state.uploaded + this.state.failedUpload === this.state.total)
+        {
             // shared_actions
             this.props.toggleUpload();
             this.props.toggleThankYou();
