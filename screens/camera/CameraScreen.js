@@ -264,7 +264,7 @@ class CameraScreen extends React.Component {
                         // iOS 96790415-6575-4CED-BA64-D6E8B16BF10D.jpg
                         // Android...
 
-                        this.props.addImage(
+                        this.props.addImages(
                             [
                                 {
                                     uri: result.uri,

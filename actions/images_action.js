@@ -1,6 +1,6 @@
 import axios from 'axios';
 import {
-    ADD_IMAGE,
+    ADD_IMAGES,
     ADD_TAGS_TO_IMAGE,
     DECREMENT_SELECTED,
     DELETE_IMAGE,
@@ -19,10 +19,10 @@ import {
  * @param {('CAMERA' | 'GALLERY' | 'WEB')} type
  */
 
-export const addImage = (images, type, picked_up) => {
+export const addImages = (images, type, picked_up) => {
     // console.log(images);
     return {
-        type: ADD_IMAGE,
+        type: ADD_IMAGES,
         payload: { images, type, picked_up }
     };
 };
@@ -67,7 +67,7 @@ export const checkForImagesOnWeb = (token, picked_up) => {
         if (response && response?.data?.photos) {
             let photos = response.data.photos;
             dispatch({
-                type: ADD_IMAGE,
+                type: ADD_IMAGES,
                 payload: {
                     images: photos,
                     type: 'WEB',

@@ -19,7 +19,7 @@ import { Header, SubTitle, Body } from '../components';
 
 const { width } = Dimensions.get('window');
 
-export const placeInTime = (date) => {
+export const placeInTime = date => {
     let today = moment().startOf('day');
     let thisWeek = moment().startOf('week');
     let thisMonth = moment().startOf('month');
@@ -58,7 +58,7 @@ class GalleryScreen extends Component {
 
     async splitIntoRows(images) {
         let temp = {};
-        images.map((image) => {
+        images.map(image => {
             const dateOfImage = image.date * 1000;
             const placeInTimeOfImage = placeInTime(dateOfImage);
 
@@ -70,7 +70,7 @@ class GalleryScreen extends Component {
 
         let final = [];
         let order = ['today', 'week', 'month'];
-        let allTimeTags = Object.keys(temp).map((prop) => {
+        let allTimeTags = Object.keys(temp).map(prop => {
             if (Number.isInteger(parseInt(prop))) {
                 return parseInt(prop);
             }
@@ -78,11 +78,11 @@ class GalleryScreen extends Component {
             return prop;
         });
         let allMonths = allTimeTags.filter(
-            (prop) => Number.isInteger(prop) && prop < 12
+            prop => Number.isInteger(prop) && prop < 12
         );
         allMonths = _.reverse(_.sortBy(allMonths));
         let allYears = allTimeTags.filter(
-            (prop) => Number.isInteger(prop) && !allMonths.includes(prop)
+            prop => Number.isInteger(prop) && !allMonths.includes(prop)
         );
         allYears = _.reverse(_.sortBy(allYears));
 
@@ -100,14 +100,14 @@ class GalleryScreen extends Component {
     /**
      * fn that is called when "done" is pressed
      * sorts the array based on id
-     * call action addImage to save selected images to state
+     * call action addImages to save selected images to state
      *
      */
     async handleDoneClick() {
         const sortedArray = await this.state.selectedImages.sort(
             (a, b) => a.id - b.id
         );
-        this.props.addImage(sortedArray, 'GALLERY', this.props.user.picked_up);
+        this.props.addImages(sortedArray, 'GALLERY', this.props.user.picked_up);
     }
 
     /**
@@ -129,7 +129,7 @@ class GalleryScreen extends Component {
         }
 
         if (index === -1) {
-            this.setState((prevState) => {
+            this.setState(prevState => {
                 return { selectedImages: [...prevState.selectedImages, item] };
             });
         }
@@ -169,9 +169,10 @@ class GalleryScreen extends Component {
                     </Body>
                 </View>
                 <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-                    {item.data.map((image) => {
-                        const selected =
-                            this.state.selectedImages.includes(image);
+                    {item.data.map(image => {
+                        const selected = this.state.selectedImages.includes(
+                            image
+                        );
                         return (
                             <Pressable
                                 key={image.uri}
@@ -256,7 +257,7 @@ class GalleryScreen extends Component {
                             this.renderSection(item, index)
                         }
                         extraData={this.state.selectedImages}
-                        keyExtractor={(item) => `${item.title}`}
+                        keyExtractor={item => `${item.title}`}
                     />
                 </SafeAreaView>
             </>
@@ -264,14 +265,17 @@ class GalleryScreen extends Component {
     }
 }
 
-const mapStateToProps = (state) => {
+const mapStateToProps = state => {
     return {
         geotaggedImages: state.gallery.geotaggedImages,
         user: state.auth.user
     };
 };
 
-export default connect(mapStateToProps, actions)(GalleryScreen);
+export default connect(
+    mapStateToProps,
+    actions
+)(GalleryScreen);
 
 const styles = StyleSheet.create({
     headerStyle: {

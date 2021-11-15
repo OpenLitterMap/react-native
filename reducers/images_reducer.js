@@ -1,7 +1,7 @@
 import produce from 'immer';
 
 import {
-    ADD_IMAGE,
+    ADD_IMAGES,
     ADD_TAGS_TO_IMAGE,
     DECREMENT_SELECTED,
     DELETE_IMAGE,
@@ -40,7 +40,7 @@ export default function(state = INITIAL_STATE, action) {
              * web app only accepts geotagged images.
              *
              */
-            case ADD_IMAGE:
+            case ADD_IMAGES:
                 const images = action.payload.images;
 
                 images &&

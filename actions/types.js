@@ -32,7 +32,7 @@ export const SIGNUP_FAIL = 'SIGNUP_FAIL';
 export const TOKEN_IS_VALID = 'TOKEN_IS_VALID';
 
 // Images - Single array for Photos/Gallery/Web
-export const ADD_IMAGE = 'ADD_IMAGE';
+export const ADD_IMAGES = 'ADD_IMAGES';
 export const ADD_TAGS_TO_IMAGE = 'ADD_TAGS_TO_IMAGE';
 export const DECREMENT_SELECTED = 'DECREMENT_SELECTED';
 export const DELETE_IMAGE = 'DELETE_IMAGE';
