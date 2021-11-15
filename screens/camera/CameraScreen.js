@@ -251,8 +251,8 @@ class CameraScreen extends React.Component {
                     .then(result => {
                         console.log('takePicture', result); // height, uri, width
 
-                        const now = moment();
-                        const date = moment(now).format('YYYY:MM:DD HH:mm:ss');
+                        // timestamp in seconds
+                        const date = Date.now() / 1000;
 
                         // We need to generate a better filename for android
                         const filename =
@@ -264,7 +264,7 @@ class CameraScreen extends React.Component {
                         // iOS 96790415-6575-4CED-BA64-D6E8B16BF10D.jpg
                         // Android...
 
-                        this.props.addImage(
+                        this.props.addImages(
                             [
                                 {
                                     uri: result.uri,
@@ -274,7 +274,8 @@ class CameraScreen extends React.Component {
                                     date
                                 }
                             ],
-                            'CAMERA'
+                            'CAMERA',
+                            this.props.user.picked_up
                         );
                     })
                     .catch(error => {

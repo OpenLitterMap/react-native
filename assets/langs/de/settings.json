@@ -24,5 +24,7 @@
     "alert": "Warnung",
     "do-you-really-want-to-change": "Willst du die Einstellungen wirklich verändern?",
     "ok": "OK",
-    "cancel": "Abbrechen"
+    "cancel": "Abbrechen",
+    "picked-up": "Abgeholt",
+    "litter-picked-up": "Wurf wird abgeholt"
 }

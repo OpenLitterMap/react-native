@@ -15,8 +15,8 @@ import {
     UPDATE_QUANTITY
 } from '../actions/types';
 
-import CATEGORIES from '../screens/pages/data/categories';
-import LITTERKEYS from '../screens/pages/data/litterkeys';
+import CATEGORIES from '../assets/data/categories';
+import LITTERKEYS from '../assets/data/litterkeys';
 
 import { getTranslation } from 'react-native-translation';
 
@@ -59,7 +59,7 @@ export default function(state = INITIAL_STATE, action) {
                     cat => cat.title === action.payload
                 );
                 const items = LITTERKEYS[category.title];
-                const item = items[0].key;
+                const item = items[0];
                 draft.category = category;
                 draft.items = items;
                 draft.item = item;
@@ -149,11 +149,8 @@ export default function(state = INITIAL_STATE, action) {
                 Object.entries(LITTERKEYS).some(tags => {
                     tags[1].some(tag => {
                         const translatedText = getTranslation(
-                            `${action.payload.lang}.litter.${tags[0]}.${
-                                tag.key
-                            }`
+                            `${action.payload.lang}.litter.${tags[0]}.${tag}`
                         );
-
                         if (
                             translatedText
                                 .toLowerCase()
@@ -161,7 +158,7 @@ export default function(state = INITIAL_STATE, action) {
                         ) {
                             suggestedTagsArray.push({
                                 category: tags[0],
-                                key: tag.key
+                                key: tag
                             });
                         }
                     });

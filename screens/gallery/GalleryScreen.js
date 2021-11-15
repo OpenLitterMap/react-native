@@ -100,14 +100,14 @@ class GalleryScreen extends Component {
     /**
      * fn that is called when "done" is pressed
      * sorts the array based on id
-     * call action addImage to save selected images to state
+     * call action addImages to save selected images to state
      *
      */
     async handleDoneClick() {
         const sortedArray = await this.state.selectedImages.sort(
             (a, b) => a.id - b.id
         );
-        this.props.addImage(sortedArray, 'GALLERY');
+        this.props.addImages(sortedArray, 'GALLERY', this.props.user.picked_up);
     }
 
     /**
@@ -267,7 +267,8 @@ class GalleryScreen extends Component {
 
 const mapStateToProps = state => {
     return {
-        geotaggedImages: state.gallery.geotaggedImages
+        geotaggedImages: state.gallery.geotaggedImages,
+        user: state.auth.user
     };
 };
 

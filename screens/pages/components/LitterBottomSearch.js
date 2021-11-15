@@ -44,9 +44,8 @@ class LitterBottomSearch extends PureComponent {
      * A tag has been selected
      */
     addTag(tag) {
-        console.log(tag);
         // update selected tag to execute scrollTo
-        this.props.changeItem(tag.key);
+        this.props.changeItem(tag);
 
         const newTag = {
             category: tag.category,
@@ -56,7 +55,7 @@ class LitterBottomSearch extends PureComponent {
         // currentGlobalIndex
         const currentIndex = this.props.swiperIndex;
 
-        this.props.addTagsToImages({
+        this.props.addTagToImage({
             tag: newTag,
             currentIndex
         });
@@ -104,9 +103,10 @@ class LitterBottomSearch extends PureComponent {
                         // if WEB image hit api and delete uploaded image and then delete from state
                         // else delete from state by id
                         if (type === 'WEB') {
-                            const photoId = this.props.images[currentIndex]
-                                .photoId;
-                            await this.props.deleteSelectedWebImages(
+                            const photoId =
+                                this.props.images[currentIndex].photoId;
+
+                            await this.props.deleteWebImage(
                                 this.props.token,
                                 photoId,
                                 id
@@ -200,15 +200,11 @@ class LitterBottomSearch extends PureComponent {
                 onPress={this.addTag.bind(this, item)}>
                 <TransText
                     style={styles.category}
-                    dictionary={`${this.props.lang}.litter.categories.${
-                        item.category
-                    }`}
+                    dictionary={`${this.props.lang}.litter.categories.${item.category}`}
                 />
                 <TransText
                     style={styles.item}
-                    dictionary={`${this.props.lang}.litter.${item.category}.${
-                        item.key
-                    }`}
+                    dictionary={`${this.props.lang}.litter.${item.category}.${item.key}`}
                 />
             </TouchableOpacity>
         );
@@ -220,10 +216,7 @@ class LitterBottomSearch extends PureComponent {
     updateText(text) {
         this.setState({ text });
 
-        this.props.suggestTags({
-            text,
-            lang: this.props.lang
-        });
+        this.props.suggestTags(text, this.props.lang);
     }
 
     /**
@@ -268,7 +261,7 @@ class LitterBottomSearch extends PureComponent {
                         style={this.filterStyle()}
                         placeholder={suggest}
                         placeholderTextColor="#ccc"
-                        onChangeText={text => this.updateText(text)}
+                        onChangeText={(text) => this.updateText(text)}
                         selectionColor="black"
                         blurOnSubmit={false}
                         clearButtonMode="always"
@@ -441,14 +434,11 @@ const styles = {
     }
 };
 
-const mapStateToProps = state => {
+const mapStateToProps = (state) => {
     return {
         token: state.auth.token,
-        images: state.images.images
+        images: state.images.imagesArray
     };
 };
 
-export default connect(
-    mapStateToProps,
-    actions
-)(LitterBottomSearch);
+export default connect(mapStateToProps, actions)(LitterBottomSearch);

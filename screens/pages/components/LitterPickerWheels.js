@@ -54,12 +54,10 @@ class LitterPickerWheels extends PureComponent {
                         const x = getTranslation(
                             `${this.props.lang}.litter.${
                                 this.props.category.title
-                            }.${item.key}`
+                            }.${item}`
                         );
 
-                        return (
-                            <Picker.Item label={x} value={item.key} key={i} />
-                        );
+                        return <Picker.Item label={x} value={item} key={i} />;
                     })}
                 </Picker>
                 <Picker

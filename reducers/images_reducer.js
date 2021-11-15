@@ -1,8 +1,8 @@
 import produce from 'immer';
 
 import {
-    ADD_IMAGE,
-    ADD_TAGS_TO_IMAGE,
+    ADD_IMAGES,
+    ADD_TAG_TO_IMAGE,
     DECREMENT_SELECTED,
     DELETE_IMAGE,
     DELETE_SELECTED_IMAGES,
@@ -14,14 +14,14 @@ import {
 } from '../actions/types';
 
 const INITIAL_STATE = {
-    images: [],
+    imagesArray: [],
     isSelecting: false,
     selected: 0,
     selectedImages: []
 };
 
-export default function(state = INITIAL_STATE, action) {
-    return produce(state, draft => {
+export default function (state = INITIAL_STATE, action) {
+    return produce(state, (draft) => {
         switch (action.type) {
             /**
              * Add images to state
@@ -40,29 +40,30 @@ export default function(state = INITIAL_STATE, action) {
              * web app only accepts geotagged images.
              *
              */
-            case ADD_IMAGE:
+            case ADD_IMAGES:
                 const images = action.payload.images;
+
                 images &&
-                    images.map(image => {
+                    images.map((image) => {
                         if (action.payload.type === 'WEB') {
-                            const index = draft.images.findIndex(
-                                webimg => webimg.photoId === image.id
+                            const index = draft.imagesArray.findIndex(
+                                (webimg) => webimg.photoId === image.id
                             );
                             if (index === -1) {
-                                draft.images.push({
-                                    id: draft.images.length,
+                                draft.imagesArray.push({
+                                    id: draft.imagesArray.length,
                                     uri: image.filename,
                                     filename: image.filename,
                                     type: action.payload.type,
                                     selected: false,
                                     tags: {},
-                                    picked_up: false,
+                                    picked_up: action.payload.picked_up,
                                     photoId: image.id
                                 });
                             }
                         } else {
-                            draft.images.push({
-                                id: draft.images.length,
+                            draft.imagesArray.push({
+                                id: draft.imagesArray.length,
                                 lat: image.lat,
                                 lon: image.lon,
                                 uri: image.uri,
@@ -71,7 +72,7 @@ export default function(state = INITIAL_STATE, action) {
                                 type: action.payload.type,
                                 selected: false,
                                 tags: {},
-                                picked_up: false
+                                picked_up: action.payload.picked_up
                             });
                         }
                     });
@@ -82,8 +83,8 @@ export default function(state = INITIAL_STATE, action) {
              * Add or update tags object on a gallery image
              */
 
-            case ADD_TAGS_TO_IMAGE:
-                let image = draft.images[action.payload.currentIndex];
+            case ADD_TAG_TO_IMAGE:
+                let image = draft.imagesArray[action.payload.currentIndex];
                 let newTags = image.tags;
 
                 let quantity = 1;
@@ -132,18 +133,23 @@ export default function(state = INITIAL_STATE, action) {
              */
 
             case DELETE_IMAGE:
-                const index = draft.images.findIndex(
-                    image => image.id === action.payload
+                const index = draft.imagesArray.findIndex(
+                    (image) => image.id === action.payload
                 );
-                if (index !== -1) draft.images.splice(index, 1);
+                if (index !== -1) draft.imagesArray.splice(index, 1);
+
                 break;
+
             /**
              * Delete selected images -- all images with property selected set to true
              */
 
             case DELETE_SELECTED_IMAGES:
-                draft.images = draft.images.filter(image => !image.selected);
+                draft.imagesArray = draft.imagesArray.filter(
+                    (image) => !image.selected
+                );
                 draft.selected = 0;
+
                 break;
 
             /**
@@ -153,7 +159,7 @@ export default function(state = INITIAL_STATE, action) {
              */
 
             case DESELECT_ALL_IMAGES:
-                draft.images.map(image => {
+                draft.imagesArray.map((image) => {
                     image.selected = false;
                 });
 
@@ -173,7 +179,7 @@ export default function(state = INITIAL_STATE, action) {
              */
 
             case REMOVE_TAG_FROM_IMAGE:
-                let photo = draft.images[action.payload.currentIndex];
+                let photo = draft.imagesArray[action.payload.currentIndex];
 
                 // if only one tag in payload category delete the category also
                 // else delete only tag
@@ -204,9 +210,8 @@ export default function(state = INITIAL_STATE, action) {
              */
 
             case TOGGLE_SELECTED_IMAGES:
-                draft.images[action.payload].selected = !draft.images[
-                    action.payload
-                ].selected;
+                draft.imagesArray[action.payload].selected =
+                    !draft.imagesArray[action.payload].selected;
 
                 break;
 

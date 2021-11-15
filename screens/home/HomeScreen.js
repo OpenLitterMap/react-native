@@ -59,7 +59,10 @@ class HomeScreen extends PureComponent {
      */
     async componentDidMount() {
         // web_actions, web_reducer
-        await this.props.checkForImagesOnWeb(this.props.token);
+        await this.props.checkForImagesOnWeb(
+            this.props.token,
+            this.props.user.picked_up
+        );
 
         this.checkNewVersion();
         this.checkGalleryPermission();
@@ -259,9 +262,7 @@ class HomeScreen extends PureComponent {
                         <Body
                             style={{ marginLeft: 10 }}
                             color="muted"
-                            dictionary={`${
-                                this.props.lang
-                            }.leftpage.select-to-delete`}
+                            dictionary={`${this.props.lang}.leftpage.select-to-delete`}
                         />
                     </View>
                 );
@@ -279,7 +280,7 @@ class HomeScreen extends PureComponent {
             return;
         } else {
             let tagged = 0;
-            this.props.images.map(img => {
+            this.props.images.map((img) => {
                 if (img.tags && Object.keys(img.tags)?.length > 0) {
                     tagged++;
                 }
@@ -342,11 +343,11 @@ class HomeScreen extends PureComponent {
      */
 
     deleteImages() {
-        this.props.images.map(image => {
+        this.props.images.map((image) => {
             if (image.type !== 'WEB' && image.selected) {
                 this.props.deleteImage(image.id);
             } else if (image.type === 'WEB' && image.selected) {
-                this.props.deleteSelectedWebImages(
+                this.props.deleteWebImage(
                     this.props.token,
                     image.photoId,
                     image.id
@@ -375,13 +376,11 @@ class HomeScreen extends PureComponent {
 
         let imagesCount = 0;
 
-        this.props.images.map(item => {
+        this.props.images.map((item) => {
             if (item.tags && Object.keys(item.tags)?.length > 0) {
                 imagesCount++;
             }
         });
-
-        console.log({ imagesCount });
 
         this.setState({
             total: imagesCount
@@ -394,7 +393,6 @@ class HomeScreen extends PureComponent {
             // async loop
             for (const img of this.props.images) {
                 const isgeotagged = isGeotagged(img);
-                const myIndex = this.props.images.indexOf(img);
                 if (
                     img.type !== 'WEB' &&
                     img.tags &&
@@ -412,32 +410,25 @@ class HomeScreen extends PureComponent {
                     ImageData.append('lat', img.lat);
                     ImageData.append('lon', img.lon);
                     ImageData.append('date', img.date);
-                    ImageData.append('presence', img.presence);
+                    ImageData.append('picked_up', img.picked_up ? 1 : 0);
                     ImageData.append('model', model);
+                    ImageData.append('tags', JSON.stringify(img.tags));
 
-                    // shared_actions
-                    const response = await this.props.uploadPhoto(
+                    // Upload image
+                    const response = await this.props.uploadImage(
                         this.props.token,
-                        ImageData
+                        ImageData,
+                        img.id
                     );
 
-                    if (response && response.success) {
-                        // shared_actions
-                        const resp = await this.props.uploadTags(
-                            this.props.token,
-                            img.tags,
-                            response.photo_id
-                        );
-                        if (resp && resp.success) {
-                            // Remove the image
-                            this.props.deleteImage(myIndex);
+                    // if success upload++ else failed++
 
-                            this.setState(previousState => ({
-                                uploaded: previousState.uploaded + 1
-                            }));
-                        }
-                    } else {
+                    if (response && response.success) {
                         this.setState(previousState => ({
+                            uploaded: previousState.uploaded + 1
+                        }));
+                    } else {
+                        this.setState((previousState) => ({
                             failedUpload: previousState.failedUpload + 1
                         }));
                     }
@@ -446,25 +437,26 @@ class HomeScreen extends PureComponent {
                     img.tags &&
                     Object.keys(img.tags).length > 0
                 ) {
+                    /**
+                     * Upload tags
+                     * Only need to upload tags and 'picked_up' value for WEB images
+                     */
                     const response = await this.props.uploadTags(
                         this.props.token,
-                        img.tags,
-                        img.photoId
+                        img
                     );
 
                     if (response && response.success) {
-                        this.props.deleteImage(myIndex);
-
                         this.setState(previousState => ({
                             uploaded: previousState.uploaded + 1
                         }));
                     } else {
-                        this.setState(previousState => ({
+                        this.setState((previousState) => ({
                             failedUpload: previousState.failedUpload + 1
                         }));
                     }
                 } else if (!isgeotagged) {
-                    this.setState(previousState => ({
+                    this.setState((previousState) => ({
                         failedUpload: previousState.failedUpload + 1
                     }));
                 }
@@ -607,7 +599,7 @@ const styles = {
     }
 };
 
-const mapStateToProps = state => {
+const mapStateToProps = (state) => {
     return {
         isSelecting: state.images.isSelecting,
         lang: state.auth.lang,
@@ -623,11 +615,8 @@ const mapStateToProps = state => {
         user: state.auth.user,
         appVersion: state.shared.appVersion,
         // new image reducer
-        images: state.images.images
+        images: state.images.imagesArray
     };
 };
 
-export default connect(
-    mapStateToProps,
-    actions
-)(HomeScreen);
+export default connect(mapStateToProps, actions)(HomeScreen);

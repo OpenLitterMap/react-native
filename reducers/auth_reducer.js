@@ -14,7 +14,7 @@ import {
     SUBMIT_END,
     SUBMIT_START
 } from '../actions/types';
-import { XPLEVEL } from '../screens/pages/data/xpLevel';
+import { XPLEVEL } from '../assets/data/xpLevel';
 
 import * as RNLocalize from 'react-native-localize';
 let lang = RNLocalize.getLocales()['languageCode'];
@@ -182,6 +182,9 @@ export default function(state = INITIAL_STATE, action) {
                 AsyncStorage.setItem('user', JSON.stringify(user));
 
                 draft.user = user;
+                draft.token = action.payload.token;
+                draft.appLoading = !draft.appLoading;
+                draft.isSubmitting = false;
 
                 break;
 

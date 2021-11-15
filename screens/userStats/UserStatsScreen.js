@@ -16,7 +16,7 @@ import { ProgressCircleCard } from './userComponents';
 class UserStatsScreen extends Component {
     constructor(props) {
         super(props);
-        // console.log(JSON.stringify(this.props.user, null, '\t'));
+
         this.state = {
             xpStart: 0,
             positionStart: 0,
@@ -202,7 +202,7 @@ const styles = StyleSheet.create({
     }
 });
 
-const mapStateToProps = state => {
+const mapStateToProps = (state) => {
     return {
         lang: state.auth.lang,
         token: state.auth.token,
@@ -210,7 +210,4 @@ const mapStateToProps = state => {
     };
 };
 
-export default connect(
-    mapStateToProps,
-    actions
-)(UserStatsScreen);
+export default connect(mapStateToProps, actions)(UserStatsScreen);

@@ -330,8 +330,9 @@ export const serverLogin = data => {
                 return;
             }
         }
+
         // Dispatch success if no errors
-        dispatch({ type: LOGIN_SUCCESS, payload: token });
+        // fetch user object before navigating
         dispatch(fetchUser(token));
     };
 };
