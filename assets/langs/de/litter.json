@@ -58,8 +58,9 @@
         "sauce_packet": "Sausse",
         "glass_jar": "Glasgefäβ",
         "glass_jar_lid": "Deckel",
-        "foodOther": "Nahrungsmittel andere",
-        "aluminium_foil": "Aluminiumfolie"
+        "aluminium_foil": "Aluminiumfolie",
+        "chewing_gum": "Kaugummi",
+        "foodOther": "Nahrungsmittel andere"
     },
     "softdrinks": {
         "waterBottle": "Plastikwasserflasche",

@@ -57,8 +57,9 @@
         "sauce_packet": "Paquete de salsa",
         "glass_jar": "Jarra de vidrio",
         "glass_jar_lid": "Tapa de jarra de vidrio",
-        "foodOther": "Comida-Otro",
-        "aluminium_foil": "Papel de aluminio"
+        "aluminium_foil": "Papel de aluminio",
+        "chewing_gum": "Chicle",
+        "foodOther": "Comida-Otro"
     },
     "softdrinks": {
         "waterBottle": "Botella de agua de plastico",

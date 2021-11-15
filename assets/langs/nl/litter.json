@@ -57,8 +57,9 @@
         "sauce_packet": "Saus Bakjes",
         "glass_jar": "Glazen Pot",
         "glass_jar_lid": "Glazen Pot Deksel",
-        "foodOther": "Voedsel-Overig",
-        "aluminium_foil": "Aluminium folie"
+        "aluminium_foil": "Aluminium folie",
+        "chewing_gum": "Kauwgom",
+        "foodOther": "Voedsel-Overig"
     },
     "softdrinks": {
         "waterBottle": "Plastic Water Fles",

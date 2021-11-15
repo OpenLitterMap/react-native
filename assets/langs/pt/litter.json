@@ -57,8 +57,9 @@
         "sauce_packet": "Sachê de molho (ketchup, mostarda, maionese) ",
         "glass_jar": "Pote de vidro",
         "glass_jar_lid": "Tampa de pote de vidro",
-        "foodOther": "Outros itens relacionados a alimentos",
-        "aluminium_foil": "Folha de alumínio"
+        "aluminium_foil": "Folha de alumínio",
+        "chewing_gum": "Goma de mascar",
+        "foodOther": "Outros itens relacionados a alimentos"
     },
     "softdrinks": {
         "waterBottle": "Garrafinha de água",
