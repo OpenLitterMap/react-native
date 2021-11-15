@@ -43,8 +43,10 @@ const LITTERKEYS = {
         'sauce_packet', // Sauce Packet
         'glass_jar', // Glass Jar
         'glass_jar_lid', // Glass Jar Lid
-        'foodOther', // Food-other
-        'aluminium_foil' // Aluminium Foil
+        'pizza_box', // Pizza Box
+        'aluminium_foil', // Aluminium Foil
+        'chewing_gum', // Chewing Gum
+        'foodOther' // Food-other
     ],
     softdrinks: [
         'waterBottle', // Plastic Water bottle

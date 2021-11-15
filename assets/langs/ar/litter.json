@@ -57,8 +57,10 @@
         "sauce_packet": "علبة صلصة",
         "glass_jar": "إناء زجاجي",
         "glass_jar_lid": "غطاء إناء زجاجي",
-        "foodOther": "طعام-أخرى",
-        "aluminium_foil": "ورق القصدير"
+        "pizza_box": "علبة بيتزا",
+        "aluminium_foil": "ورق القصدير",
+        "chewing_gum": "علكة",
+        "foodOther": "طعام-أخرى"
     },
     "softdrinks": {
         "waterBottle": "قنينة مياه بلاستق",

@@ -57,8 +57,10 @@
         "sauce_packet": "Paquet de sauce",
         "glass_jar": "Bocal en verre",
         "glass_jar_lid": "Couvercle de bocal en verre",
-        "foodOther": "Nourriture-Autre",
-        "aluminium_foil": "Papier d'aluminium"
+        "pizza_box": "Boîte à pizza",
+        "aluminium_foil": "Papier d'aluminium",
+        "chewing_gum": "Chewing Gum",
+        "foodOther": "Nourriture-Autre"
     },
     "softdrinks": {
         "waterBottle": "Bouteille d'eau en plastique",
