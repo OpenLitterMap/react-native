@@ -199,7 +199,7 @@ export const uploadImage = (token, image, imageId) => {
     let response;
     return async dispatch => {
         try {
-            response = await axios(URL + '/api/photos/submit-with-tags', {
+            response = await axios(URL + '/api/photos/upload-with-tags', {
                 method: 'POST',
                 headers: {
                     Authorization: 'Bearer ' + token,
