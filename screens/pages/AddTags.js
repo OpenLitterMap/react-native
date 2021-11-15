@@ -13,9 +13,7 @@ import { Icon } from 'react-native-elements';
 import Swiper from 'react-native-swiper';
 import { connect } from 'react-redux';
 import * as actions from '../../actions';
-
 import CATEGORIES from '../../assets/data/categories';
-
 import LitterCategories from './components/LitterCategories';
 import LitterImage from './components/LitterImage';
 import LitterPickerWheels from './components/LitterPickerWheels';

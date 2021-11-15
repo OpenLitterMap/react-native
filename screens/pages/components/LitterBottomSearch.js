@@ -105,7 +105,8 @@ class LitterBottomSearch extends PureComponent {
                         if (type === 'WEB') {
                             const photoId =
                                 this.props.images[currentIndex].photoId;
-                            await this.props.deleteSelectedWebImages(
+
+                            await this.props.deleteWebImage(
                                 this.props.token,
                                 photoId,
                                 id

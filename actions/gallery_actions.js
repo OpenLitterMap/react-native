@@ -25,6 +25,8 @@ export const getPhotosFromCameraroll = () => async (dispatch, getState) => {
         lastFetchTime,
         imagesLoading
     } = getState().gallery;
+    const { user } = getState().auth;
+
     let id = geotaggedImages.length;
 
     let camerarollData;
@@ -71,7 +73,7 @@ export const getPhotosFromCameraroll = () => async (dispatch, getState) => {
         const imagesArray = camerarollData.edges;
         let geotagged = [];
 
-        imagesArray.map(item => {
+        imagesArray.map((item) => {
             id++;
 
             if (
@@ -93,7 +95,6 @@ export const getPhotosFromCameraroll = () => async (dispatch, getState) => {
                     lon: item.node.location.longitude,
                     date: item.node.timestamp,
                     selected: false,
-                    picked_up: false,
                     tags: {},
                     type: 'gallery'
                 });

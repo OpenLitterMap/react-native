@@ -182,6 +182,9 @@ export default function(state = INITIAL_STATE, action) {
                 AsyncStorage.setItem('user', JSON.stringify(user));
 
                 draft.user = user;
+                draft.token = action.payload.token;
+                draft.appLoading = !draft.appLoading;
+                draft.isSubmitting = false;
 
                 break;
 

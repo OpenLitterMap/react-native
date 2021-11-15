@@ -1,7 +1,7 @@
 import produce from 'immer';
 
 import {
-    ADD_IMAGE,
+    ADD_IMAGES,
     ADD_TAG_TO_IMAGE,
     DECREMENT_SELECTED,
     DELETE_IMAGE,
@@ -40,8 +40,9 @@ export default function (state = INITIAL_STATE, action) {
              * web app only accepts geotagged images.
              *
              */
-            case ADD_IMAGE:
+            case ADD_IMAGES:
                 const images = action.payload.images;
+
                 images &&
                     images.map((image) => {
                         if (action.payload.type === 'WEB') {
@@ -56,7 +57,7 @@ export default function (state = INITIAL_STATE, action) {
                                     type: action.payload.type,
                                     selected: false,
                                     tags: {},
-                                    picked_up: false,
+                                    picked_up: action.payload.picked_up,
                                     photoId: image.id
                                 });
                             }
@@ -71,7 +72,7 @@ export default function (state = INITIAL_STATE, action) {
                                 type: action.payload.type,
                                 selected: false,
                                 tags: {},
-                                picked_up: false
+                                picked_up: action.payload.picked_up
                             });
                         }
                     });
@@ -138,6 +139,7 @@ export default function (state = INITIAL_STATE, action) {
                 if (index !== -1) draft.imagesArray.splice(index, 1);
 
                 break;
+
             /**
              * Delete selected images -- all images with property selected set to true
              */

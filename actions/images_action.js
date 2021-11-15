@@ -1,5 +1,6 @@
+import axios from 'axios';
 import {
-    ADD_IMAGE,
+    ADD_IMAGES,
     ADD_TAG_TO_IMAGE,
     DECREMENT_SELECTED,
     DELETE_IMAGE,
@@ -8,7 +9,8 @@ import {
     INCREMENT_SELECTED,
     REMOVE_TAG_FROM_IMAGE,
     TOGGLE_SELECTING,
-    TOGGLE_SELECTED_IMAGES
+    TOGGLE_SELECTED_IMAGES,
+    URL
 } from './types';
 
 /**
@@ -16,10 +18,10 @@ import {
  * @param {Array} images
  * @param {('CAMERA' | 'GALLERY' | 'WEB')} type
  */
-export const addImage = (images, type) => {
+export const addImages = (images, type, picked_up) => {
     return {
-        type: ADD_IMAGE,
-        payload: { images, type }
+        type: ADD_IMAGES,
+        payload: { images, type, picked_up }
     };
 };
 
@@ -30,6 +32,46 @@ export const addTagToImage = (payload) => {
     return {
         type: ADD_TAG_TO_IMAGE,
         payload: payload
+    };
+};
+
+/**
+ * Get images uploaded from website but not yet tagged
+ *
+ * @param token - jwt
+ * @param picked_up - default user setting if litter is picked_up or not
+ *
+ */
+export const checkForImagesOnWeb = (token, picked_up) => {
+    return async dispatch => {
+        let response;
+
+        try {
+            response = await axios({
+                url: URL + '/api/v2/photos/web/index',
+                method: 'GET',
+                headers: {
+                    Authorization: 'Bearer ' + token
+                }
+            });
+        } catch (error) {
+            if (error?.response) {
+                console.log('checkForImagesOnWeb', error?.response?.data);
+            } else {
+                console.log('checkForImagesOnWeb -- Network Error');
+            }
+        }
+        if (response && response?.data?.photos) {
+            let photos = response.data.photos;
+            dispatch({
+                type: ADD_IMAGES,
+                payload: {
+                    images: photos,
+                    type: 'WEB',
+                    picked_up
+                }
+            });
+        }
     };
 };
 
@@ -72,6 +114,37 @@ export const deselectAllImages = () => {
 };
 
 /**
+ * Delete selected web image
+ * web image - image that are uploaded from web but not tagged
+ */
+export const deleteWebImage = (token, photoId, id) => {
+    return async dispatch => {
+        let response;
+
+        try {
+            response = await axios({
+                url: URL + '/api/photos/delete',
+                method: 'DELETE',
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                params: { photoId }
+            });
+        } catch (error) {
+            console.log('delete web image', error);
+        }
+        console.log(response.data);
+        if (response && response?.data?.success) {
+            dispatch({
+                type: DELETE_IMAGE,
+                payload: id
+            });
+        }
+    };
+};
+
+/**
  * Increment the amount of photos selected for deletion
  */
 export const incrementSelected = () => {
@@ -107,5 +180,93 @@ export const toggleSelectedImage = (id) => {
     return {
         type: TOGGLE_SELECTED_IMAGES,
         payload: id
+    };
+};
+
+/**
+ * fn to upload images along with tags
+ * @param {string} token
+ * @param  image form data
+ * @returns
+ */
+export const uploadImage = (token, image, imageId) => {
+    let response;
+    return async dispatch => {
+        try {
+            response = await axios(URL + '/api/photos/upload-with-tags', {
+                method: 'POST',
+                headers: {
+                    Authorization: 'Bearer ' + token,
+                    'Content-Type': 'multipart/form-data'
+                },
+                data: image
+            });
+        } catch (error) {
+            if (error.response) {
+                console.log(
+                    'ERROR: shared_actions.upload_photo',
+                    JSON.stringify(error?.response?.data, null, 2)
+                );
+            } else {
+                // Other errors -- NETWORK ERROR
+                console.log(error);
+            }
+
+            return {
+                success: false
+            };
+        }
+        console.log('Response: shared_actions.uploadPhoto', response?.data);
+
+        if (response && response.data?.success) {
+            dispatch({
+                type: DELETE_IMAGE,
+                payload: imageId
+            });
+            // return the photo.id that has been created on the backend
+            return {
+                success: true,
+                photo_id: response.data.photo_id
+            };
+        }
+    };
+};
+
+/**
+ * Upload the tags that were applied to an image
+ * @param {string} token
+ * @param  image - the image object
+ */
+export const uploadTags = (token, image) => {
+    return async dispatch => {
+        let response;
+        try {
+            response = await axios(URL + '/api/add-tags', {
+                method: 'POST',
+                headers: {
+                    Authorization: 'Bearer ' + token
+                },
+                data: {
+                    litter: image.tags,
+                    photo_id: image.photoId,
+                    picked_up: image.picked_up ? 1 : 0
+                }
+            });
+        } catch (error) {
+            console.log(error);
+            return {
+                success: false
+            };
+        }
+
+        if (response && response?.data?.success) {
+            dispatch({
+                type: DELETE_IMAGE,
+                payload: image.id
+            });
+            return {
+                success: true
+            };
+        }
     };
 };
