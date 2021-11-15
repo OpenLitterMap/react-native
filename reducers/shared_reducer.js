@@ -1,6 +1,6 @@
+import produce from 'immer';
 import {
     CHECK_APP_VERSION,
-    CLOSE_LITTER_MODAL,
     DECREMENT_SELECTED,
     INCREMENT_SELECTED,
     TOGGLE_LITTER,
@@ -20,69 +20,46 @@ const INITIAL_STATE = {
 };
 
 export default function(state = INITIAL_STATE, action) {
-    switch (action.type) {
-        case CHECK_APP_VERSION:
-            return {
-                ...state,
-                appVersion: action.payload
-            };
-        case CLOSE_LITTER_MODAL:
-            return {
-                ...state,
-                modalVisible: false,
-                litterVisible: false
-            };
+    return produce(state, draft => {
+        switch (action.type) {
+            /**
+             * Gets and saves latest app version available on playstores
+             */
 
-        case DECREMENT_SELECTED:
-            return {
-                ...state,
-                selected: state.selected - 1
-            };
+            case CHECK_APP_VERSION:
+                draft.appVersion = action.payload;
 
-        case INCREMENT_SELECTED:
-            return {
-                ...state,
-                selected: state.selected + 1
-            };
+                break;
 
-        /**
-         * Toggle the modal and the litter component
-         */
-        case TOGGLE_LITTER:
-            return {
-                ...state,
-                modalVisible: !state.modalVisible,
-                litterVisible: !state.litterVisible
-            };
+            /**
+             * Toggle the modal and the litter (Add tags) component
+             */
+            case TOGGLE_LITTER:
+                draft.modalVisible = !draft.modalVisible;
+                draft.litterVisible = !draft.litterVisible;
 
-        case TOGGLE_THANK_YOU:
-            return {
-                ...state,
-                modalVisible: !state.modalVisible,
-                thankYouVisible: !state.thankYouVisible
-            };
+                break;
 
-        /**
-         * Toggle the modal and the upload component
-         */
-        case TOGGLE_UPLOAD:
-            return {
-                ...state,
-                modalVisible: !state.modalVisible,
-                uploadVisible: !state.uploadVisible
-            };
+            /**
+             * Toggles thank you modal after image uploaded
+             */
+            case TOGGLE_THANK_YOU:
+                draft.modalVisible = !draft.modalVisible;
+                draft.thankYouVisible = !draft.thankYouVisible;
 
-        /**
-         * Does the User want to delete selected photos?
-         */
-        case TOGGLE_SELECTING:
-            return {
-                ...state,
-                selected: 0,
-                isSelecting: !state.isSelecting
-            };
+                break;
 
-        default:
-            return state;
-    }
+            /**
+             * Toggle the modal and the upload component
+             */
+            case TOGGLE_UPLOAD:
+                draft.modalVisible = !draft.modalVisible;
+                draft.uploadVisible = !draft.uploadVisible;
+
+                break;
+
+            default:
+                return draft;
+        }
+    });
 }

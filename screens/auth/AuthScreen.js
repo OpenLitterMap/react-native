@@ -58,6 +58,9 @@ class AuthScreen extends Component {
             isLogoDisplayed: true
         };
 
+        this.usernameRef = React.createRef();
+        this.emailRef = React.createRef();
+        this.passwordRef = React.createRef();
         this.props.changeServerStatusText('');
     }
 
@@ -615,15 +618,6 @@ class AuthScreen extends Component {
     };
 
     /**
-     * When completing an input field or pressing tab,
-     *
-     * We can cycle to the next/previous input
-     */
-    _focusNextField(nextField) {
-        this.refs[nextField].focus();
-    }
-
-    /**
      * Render the component
      *
      * @return jsx
@@ -694,10 +688,9 @@ class AuthScreen extends Component {
                                                 color={COLORS.iconGreyDisabled}
                                             />
                                             <TextInput
+                                                ref={this.usernameRef}
                                                 onSubmitEditing={() =>
-                                                    this._focusNextField(
-                                                        'email'
-                                                    )
+                                                    this.emailRef.current.focus()
                                                 }
                                                 autoFocus={false}
                                                 autoCorrect={false}
@@ -744,9 +737,9 @@ class AuthScreen extends Component {
                                     />
                                     {/* Multiline param allows us to use text replacement eg "@@" => you@email.com */}
                                     <TextInput
-                                        ref="email"
+                                        ref={this.emailRef}
                                         onSubmitEditing={() =>
-                                            this._focusNextField('password')
+                                            this.passwordRef.current.focus()
                                         }
                                         autoFocus={false}
                                         autoCorrect={false}
@@ -787,7 +780,7 @@ class AuthScreen extends Component {
                                                 color={COLORS.iconGreyDisabled}
                                             />
                                             <TextInput
-                                                ref="password"
+                                                ref={this.passwordRef}
                                                 autoCorrect={false}
                                                 autoCapitalize={'none'}
                                                 containerStyle={

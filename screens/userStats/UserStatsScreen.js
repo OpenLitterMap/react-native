@@ -16,17 +16,22 @@ import { ProgressCircleCard } from './userComponents';
 class UserStatsScreen extends Component {
     constructor(props) {
         super(props);
-        // console.log(JSON.stringify(this.props.user, null, '\t'));
+
         this.state = {
             xpStart: 0,
             positionStart: 0,
             totalImagesStart: 0,
-            totalTagsStart: 0
+            totalTagsStart: 0,
+            levelStart: 0,
+            levelPercentageStart: 0,
+            littercoinStart: 0,
+            littercoinPercentageStart: 0,
+            isLoading: true
         };
     }
 
-    componentDidMount() {
-        this.getDataFromStorage();
+    async componentDidMount() {
+        await this.getDataFromStorage();
     }
 
     async getDataFromStorage() {
@@ -34,16 +39,28 @@ class UserStatsScreen extends Component {
         const previousStats = await AsyncStorage.getItem('previousUserStats');
 
         if (previousStats !== undefined && previousStats !== null) {
-            const { xp, position, totalImages, totalTags } = JSON.parse(
-                previousStats
-            );
+            const {
+                xp,
+                position,
+                totalImages,
+                totalTags,
+                level,
+                levelPercentage,
+                littercoin,
+                littercoinPercentage
+            } = JSON.parse(previousStats);
             this.setState({
                 xpStart: xp,
                 positionStart: position,
                 totalImagesStart: totalImages,
-                totalTagsStart: totalTags
+                totalTagsStart: totalTags,
+                levelStart: level,
+                levelPercentageStart: levelPercentage,
+                littercoinStart: littercoin,
+                littercoinPercentageStart: littercoinPercentage
             });
         }
+        this.setState({ isLoading: false });
         this.fetchUserData();
     }
 
@@ -54,7 +71,11 @@ class UserStatsScreen extends Component {
             xp: user?.xp,
             position: user?.position,
             totalImages: user?.total_images || 0,
-            totalTags: user?.totalTags
+            totalTags: user?.totalTags,
+            level: user?.level,
+            levelPercentage: user?.targetPercentage,
+            littercoin: user?.totalLittercoin,
+            littercoinPercentage: user?.total_images % 100
         };
         // INFO: previous stats saved for animation purpose
         // so value animates from previous viewd and current
@@ -101,19 +122,6 @@ class UserStatsScreen extends Component {
             }
         ];
 
-        // TODO: add a better loading screen add Skeleton Loading screen
-        if (user === null || user === undefined) {
-            return (
-                <View
-                    style={{
-                        flex: 1,
-                        justifyContent: 'center',
-                        alignItems: 'center'
-                    }}>
-                    <ActivityIndicator size="small" color={Colors.accent} />
-                </View>
-            );
-        }
         return (
             <>
                 <Header
@@ -139,21 +147,41 @@ class UserStatsScreen extends Component {
                         </Pressable>
                     }
                 />
-                <ScrollView
-                    style={styles.container}
-                    showsVerticalScrollIndicator={false}
-                    alwaysBounceVertical={false}>
-                    <ProgressCircleCard
-                        lang={lang}
-                        level={user?.level}
-                        levelPercentage={user?.targetPercentage}
-                        xpRequired={user?.xpRequired}
-                        totalLittercoin={user?.totalLittercoin}
-                        littercoinPercentage={user?.total_images % 100}
-                    />
+                {user === null || user === undefined || this.state.isLoading ? (
+                    <View
+                        style={{
+                            flex: 1,
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            backgroundColor: 'white'
+                        }}>
+                        <ActivityIndicator size="small" color={Colors.accent} />
+                    </View>
+                ) : (
+                    <ScrollView
+                        style={styles.container}
+                        showsVerticalScrollIndicator={false}
+                        alwaysBounceVertical={false}>
+                        <ProgressCircleCard
+                            lang={lang}
+                            level={user?.level}
+                            levelStart={this.state.levelStart}
+                            levelPercentage={user?.targetPercentage}
+                            levelPercentageStart={
+                                this.state.levelPercentageStart
+                            }
+                            xpRequired={user?.xpRequired}
+                            totalLittercoin={user?.totalLittercoin}
+                            littercoinStart={this.state.littercoinStart}
+                            littercoinPercentage={user?.total_images % 100}
+                            littercoinPercentageStart={
+                                this.state.littercoinPercentageStart
+                            }
+                        />
 
-                    <StatsGrid statsData={statsData} />
-                </ScrollView>
+                        <StatsGrid statsData={statsData} />
+                    </ScrollView>
+                )}
             </>
         );
     }
@@ -174,7 +202,7 @@ const styles = StyleSheet.create({
     }
 });
 
-const mapStateToProps = state => {
+const mapStateToProps = (state) => {
     return {
         lang: state.auth.lang,
         token: state.auth.token,
@@ -182,7 +210,4 @@ const mapStateToProps = state => {
     };
 };
 
-export default connect(
-    mapStateToProps,
-    actions
-)(UserStatsScreen);
+export default connect(mapStateToProps, actions)(UserStatsScreen);

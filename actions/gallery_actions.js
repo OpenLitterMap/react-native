@@ -1,67 +1,7 @@
 import React from 'react';
 import CameraRoll from '@react-native-community/cameraroll';
 
-import {
-    ADD_GEOTAGGED_IMAGES,
-    ADD_TAGS_TO_GALLERY_IMAGE,
-    DELETE_SELECTED_GALLERY,
-    DESELECT_ALL_GALLERY_PHOTOS,
-    GALLERY_UPLOADED_SUCCESSFULLY,
-    TOGGLE_IMAGES_LOADING,
-    PHOTOS_FROM_GALLERY,
-    REMOVE_TAG_FROM_GALLERY_PHOTO,
-    TOGGLE_IMAGE_BROWSER,
-    TOGGLE_SELECTED_GALLERY
-} from './types';
-
-/**
- * Create or Update tags on a gallery image
- */
-export const addTagsToGalleryImage = tags => {
-    return {
-        type: ADD_TAGS_TO_GALLERY_IMAGE,
-        payload: tags
-    };
-};
-
-/**
- * Delete selected gallery / camera roll photo
- */
-export const deleteSelectedGallery = photo => {
-    return {
-        type: DELETE_SELECTED_GALLERY,
-        payload: photo
-    };
-};
-
-/**
- * Change selected => false on all gallery photos
- */
-export const deselectAllGalleryPhotos = () => {
-    return {
-        type: DESELECT_ALL_GALLERY_PHOTOS
-    };
-};
-
-/**
- * A Gallery Index has been uploaded successfully! - can be deleted.
- */
-export const galleryPhotoUploadedSuccessfully = index => {
-    return {
-        type: GALLERY_UPLOADED_SUCCESSFULLY,
-        payload: index
-    };
-};
-
-/**
- * Toggle ActivityIndicator when Photo Albums are finished / loading
- */
-export const setImagesLoading = bool => {
-    return {
-        type: TOGGLE_IMAGES_LOADING,
-        payload: bool
-    };
-};
+import { ADD_GEOTAGGED_IMAGES, TOGGLE_IMAGES_LOADING } from './types';
 
 /**
  * get photos from camera roll
@@ -80,13 +20,14 @@ export const setImagesLoading = bool => {
 
 export const getPhotosFromCameraroll = () => async (dispatch, getState) => {
     const {
-        gallery,
         geotaggedImages,
         camerarollImageFetched,
         lastFetchTime,
         imagesLoading
     } = getState().gallery;
-    let id = gallery?.length === 0 ? 0 : gallery[gallery?.length - 1].id + 1;
+    const { user } = getState().auth;
+
+    let id = geotaggedImages.length;
 
     let camerarollData;
     let fetchType = 'INITIAL';
@@ -132,7 +73,7 @@ export const getPhotosFromCameraroll = () => async (dispatch, getState) => {
         const imagesArray = camerarollData.edges;
         let geotagged = [];
 
-        imagesArray.map(item => {
+        imagesArray.map((item) => {
             id++;
 
             if (
@@ -152,9 +93,8 @@ export const getPhotosFromCameraroll = () => async (dispatch, getState) => {
                     width: item.node.image.width,
                     lat: item.node.location.latitude,
                     lon: item.node.location.longitude,
-                    timestamp: item.node.timestamp,
+                    date: item.node.timestamp,
                     selected: false,
-                    picked_up: false,
                     tags: {},
                     type: 'gallery'
                 });
@@ -162,53 +102,8 @@ export const getPhotosFromCameraroll = () => async (dispatch, getState) => {
         });
 
         dispatch({
-            type: 'ADD_GEOTAGGED_IMAGES',
+            type: ADD_GEOTAGGED_IMAGES,
             payload: { geotagged, fetchType }
         });
     }
-};
-/**
- * Add selected photos from gallery to redux
- */
-export const photosFromGallery = photos => {
-    return {
-        type: PHOTOS_FROM_GALLERY,
-        payload: photos
-    };
-};
-
-/**
- * A tag has been selected from a gallery photo
- */
-export const removeTagFromGalleryPhoto = data => {
-    return {
-        type: REMOVE_TAG_FROM_GALLERY_PHOTO,
-        payload: data
-    };
-};
-
-/**
- * Open or Close the Gallery Image Picker
- */
-export const toggleImageBrowser = () => {
-    return {
-        type: TOGGLE_IMAGE_BROWSER
-    };
-};
-
-/**
- * Toggle the value of a photo.selected
- */
-export const toggleSelectedGallery = index => {
-    return {
-        type: TOGGLE_SELECTED_GALLERY,
-        payload: index
-    };
-};
-
-export const addGeotaggedImages = data => {
-    return {
-        type: ADD_GEOTAGGED_IMAGES,
-        payload: data
-    };
 };

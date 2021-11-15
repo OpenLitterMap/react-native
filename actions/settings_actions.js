@@ -1,15 +1,11 @@
 import React from 'react';
 import {
-    CLOSE_ALL_SETTINGS_MODALS,
     CLOSE_SECOND_SETTING_MODAL,
-    SAVE_SETTING,
     SETTINGS_INIT,
     SET_MODEL,
     SETTINGS_UPDATE_STATUS_MESSAGE,
     START_UPDATING_SETTINGS,
     TOGGLE_SETTINGS_MODAL,
-    TOGGLE_SECOND_SETINGS_MODAL,
-    TOGGLE_SETTINGS_SWITCH,
     TOGGLE_SETTINGS_WAIT,
     UPDATE_SETTINGS_PROP,
     UPDATE_USER_OBJECT,
@@ -20,15 +16,6 @@ import {
 import AsyncStorage from '@react-native-community/async-storage';
 import axios from 'axios';
 
-/**
- * Close All Settings' Modals
- */
-export const closeAllSettingModals = () => {
-    return {
-        type: CLOSE_ALL_SETTINGS_MODALS
-    };
-};
-
 export const closeSecondSettingModal = () => {
     return {
         type: CLOSE_SECOND_SETTING_MODAL
@@ -37,8 +24,11 @@ export const closeSecondSettingModal = () => {
 
 /**
  * Initialize settings edit value to update
+ *
+ * when user selects a field to edit current value of that field is set in settingsEditProp
+ * to be used as initial value in textfield in edit modal
  */
-export const initalizeSettingsValue = prop => {
+export const initalizeSettingsValue = (prop) => {
     return {
         type: SETTINGS_INIT,
         payload: prop
@@ -46,9 +36,9 @@ export const initalizeSettingsValue = prop => {
 };
 
 /**
- * Set Model
+ * fn to set device modal
  */
-export const setModel = model => {
+export const setModel = (model) => {
     return {
         type: SET_MODEL,
         payload: model
@@ -59,11 +49,10 @@ export const setModel = model => {
  * Update a specific setting (Name, Username or Email)
  */
 export const saveSettings = (data, value, token) => {
-    return async dispatch => {
+    return async (dispatch) => {
         dispatch({
             type: START_UPDATING_SETTINGS
         });
-
         let key = '';
         switch (data.key) {
             case 'name':
@@ -74,6 +63,9 @@ export const saveSettings = (data, value, token) => {
                 break;
             case 'email':
                 key = 'Email';
+                break;
+            case 'picked_up':
+                key = 'picked_up';
                 break;
         }
 
@@ -88,7 +80,7 @@ export const saveSettings = (data, value, token) => {
                 value
             }
         })
-            .then(async response => {
+            .then(async (response) => {
                 console.log('saveSettings', response.data);
 
                 if (response.data.success) {
@@ -125,7 +117,7 @@ export const saveSettings = (data, value, token) => {
                     });
                 }
             })
-            .catch(error => {
+            .catch((error) => {
                 console.log('saveSettings', error);
                 // show error message
                 dispatch({
@@ -160,7 +152,7 @@ export const toggleSettingsSwitch = (id, token) => {
     if (id === 9) endUrl = 'createdby/username';
     if (id === 10) endUrl = 'toggle-previous-tags';
 
-    return async dispatch => {
+    return async (dispatch) => {
         dispatch({
             type: TOGGLE_SETTINGS_WAIT
         });
@@ -172,12 +164,19 @@ export const toggleSettingsSwitch = (id, token) => {
                 'content-type': 'application/json'
             }
         })
-            .then(async response => {
+            .then(async (response) => {
                 console.log('Response: toggleSettingsSwitch', response.data);
 
                 if (response.status === 200) {
                     const key = Object.keys(response.data)[0];
-                    const value = Object.values(response.data)[0];
+                    let value = Object.values(response.data)[0];
+
+                    //  INFO: show_name and show_username have boolean values
+                    //  rest have 0 & 1
+
+                    if (key !== 'show_name' && key !== 'show_username') {
+                        value = value === false ? 0 : 1;
+                    }
 
                     let user = await AsyncStorage.getItem('user');
 
@@ -198,7 +197,7 @@ export const toggleSettingsSwitch = (id, token) => {
                     });
                 }
             })
-            .catch(error => {
+            .catch((error) => {
                 console.log('Error: toggleSettingsSwitch', error);
             });
     };
@@ -207,7 +206,7 @@ export const toggleSettingsSwitch = (id, token) => {
 /**
  * User wants to change text of name, email or username
  */
-export const updateSettingsProp = value => {
+export const updateSettingsProp = (value) => {
     return {
         type: UPDATE_SETTINGS_PROP,
         payload: value.text

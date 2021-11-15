@@ -10,7 +10,8 @@ import {
     Text,
     TouchableHighlight,
     View,
-    Pressable
+    Pressable,
+    StyleSheet
 } from 'react-native';
 import { getTranslation, TransText } from 'react-native-translation';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -46,11 +47,11 @@ class SettingsScreen extends Component {
                     }
                     centerContent={
                         <Title
-                            style={{ marginLeft: 20 }}
                             color="white"
                             dictionary={`${lang}.settings.settings`}
                         />
                     }
+                    centerContainerStyle={{ flex: 2 }}
                     rightContent={
                         <Pressable onPress={() => this.props.logout()}>
                             <Body
@@ -140,6 +141,15 @@ class SettingsScreen extends Component {
                                                 'settings.show-username-createdby'
                                         }
                                     ]
+                                },
+                                {
+                                    title: 'settings.picked-up',
+                                    data: [
+                                        {
+                                            id: 11,
+                                            title: 'settings.litter-picked-up'
+                                        }
+                                    ]
                                 }
                                 // Temp commented out. This feature will be fixed in a future release.
                                 // {
@@ -215,7 +225,7 @@ class SettingsScreen extends Component {
                 return (
                     <Switch
                         onValueChange={() => this._toggleSwitch(id)}
-                        value={this._getSwitchValue(id)}
+                        value={this._getSwitchValue(id) === 0 ? false : true}
                     />
                 );
             }
@@ -241,8 +251,23 @@ class SettingsScreen extends Component {
             [
                 {
                     text: ok,
-                    onPress: () =>
-                        this.props.toggleSettingsSwitch(id, this.props.token)
+                    onPress: () => {
+                        if (id === 11) {
+                            // Toggle picked_up value
+                            // sending opposite of current value to api
+
+                            this.props.saveSettings(
+                                { id: 11, key: 'picked_up' },
+                                !this.props.user.picked_up,
+                                this.props.token
+                            );
+                        } else {
+                            this.props.toggleSettingsSwitch(
+                                id,
+                                this.props.token
+                            );
+                        }
+                    }
                 },
                 { text: cancel, onPress: () => console.log('cancel pressed') }
             ],
@@ -258,28 +283,44 @@ class SettingsScreen extends Component {
     }
 
     /**
-     * Get the True or False value for a Switch
+     * Get the 0 or 1 value for a Switch
+     *
+     * INFO: show_name , show_username and picked_up have boolean values
+     * rest have 0 & 1
      */
     _getSwitchValue(id) {
-        if (id === 4) {
-            return this.props.user.show_name_maps;
-        } else if (id === 5) {
-            return this.props.user.show_username_maps;
-        } else if (id === 6) {
-            return this.props.user.show_name;
-        } else if (id === 7) {
-            return this.props.user.show_username;
-        } else if (id === 8) {
-            return this.props.user.show_name_createdby;
-        } else if (id === 9) {
-            return this.props.user.show_username_createdby;
-        } else if (id === 10) {
-            return this.props.user.previous_tag;
+        switch (id) {
+            case 4:
+                return this.props.user.show_name_maps;
+                break;
+            case 5:
+                return this.props.user.show_username_maps;
+                break;
+            case 6:
+                return this.props.user.show_name === false ? 0 : 1;
+                break;
+            case 7:
+                return this.props.user.show_username === false ? 0 : 1;
+                break;
+            case 8:
+                return this.props.user.show_name_createdby;
+                break;
+            case 9:
+                return this.props.user.show_username_createdby;
+                break;
+            case 10:
+                return this.props.user.previous_tag;
+                break;
+            case 11:
+                return this.props.user.picked_up === false ? 0 : 1;
+                break;
+            default:
+                break;
         }
     }
 }
 
-const styles = {
+const styles = StyleSheet.create({
     bottomImageContainer: {
         backgroundColor: '#ccc',
         flex: 1,
@@ -333,7 +374,8 @@ const styles = {
     sectionHeaderTitle: {
         paddingLeft: 10,
         paddingTop: 20,
-        paddingBottom: 5
+        paddingBottom: 5,
+        textTransform: 'uppercase'
     },
     switchRow: {
         flex: 1,
@@ -348,7 +390,7 @@ const styles = {
         alignItems: 'center',
         justifyContent: 'center'
     }
-};
+});
 
 const mapStateToProps = state => {
     return {

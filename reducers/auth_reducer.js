@@ -1,29 +1,20 @@
+import produce from 'immer';
 import AsyncStorage from '@react-native-community/async-storage';
 import {
     ACCOUNT_CREATED,
-    BAD_PASSWORD,
     CHANGE_LANG,
     CHANGE_SERVER_STATUS_TEXT,
-    PASSWORD_ERROR,
     LOGIN_OR_SIGNUP_RESET,
     LOGIN_SUCCESS,
     LOGIN_FAIL,
     LOGOUT,
-    TOGGLE_USERNAME_MODAL,
     TOKEN_IS_VALID,
-    STORE_CURRENT_APP_VERSION,
     UPDATE_USER_OBJECT,
-    USERNAME_CHANGED,
     USER_FOUND,
-    USERNAME_ERROR,
-    ON_SEEN_FEATURE_TOUR,
-    SERVER_STATUS,
     SUBMIT_END,
     SUBMIT_START
 } from '../actions/types';
-import { XPLEVEL } from '../screens/pages/data/xpLevel';
-// import AsyncStorage from '@react-native-community/async-storage';
-// import { Map, List } from 'immutable';
+import { XPLEVEL } from '../assets/data/xpLevel';
 
 import * as RNLocalize from 'react-native-localize';
 let lang = RNLocalize.getLocales()['languageCode'];
@@ -38,7 +29,6 @@ const INITIAL_STATE = {
     isLoggingIn: false,
     isSubmitting: false,
     loading: false,
-    modalUsernameVisible: false,
     password: '',
     success: '',
     token: null,
@@ -50,207 +40,165 @@ const INITIAL_STATE = {
 };
 
 export default function(state = INITIAL_STATE, action) {
-    switch (action.type) {
-        /**
-         * Status 400 : The user entered the wrong password
-         */
-        case BAD_PASSWORD:
-            return {
-                ...state,
-                password: '',
-                token: null,
-                serverStatusText:
-                    'Your password is incorrect. Please try again or reset it.',
-                isSubmitting: false
-            };
+    return produce(state, draft => {
+        switch (action.type) {
+            /**
+             * Change app language
+             * Language changeable from WelcomeScreen -- LanguageFlags.js
+             */
 
-        case CHANGE_LANG:
-            return {
-                ...state,
-                lang: action.payload
-            };
+            case CHANGE_LANG:
+                draft.lang = action.payload;
 
-        case CHANGE_SERVER_STATUS_TEXT:
-            return {
-                ...state,
-                serverStatusText: action.payload
-            };
+                break;
 
-        case STORE_CURRENT_APP_VERSION:
-            return {
-                ...state,
-                appVersion: action.payload
-            };
+            /**
+             * Change auth form messages/errors
+             */
 
-        case ON_SEEN_FEATURE_TOUR:
-            return {
-                ...state,
-                appVersion: action.payload,
-                hasSeenFeatureTour: true
-            };
-        case SUBMIT_END:
-            return {
-                ...state,
-                isSubmitting: false
-            };
+            case CHANGE_SERVER_STATUS_TEXT:
+                draft.serverStatusText = action.payload;
+                draft.isSubmitting = false;
 
-        case SUBMIT_START:
-            return {
-                ...state,
-                isSubmitting: true
-            };
+                break;
 
-        case ACCOUNT_CREATED:
-            // todo - log the user in
-            // redirect them to main screen
-            return {
-                ...state,
-                success: action.payload,
-                //isLoggingIn: !state.isLoggingIn,
-                buttonDisabled: false,
-                isLoggingIn: true,
-                isSubmitting: false,
-                modalUsernameVisible: false
-            };
+            /**
+             * Auth API request /  form submit end
+             * makes submit button active again
+             */
 
-        case SERVER_STATUS:
-            return {
-                ...state,
-                serverStatusText: action.payload,
-                isSubmitting: false
-            };
+            case SUBMIT_END:
+                draft.isSubmitting = false;
 
-        /**
-         * The user wants to log out. JWT has been deleted.
-         */
-        case LOGOUT:
-            // we need to init lang again
-            if (!lang) lang = 'en';
+                break;
 
-            return {
-                state: INITIAL_STATE,
-                lang: lang,
-                token: null
-            };
+            /**
+             * Auth API request /  form submit start
+             * makes submit button inactive
+             */
 
-        /**
-         * There was a problem during login
-         */
-        case LOGIN_FAIL:
-            return {
-                ...state,
-                password: '',
-                token: null,
-                serverStatusText: action.payload,
-                isSubmitting: false
-            };
+            case SUBMIT_START:
+                draft.isSubmitting = true;
 
-        case LOGIN_OR_SIGNUP_RESET:
-            // console.log('Reducer - login or signup reset.');
-            return {
-                ...state,
-                email: '',
-                password: '',
-                emailError: '',
-                passwordError: '',
-                buttonPressed: false,
-                buttonDisabled: false,
-                success: '',
-                isSubmitting: false,
-                modalUsernameVisible: false,
-                username: '',
-                usernameError: ''
-            };
+                break;
 
-        /**
-         * After a successful login
-         */
-        case LOGIN_SUCCESS:
-            return {
-                ...state,
-                token: action.payload,
-                appLoading: !state.appLoading,
-                isSubmitting: false
-            };
+            case ACCOUNT_CREATED:
+                draft.success = action.payload;
+                draft.buttonDisabled = false;
+                draft.isLoggingIn = true;
+                draft.isSubmitting = false;
 
-        case PASSWORD_ERROR:
-            return {
-                ...state,
-                passwordError: action.payload,
-                modalUsernameVisible: false,
-                isSubmitting: false
-            };
+                break;
 
-        case TOGGLE_USERNAME_MODAL:
-            return {
-                ...state,
-                modalUsernameVisible: !state.modalUsernameVisible
-            };
+            /**
+             * Logout user
+             * reset state to initial
+             
+             */
 
-        /**
-         * When the app loads, we check if the JWT is valid
-         */
-        case TOKEN_IS_VALID:
-            return {
-                ...state,
-                tokenIsValid: action.payload
-            };
+            case LOGOUT:
+                return INITIAL_STATE;
 
-        case USER_FOUND:
-            let user;
-            if (action.payload === 'string') {
-                user = JSON.parse(action.payload);
-            } else {
-                user = action.payload.userObj;
-            }
-            const level = XPLEVEL.findIndex(xp => xp > user.xp);
-            const xpRequired = XPLEVEL[level] - user.xp;
-            const previousTarget = level > 0 ? XPLEVEL[level - 1] : 0;
-            const targetPercentage =
-                ((user.xp - previousTarget) /
-                    (XPLEVEL[level] - previousTarget)) *
-                100;
-            user.level = level;
-            user.xpRequired = xpRequired;
-            user.targetPercentage = targetPercentage;
-            user.totalTags = user.total_brands + user.total_tags;
-            user.totalLittercoin =
-                (user.littercoin_allowance || 0) + (user.littercoin_owed || 0);
+            /**
+             * There was a problem during login
+             * Wrong password
+             * Network/Server error
+             */
 
-            AsyncStorage.setItem('user', JSON.stringify(user));
-            return {
-                ...state,
-                user
-                // buttonDisabled: true
-            };
+            case LOGIN_FAIL:
+                draft.password = '';
+                draft.serverStatusText = action.payload;
+                draft.isSubmitting = false;
 
-        case UPDATE_USER_OBJECT:
-            const newUser = Object.assign({}, action.payload);
+                break;
 
-            return {
-                ...state,
-                user: newUser
-            };
+            /**
+             * Resets the auth form and display messages
+             */
 
-        /**
-         * Todo - check, is this immutable?
-         */
-        case USERNAME_CHANGED:
-            const username = action.payload;
+            case LOGIN_OR_SIGNUP_RESET:
+                draft.email = '';
+                draft.password = '';
+                draft.buttonPressed = false;
+                draft.buttonDisabled = false;
+                draft.success = '';
+                draft.isSubmitting = false;
+                draft.username = '';
+                draft.usernameError = '';
 
-            return {
-                ...state,
-                username: username,
-                usernameError: ''
-            };
+                break;
 
-        case USERNAME_ERROR:
-            return {
-                ...state,
-                usernameError: action.payload
-            };
+            /**
+             * After a successful login
+             */
 
-        default:
-            return state;
-    }
+            case LOGIN_SUCCESS:
+                draft.token = action.payload;
+                draft.appLoading = !draft.appLoading;
+                draft.isSubmitting = false;
+
+                break;
+
+            /**
+             * When the app loads, we check if the JWT is valid
+             */
+
+            case TOKEN_IS_VALID:
+                draft.tokenIsValid = action.payload;
+
+                break;
+
+            /**
+             * If user logged in
+             * process user data and calculate
+             * user level -- based on user xp breakdown from ../screens/pages/data/xpLevel
+             * targetPercentage -- percentage completed to reach next level from prev level xp
+             * totalTags added by user
+             * totalLittercoin of user -- littercoin_allowance + littercoin_owed
+             */
+
+            case USER_FOUND:
+                let user = action.payload.userObj;
+
+                const level = XPLEVEL.findIndex(xp => xp > user.xp);
+                const xpRequired = XPLEVEL[level] - user.xp;
+                const previousTarget = level > 0 ? XPLEVEL[level - 1] : 0;
+                const targetPercentage =
+                    ((user.xp - previousTarget) /
+                        (XPLEVEL[level] - previousTarget)) *
+                    100;
+
+                user = {
+                    ...user,
+                    level: level,
+                    xpRequired: xpRequired,
+                    targetPercentage: targetPercentage,
+                    totalTags: user.total_tags,
+                    totalLittercoin:
+                        (user.littercoin_allowance || 0) +
+                        (user.littercoin_owed || 0)
+                };
+
+                AsyncStorage.setItem('user', JSON.stringify(user));
+
+                draft.user = user;
+                draft.token = action.payload.token;
+                draft.appLoading = !draft.appLoading;
+                draft.isSubmitting = false;
+
+                break;
+
+            /**
+             * Update user object after userdata changed from settings
+             */
+
+            case UPDATE_USER_OBJECT:
+                draft.user = action.payload;
+
+                break;
+
+            default:
+                return draft;
+        }
+    });
 }
