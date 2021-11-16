@@ -27,9 +27,11 @@ const TextInput = ({
             {label ? <Body style={labelStyle}>{label}</Body> : null}
 
             <RNTextInput
+                {...rest}
                 autoFocus={false}
                 autoCorrect={false}
                 autoCapitalize={'none'}
+                autoCompleteType={'off'}
                 style={{
                     height: 60,
                     backgroundColor: 'white',
