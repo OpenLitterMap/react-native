@@ -23,6 +23,7 @@ import * as actions from '../../actions';
 import COLORS from '../../utils/Colors';
 import VALUES from '../../utils/Values';
 
+import { TextInput as CustomTextInput } from '../components';
 let SCREEN_WIDTH = Dimensions.get('window').width;
 let SCREEN_HEIGHT = Dimensions.get('window').height;
 let IS_PORTRAIT = SCREEN_WIDTH <= SCREEN_HEIGHT;
@@ -671,8 +672,11 @@ class AuthScreen extends Component {
                                 />
                             )}
                             <View style={styles.contentContainer}>
+                                <CustomTextInput
+                                    labelStyle={{ color: 'red' }}
+                                />
                                 {/* Show input to create a username */}
-                                {formMode === formModes.CREATE_ACCOUNT && (
+                                {/* {formMode === formModes.CREATE_ACCOUNT && (
                                     <>
                                         <View
                                             style={[
@@ -723,19 +727,20 @@ class AuthScreen extends Component {
                                                 </View>
                                             )}
                                     </>
-                                )}
-                                <View
+                                )} */}
+
+                                {/* <View
                                     style={[
                                         styles.inputWrap,
                                         emailErrorMessage && styles.errorBorder
                                     ]}>
+                                    <CustomTextInput />
                                     <Icon
                                         iconStyle={styles.inputIcon}
                                         name="email"
                                         type="material"
                                         color={COLORS.iconGreyDisabled}
                                     />
-                                    {/* Multiline param allows us to use text replacement eg "@@" => you@email.com */}
                                     <TextInput
                                         ref={this.emailRef}
                                         onSubmitEditing={() =>
@@ -754,7 +759,7 @@ class AuthScreen extends Component {
                                         value={email}
                                         multiline
                                     />
-                                </View>
+                                </View> */}
                                 {emailErrorMessage !== null &&
                                     emailErrorMessage !== undefined && (
                                         <View style={styles.errorWrap}>
@@ -765,7 +770,7 @@ class AuthScreen extends Component {
                                         </View>
                                     )}
 
-                                {formMode !== formModes.FORGOT_PASSWORD && (
+                                {/* {formMode !== formModes.FORGOT_PASSWORD && (
                                     <>
                                         <View
                                             style={[
@@ -829,7 +834,7 @@ class AuthScreen extends Component {
                                                 </View>
                                             )}
                                     </>
-                                )}
+                                )} */}
 
                                 {/* Change Login to Forgot Password */}
                                 {formMode === formModes.LOGIN && (
