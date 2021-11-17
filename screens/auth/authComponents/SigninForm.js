@@ -12,20 +12,14 @@ import { Colors, SubTitle, CustomTextInput } from '../../components';
  * Form field validation with keys for translation
  * using Yup for validation
  */
-const SignupSchema = Yup.object().shape({
-    username: Yup.string()
-        .min(3, 'username-min-max')
-        .max(20, 'username-min-max')
-        .required('enter-username'),
+const SigninSchema = Yup.object().shape({
     email: Yup.string()
         .email('email-not-valid')
         .required('enter-email'),
-    password: Yup.string()
-        .required('enter-password')
-        .matches(/^(?=.*[A-Z])(?=.*[0-9]).{6,}$/, 'must-contain')
+    password: Yup.string().required('enter-password')
 });
 
-class SignupForm extends Component {
+class SigninForm extends Component {
     state = {
         isPasswordVisible: false
     };
@@ -35,13 +29,11 @@ class SignupForm extends Component {
 
         const emailTranslation = getTranslation(`${lang}.auth.email-address`);
         const passwordTranslation = getTranslation(`${lang}.auth.password`);
-        const usernameTranslation = getTranslation(
-            `${lang}.auth.unique-username`
-        );
+
         return (
             <Formik
-                initialValues={{ email: '', password: '', username: '' }}
-                validationSchema={SignupSchema}
+                initialValues={{ email: '', password: '' }}
+                validationSchema={SigninSchema}
                 onSubmit={values => console.log(values)}>
                 {({
                     handleChange,
@@ -52,21 +44,6 @@ class SignupForm extends Component {
                     touched
                 }) => (
                     <View style={{ flex: 1, justifyContent: 'center' }}>
-                        {/* username input */}
-
-                        <CustomTextInput
-                            onChangeText={handleChange('username')}
-                            value={values.username}
-                            name="username"
-                            error={
-                                errors.username &&
-                                `${this.props.lang}.auth.${errors.username}`
-                            }
-                            touched={touched.username}
-                            placeholder={usernameTranslation}
-                            leftIconName="ios-person-circle"
-                        />
-
                         {/* email input */}
                         <CustomTextInput
                             onChangeText={handleChange('email')}
@@ -121,9 +98,7 @@ class SignupForm extends Component {
                             style={styles.buttonStyle}>
                             <SubTitle
                                 color="accentLight"
-                                dictionary={`${
-                                    this.props.lang
-                                }.auth.create-account`}>
+                                dictionary={`${this.props.lang}.auth.login`}>
                                 Create Account
                             </SubTitle>
                         </Pressable>
@@ -166,4 +141,4 @@ const mapStateToProps = state => {
 export default connect(
     mapStateToProps,
     {}
-)(SignupForm);
+)(SigninForm);
