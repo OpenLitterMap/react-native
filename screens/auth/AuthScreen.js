@@ -865,7 +865,7 @@ class AuthScreen extends Component {
 
                                 {/* Main action button shared between all form types */}
                                 <View style={styles.buttonContainer}>
-                                    <TouchableOpacity
+                                    {/* <TouchableOpacity
                                         disabled={!isFormReady || isSubmitting}
                                         onPress={this.submitButtonClick}
                                         style={[
@@ -891,7 +891,7 @@ class AuthScreen extends Component {
                                                 dictionary={this.getSubmitButtonText()}
                                             />
                                         )}
-                                    </TouchableOpacity>
+                                    </TouchableOpacity> */}
 
                                     <View style={{ flexDirection: 'row' }}>
                                         <View

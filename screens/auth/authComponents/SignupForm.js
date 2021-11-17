@@ -3,6 +3,7 @@ import { Button, TextInput, View, StyleSheet, Pressable } from 'react-native';
 import { Formik } from 'formik';
 import { Body, Colors, SubTitle } from '../../components';
 import * as Yup from 'yup';
+import Icon from 'react-native-vector-icons/Ionicons';
 
 const SignupSchema = Yup.object().shape({
     email: Yup.string()
@@ -26,23 +27,48 @@ class AuthTest extends Component {
                     touched
                 }) => (
                     <View style={{ flex: 1, justifyContent: 'center' }}>
-                        <TextInput
-                            onChangeText={handleChange('email')}
-                            onBlur={handleBlur('email')}
-                            value={values.email}
-                            style={styles.inputStyle}
-                            name="email"
-                        />
-                        {errors.email && touched.email ? (
-                            <Body>{errors.email}</Body>
-                        ) : null}
-                        {/* <TextInput
-                            onChangeText={handleChange('password')}
-                            onBlur={handleBlur('password')}
-                            value={values.email}
-                            style={styles.inputStyle}
-                        /> */}
-                        {/* <Button onPress={handleSubmit} title="Submit" /> */}
+                        <View style={styles.textfieldContainer}>
+                            <Icon
+                                style={styles.textfieldIcon}
+                                name="ios-person-circle"
+                                size={28}
+                                color={Colors.muted}
+                            />
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Unique Username"
+                                underlineColorAndroid="transparent"
+                                name="username"
+                            />
+                        </View>
+
+                        <View style={styles.textfieldContainer}>
+                            <Icon
+                                style={styles.textfieldIcon}
+                                name="ios-mail"
+                                size={28}
+                                color={Colors.muted}
+                            />
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Email Address"
+                                underlineColorAndroid="transparent"
+                            />
+                        </View>
+                        <View style={styles.textfieldContainer}>
+                            <Icon
+                                style={styles.textfieldIcon}
+                                name="ios-key"
+                                size={28}
+                                color={Colors.muted}
+                            />
+                            <TextInput
+                                style={styles.input}
+                                placeholder="Password"
+                                underlineColorAndroid="transparent"
+                            />
+                        </View>
+
                         <Pressable
                             onPress={handleSubmit}
                             style={styles.buttonStyle}>
@@ -76,5 +102,27 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         width: '100%',
         marginTop: 20
+    },
+    textfieldContainer: {
+        flex: 1,
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#fff',
+        height: 60,
+        borderRadius: 8,
+        marginVertical: 10
+    },
+    textfieldIcon: {
+        padding: 10
+    },
+    input: {
+        flex: 1,
+        paddingTop: 10,
+        paddingRight: 10,
+        paddingBottom: 10,
+        paddingLeft: 0,
+        backgroundColor: '#fff',
+        color: '#424242'
     }
 });
