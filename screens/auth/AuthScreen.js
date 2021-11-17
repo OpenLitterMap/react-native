@@ -24,7 +24,7 @@ import COLORS from '../../utils/Colors';
 import VALUES from '../../utils/Values';
 
 import { TextInput as CustomTextInput } from '../components';
-import { SignupForm, SigninForm } from './authComponents';
+import { SignupForm, SigninForm, ResetPasswordForm } from './authComponents';
 let SCREEN_WIDTH = Dimensions.get('window').width;
 let SCREEN_HEIGHT = Dimensions.get('window').height;
 let IS_PORTRAIT = SCREEN_WIDTH <= SCREEN_HEIGHT;
@@ -674,7 +674,8 @@ class AuthScreen extends Component {
                             )}
                             <View style={styles.contentContainer}>
                                 {/* <SignupForm /> */}
-                                <SigninForm />
+                                {/* <SigninForm /> */}
+                                <ResetPasswordForm />
                                 {/* Show input to create a username */}
                                 {/* {formMode === formModes.CREATE_ACCOUNT && (
                                     <>
