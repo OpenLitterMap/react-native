@@ -70,9 +70,9 @@ const CustomTextInput = ({
             </View>
             <View style={styles.errorMessage}>
                 <View style={[touched && error && styles.errorContainer]}>
-                    <Caption color="white">
-                        {touched && error ? error : ''}
-                    </Caption>
+                    {touched && error && (
+                        <Caption color="white" dictionary={error} />
+                    )}
                 </View>
             </View>
         </>

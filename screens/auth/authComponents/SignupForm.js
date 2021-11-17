@@ -8,17 +8,20 @@ import { getTranslation } from 'react-native-translation';
 
 import { Body, Colors, SubTitle, CustomTextInput } from '../../components';
 
+/**
+ * Form field validation with keys for translation
+ */
 const SignupSchema = Yup.object().shape({
     username: Yup.string()
-        .min(3, 'Minimum 3 characters')
-        .max(20, 'Maximum 20 characters')
-        .required('Required'),
+        .min(3, 'username-min-max')
+        .max(20, 'username-min-max')
+        .required('enter-username'),
     email: Yup.string()
-        .email('Invalid email')
-        .required('Required'),
+        .email('email-not-valid')
+        .required('enter-email'),
     password: Yup.string()
-        .required('Required')
-        .matches(/^(?=.*[A-Z])(?=.*[0-9]).{6,}$/, 'Paasword doesnt match')
+        .required('enter-password')
+        .matches(/^(?=.*[A-Z])(?=.*[0-9]).{6,}$/, 'must-contain')
 });
 
 class SignupForm extends Component {
@@ -38,7 +41,7 @@ class SignupForm extends Component {
             <Formik
                 initialValues={{ email: '', password: '', username: '' }}
                 validationSchema={SignupSchema}
-                onSubmit={values => console.log('wow')}>
+                onSubmit={values => console.log(values)}>
                 {({
                     handleChange,
                     handleBlur,
@@ -54,7 +57,10 @@ class SignupForm extends Component {
                             onChangeText={handleChange('username')}
                             value={values.username}
                             name="username"
-                            error={errors.username}
+                            error={
+                                errors.username &&
+                                `${this.props.lang}.auth.${errors.username}`
+                            }
                             touched={touched.username}
                             placeholder={usernameTranslation}
                             leftIconName="ios-person-circle"
@@ -65,7 +71,10 @@ class SignupForm extends Component {
                             onChangeText={handleChange('email')}
                             value={values.email}
                             name="email"
-                            error={errors.email}
+                            error={
+                                errors.email &&
+                                `${this.props.lang}.auth.${errors.email}`
+                            }
                             touched={touched.email}
                             placeholder={emailTranslation}
                             leftIconName="ios-mail"
@@ -76,7 +85,10 @@ class SignupForm extends Component {
                             onChangeText={handleChange('password')}
                             value={values.password}
                             name="password"
-                            error={errors.password}
+                            error={
+                                errors.password &&
+                                `${this.props.lang}.auth.${errors.password}`
+                            }
                             touched={touched.password}
                             placeholder={passwordTranslation}
                             leftIconName="ios-key"
