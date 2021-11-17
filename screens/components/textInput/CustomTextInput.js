@@ -11,8 +11,8 @@ import {
     TextInput,
     ViewPropTypes
 } from 'react-native';
-import { Body } from '../typography';
-import { Colors } from '../theme';
+import { Caption } from '../typography';
+import { Colors, Fonts } from '../theme';
 
 const CustomTextInput = ({
     label,
@@ -27,6 +27,9 @@ const CustomTextInput = ({
     error,
     placeholder,
     leftIconName,
+    leftContent,
+    rightIconName,
+    rightContent,
     ...rest
 }) => {
     return (
@@ -36,12 +39,16 @@ const CustomTextInput = ({
                     styles.textfieldContainer,
                     touched && error && styles.errorBorder
                 ]}>
-                <Icon
-                    style={styles.textfieldIcon}
-                    name={leftIconName}
-                    size={28}
-                    color={touched && error ? Colors.error : Colors.muted}
-                />
+                {leftContent}
+                {leftIconName && (
+                    <Icon
+                        style={styles.textfieldIcon}
+                        name={leftIconName}
+                        size={28}
+                        color={touched && error ? Colors.error : Colors.muted}
+                    />
+                )}
+
                 <TextInput
                     {...rest}
                     style={[styles.input, touched && error && styles.errorText]}
@@ -51,8 +58,23 @@ const CustomTextInput = ({
                     underlineColorAndroid="transparent"
                     name={name}
                 />
+                {rightContent}
+                {rightIconName && (
+                    <Icon
+                        style={styles.textfieldIcon}
+                        name={rightIconName}
+                        size={28}
+                        color={Colors.muted}
+                    />
+                )}
             </View>
-            {touched && error && <Body>{error}</Body>}
+            <View style={styles.errorMessage}>
+                <View style={[touched && error && styles.errorContainer]}>
+                    <Caption color="white">
+                        {touched && error ? error : ''}
+                    </Caption>
+                </View>
+            </View>
         </>
     );
 };
@@ -69,7 +91,10 @@ CustomTextInput.prototypes = {
     value: PropTypes.string,
     name: PropTypes.string.isRequired,
     placeholder: PropTypes.string,
-    leftIconName: PropTypes.string
+    leftIconName: PropTypes.string,
+    rightIconName: PropTypes.string,
+    rightContent: PropTypes.element,
+    leftContent: PropTypes.element
 };
 
 export default CustomTextInput;
@@ -83,7 +108,6 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
         height: 60,
         borderRadius: 8,
-        marginVertical: 10,
         borderWidth: 2,
         borderColor: Colors.white
     },
@@ -96,13 +120,28 @@ const styles = StyleSheet.create({
         paddingRight: 10,
         paddingBottom: 10,
         paddingLeft: 0,
-        backgroundColor: '#fff',
-        color: '#424242'
+        fontSize: 16,
+        letterSpacing: 0.5,
+        backgroundColor: Colors.white,
+        color: Colors.text,
+        fontFamily: 'Poppins-Regular'
     },
     errorBorder: {
         borderColor: Colors.error
     },
     errorText: {
         color: Colors.error
+    },
+    errorMessage: {
+        height: 24,
+        flexDirection: 'row',
+        justifyContent: 'center'
+    },
+    errorContainer: {
+        backgroundColor: 'red',
+        borderBottomLeftRadius: 12,
+        borderBottomRightRadius: 12,
+        paddingHorizontal: 12,
+        marginBottom: 4
     }
 });

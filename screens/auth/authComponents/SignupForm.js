@@ -22,6 +22,9 @@ const SignupSchema = Yup.object().shape({
 });
 
 class SignupForm extends Component {
+    state = {
+        isPasswordVisible: false
+    };
     render() {
         // translation text
         const { lang } = this.props;
@@ -46,40 +49,16 @@ class SignupForm extends Component {
                 }) => (
                     <View style={{ flex: 1, justifyContent: 'center' }}>
                         {/* username input */}
-                        <View
-                            style={[
-                                styles.textfieldContainer,
-                                touched.username &&
-                                    errors?.username &&
-                                    styles.errorBorder
-                            ]}>
-                            <Icon
-                                style={styles.textfieldIcon}
-                                name="ios-person-circle"
-                                size={28}
-                                color={
-                                    touched.username && errors?.username
-                                        ? Colors.error
-                                        : Colors.muted
-                                }
-                            />
-                            <TextInput
-                                style={[
-                                    styles.input,
-                                    touched.username &&
-                                        errors.username &&
-                                        styles.errorText
-                                ]}
-                                placeholder={usernameTranslation}
-                                onChangeText={handleChange('username')}
-                                value={values.username}
-                                underlineColorAndroid="transparent"
-                                name="username"
-                            />
-                        </View>
-                        {touched.username && errors?.username && (
-                            <Body>{errors.username}</Body>
-                        )}
+                        {/* email input */}
+                        <CustomTextInput
+                            onChangeText={handleChange('username')}
+                            value={values.username}
+                            name="username"
+                            error={errors.username}
+                            touched={touched.username}
+                            placeholder={usernameTranslation}
+                            leftIconName="ios-person-circle"
+                        />
 
                         {/* email input */}
                         <CustomTextInput
@@ -101,7 +80,26 @@ class SignupForm extends Component {
                             touched={touched.password}
                             placeholder={passwordTranslation}
                             leftIconName="ios-key"
-                            secureTextEntry
+                            secureTextEntry={!this.state.isPasswordVisible}
+                            rightContent={
+                                <Pressable
+                                    onPress={() =>
+                                        this.setState(prevState => ({
+                                            isPasswordVisible: !prevState.isPasswordVisible
+                                        }))
+                                    }>
+                                    <Icon
+                                        style={styles.textfieldIcon}
+                                        name={
+                                            this.state.isPasswordVisible
+                                                ? 'ios-eye'
+                                                : 'ios-eye-off'
+                                        }
+                                        size={28}
+                                        color={Colors.muted}
+                                    />
+                                </Pressable>
+                            }
                         />
 
                         <Pressable
@@ -123,12 +121,6 @@ class SignupForm extends Component {
 }
 
 const styles = StyleSheet.create({
-    inputStyle: {
-        height: 60,
-        backgroundColor: 'white',
-        borderRadius: 8,
-        marginVertical: 10
-    },
     buttonStyle: {
         alignItems: 'center',
         backgroundColor: Colors.accent,
@@ -140,35 +132,8 @@ const styles = StyleSheet.create({
         width: '100%',
         marginTop: 20
     },
-    textfieldContainer: {
-        flex: 1,
-        flexDirection: 'row',
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#fff',
-        height: 60,
-        borderRadius: 8,
-        marginVertical: 10,
-        borderWidth: 2,
-        borderColor: Colors.white
-    },
     textfieldIcon: {
         padding: 10
-    },
-    input: {
-        flex: 1,
-        paddingTop: 10,
-        paddingRight: 10,
-        paddingBottom: 10,
-        paddingLeft: 0,
-        backgroundColor: '#fff',
-        color: '#424242'
-    },
-    errorBorder: {
-        borderColor: Colors.error
-    },
-    errorText: {
-        color: Colors.error
     }
 });
 
