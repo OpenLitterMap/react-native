@@ -117,14 +117,15 @@ export default function(state = INITIAL_STATE, action) {
              */
 
             case LOGIN_OR_SIGNUP_RESET:
-                draft.email = '';
-                draft.password = '';
-                draft.buttonPressed = false;
-                draft.buttonDisabled = false;
-                draft.success = '';
+                // draft.email = '';
+                // draft.password = '';
+                // draft.buttonPressed = false;
+                // draft.buttonDisabled = false;
+                // draft.success = '';
                 draft.isSubmitting = false;
-                draft.username = '';
-                draft.usernameError = '';
+                // draft.username = '';
+                // draft.usernameError = '';
+                draft.serverStatusText = '';
 
                 break;
 

@@ -105,6 +105,7 @@ class AuthScreen extends Component {
     }
 
     changeFormType = screenType => {
+        this.props.loginOrSignupReset();
         switch (screenType) {
             case 'login':
                 this.setState({
