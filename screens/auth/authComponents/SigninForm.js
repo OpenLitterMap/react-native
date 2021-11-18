@@ -1,12 +1,19 @@
 import React, { Component } from 'react';
-import { View, StyleSheet, Pressable } from 'react-native';
+import { View, StyleSheet, Pressable, ActivityIndicator } from 'react-native';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { connect } from 'react-redux';
 import { getTranslation } from 'react-native-translation';
 import { serverLogin } from '../../../actions';
-import { Body, Colors, SubTitle, CustomTextInput } from '../../components';
+import {
+    Body,
+    Caption,
+    Colors,
+    SubTitle,
+    CustomTextInput
+} from '../../components';
+import StatusMessage from './StatusMessage';
 
 /**
  * Form field validation with keys for translation
@@ -25,7 +32,7 @@ class SigninForm extends Component {
     };
     render() {
         // translation text
-        const { lang } = this.props;
+        const { lang, serverStatusText, isSubmitting } = this.props;
 
         const emailTranslation = getTranslation(`${lang}.auth.email-address`);
         const passwordTranslation = getTranslation(`${lang}.auth.password`);
@@ -35,8 +42,7 @@ class SigninForm extends Component {
                 initialValues={{ email: '', password: '' }}
                 validationSchema={SigninSchema}
                 onSubmit={({ email, password }) => {
-                    console.log(email, password);
-                    const data = serverLogin({
+                    this.props.serverLogin({
                         email,
                         password
                     });
@@ -106,15 +112,26 @@ class SigninForm extends Component {
                                 dictionary={`${lang}.auth.forgot-password`}
                             />
                         </Pressable>
+                        <StatusMessage
+                            isSubmitting={isSubmitting}
+                            serverStatusText={serverStatusText}
+                        />
 
                         <Pressable
+                            disabled={isSubmitting}
                             onPress={handleSubmit}
-                            style={styles.buttonStyle}>
-                            <SubTitle
-                                color="accentLight"
-                                dictionary={`${this.props.lang}.auth.login`}>
-                                Create Account
-                            </SubTitle>
+                            style={[styles.buttonStyle]}>
+                            {isSubmitting ? (
+                                <ActivityIndicator color="white" />
+                            ) : (
+                                <SubTitle
+                                    color="accentLight"
+                                    dictionary={`${
+                                        this.props.lang
+                                    }.auth.login`}>
+                                    Create Account
+                                </SubTitle>
+                            )}
                         </Pressable>
                     </View>
                 )}
@@ -137,18 +154,22 @@ const styles = StyleSheet.create({
     },
     textfieldIcon: {
         padding: 10
+    },
+    buttonDisabled: {
+        opacity: 0.5
     }
 });
 
 const mapStateToProps = state => {
     return {
         lang: state.auth.lang,
-        isSubmitting: state.auth.isSubmitting
+        isSubmitting: state.auth.isSubmitting,
+        serverStatusText: state.auth.serverStatusText
     };
 };
 
 // bind all action creators to AuthScreen
 export default connect(
     mapStateToProps,
-    {}
+    { serverLogin }
 )(SigninForm);

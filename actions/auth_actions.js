@@ -261,9 +261,7 @@ export const sendResetPasswordRequest = email => {
  * A user is trying to login with email and password
  */
 export const serverLogin = data => {
-    console.log('here');
     return async dispatch => {
-        console.log('here222');
         // initial dispatch to show form isSubmitting state
         dispatch({ type: SUBMIT_START });
         // axios response

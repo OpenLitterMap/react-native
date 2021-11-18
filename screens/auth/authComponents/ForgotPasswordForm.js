@@ -1,11 +1,12 @@
 import React, { Component } from 'react';
-import { View, StyleSheet, Pressable } from 'react-native';
+import { View, StyleSheet, Pressable, ActivityIndicator } from 'react-native';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 import { connect } from 'react-redux';
 import { getTranslation } from 'react-native-translation';
 import * as actions from '../../../actions';
 import { Colors, SubTitle, CustomTextInput, Caption } from '../../components';
+import { StatusMessage } from '.';
 
 /**
  * Form field validation with keys for translation
@@ -23,7 +24,7 @@ class ForgotPasswordForm extends Component {
     };
     render() {
         // translation text
-        const { lang, serverStatusText } = this.props;
+        const { lang, serverStatusText, isSubmitting } = this.props;
         const emailTranslation = getTranslation(`${lang}.auth.email-address`);
 
         return (
@@ -57,20 +58,25 @@ class ForgotPasswordForm extends Component {
                             placeholder={emailTranslation}
                             leftIconName="ios-mail"
                         />
-                        <Caption color="white" style={{ textAlign: 'center' }}>
-                            {serverStatusText}
-                        </Caption>
+                        <StatusMessage
+                            isSubmitting={isSubmitting}
+                            serverStatusText={serverStatusText}
+                        />
 
                         <Pressable
                             onPress={handleSubmit}
                             style={[styles.buttonStyle]}>
-                            <SubTitle
-                                color="accentLight"
-                                dictionary={`${
-                                    this.props.lang
-                                }.auth.forgot-password`}>
-                                Create Account
-                            </SubTitle>
+                            {isSubmitting ? (
+                                <ActivityIndicator color="white" />
+                            ) : (
+                                <SubTitle
+                                    color="accentLight"
+                                    dictionary={`${
+                                        this.props.lang
+                                    }.auth.forgot-password`}>
+                                    Create Account
+                                </SubTitle>
+                            )}
                         </Pressable>
                     </View>
                 )}
