@@ -4,40 +4,44 @@ import { Formik } from 'formik';
 import * as Yup from 'yup';
 import { connect } from 'react-redux';
 import { getTranslation } from 'react-native-translation';
-
-import { Colors, SubTitle, CustomTextInput } from '../../components';
+import * as actions from '../../../actions';
+import { Colors, SubTitle, CustomTextInput, Caption } from '../../components';
 
 /**
  * Form field validation with keys for translation
  * using Yup for validation
  */
-const ResetPasswordSchema = Yup.object().shape({
+const ForgotPasswordSchema = Yup.object().shape({
     email: Yup.string()
         .email('email-not-valid')
         .required('enter-email')
 });
 
-class ResetPasswordForm extends Component {
+class ForgotPasswordForm extends Component {
     state = {
         isPasswordVisible: false
     };
     render() {
         // translation text
-        const { lang } = this.props;
+        const { lang, serverStatusText } = this.props;
         const emailTranslation = getTranslation(`${lang}.auth.email-address`);
 
         return (
             <Formik
                 initialValues={{ email: '' }}
-                validationSchema={ResetPasswordSchema}
-                onSubmit={values => console.log(values)}>
+                validationSchema={ForgotPasswordSchema}
+                onSubmit={values => {
+                    this.props.sendResetPasswordRequest(values.email);
+                }}>
                 {({
                     handleChange,
                     handleBlur,
                     handleSubmit,
                     values,
                     errors,
-                    touched
+                    touched,
+                    isValid,
+                    dirty
                 }) => (
                     <View style={{ flex: 1, justifyContent: 'center' }}>
                         {/* email input */}
@@ -53,10 +57,13 @@ class ResetPasswordForm extends Component {
                             placeholder={emailTranslation}
                             leftIconName="ios-mail"
                         />
+                        <Caption color="white" style={{ textAlign: 'center' }}>
+                            {serverStatusText}
+                        </Caption>
 
                         <Pressable
                             onPress={handleSubmit}
-                            style={styles.buttonStyle}>
+                            style={[styles.buttonStyle]}>
                             <SubTitle
                                 color="accentLight"
                                 dictionary={`${
@@ -86,6 +93,9 @@ const styles = StyleSheet.create({
     },
     textfieldIcon: {
         padding: 10
+    },
+    buttonDisabled: {
+        opacity: 0.5
     }
 });
 
@@ -103,5 +113,5 @@ const mapStateToProps = state => {
 // bind all action creators to AuthScreen
 export default connect(
     mapStateToProps,
-    {}
-)(ResetPasswordForm);
+    actions
+)(ForgotPasswordForm);

@@ -18,7 +18,7 @@ import COLORS from '../../utils/Colors';
 import VALUES from '../../utils/Values';
 
 import { Body, Caption } from '../components';
-import { SignupForm, SigninForm, ResetPasswordForm } from './authComponents';
+import { SignupForm, SigninForm, ForgotPasswordForm } from './authComponents';
 let SCREEN_WIDTH = Dimensions.get('window').width;
 let SCREEN_HEIGHT = Dimensions.get('window').height;
 let IS_PORTRAIT = SCREEN_WIDTH <= SCREEN_HEIGHT;
@@ -168,7 +168,7 @@ class AuthScreen extends Component {
                 return <SignupForm />;
 
             case 'FORGOT_PASSWORD':
-                return <ResetPasswordForm />;
+                return <ForgotPasswordForm />;
 
             default:
                 return <SigninForm />;
@@ -268,14 +268,6 @@ const styles = StyleSheet.create({
     scrollContainer: {
         flexGrow: 1,
         flexDirection: 'column'
-    },
-    authButtonText: {
-        fontSize: SCREEN_HEIGHT * 0.025,
-        fontWeight: 'bold',
-        color: COLORS.positiveText
-    },
-    button: {
-        backgroundColor: COLORS.neutralButton
     },
     container: {
         flex: 1,

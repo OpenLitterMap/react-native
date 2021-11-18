@@ -209,7 +209,6 @@ export const changeServerStatusText = text => {
 /**
  * The user forgot their password and is submitting their email address to request a link
  */
-// TODO: handle status message with reducers while working on auth screen refactor
 export const sendResetPasswordRequest = email => {
     return async dispatch => {
         // setting isSubmitting to true
@@ -220,8 +219,7 @@ export const sendResetPasswordRequest = email => {
             response = await axios(URL + '/api/password/email', {
                 method: 'POST',
                 data: {
-                    email: email,
-                    api: true // we need this to override the response
+                    email: email
                 },
                 headers: {
                     Accept: 'application/json',
@@ -232,33 +230,29 @@ export const sendResetPasswordRequest = email => {
             if (error?.response) {
                 console.log('sendResetPasswordRequest', error.response?.data);
                 // setting isSubmitting to false
-                dispatch({ type: SUBMIT_END });
-                return {
-                    success: false,
-                    // We can't find a user with that email address
-                    msg:
+                dispatch({
+                    type: CHANGE_SERVER_STATUS_TEXT,
+                    payload:
                         error.response?.data?.errors?.email ||
                         'Error, please try again'
-                };
+                });
             } else {
                 // Handling mainly network error
                 console.log('sendResetPasswordRequest', error);
-                dispatch({ type: SUBMIT_END });
-                return {
-                    success: false,
-                    msg: 'Network error, please try again'
-                };
+                dispatch({
+                    type: CHANGE_SERVER_STATUS_TEXT,
+                    payload: 'Network error, please try again'
+                });
             }
         }
         console.log('sendResetPasswordRequest', response?.data);
 
         if (response?.data) {
             // setting isSubmitting to false
-            dispatch({ type: SUBMIT_END });
-            return {
-                success: true,
-                msg: 'We have emailed your password reset link!'
-            };
+            dispatch({
+                type: CHANGE_SERVER_STATUS_TEXT,
+                payload: 'We have emailed your password reset link!'
+            });
         }
     };
 };
@@ -267,7 +261,9 @@ export const sendResetPasswordRequest = email => {
  * A user is trying to login with email and password
  */
 export const serverLogin = data => {
+    console.log('here');
     return async dispatch => {
+        console.log('here222');
         // initial dispatch to show form isSubmitting state
         dispatch({ type: SUBMIT_START });
         // axios response

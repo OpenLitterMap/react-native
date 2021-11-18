@@ -53,8 +53,10 @@ const CustomTextInput = ({
                     {...rest}
                     style={[styles.input, touched && error && styles.errorText]}
                     placeholder={placeholder}
-                    // onChangeText={handleChange(`${name}`)}
                     value={value}
+                    autoFocus={false}
+                    autoCorrect={false}
+                    autoCapitalize={'none'}
                     underlineColorAndroid="transparent"
                     name={name}
                 />

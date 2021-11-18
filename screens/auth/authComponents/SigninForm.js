@@ -5,7 +5,7 @@ import * as Yup from 'yup';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { connect } from 'react-redux';
 import { getTranslation } from 'react-native-translation';
-
+import { serverLogin } from '../../../actions';
 import { Body, Colors, SubTitle, CustomTextInput } from '../../components';
 
 /**
@@ -34,7 +34,13 @@ class SigninForm extends Component {
             <Formik
                 initialValues={{ email: '', password: '' }}
                 validationSchema={SigninSchema}
-                onSubmit={values => console.log(values)}>
+                onSubmit={({ email, password }) => {
+                    console.log(email, password);
+                    const data = serverLogin({
+                        email,
+                        password
+                    });
+                }}>
                 {({
                     handleChange,
                     handleBlur,
@@ -137,10 +143,6 @@ const styles = StyleSheet.create({
 const mapStateToProps = state => {
     return {
         lang: state.auth.lang,
-        serverStatusText: state.auth.serverStatusText,
-        success: state.auth.success,
-        user: state.auth.user,
-        username: state.auth.username,
         isSubmitting: state.auth.isSubmitting
     };
 };
