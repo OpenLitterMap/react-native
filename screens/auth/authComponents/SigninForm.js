@@ -6,7 +6,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { connect } from 'react-redux';
 import { getTranslation } from 'react-native-translation';
 
-import { Colors, SubTitle, CustomTextInput } from '../../components';
+import { Body, Colors, SubTitle, CustomTextInput } from '../../components';
 
 /**
  * Form field validation with keys for translation
@@ -92,6 +92,14 @@ class SigninForm extends Component {
                                 </Pressable>
                             }
                         />
+                        <Pressable
+                            style={{ alignItems: 'flex-end' }}
+                            onPress={() => this.props.changeFormType('reset')}>
+                            <Body
+                                color="white"
+                                dictionary={`${lang}.auth.forgot-password`}
+                            />
+                        </Pressable>
 
                         <Pressable
                             onPress={handleSubmit}
