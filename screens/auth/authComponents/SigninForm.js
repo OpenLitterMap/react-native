@@ -49,14 +49,16 @@ class SigninForm extends Component {
                 initialValues={{ email: '', password: '' }}
                 validationSchema={SigninSchema}
                 onSubmit={({ email, password }) => {
-                    this.props.serverLogin({
-                        email,
-                        password
-                    });
+                    console.log({ email, password });
+                    // this.props.serverLogin({
+                    //     email,
+                    //     password
+                    // });
                 }}>
                 {({
                     handleChange,
                     handleBlur,
+                    setFieldValue,
                     handleSubmit,
                     values,
                     errors,
@@ -69,7 +71,12 @@ class SigninForm extends Component {
                             onSubmitEditing={() =>
                                 this.passwordRef.current.focus()
                             }
-                            onChangeText={handleChange('email')}
+                            onChangeText={e =>
+                                setFieldValue(
+                                    'email',
+                                    e.trim().toLocaleLowerCase()
+                                )
+                            }
                             value={values.email}
                             name="email"
                             error={
@@ -79,6 +86,9 @@ class SigninForm extends Component {
                             touched={touched.email}
                             placeholder={emailTranslation}
                             leftIconName="ios-mail"
+                            // returnKeyType="next"
+                            keyboardType="email-address"
+                            multiline
                         />
 
                         {/* password input */}
@@ -95,6 +105,7 @@ class SigninForm extends Component {
                             placeholder={passwordTranslation}
                             leftIconName="ios-key"
                             secureTextEntry={!this.state.isPasswordVisible}
+                            returnKeyType="done"
                             // eye icon --> display/hide
                             rightContent={
                                 <Pressable

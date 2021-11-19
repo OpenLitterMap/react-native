@@ -67,6 +67,8 @@ const CustomTextInput = React.forwardRef(
                         autoFocus={false}
                         autoCorrect={false}
                         autoCapitalize={'none'}
+                        autoCompleteType="off"
+                        textContentType="none"
                         underlineColorAndroid="transparent"
                         name={name}
                     />
@@ -137,7 +139,8 @@ const styles = StyleSheet.create({
         letterSpacing: 0.5,
         backgroundColor: Colors.white,
         color: Colors.text,
-        fontFamily: 'Poppins-Regular'
+        fontFamily: 'Poppins-Regular',
+        textAlignVertical: 'top'
     },
     errorBorder: {
         borderColor: Colors.error

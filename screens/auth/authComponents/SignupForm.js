@@ -60,7 +60,7 @@ class SignupForm extends Component {
                 }}>
                 {({
                     handleChange,
-                    handleBlur,
+                    setFieldValue,
                     handleSubmit,
                     values,
                     errors,
@@ -84,6 +84,7 @@ class SignupForm extends Component {
                             touched={touched.username}
                             placeholder={usernameTranslation}
                             leftIconName="ios-person-circle"
+                            returnKeyType="next"
                         />
 
                         {/* email input */}
@@ -92,7 +93,12 @@ class SignupForm extends Component {
                             onSubmitEditing={() =>
                                 this.passwordRef.current.focus()
                             }
-                            onChangeText={handleChange('email')}
+                            onChangeText={e =>
+                                setFieldValue(
+                                    'email',
+                                    e.trim().toLocaleLowerCase()
+                                )
+                            }
                             value={values.email}
                             name="email"
                             error={
@@ -102,6 +108,9 @@ class SignupForm extends Component {
                             touched={touched.email}
                             placeholder={emailTranslation}
                             leftIconName="ios-mail"
+                            returnKeyType="next"
+                            keyboardType="email-address"
+                            multiline
                         />
 
                         {/* password input */}
@@ -118,6 +127,7 @@ class SignupForm extends Component {
                             placeholder={passwordTranslation}
                             leftIconName="ios-key"
                             secureTextEntry={!this.state.isPasswordVisible}
+                            returnKeyType="done"
                             // eye icon --> display/hide
                             rightContent={
                                 <Pressable

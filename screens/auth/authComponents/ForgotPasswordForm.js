@@ -35,19 +35,22 @@ class ForgotPasswordForm extends Component {
                     this.props.sendResetPasswordRequest(values.email);
                 }}>
                 {({
-                    handleChange,
-                    handleBlur,
                     handleSubmit,
+                    setFieldValue,
                     values,
                     errors,
                     touched,
-                    isValid,
-                    dirty
+                    handleChange
                 }) => (
                     <View style={{ flex: 1, justifyContent: 'center' }}>
                         {/* email input */}
                         <CustomTextInput
-                            onChangeText={handleChange('email')}
+                            onChangeText={e =>
+                                setFieldValue(
+                                    'email',
+                                    e.trim().toLocaleLowerCase()
+                                )
+                            }
                             value={values.email}
                             name="email"
                             error={
@@ -57,6 +60,9 @@ class ForgotPasswordForm extends Component {
                             touched={touched.email}
                             placeholder={emailTranslation}
                             leftIconName="ios-mail"
+                            keyboardType="email-address"
+                            returnKeyType="done"
+                            multiline
                         />
                         <StatusMessage
                             isSubmitting={isSubmitting}
