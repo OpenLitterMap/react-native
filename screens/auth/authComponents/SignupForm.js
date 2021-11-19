@@ -155,6 +155,7 @@ class SignupForm extends Component {
                         />
 
                         <Pressable
+                            disabled={isSubmitting}
                             onPress={handleSubmit}
                             style={styles.buttonStyle}>
                             {isSubmitting ? (

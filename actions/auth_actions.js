@@ -1,4 +1,3 @@
-import React from 'react';
 import AsyncStorage from '@react-native-community/async-storage';
 import {
     ACCOUNT_CREATED,
@@ -162,7 +161,7 @@ export const createAccount = data => {
             };
 
             // Log the user in
-            dispatch(serverLogin(login));
+            dispatch(userLogin(login));
         }
     };
 };
@@ -260,7 +259,7 @@ export const sendResetPasswordRequest = email => {
 /**
  * A user is trying to login with email and password
  */
-export const serverLogin = data => {
+export const userLogin = data => {
     return async dispatch => {
         // initial dispatch to show form isSubmitting state
         dispatch({ type: SUBMIT_START });
@@ -290,7 +289,7 @@ export const serverLogin = data => {
                 try {
                     await AsyncStorage.setItem('jwt', token);
                 } catch (error) {
-                    console.log('serverLogin.saveJWT', error);
+                    console.log('userLogin.saveJWT', error);
                     throw 'Unable to save token to asyncstore';
                 }
             } else {
@@ -318,8 +317,7 @@ export const serverLogin = data => {
                 // Handling network error
                 dispatch({
                     type: LOGIN_FAIL,
-                    payload:
-                        'Network error, please check internet connection and try again'
+                    payload: 'Network error, please try again'
                 });
                 return;
             }
@@ -334,49 +332,38 @@ export const serverLogin = data => {
 /**
  * Make an API request to fetch the current user with an access token
  *
- * Todo - move this to axios, and use await
  */
 export const fetchUser = token => {
     return async dispatch => {
-        await fetch(URL + '/api/user', {
-            method: 'GET',
-            headers: {
-                Authorization: 'Bearer ' + token
-            }
-        })
-            .then(response => {
-                // console.log(response);
-                // console.log(response.data);
-                if (response.status === 200) {
-                    // console.log("=== fetchUser - 200 ===");
-                    const responseJson = response
-                        .text() // returns a promise
-                        .then(async responseJson => {
-                            const userObj = JSON.parse(responseJson);
-
-                            dispatch({
-                                type: USER_FOUND,
-                                payload: { userObj, token }
-                            });
-                            // INFO: no need to manually navigate -- handled in mainRoutes.js
-                        })
-                        .catch(error => {
-                            // console.log('fetch user - error 2');
-                            // console.log(error);
-                        });
-                } else {
-                    // response.status not 200
-                    const errorJson = response.text().then(async errorJson => {
-                        const errorObj = JSON.parse(errorJson);
-                        // console.log('Error object');
-                        // console.log(errorObj);
-                    });
+        let response;
+        try {
+            response = await axios(URL + '/api/user', {
+                method: 'GET',
+                headers: {
+                    Authorization: 'Bearer ' + token
                 }
-            })
-            .catch(err => {
-                // console.log('error 1');
-                // console.log(err);
             });
+        } catch (error) {
+            if (error?.response) {
+                dispatch({
+                    type: LOGIN_FAIL,
+                    payload: 'Login Unsuccessful. Please try again.'
+                });
+            } else {
+                // Handling network error
+                dispatch({
+                    type: LOGIN_FAIL,
+                    payload: 'Network error, please try again'
+                });
+            }
+        }
+        if (response && response.status === 200 && response.data) {
+            const userObj = response.data;
+            dispatch({
+                type: USER_FOUND,
+                payload: { userObj, token }
+            });
+        }
     };
 };
 

@@ -5,7 +5,7 @@ import * as Yup from 'yup';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { connect } from 'react-redux';
 import { getTranslation } from 'react-native-translation';
-import { serverLogin } from '../../../actions';
+import { userLogin } from '../../../actions';
 import {
     Body,
     Caption,
@@ -49,11 +49,10 @@ class SigninForm extends Component {
                 initialValues={{ email: '', password: '' }}
                 validationSchema={SigninSchema}
                 onSubmit={({ email, password }) => {
-                    console.log({ email, password });
-                    // this.props.serverLogin({
-                    //     email,
-                    //     password
-                    // });
+                    this.props.userLogin({
+                        email,
+                        password
+                    });
                 }}>
                 {({
                     handleChange,
@@ -143,7 +142,10 @@ class SigninForm extends Component {
                         <Pressable
                             disabled={isSubmitting}
                             onPress={handleSubmit}
-                            style={[styles.buttonStyle]}>
+                            style={[
+                                styles.buttonStyle,
+                                isSubmitting && styles.buttonDisabled
+                            ]}>
                             {isSubmitting ? (
                                 <ActivityIndicator color="white" />
                             ) : (
@@ -179,7 +181,7 @@ const styles = StyleSheet.create({
         padding: 10
     },
     buttonDisabled: {
-        opacity: 0.5
+        opacity: 0.8
     }
 });
 
@@ -194,5 +196,5 @@ const mapStateToProps = state => {
 // bind all action creators to AuthScreen
 export default connect(
     mapStateToProps,
-    { serverLogin }
+    { userLogin }
 )(SigninForm);
