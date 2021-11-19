@@ -5,7 +5,8 @@ export const Colors = {
     muted: '#7985a3',
     white: '#ffffff',
     error: '#e74c3c',
-    warn: '#df8041'
+    warn: '#df8041',
+    info: '#1976D2'
 };
 
 export const ColorType = [
@@ -15,5 +16,6 @@ export const ColorType = [
     'muted',
     'white',
     'error',
-    'warn'
+    'warn',
+    'info'
 ];

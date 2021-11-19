@@ -27,9 +27,16 @@ const SigninSchema = Yup.object().shape({
 });
 
 class SigninForm extends Component {
-    state = {
-        isPasswordVisible: false
-    };
+    constructor(props) {
+        super(props);
+        this.state = {
+            isPasswordVisible: false
+        };
+
+        this.emailRef = React.createRef();
+        this.passwordRef = React.createRef();
+    }
+
     render() {
         // translation text
         const { lang, serverStatusText, isSubmitting } = this.props;
@@ -58,6 +65,10 @@ class SigninForm extends Component {
                     <View style={{ flex: 1, justifyContent: 'center' }}>
                         {/* email input */}
                         <CustomTextInput
+                            ref={this.emailRef}
+                            onSubmitEditing={() =>
+                                this.passwordRef.current.focus()
+                            }
                             onChangeText={handleChange('email')}
                             value={values.email}
                             name="email"
@@ -72,6 +83,7 @@ class SigninForm extends Component {
 
                         {/* password input */}
                         <CustomTextInput
+                            ref={this.passwordRef}
                             onChangeText={handleChange('password')}
                             value={values.password}
                             name="password"

@@ -7,17 +7,16 @@ import {
     ScrollView,
     Image,
     View,
-    Pressable
+    Pressable,
+    StyleSheet
 } from 'react-native';
-import StyleSheet from 'react-native-extended-stylesheet';
+// import StyleSheet from 'react-native-extended-stylesheet';
 
 import { connect } from 'react-redux';
 
 import * as actions from '../../actions';
-import COLORS from '../../utils/Colors';
-import VALUES from '../../utils/Values';
 
-import { Body, Caption } from '../components';
+import { Body, Colors } from '../components';
 import { SignupForm, SigninForm, ForgotPasswordForm } from './authComponents';
 let SCREEN_WIDTH = Dimensions.get('window').width;
 let SCREEN_HEIGHT = Dimensions.get('window').height;
@@ -37,8 +36,6 @@ class AuthScreen extends Component {
         SCREEN_WIDTH = Dimensions.get('window').width;
         SCREEN_HEIGHT = Dimensions.get('window').height;
         IS_PORTRAIT = SCREEN_WIDTH <= SCREEN_HEIGHT;
-
-        StyleSheet.build({ $rem: SCREEN_WIDTH / VALUES.remDivisionFactor });
     };
 
     keyboardWillShow = event => {
@@ -196,7 +193,6 @@ class AuthScreen extends Component {
                     })}
                     onLayout={this.onLayout}>
                     <ScrollView
-                        style={styles.scroll}
                         contentContainerStyle={styles.scrollContainer}
                         showsVerticalScrollIndicator={false}
                         keyboardShouldPersistTaps={'handled'}>
@@ -215,22 +211,20 @@ class AuthScreen extends Component {
                                     <View style={{ flexDirection: 'row' }}>
                                         <View
                                             style={{
-                                                backgroundColor:
-                                                    COLORS.whiteText,
+                                                backgroundColor: Colors.white,
                                                 height: 1,
                                                 flex: 1,
                                                 alignSelf: 'center'
                                             }}
                                         />
                                         {/* ---- OR ---- */}
-                                        <Caption
+                                        <Body
                                             style={styles.divider}
                                             dictionary={`${lang}.auth.or`}
                                         />
                                         <View
                                             style={{
-                                                backgroundColor:
-                                                    COLORS.whiteText,
+                                                backgroundColor: Colors.white,
                                                 height: 1,
                                                 flex: 1,
                                                 alignSelf: 'center'
@@ -239,7 +233,7 @@ class AuthScreen extends Component {
                                     </View>
                                     <Pressable onPress={this.toggleFormMode}>
                                         <Body
-                                            style={styles.switch}
+                                            color="white"
                                             dictionary={this.getModeSwitchText()}
                                         />
                                     </Pressable>
@@ -259,12 +253,7 @@ class AuthScreen extends Component {
  */
 const styles = StyleSheet.create({
     outerContainer: {
-        flex: 1,
-        alignItems: 'stretch'
-    },
-    scroll: {
-        flex: 1,
-        flexDirection: 'column'
+        flex: 1
     },
     scrollContainer: {
         flexGrow: 1,
@@ -272,7 +261,7 @@ const styles = StyleSheet.create({
     },
     container: {
         flex: 1,
-        backgroundColor: COLORS.authBackground
+        backgroundColor: Colors.info
     },
     authContainer: {
         flex: 1,
@@ -281,7 +270,7 @@ const styles = StyleSheet.create({
     },
     contentContainer: {
         flexDirection: 'column',
-        padding: SCREEN_WIDTH * 0.05
+        padding: 20
     },
 
     logo: {
@@ -294,20 +283,13 @@ const styles = StyleSheet.create({
     },
     buttonContainer: {
         alignItems: 'center',
-        justifyContent: 'center',
-        marginTop: '16rem'
+        justifyContent: 'center'
     },
 
     divider: {
-        fontSize: '16rem',
-        color: COLORS.whiteText,
+        color: Colors.white,
         alignSelf: 'center',
         paddingHorizontal: 5
-    },
-    switch: {
-        fontSize: '16rem',
-        padding: '8rem',
-        color: COLORS.whiteText
     }
 });
 

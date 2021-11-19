@@ -14,72 +14,83 @@ import {
 import { Caption } from '../typography';
 import { Colors, Fonts } from '../theme';
 
-const CustomTextInput = ({
-    label,
-    defaultValue,
-    style,
-    inputStyle,
-    labelStyle,
-    editable = true,
-    name,
-    value,
-    touched,
-    error,
-    placeholder,
-    leftIconName,
-    leftContent,
-    rightIconName,
-    rightContent,
-    ...rest
-}) => {
-    return (
-        <>
-            <View
-                style={[
-                    styles.textfieldContainer,
-                    touched && error && styles.errorBorder
-                ]}>
-                {leftContent}
-                {leftIconName && (
-                    <Icon
-                        style={styles.textfieldIcon}
-                        name={leftIconName}
-                        size={28}
-                        color={touched && error ? Colors.error : Colors.muted}
-                    />
-                )}
+const CustomTextInput = React.forwardRef(
+    (
+        {
+            label,
+            defaultValue,
+            style,
+            inputStyle,
+            labelStyle,
+            editable = true,
+            name,
+            value,
+            touched,
+            error,
+            placeholder,
+            leftIconName,
+            leftContent,
+            rightIconName,
+            rightContent,
+            ...rest
+        },
+        ref
+    ) => {
+        return (
+            <>
+                <View
+                    style={[
+                        styles.textfieldContainer,
+                        touched && error && styles.errorBorder
+                    ]}>
+                    {leftContent}
+                    {leftIconName && (
+                        <Icon
+                            style={styles.textfieldIcon}
+                            name={leftIconName}
+                            size={28}
+                            color={
+                                touched && error ? Colors.error : Colors.muted
+                            }
+                        />
+                    )}
 
-                <TextInput
-                    {...rest}
-                    style={[styles.input, touched && error && styles.errorText]}
-                    placeholder={placeholder}
-                    value={value}
-                    autoFocus={false}
-                    autoCorrect={false}
-                    autoCapitalize={'none'}
-                    underlineColorAndroid="transparent"
-                    name={name}
-                />
-                {rightContent}
-                {rightIconName && (
-                    <Icon
-                        style={styles.textfieldIcon}
-                        name={rightIconName}
-                        size={28}
-                        color={Colors.muted}
+                    <TextInput
+                        {...rest}
+                        ref={ref}
+                        style={[
+                            styles.input,
+                            touched && error && styles.errorText
+                        ]}
+                        placeholder={placeholder}
+                        value={value}
+                        autoFocus={false}
+                        autoCorrect={false}
+                        autoCapitalize={'none'}
+                        underlineColorAndroid="transparent"
+                        name={name}
                     />
-                )}
-            </View>
-            <View style={styles.errorMessage}>
-                <View style={[touched && error && styles.errorContainer]}>
-                    {touched && error && (
-                        <Caption color="white" dictionary={error} />
+                    {rightContent}
+                    {rightIconName && (
+                        <Icon
+                            style={styles.textfieldIcon}
+                            name={rightIconName}
+                            size={28}
+                            color={Colors.muted}
+                        />
                     )}
                 </View>
-            </View>
-        </>
-    );
-};
+                <View style={styles.errorMessage}>
+                    <View style={[touched && error && styles.errorContainer]}>
+                        {touched && error && (
+                            <Caption color="white" dictionary={error} />
+                        )}
+                    </View>
+                </View>
+            </>
+        );
+    }
+);
 
 CustomTextInput.prototypes = {
     label: PropTypes.string,
