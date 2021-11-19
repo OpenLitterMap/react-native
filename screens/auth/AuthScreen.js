@@ -295,12 +295,7 @@ const styles = StyleSheet.create({
 
 const mapStateToProps = state => {
     return {
-        lang: state.auth.lang,
-        serverStatusText: state.auth.serverStatusText,
-        success: state.auth.success,
-        user: state.auth.user,
-        username: state.auth.username,
-        isSubmitting: state.auth.isSubmitting
+        lang: state.auth.lang
     };
 };
 

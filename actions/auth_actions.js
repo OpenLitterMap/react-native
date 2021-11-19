@@ -167,7 +167,7 @@ export const createAccount = data => {
 };
 
 /**
- * Reset the property for isButtonPressed
+ * Reset serverStatusText on form toggle
  */
 export const loginOrSignupReset = () => {
     // console.log('action - login or signup reset');
