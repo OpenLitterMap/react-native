@@ -28,7 +28,7 @@ export const addImages = (images, type, picked_up) => {
 /**
  * Add tag to image
  */
-export const addTagToImage = (payload) => {
+export const addTagToImage = payload => {
     return {
         type: ADD_TAG_TO_IMAGE,
         payload: payload
@@ -88,7 +88,7 @@ export const decrementSelected = () => {
  * delete image by id
  * @param {number} id
  */
-export const deleteImage = (id) => {
+export const deleteImage = id => {
     return {
         type: DELETE_IMAGE,
         payload: id
@@ -156,7 +156,7 @@ export const incrementSelected = () => {
 /**
  * remove a tag from image
  */
-export const removeTagFromImage = (data) => {
+export const removeTagFromImage = data => {
     return {
         type: REMOVE_TAG_FROM_IMAGE,
         payload: data
@@ -176,7 +176,7 @@ export const toggleSelecting = () => {
  * toggle selected property of a image object
  * @param {number} id
  */
-export const toggleSelectedImage = (id) => {
+export const toggleSelectedImage = id => {
     return {
         type: TOGGLE_SELECTED_IMAGES,
         payload: id
@@ -233,11 +233,13 @@ export const uploadImage = (token, image, imageId) => {
 };
 
 /**
- * Upload the tags that were applied to an image
+ * Upload the tags that were applied to a WEB image
+ * This fn is used only for WEB images as those images are already uploaded from website.
+ *
  * @param {string} token
  * @param  image - the image object
  */
-export const uploadTags = (token, image) => {
+export const uploadTagsToWebImage = (token, image) => {
     return async dispatch => {
         let response;
         try {

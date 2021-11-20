@@ -262,7 +262,9 @@ class HomeScreen extends PureComponent {
                         <Body
                             style={{ marginLeft: 10 }}
                             color="muted"
-                            dictionary={`${this.props.lang}.leftpage.select-to-delete`}
+                            dictionary={`${
+                                this.props.lang
+                            }.leftpage.select-to-delete`}
                         />
                     </View>
                 );
@@ -280,7 +282,7 @@ class HomeScreen extends PureComponent {
             return;
         } else {
             let tagged = 0;
-            this.props.images.map((img) => {
+            this.props.images.map(img => {
                 if (img.tags && Object.keys(img.tags)?.length > 0) {
                     tagged++;
                 }
@@ -343,7 +345,7 @@ class HomeScreen extends PureComponent {
      */
 
     deleteImages() {
-        this.props.images.map((image) => {
+        this.props.images.map(image => {
             if (image.type !== 'WEB' && image.selected) {
                 this.props.deleteImage(image.id);
             } else if (image.type === 'WEB' && image.selected) {
@@ -376,7 +378,7 @@ class HomeScreen extends PureComponent {
 
         let imagesCount = 0;
 
-        this.props.images.map((item) => {
+        this.props.images.map(item => {
             if (item.tags && Object.keys(item.tags)?.length > 0) {
                 imagesCount++;
             }
@@ -428,7 +430,7 @@ class HomeScreen extends PureComponent {
                             uploaded: previousState.uploaded + 1
                         }));
                     } else {
-                        this.setState((previousState) => ({
+                        this.setState(previousState => ({
                             failedUpload: previousState.failedUpload + 1
                         }));
                     }
@@ -441,7 +443,7 @@ class HomeScreen extends PureComponent {
                      * Upload tags
                      * Only need to upload tags and 'picked_up' value for WEB images
                      */
-                    const response = await this.props.uploadTags(
+                    const response = await this.props.uploadTagsToWebImage(
                         this.props.token,
                         img
                     );
@@ -451,12 +453,12 @@ class HomeScreen extends PureComponent {
                             uploaded: previousState.uploaded + 1
                         }));
                     } else {
-                        this.setState((previousState) => ({
+                        this.setState(previousState => ({
                             failedUpload: previousState.failedUpload + 1
                         }));
                     }
                 } else if (!isgeotagged) {
-                    this.setState((previousState) => ({
+                    this.setState(previousState => ({
                         failedUpload: previousState.failedUpload + 1
                     }));
                 }
@@ -597,7 +599,7 @@ const styles = {
     }
 };
 
-const mapStateToProps = (state) => {
+const mapStateToProps = state => {
     return {
         isSelecting: state.images.isSelecting,
         lang: state.auth.lang,
@@ -617,4 +619,7 @@ const mapStateToProps = (state) => {
     };
 };
 
-export default connect(mapStateToProps, actions)(HomeScreen);
+export default connect(
+    mapStateToProps,
+    actions
+)(HomeScreen);
