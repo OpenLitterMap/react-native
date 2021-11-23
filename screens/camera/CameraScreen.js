@@ -198,7 +198,6 @@ class CameraScreen extends React.Component {
 
     /**
      * Render No Permissions
-     *
      */
     renderNoPermissions() {
         return (
@@ -230,7 +229,7 @@ class CameraScreen extends React.Component {
                             // take user to location setting
                             // INFO: IOS only
                             // TODO: find a way to do the same in android without external libs
-                            iosUrl = 'App-Prefs:Privacy&path=LOCATION';
+                            let iosUrl = 'App-Prefs:Privacy&path=LOCATION';
                             if (Platform.OS === 'ios') {
                                 const result = await Linking.canOpenURL(iosUrl);
                                 result &&
