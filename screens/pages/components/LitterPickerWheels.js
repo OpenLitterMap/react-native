@@ -1,5 +1,5 @@
 import React, { PureComponent } from 'react';
-import { Dimensions, Platform, View } from 'react-native';
+import { Dimensions, Platform, View, StyleSheet } from 'react-native';
 import { getTranslation } from 'react-native-translation';
 import { Picker } from '@react-native-community/picker'; // removed from RN-core Apr 2020
 import { connect } from 'react-redux';
@@ -78,7 +78,7 @@ class LitterPickerWheels extends PureComponent {
     }
 }
 
-const styles = {
+const styles = StyleSheet.create({
     iPickerView: {
         flexDirection: 'row',
         backgroundColor: '#95a5a6',
@@ -109,7 +109,7 @@ const styles = {
         opacity: 1,
         alignItems: 'center'
     }
-};
+});
 
 export default connect(
     null,

@@ -5,13 +5,15 @@ import {
     FlatList,
     Platform,
     SafeAreaView,
-    TouchableHighlight,
-    View
+    StyleSheet,
+    View,
+    Pressable
 } from 'react-native';
 import { TransText } from 'react-native-translation';
 import { Card } from 'react-native-elements';
 import * as actions from '../../../actions';
 import { connect } from 'react-redux';
+import { Body, Colors } from '../../components';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -58,32 +60,24 @@ class LitterCategories extends PureComponent {
      */
     renderCategory(category) {
         return (
-            <TouchableHighlight
+            <Pressable
                 onPress={this.changeCategory.bind(this, category.title)}
                 key={category.id}
                 underlayColor="transparent">
-                <Card
-                    containerStyle={[
+                <View
+                    style={[
                         styles.card,
-                        category.title === this.props.category.title
-                            ? styles.selectedCard
-                            : ''
-                    ]}
-                    style={styles.category}
-                    wrapperStyle={{
-                        alignItems: 'center',
-                        justifyContent: 'center'
-                    }}>
+                        category.title === this.props.category.title &&
+                            styles.selectedCard
+                    ]}>
                     <Image source={category.path} style={styles.image} />
-                    <TransText
-                        style={styles.text}
-                        key={category.id}
+                    <Body
                         dictionary={`${this.props.lang}.litter.categories.${
                             category.title
                         }`}
                     />
-                </Card>
-            </TouchableHighlight>
+                </View>
+            </Pressable>
         );
     }
 
@@ -95,6 +89,7 @@ class LitterCategories extends PureComponent {
             <View style={this.computeStyle()}>
                 <SafeAreaView>
                     <FlatList
+                        showsHorizontalScrollIndicator={false}
                         data={this.props.categories}
                         horizontal={true}
                         renderItem={({ item }) => this.renderCategory(item)}
@@ -107,16 +102,23 @@ class LitterCategories extends PureComponent {
     }
 }
 
-const styles = {
+const styles = StyleSheet.create({
     biggerContainer: {
         height: SCREEN_HEIGHT * 0.17,
         position: 'absolute',
         zIndex: 1
     },
     card: {
-        marginBottom: 20,
-        borderRadius: 6,
-        paddingTop: 10
+        backgroundColor: Colors.white,
+        height: 100,
+        minWidth: 100,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginHorizontal: 10,
+        borderRadius: 8,
+        borderWidth: 2,
+        borderColor: Colors.white,
+        padding: 8
     },
     container: {
         height: SCREEN_HEIGHT * 0.125,
@@ -124,7 +126,8 @@ const styles = {
         zIndex: 1
     },
     selectedCard: {
-        backgroundColor: '#0be881'
+        backgroundColor: Colors.accentLight,
+        borderColor: Colors.accent
     },
     category: {
         alignItems: 'center',
@@ -143,7 +146,7 @@ const styles = {
     text: {
         fontSize: SCREEN_HEIGHT * 0.02
     }
-};
+});
 
 export default connect(
     null,
