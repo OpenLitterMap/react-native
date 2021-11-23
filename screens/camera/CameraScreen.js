@@ -198,7 +198,6 @@ class CameraScreen extends React.Component {
 
     /**
      * Render No Permissions
-     *
      */
     renderNoPermissions() {
         return (
@@ -230,7 +229,7 @@ class CameraScreen extends React.Component {
                             // take user to location setting
                             // INFO: IOS only
                             // TODO: find a way to do the same in android without external libs
-                            iosUrl = 'App-Prefs:Privacy&path=LOCATION';
+                            let iosUrl = 'App-Prefs:Privacy&path=LOCATION';
                             if (Platform.OS === 'ios') {
                                 const result = await Linking.canOpenURL(iosUrl);
                                 result &&
@@ -254,15 +253,7 @@ class CameraScreen extends React.Component {
                         // timestamp in seconds
                         const date = Date.now() / 1000;
 
-                        // We need to generate a better filename for android
-                        const filename =
-                            Platform.OS === 'android'
-                                ? base64.encode(date) + '.jpg'
-                                : result.uri.split('/').pop();
-
-                        // Example:
-                        // iOS 96790415-6575-4CED-BA64-D6E8B16BF10D.jpg
-                        // Android...
+                        const filename = result.uri.split('/').pop();
 
                         this.props.addImages(
                             [
