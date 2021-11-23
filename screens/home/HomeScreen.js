@@ -411,10 +411,11 @@ class HomeScreen extends PureComponent {
 
                     ImageData.append('lat', img.lat);
                     ImageData.append('lon', img.lon);
-                    ImageData.append('date', img.date);
+                    ImageData.append('date', parseInt(img.date));
                     ImageData.append('picked_up', img.picked_up ? 1 : 0);
                     ImageData.append('model', model);
                     ImageData.append('tags', JSON.stringify(img.tags));
+                    ImageData.append('test', 123);
 
                     // Upload image
                     const response = await this.props.uploadImage(
