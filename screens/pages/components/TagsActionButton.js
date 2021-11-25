@@ -3,33 +3,48 @@ import { Pressable, StyleSheet, Animated, View, Easing } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { Colors } from '../../components';
 
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 class TagsActionButton extends Component {
     state = {
         animation: new Animated.Value(0),
         diagonalAnimation: new Animated.Value(0),
-        // mainButtonAnimation: new Animated.Value(1),
-        isClosed: true,
-        rotationAnimation: new Animated.Value(0)
+        mainButtonAnimation: new Animated.Value(0),
+        isClosed: true
+        // rotationAnimation: new Animated.Value()
     };
 
     startAnimation = () => {
         Animated.timing(this.state.animation, {
             toValue: -150,
             duration: 500,
-            useNativeDriver: true
-            // easing: Easing.elastic(1)
+            useNativeDriver: true,
+            easing: Easing.elastic(1)
+        }).start();
+
+        Animated.timing(this.state.mainButtonAnimation, {
+            toValue: 1,
+            duration: 500,
+            useNativeDriver: true,
+            easing: Easing.elastic(1)
         }).start();
 
         Animated.timing(this.state.diagonalAnimation, {
             toValue: -100,
             duration: 500,
-            useNativeDriver: true
-            // easing: Easing.elastic(1)
+            useNativeDriver: true,
+            easing: Easing.elastic(1)
         }).start(() => this.setState({ isClosed: false }));
     };
 
     returnAnimation = () => {
         Animated.timing(this.state.animation, {
+            toValue: 0,
+            duration: 500,
+            useNativeDriver: true,
+            easing: Easing.elastic(1)
+        }).start();
+
+        Animated.timing(this.state.mainButtonAnimation, {
             toValue: 0,
             duration: 500,
             useNativeDriver: true,
@@ -60,13 +75,18 @@ class TagsActionButton extends Component {
             transform: [{ translateX: this.state.animation }]
         };
 
-        const interpolate = this.state.rotationAnimation.interpolate({
+        const interpolate = this.state.mainButtonAnimation.interpolate({
             inputRange: [0, 1],
-            outputRange: ['0deg', '90deg']
+            outputRange: ['0deg', '-45deg']
         });
 
         const animatedMainButton = {
-            transform: [{ translateY: this.state.rotationAnimation }]
+            // opacity: this.state.mainButtonAnimation,
+            transform: [
+                {
+                    rotate: interpolate
+                }
+            ]
         };
         return (
             <View>
@@ -93,15 +113,16 @@ class TagsActionButton extends Component {
                             size={28}
                         />
                     </Animated.View>
-                    <Pressable
-                        style={[styles.mainButton]}
+
+                    <AnimatedPressable
+                        style={[styles.mainButton, animatedMainButton]}
                         onPress={() =>
                             this.state.isClosed
                                 ? this.startAnimation()
                                 : this.returnAnimation()
                         }>
                         <Icon name="ios-add" color={Colors.white} size={42} />
-                    </Pressable>
+                    </AnimatedPressable>
                 </View>
             </View>
         );
