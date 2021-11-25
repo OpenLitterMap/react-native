@@ -1,4 +1,4 @@
-import React, { PureComponent } from 'react';
+import React, { PureComponent, createRef } from 'react';
 import {
     Dimensions,
     Keyboard,
@@ -6,8 +6,10 @@ import {
     SafeAreaView,
     StatusBar,
     TouchableOpacity,
-    View
+    View,
+    Text
 } from 'react-native';
+import ActionSheet from 'react-native-actions-sheet';
 import { TransText } from 'react-native-translation';
 import { Icon } from 'react-native-elements';
 import Swiper from 'react-native-swiper';
@@ -39,8 +41,7 @@ class AddTags extends PureComponent {
             topPadding: 0,
             height: 0
         };
-
-        this.closeKeyboardAndroid = this.closeKeyboardAndroid.bind(this);
+        this.actionsheetRef = createRef();
     }
 
     /**
@@ -48,65 +49,12 @@ class AddTags extends PureComponent {
      *
      * @photo_actions.js
      */
-    async componentDidMount() {
-        // this is necessary to allow the user to click on text input because of a bug with keyboardAvoidingView on Android
-        if (Platform.OS === 'android') {
-            await this.setState({ height: SCREEN_HEIGHT * 0.1 });
-        }
-
-        this.keyboardDidShowListener = Keyboard.addListener(
-            'keyboardDidShow',
-            this._keyboardDidShow.bind(this)
-        );
-        this.keyboardDidHideListener = Keyboard.addListener(
-            'keyboardDidHide',
-            this._keyboardDidHide.bind(this)
-        );
-    }
+    async componentDidMount() {}
 
     /**
      * Cancel event listeners
      */
-    componentWillUnmount() {
-        this.keyboardDidShowListener.remove();
-        this.keyboardDidHideListener.remove();
-    }
-
-    /**
-     * Set params when keyboard has been opened to show bottom nav panel
-     * We need to change the height-offset based on device type
-     */
-    _keyboardDidShow(e) {
-        let height = 0;
-        let bottomHeight = 0; // Height on the "suggested tags" container
-
-        if (Platform.OS === 'android') {
-            height = 0;
-            bottomHeight = 0;
-        } else {
-            // if "iPhone 10+"
-            let x = DeviceInfo.getModel().split(' ')[1];
-
-            bottomHeight = 0.2025;
-
-            if (x.includes('X') || parseInt(x) >= 10) {
-                height = 0.345;
-            }
-            // iPhone 5,6,7,8
-            else {
-                height = 0.39;
-            }
-        }
-
-        height = height * SCREEN_HEIGHT;
-        bottomHeight = bottomHeight * SCREEN_HEIGHT;
-
-        this.setState({
-            keyboardOpen: true,
-            bottomHeight: bottomHeight,
-            height: height
-        });
-    }
+    componentWillUnmount() {}
 
     /**
      * Set params when keyboard has been closed to hide bottom nav panel
@@ -199,12 +147,12 @@ class AddTags extends PureComponent {
                     <StatusBar hidden />
 
                     {/* First - Top Bar position: 'absolute'  */}
-                    <LitterCategories
+                    {/* <LitterCategories
                         categories={CATEGORIES}
                         category={this.props.category}
                         lang={this.props.lang}
                         callback={this.categoryClicked}
-                    />
+                    /> */}
 
                     {/* Second - Image. Height: 80% */}
                     <Swiper
@@ -213,14 +161,14 @@ class AddTags extends PureComponent {
                         showsPagination={false}
                         keyboardShouldPersistTaps="handled"
                         ref="imageSwiper"
-                        onIndexChanged={(index) =>
+                        onIndexChanged={index =>
                             this.swiperIndexChanged(index)
                         }>
                         {this._renderLitterImage()}
                     </Swiper>
 
                     {/* Third - Tags. position: absolute */}
-                    <LitterTags
+                    {/* <LitterTags
                         tags={this.props.images[this.props.swiperIndex]?.tags}
                         previousTags={this.props.previousTags}
                         positions={this.props.positions}
@@ -228,11 +176,29 @@ class AddTags extends PureComponent {
                         keyboardOpen={this.state.keyboardOpen}
                         lang={this.props.lang}
                         swiperIndex={swiperIndex}
-                    />
+                    /> */}
 
                     {/* Fourth - bottomContainer 20% height */}
-                    <View style={styles.bottomContainer}>
-                        {/* 4.1 - LitterPickerWheels */}
+                    {/* <View style={styles.bottomContainer} /> */}
+                    {/* <TouchableOpacity
+                        onPress={() => {
+                            this.actionsheetRef.current?.setModalVisible();
+                        }}>
+                        <Text>Open ActionSheet</Text>
+                    </TouchableOpacity> */}
+
+                    {/* <LitterBottomSearch
+                        keyboardOpen={this.state.keyboardOpen}
+                        suggestedTags={this.props.suggestedTags}
+                        height={this.state.height}
+                        bottomHeight={this.state.bottomHeight}
+                        presence={this.props.presence}
+                        lang={this.props.lang}
+                        swiperIndex={swiperIndex}
+                    /> */}
+                </View>
+                {/* <ActionSheet ref={this.actionsheetRef}>
+                    <View>
                         <View style={this._computePickerWheelsContainer()}>
                             <LitterPickerWheels
                                 item={this.props.item}
@@ -244,13 +210,10 @@ class AddTags extends PureComponent {
                             />
                         </View>
 
-                        {/* 4.2 - <- Previous Image || Add Tags || Next Image -> */}
                         <View style={this._computeButtonsContainer()}>
-                            {/* When swiperIndex is 0, don't show the previousImageArrow */}
                             {swiperIndex === 0 && (
                                 <View style={{ flex: 0.15 }} />
                             )}
-                            {/* Only show previousImage when swiperIndex is greater than 0 */}
                             {swiperIndex > 0 && (
                                 <TouchableOpacity
                                     onPress={this.previousImage.bind(this)}
@@ -262,7 +225,6 @@ class AddTags extends PureComponent {
                                 </TouchableOpacity>
                             )}
 
-                            {/* 4.2.2 - Add Tag or Increment Quantity */}
                             <TouchableOpacity
                                 onPress={this.addTag.bind(this)}
                                 style={styles.addTagButtonOuter}
@@ -279,7 +241,6 @@ class AddTags extends PureComponent {
                                 </View>
                             </TouchableOpacity>
 
-                            {/* Hide the nextImageArrow  */}
                             {swiperIndex === IMAGES_COUNT - 1 && (
                                 <View style={{ flex: 0.15 }} />
                             )}
@@ -295,20 +256,17 @@ class AddTags extends PureComponent {
                                     </TouchableOpacity>
                                 )}
                         </View>
+                        <LitterBottomSearch
+                            keyboardOpen={this.state.keyboardOpen}
+                            suggestedTags={this.props.suggestedTags}
+                            height={this.state.height}
+                            bottomHeight={this.state.bottomHeight}
+                            presence={this.props.presence}
+                            lang={this.props.lang}
+                            swiperIndex={swiperIndex}
+                        />
                     </View>
-
-                    {/* 4.3 - Bottom Input - Search All Tags */}
-                    <LitterBottomSearch
-                        keyboardOpen={this.state.keyboardOpen}
-                        suggestedTags={this.props.suggestedTags}
-                        height={this.state.height}
-                        bottomHeight={this.state.bottomHeight}
-                        presence={this.props.presence}
-                        lang={this.props.lang}
-                        swiperIndex={swiperIndex}
-                    />
-                </View>
-                <SafeAreaView style={{ flex: 0 }} />
+                </ActionSheet> */}
             </View>
         );
     }
@@ -320,24 +278,24 @@ class AddTags extends PureComponent {
      *
      * @hide on Android when keyboard is open
      */
-    _computePickerWheelsContainer() {
-        if (this.state.keyboardOpen) {
-            return styles.hide;
-        }
+    // _computePickerWheelsContainer() {
+    //     if (this.state.keyboardOpen) {
+    //         return styles.hide;
+    //     }
 
-        if (Platform.OS === 'android') {
-            return styles.pickerWheelsContainer;
-        }
+    //     if (Platform.OS === 'android') {
+    //         return styles.pickerWheelsContainer;
+    //     }
 
-        // if "iPhone 10+", return 17% card height
-        let x = DeviceInfo.getModel().split(' ')[1];
+    //     // if "iPhone 10+", return 17% card height
+    //     let x = DeviceInfo.getModel().split(' ')[1];
 
-        if (x.includes('X') || parseInt(x) >= 10) {
-            return styles.iPickerWheelsContainer;
-        }
+    //     if (x.includes('X') || parseInt(x) >= 10) {
+    //         return styles.iPickerWheelsContainer;
+    //     }
 
-        return styles.pickerWheelsContainer;
-    }
+    //     return styles.pickerWheelsContainer;
+    // }
 
     /**
      * Container for Confirm, Add Tag buttons
@@ -346,24 +304,24 @@ class AddTags extends PureComponent {
      *
      * @hide on Android when keyboard is open
      */
-    _computeButtonsContainer() {
-        if (this.state.keyboardOpen) {
-            return styles.hide;
-        }
+    // _computeButtonsContainer() {
+    //     if (this.state.keyboardOpen) {
+    //         return styles.hide;
+    //     }
 
-        if (Platform.OS === 'android') {
-            return styles.buttonsContainer;
-        }
+    //     if (Platform.OS === 'android') {
+    //         return styles.buttonsContainer;
+    //     }
 
-        // if iPhone 10+, return 17% card height
-        let x = DeviceInfo.getModel().split(' ')[1];
+    //     // if iPhone 10+, return 17% card height
+    //     let x = DeviceInfo.getModel().split(' ')[1];
 
-        if (x.includes('X') || parseInt(x) >= 10) {
-            return styles.iButtonsContainer;
-        }
+    //     if (x.includes('X') || parseInt(x) >= 10) {
+    //         return styles.iButtonsContainer;
+    //     }
 
-        return styles.buttonsContainer;
-    }
+    //     return styles.buttonsContainer;
+    // }
 
     /**
      * Check length of tags object
@@ -411,7 +369,7 @@ class AddTags extends PureComponent {
      *
      * @param newGlobalIndex (int): the global index across all photo types.
      */
-    swiperIndexChanged = (newGlobalIndex) => {
+    swiperIndexChanged = newGlobalIndex => {
         console.log('swiperIndexChanged', newGlobalIndex);
 
         // Without this, we get "cannot update a component from within the function body of another component"
@@ -600,7 +558,7 @@ const styles = {
     }
 };
 
-const mapStateToProps = (state) => {
+const mapStateToProps = state => {
     return {
         category: state.litter.category,
         collectionLength: state.litter.collectionLength,
@@ -629,4 +587,7 @@ const mapStateToProps = (state) => {
     };
 };
 
-export default connect(mapStateToProps, actions)(AddTags);
+export default connect(
+    mapStateToProps,
+    actions
+)(AddTags);

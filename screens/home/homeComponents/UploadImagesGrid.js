@@ -24,6 +24,7 @@ class UploadImagesGrid extends PureComponent {
 
             // litter.js
             this.props.swiperIndexChanged(index);
+            // this.props.navigation.navigate("ADD_TAGS")
         }
     }
 

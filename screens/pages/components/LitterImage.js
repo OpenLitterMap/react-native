@@ -29,26 +29,6 @@ class LitterImage extends PureComponent {
         };
     }
 
-    // ScrollView Image - Reset Zoom
-    handleResetZoomScale = event => {
-        this.scrollResponderRef.scrollResponderZoomTo({
-            x: 0,
-            y: 0,
-            width: this.props.zoomWidth,
-            height: this.props.zoomHeight,
-            animated: true
-        });
-    };
-
-    // The ScrollView has a scrollResponder which allows us to access
-    // more methods to control the ScrollView component
-    setZoomRef = node => {
-        if (node) {
-            this.zoomRef = node;
-            this.scrollResponderRef = this.zoomRef.getScrollResponder();
-        }
-    };
-
     _imageLoaded() {
         this.setState({ imageLoaded: true });
     }
@@ -62,31 +42,18 @@ class LitterImage extends PureComponent {
      */
     render() {
         return (
-            <View>
-                <ScrollView
-                    contentContainerStyle={{
-                        alignItems: 'center',
-                        justifyContent: 'center'
-                    }}
-                    maximumZoomScale={this.props.maximumZoomScale}
-                    minimumZoomScale={this.props.minimumZoomScale}
-                    showsHorizontalScrollIndicator={false}
-                    showsVerticalScrollIndicator={false}
-                    ref={this.setZoomRef}
-                    scrollEnabled={true}
-                    style={{ overflow: 'hidden' }}>
-                    <Image
-                        resizeMode="cover"
-                        source={{ uri: this.props.photoSelected.uri }}
-                        style={styles.image}
-                        onLoad={this._imageLoaded.bind(this)}
-                    />
+            <View style={{ backgroundColor: 'black' }}>
+                <Image
+                    resizeMode="contain"
+                    source={{ uri: this.props.photoSelected.uri }}
+                    style={styles.image}
+                    onLoad={this._imageLoaded.bind(this)}
+                />
 
-                    <ActivityIndicator
-                        style={styles.activityIndicator}
-                        animating={!this.state.imageLoaded}
-                    />
-                </ScrollView>
+                <ActivityIndicator
+                    style={styles.activityIndicator}
+                    animating={!this.state.imageLoaded}
+                />
             </View>
         );
     }
@@ -100,26 +67,9 @@ const styles = {
         top: 0,
         bottom: 0
     },
-    box: {
-        width: SCREEN_WIDTH,
-        height: 500,
-        position: 'absolute',
-        zIndex: 99,
-        top: SCREEN_HEIGHT * 0.15,
-        color: 'black',
-        borderWidth: 10
-    },
-    emptyContainer: {
-        alignItems: 'center',
-        backgroundColor: '#3498db',
-        flex: 0.8,
-        justifyContent: 'center',
-        paddingLeft: SCREEN_WIDTH * 0.1,
-        paddingRight: SCREEN_WIDTH * 0.1
-    },
     image: {
         width: SCREEN_WIDTH,
-        height: SCREEN_HEIGHT * 0.8
+        height: SCREEN_HEIGHT
     }
 };
 
