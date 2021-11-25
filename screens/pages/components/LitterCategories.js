@@ -109,15 +109,15 @@ const styles = StyleSheet.create({
         zIndex: 1
     },
     card: {
-        backgroundColor: Colors.white,
+        // backgroundColor: Colors.white,
         height: 100,
         minWidth: 100,
         justifyContent: 'center',
         alignItems: 'center',
         marginHorizontal: 10,
         borderRadius: 8,
-        borderWidth: 2,
-        borderColor: Colors.white,
+        // borderWidth: 2,
+        // borderColor: Colors.white,
         padding: 8
     },
     container: {
@@ -126,8 +126,8 @@ const styles = StyleSheet.create({
         zIndex: 1
     },
     selectedCard: {
-        backgroundColor: Colors.accentLight,
-        borderColor: Colors.accent
+        backgroundColor: Colors.accentLight
+        // borderColor: Colors.accent
     },
     category: {
         alignItems: 'center',
@@ -139,9 +139,9 @@ const styles = StyleSheet.create({
     },
     image: {
         borderRadius: 6,
-        height: SCREEN_HEIGHT * 0.05,
+        height: 30,
         resizeMode: 'contain',
-        width: SCREEN_WIDTH * 0.09
+        width: 30
     },
     text: {
         fontSize: SCREEN_HEIGHT * 0.02

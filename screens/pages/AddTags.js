@@ -133,6 +133,10 @@ class AddTags extends PureComponent {
         this.closeKeyboardAndroid();
     };
 
+    openActionSheet = () => {
+        this.actionsheetRef.current?.setModalVisible();
+    };
+
     /**
      * The LitterPicker component
      */
@@ -278,24 +282,24 @@ class AddTags extends PureComponent {
      *
      * @hide on Android when keyboard is open
      */
-    // _computePickerWheelsContainer() {
-    //     if (this.state.keyboardOpen) {
-    //         return styles.hide;
-    //     }
+    _computePickerWheelsContainer() {
+        // if (this.state.keyboardOpen) {
+        //     return styles.hide;
+        // }
 
-    //     if (Platform.OS === 'android') {
-    //         return styles.pickerWheelsContainer;
-    //     }
+        if (Platform.OS === 'android') {
+            return styles.pickerWheelsContainer;
+        }
 
-    //     // if "iPhone 10+", return 17% card height
-    //     let x = DeviceInfo.getModel().split(' ')[1];
+        // if "iPhone 10+", return 17% card height
+        let x = DeviceInfo.getModel().split(' ')[1];
 
-    //     if (x.includes('X') || parseInt(x) >= 10) {
-    //         return styles.iPickerWheelsContainer;
-    //     }
+        if (x.includes('X') || parseInt(x) >= 10) {
+            return styles.iPickerWheelsContainer;
+        }
 
-    //     return styles.pickerWheelsContainer;
-    // }
+        return styles.pickerWheelsContainer;
+    }
 
     /**
      * Container for Confirm, Add Tag buttons
@@ -304,24 +308,24 @@ class AddTags extends PureComponent {
      *
      * @hide on Android when keyboard is open
      */
-    // _computeButtonsContainer() {
-    //     if (this.state.keyboardOpen) {
-    //         return styles.hide;
-    //     }
+    _computeButtonsContainer() {
+        // if (this.state.keyboardOpen) {
+        //     return styles.hide;
+        // }
 
-    //     if (Platform.OS === 'android') {
-    //         return styles.buttonsContainer;
-    //     }
+        if (Platform.OS === 'android') {
+            return styles.buttonsContainer;
+        }
 
-    //     // if iPhone 10+, return 17% card height
-    //     let x = DeviceInfo.getModel().split(' ')[1];
+        // if iPhone 10+, return 17% card height
+        let x = DeviceInfo.getModel().split(' ')[1];
 
-    //     if (x.includes('X') || parseInt(x) >= 10) {
-    //         return styles.iButtonsContainer;
-    //     }
+        if (x.includes('X') || parseInt(x) >= 10) {
+            return styles.iButtonsContainer;
+        }
 
-    //     return styles.buttonsContainer;
-    // }
+        return styles.buttonsContainer;
+    }
 
     /**
      * Check length of tags object
@@ -401,7 +405,14 @@ class AddTags extends PureComponent {
         return this.props.images.map((image, index) => {
             // Only render one image
             if (index === this.props.swiperIndex) {
-                return <LitterImage key={image.id} photoSelected={image} />;
+                return (
+                    <LitterImage
+                        category={this.props.category}
+                        lang={this.props.lang}
+                        key={image.id}
+                        photoSelected={image}
+                    />
+                );
             }
 
             // Otherwise, just return an empty view

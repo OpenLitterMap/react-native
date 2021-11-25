@@ -97,21 +97,27 @@ class TagsActionButton extends Component {
                             size={28}
                         />
                     </Animated.View>
-                    <Animated.View
+                    <AnimatedPressable
+                        onPress={() => {
+                            this.returnAnimation();
+                            this.props.toggleOverlay();
+                            this.props.openTagSheet();
+                        }}
                         style={[styles.smallButton, diagonalAnimatedStyle]}>
                         <Icon
                             name="ios-pricetags-outline"
                             color={Colors.white}
                             size={28}
                         />
-                    </Animated.View>
-                    <Animated.View style={[styles.smallButton, animatedXStyle]}>
+                    </AnimatedPressable>
+                    <AnimatedPressable
+                        style={[styles.smallButton, animatedXStyle]}>
                         <Icon
                             name="ios-cloud-upload-outline"
                             color={Colors.white}
                             size={28}
                         />
-                    </Animated.View>
+                    </AnimatedPressable>
 
                     <AnimatedPressable
                         style={[styles.mainButton, animatedMainButton]}

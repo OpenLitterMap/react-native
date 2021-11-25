@@ -1,14 +1,20 @@
-import React, { PureComponent } from 'react';
+import React, { PureComponent, createRef } from 'react';
 import {
     ActivityIndicator,
     Dimensions,
     Image,
     ScrollView,
+    Pressable,
+    Text,
     View
 } from 'react-native';
+import ActionSheet from 'react-native-actions-sheet';
 import * as actions from '../../../actions';
 import { connect } from 'react-redux';
 import TagsActionButton from './TagsActionButton';
+import LitterCategories from './LitterCategories';
+import CATEGORIES from '../../../assets/data/categories';
+
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 
@@ -29,6 +35,7 @@ class LitterImage extends PureComponent {
             imageLoaded: false,
             isOverlayDisplayed: false
         };
+        this.actionsheetRef = createRef();
     }
 
     _imageLoaded() {
@@ -70,12 +77,29 @@ class LitterImage extends PureComponent {
                 )}
 
                 <TagsActionButton
+                    openTagSheet={() => {
+                        this.actionsheetRef.current?.setModalVisible();
+                    }}
                     toggleOverlay={() => {
                         this.setState(previousState => ({
                             isOverlayDisplayed: !previousState.isOverlayDisplayed
                         }));
                     }}
                 />
+                <ActionSheet ref={this.actionsheetRef}>
+                    <View
+                        style={{
+                            height: 200,
+                            maxWidth: SCREEN_WIDTH
+                        }}>
+                        <LitterCategories
+                            categories={CATEGORIES}
+                            category={this.props.category}
+                            lang={this.props.lang}
+                            callback={this.categoryClicked}
+                        />
+                    </View>
+                </ActionSheet>
             </View>
         );
     }
