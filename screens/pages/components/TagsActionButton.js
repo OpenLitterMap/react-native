@@ -10,7 +10,6 @@ class TagsActionButton extends Component {
         diagonalAnimation: new Animated.Value(0),
         mainButtonAnimation: new Animated.Value(0),
         isClosed: true
-        // rotationAnimation: new Animated.Value()
     };
 
     startAnimation = () => {
@@ -116,11 +115,12 @@ class TagsActionButton extends Component {
 
                     <AnimatedPressable
                         style={[styles.mainButton, animatedMainButton]}
-                        onPress={() =>
+                        onPress={() => {
+                            this.props.toggleOverlay();
                             this.state.isClosed
                                 ? this.startAnimation()
-                                : this.returnAnimation()
-                        }>
+                                : this.returnAnimation();
+                        }}>
                         <Icon name="ios-add" color={Colors.white} size={42} />
                     </AnimatedPressable>
                 </View>
@@ -133,7 +133,7 @@ export default TagsActionButton;
 
 const styles = StyleSheet.create({
     container: {
-        zIndex: 2,
+        // zIndex: 1,
         position: 'absolute',
         bottom: 50,
         right: 50,

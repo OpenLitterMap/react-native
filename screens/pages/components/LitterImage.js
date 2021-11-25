@@ -26,7 +26,8 @@ class LitterImage extends PureComponent {
         super(props);
 
         this.state = {
-            imageLoaded: false
+            imageLoaded: false,
+            isOverlayDisplayed: false
         };
     }
 
@@ -45,7 +46,7 @@ class LitterImage extends PureComponent {
         return (
             <View style={{ backgroundColor: 'black' }}>
                 <Image
-                    resizeMode="contain"
+                    resizeMode="cover"
                     source={{ uri: this.props.photoSelected.uri }}
                     style={styles.image}
                     onLoad={this._imageLoaded.bind(this)}
@@ -55,7 +56,26 @@ class LitterImage extends PureComponent {
                     style={styles.activityIndicator}
                     animating={!this.state.imageLoaded}
                 />
-                <TagsActionButton />
+                {this.state.isOverlayDisplayed && (
+                    <View
+                        style={{
+                            position: 'absolute',
+                            flex: 1,
+                            backgroundColor: 'black',
+                            opacity: 0.4,
+                            width: SCREEN_WIDTH,
+                            height: SCREEN_HEIGHT
+                        }}
+                    />
+                )}
+
+                <TagsActionButton
+                    toggleOverlay={() => {
+                        this.setState(previousState => ({
+                            isOverlayDisplayed: !previousState.isOverlayDisplayed
+                        }));
+                    }}
+                />
             </View>
         );
     }
