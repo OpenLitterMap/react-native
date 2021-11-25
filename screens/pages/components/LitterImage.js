@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import * as actions from '../../../actions';
 import { connect } from 'react-redux';
+import TagsActionButton from './TagsActionButton';
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 
@@ -54,6 +55,7 @@ class LitterImage extends PureComponent {
                     style={styles.activityIndicator}
                     animating={!this.state.imageLoaded}
                 />
+                <TagsActionButton />
             </View>
         );
     }
