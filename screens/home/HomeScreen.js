@@ -415,7 +415,6 @@ class HomeScreen extends PureComponent {
                     ImageData.append('picked_up', img.picked_up ? 1 : 0);
                     ImageData.append('model', model);
                     ImageData.append('tags', JSON.stringify(img.tags));
-                    ImageData.append('test', 123);
 
                     // Upload image
                     const response = await this.props.uploadImage(
@@ -467,8 +466,10 @@ class HomeScreen extends PureComponent {
         }
 
         //  Last step - if all photos have been deleted, close modal
-        if (this.state.uploaded + this.state.failedUpload === this.state.total)
-        {
+        if (
+            this.state.uploaded + this.state.failedUpload ===
+            this.state.total
+        ) {
             // shared_actions
             this.props.toggleUpload();
             this.props.toggleThankYou();
