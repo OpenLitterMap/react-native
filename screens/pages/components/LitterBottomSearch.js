@@ -20,29 +20,8 @@ class LitterBottomSearch extends PureComponent {
         super(props);
 
         this.state = {
-            text: '',
-            keyboardStatus: undefined
+            text: ''
         };
-    }
-
-    componentDidMount() {
-        this.keyboardDidShowSubscription = Keyboard.addListener(
-            'keyboardDidShow',
-            () => {
-                this.setState({ keyboardStatus: 'KEYBOARD_SHOWN' });
-            }
-        );
-        this.keyboardDidHideSubscription = Keyboard.addListener(
-            'keyboardDidHide',
-            () => {
-                this.setState({ keyboardStatus: 'KEYBOARD_HIDDEN' });
-            }
-        );
-    }
-
-    componentWillUnmount() {
-        this.keyboardDidShowSubscription.remove();
-        this.keyboardDidHideSubscription.remove();
     }
 
     /**
@@ -123,7 +102,6 @@ class LitterBottomSearch extends PureComponent {
     render() {
         const lang = this.props.lang;
         const suggest = getTranslation(`${lang}.litter.tags.type-to-suggest`);
-
         return (
             <View>
                 <View style={{ paddingHorizontal: 20, paddingVertical: 10 }}>
@@ -145,7 +123,7 @@ class LitterBottomSearch extends PureComponent {
                     />
                 </View>
 
-                {this.state.keyboardStatus && (
+                {this.props.isKeyboardOpen && (
                     <View style={styles.tagsOuterContainer}>
                         <Caption
                             style={styles.suggest}

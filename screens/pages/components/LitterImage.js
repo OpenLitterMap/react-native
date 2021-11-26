@@ -3,6 +3,7 @@ import {
     ActivityIndicator,
     Dimensions,
     Image,
+    Keyboard,
     ScrollView,
     Pressable,
     Text,
@@ -14,6 +15,7 @@ import { connect } from 'react-redux';
 import TagsActionButton from './TagsActionButton';
 import LitterCategories from './LitterCategories';
 import LitterBottomSearch from './LitterBottomSearch';
+import LitterPickerWheels from './LitterPickerWheels';
 import LitterTags from './LitterTags';
 import CATEGORIES from '../../../assets/data/categories';
 
@@ -35,15 +37,36 @@ class LitterImage extends PureComponent {
 
         this.state = {
             imageLoaded: false,
-            isOverlayDisplayed: false
+            isOverlayDisplayed: false,
+            isKeyboardOpen: false
         };
         this.actionsheetRef = createRef();
     }
 
-    // TODO: remove this -- only for dev
     componentDidMount() {
+        // TODO: remove this -- only for dev
         this.actionsheetRef.current?.setModalVisible(true);
+        this.keyboardDidShowSubscription = Keyboard.addListener(
+            'keyboardDidShow',
+            () => {
+                console.log('OPENED');
+                this.setState({ isKeyboardOpen: true });
+            }
+        );
+        this.keyboardDidHideSubscription = Keyboard.addListener(
+            'keyboardDidHide',
+            () => {
+                console.log('CLOSED');
+                this.setState({ isKeyboardOpen: false });
+            }
+        );
     }
+
+    componentWillUnmount() {
+        this.keyboardDidShowSubscription.remove();
+        this.keyboardDidHideSubscription.remove();
+    }
+
     _imageLoaded() {
         this.setState({ imageLoaded: true });
     }
@@ -93,7 +116,10 @@ class LitterImage extends PureComponent {
                     }}
                 />
 
-                <ActionSheet ref={this.actionsheetRef}>
+                <ActionSheet
+                    ref={this.actionsheetRef}
+                    closeOnTouchBackdrop={false}
+                    keyboardShouldPersistTaps="always">
                     <View
                         style={{
                             // height: 200,
@@ -115,7 +141,17 @@ class LitterImage extends PureComponent {
                             // height={this.state.height}
                             lang={this.props.lang}
                             swiperIndex={this.props.swiperIndex}
+                            isKeyboardOpen={this.state.isKeyboardOpen}
                         />
+                        {!this.state.isKeyboardOpen && (
+                            <LitterPickerWheels
+                                item={this.props.item}
+                                items={this.props.items}
+                                model={this.props.model}
+                                category={this.props.category}
+                                lang={this.props.lang}
+                            />
+                        )}
                     </View>
                 </ActionSheet>
             </View>
