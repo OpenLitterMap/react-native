@@ -411,6 +411,7 @@ class AddTags extends PureComponent {
                         lang={this.props.lang}
                         key={image.id}
                         photoSelected={image}
+                        swiperIndex={this.props.swiperIndex}
                     />
                 );
             }

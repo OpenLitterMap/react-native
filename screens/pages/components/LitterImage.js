@@ -13,6 +13,7 @@ import * as actions from '../../../actions';
 import { connect } from 'react-redux';
 import TagsActionButton from './TagsActionButton';
 import LitterCategories from './LitterCategories';
+import LitterBottomSearch from './LitterBottomSearch';
 import CATEGORIES from '../../../assets/data/categories';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -38,6 +39,10 @@ class LitterImage extends PureComponent {
         this.actionsheetRef = createRef();
     }
 
+    // TODO: remove this -- only for dev
+    componentDidMount() {
+        this.actionsheetRef.current?.setModalVisible(true);
+    }
     _imageLoaded() {
         this.setState({ imageLoaded: true });
     }
@@ -89,7 +94,7 @@ class LitterImage extends PureComponent {
                 <ActionSheet ref={this.actionsheetRef}>
                     <View
                         style={{
-                            height: 200,
+                            // height: 200,
                             maxWidth: SCREEN_WIDTH
                         }}>
                         <LitterCategories
@@ -97,6 +102,12 @@ class LitterImage extends PureComponent {
                             category={this.props.category}
                             lang={this.props.lang}
                             callback={this.categoryClicked}
+                        />
+                        <LitterBottomSearch
+                            suggestedTags={this.props.suggestedTags}
+                            // height={this.state.height}
+                            lang={this.props.lang}
+                            swiperIndex={this.props.swiperIndex}
                         />
                     </View>
                 </ActionSheet>

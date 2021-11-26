@@ -2,22 +2,19 @@ import React, { PureComponent } from 'react';
 import {
     Dimensions,
     FlatList,
+    Keyboard,
     KeyboardAvoidingView,
     Platform,
-    Switch,
-    Text,
     TextInput,
     TouchableOpacity,
-    TouchableHighlight,
     View,
-    Alert
+    Alert,
+    Pressable
 } from 'react-native';
 import { getTranslation, TransText } from 'react-native-translation';
-import AsyncStorage from '@react-native-community/async-storage';
-import DeviceInfo from 'react-native-device-info';
 import { connect } from 'react-redux';
 import * as actions from '../../../actions';
-import { Icon } from 'react-native-elements';
+import { Body, Caption, Colors } from '../../components';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -27,17 +24,29 @@ class LitterBottomSearch extends PureComponent {
         super(props);
 
         this.state = {
-            text: ''
+            text: '',
+            keyboardStatus: undefined
         };
     }
 
-    /**
-     * Clear text input when keyboard has been closed
-     */
-    UNSAFE_componentWillReceiveProps(props) {
-        if (props['keyboardOpen'] === false) {
-            this.setState({ text: '' });
-        }
+    componentDidMount() {
+        this.keyboardDidShowSubscription = Keyboard.addListener(
+            'keyboardDidShow',
+            () => {
+                this.setState({ keyboardStatus: 'KEYBOARD_SHOWN' });
+            }
+        );
+        this.keyboardDidHideSubscription = Keyboard.addListener(
+            'keyboardDidHide',
+            () => {
+                this.setState({ keyboardStatus: 'KEYBOARD_HIDDEN' });
+            }
+        );
+    }
+
+    componentWillUnmount() {
+        this.keyboardDidShowSubscription.remove();
+        this.keyboardDidHideSubscription.remove();
     }
 
     /**
@@ -83,130 +92,26 @@ class LitterBottomSearch extends PureComponent {
     }
 
     /**
-     * Show alert to delete an image that is being tagged
-     *
-     * Todo - translate
-     * Todo - Add Comments
-     */
-    deleteImage() {
-        const currentIndex = this.props.swiperIndex;
-
-        const { id, type } = this.props.images[currentIndex];
-
-        Alert.alert(
-            'Alert',
-            'Do you really want to delete the image?',
-            [
-                {
-                    text: 'OK',
-                    onPress: async () => {
-                        // if WEB image hit api and delete uploaded image and then delete from state
-                        // else delete from state by id
-                        if (type === 'WEB') {
-                            const photoId =
-                                this.props.images[currentIndex].photoId;
-
-                            await this.props.deleteWebImage(
-                                this.props.token,
-                                photoId,
-                                id
-                            );
-                        } else {
-                            this.props.deleteImage(id);
-                        }
-
-                        if (currentIndex === 0) {
-                            this.closeLitterPicker();
-                        } else {
-                            this.props.swiperIndexChanged(currentIndex - 1);
-                        }
-                    }
-                },
-                {
-                    text: 'Cancel',
-                    onPress: () => {
-                        console.log('image delete cancelled');
-                    }
-                }
-            ],
-            { cancelable: true }
-        );
-    }
-
-    /**
-     * iOS X+ needs bigger space (not perfect and needs another look)
-     */
-    _container() {
-        if (this.props.keyboardOpen) {
-            return Platform.OS === 'ios'
-                ? styles.openContaineriOS
-                : styles.openContainerAndroid;
-        }
-
-        // keyboard closed
-        if (Platform.OS === 'android') {
-            return styles.closedBottomContainer;
-        }
-
-        // if "iPhone 10+", return 17% card height
-        let x = DeviceInfo.getModel().split(' ')[1];
-
-        if (x.includes('X') || parseInt(x) >= 10) return styles.container;
-
-        // iPhone 5,6,7,8
-        return styles.closedBottomContainer;
-    }
-
-    /**
-     *
-     */
-    filterStyle() {
-        if (Platform.OS === 'android') {
-            return this.props.keyboardOpen
-                ? styles.textInputOpen
-                : styles.androidTextFilterClosed;
-        }
-
-        return this.props.keyboardOpen
-            ? styles.textInputOpen
-            : styles.iOSTextFilterClosed;
-    }
-
-    /**
-     * The switch has been pressed
-     *
-     * Temp removed until we can control data per image
-     */
-    handleToggleSwitch = async () => {
-        await this.props.toggleSwitch();
-
-        const A = getTranslation(
-            `${this.props.lang}.litter.presence.picked-up`
-        );
-        const B = getTranslation(
-            `${this.props.lang}.litter.presence.still-there`
-        );
-
-        return this.props.presence ? alert(A) : alert(B);
-    };
-
-    /**
      * Render a suggested tag
      */
     renderTag = ({ item }) => {
         return (
-            <TouchableOpacity
+            <Pressable
                 style={styles.tag}
                 onPress={this.addTag.bind(this, item)}>
-                <TransText
-                    style={styles.category}
-                    dictionary={`${this.props.lang}.litter.categories.${item.category}`}
+                <Caption
+                    // style={styles.category}
+                    dictionary={`${this.props.lang}.litter.categories.${
+                        item.category
+                    }`}
                 />
-                <TransText
+                <Body
                     style={styles.item}
-                    dictionary={`${this.props.lang}.litter.${item.category}.${item.key}`}
+                    dictionary={`${this.props.lang}.litter.${item.category}.${
+                        item.key
+                    }`}
                 />
-            </TouchableOpacity>
+            </Pressable>
         );
     };
 
@@ -219,104 +124,51 @@ class LitterBottomSearch extends PureComponent {
         this.props.suggestTags(text, this.props.lang);
     }
 
-    /**
-     * Render function
-     *
-     * 0 height on iOS
-     * was 33% height on Android
-     * now 0 height on Android
-     *
-     * KeyboardAvoidingView has extra padding somewhere
-     * it disappears after typing and selecting a tag
-     */
     render() {
         const lang = this.props.lang;
         const suggest = getTranslation(`${lang}.litter.tags.type-to-suggest`);
 
         return (
-            <KeyboardAvoidingView
-                style={{
-                    position: 'absolute',
-                    bottom: this.props.bottomHeight, // bottom: 0 for android
-                    left: 0,
-                    right: 0,
-                    height: this.props.height
-                }}
-                behavior={'padding'}>
-                <View style={this._container()}>
-                    <TouchableOpacity
-                        onPress={this.deleteImage.bind(this)}
-                        style={
-                            this.props.keyboardOpen ? styles.hide : styles.icon
-                        }
-                        disabled={this._checkForPhotos}>
-                        <Icon
-                            color="red"
-                            name="close"
-                            size={SCREEN_HEIGHT * 0.05}
-                        />
-                    </TouchableOpacity>
-
+            <View>
+                <View style={{ paddingHorizontal: 20, paddingVertical: 10 }}>
                     <TextInput
-                        style={this.filterStyle()}
+                        style={{
+                            width: SCREEN_WIDTH - 40,
+                            height: 60,
+                            backgroundColor: Colors.accentLight,
+                            borderRadius: 12,
+                            padding: 10
+                        }}
                         placeholder={suggest}
-                        placeholderTextColor="#ccc"
-                        onChangeText={(text) => this.updateText(text)}
+                        placeholderTextColor={Colors.muted}
+                        onChangeText={text => this.updateText(text)}
                         selectionColor="black"
                         blurOnSubmit={false}
                         clearButtonMode="always"
                         value={this.state.text}
                     />
-
-                    <TouchableOpacity
-                        onPress={this.closeLitterPicker.bind(this)}
-                        style={
-                            this.props.keyboardOpen ? styles.hide : styles.icon
-                        }
-                        disabled={this._checkForPhotos}>
-                        <Icon
-                            color="green"
-                            name="done"
-                            size={SCREEN_HEIGHT * 0.05}
-                        />
-                    </TouchableOpacity>
-
-                    {/*<View style={this.props.keyboardOpen ? styles.hide : styles.icon}>*/}
-                    {/*disabled={this._checkForPhotos}*/}
-
-                    {/* Temp comment out the switch here */}
-                    {/* We should swap this for a button that loads a modal with more actions */}
-                    {/*<Switch*/}
-                    {/*    onValueChange={this.handleToggleSwitch}*/}
-                    {/*    value={this.props.presence}*/}
-                    {/*/>*/}
-                    {/*</View>*/}
-
-                    {this.props.keyboardOpen && (
-                        <View style={styles.tagsOuterContainer}>
-                            <TransText
-                                style={styles.suggest}
-                                dictionary={`${lang}.litter.tags.suggested`}
-                                values={{
-                                    count: this.props.suggestedTags.length
-                                }}
-                            />
-
-                            <View style={styles.tagsInnerContainer}>
-                                <FlatList
-                                    data={this.props.suggestedTags}
-                                    horizontal={true}
-                                    renderItem={this.renderTag}
-                                    keyExtractor={(item, index) =>
-                                        item.key + index
-                                    }
-                                    keyboardShouldPersistTaps="handled"
-                                />
-                            </View>
-                        </View>
-                    )}
                 </View>
-            </KeyboardAvoidingView>
+
+                {this.state.keyboardStatus && (
+                    <View style={styles.tagsOuterContainer}>
+                        <Caption
+                            style={styles.suggest}
+                            dictionary={`${lang}.litter.tags.suggested`}
+                            values={{
+                                count: this.props.suggestedTags.length
+                            }}
+                        />
+
+                        <FlatList
+                            data={this.props.suggestedTags}
+                            horizontal={true}
+                            renderItem={this.renderTag}
+                            keyExtractor={(item, index) => item.key + index}
+                            keyboardShouldPersistTaps="handled"
+                        />
+                    </View>
+                )}
+            </View>
         );
     }
 }
@@ -336,7 +188,7 @@ const styles = {
         marginBottom: SCREEN_HEIGHT * 0.01
     },
     container: {
-        position: 'absolute',
+        // position: 'absolute',
         bottom: -10,
         left: 0,
         right: 0,
@@ -348,7 +200,7 @@ const styles = {
         width: SCREEN_WIDTH
     },
     closedBottomContainer: {
-        position: 'absolute',
+        // position: 'absolute',
         bottom: 0,
         left: 0,
         right: 0,
@@ -360,7 +212,7 @@ const styles = {
         width: SCREEN_WIDTH
     },
     openContainerAndroid: {
-        position: 'absolute',
+        // position: 'absolute',
         // top: SCREEN_HEIGHT * 0.1,
         bottom: 0,
         left: 0,
@@ -370,7 +222,7 @@ const styles = {
         height: SCREEN_HEIGHT * 0.25
     },
     openContaineriOS: {
-        position: 'absolute',
+        // position: 'absolute',
         top: 0,
         left: 0,
         right: 0,
@@ -403,20 +255,18 @@ const styles = {
         marginBottom: SCREEN_HEIGHT * 0.01
     },
     tag: {
-        padding: SCREEN_WIDTH * 0.02,
+        padding: 10,
         backgroundColor: 'white',
-        borderRadius: 10,
-        marginRight: SCREEN_WIDTH * 0.02,
-        borderWidth: 1
+        borderRadius: 8,
+        marginRight: 10,
+        borderWidth: 1,
+        borderColor: Colors.muted
     },
     tagsOuterContainer: {
-        marginLeft: SCREEN_WIDTH * 0.02,
-        marginRight: SCREEN_WIDTH * 0.02,
-        paddingBottom: SCREEN_HEIGHT * 0.02
+        marginLeft: 20,
+        marginBottom: 40
     },
-    tagsInnerContainer: {
-        flexDirection: 'row'
-    },
+
     textInputOpen: {
         borderRadius: 50,
         borderColor: 'gray',
@@ -434,11 +284,13 @@ const styles = {
     }
 };
 
-const mapStateToProps = (state) => {
+const mapStateToProps = state => {
     return {
-        token: state.auth.token,
-        images: state.images.imagesArray
+        suggestedTags: state.litter.suggestedTags
     };
 };
 
-export default connect(mapStateToProps, actions)(LitterBottomSearch);
+export default connect(
+    mapStateToProps,
+    actions
+)(LitterBottomSearch);
