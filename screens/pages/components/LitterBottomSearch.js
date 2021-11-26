@@ -3,15 +3,11 @@ import {
     Dimensions,
     FlatList,
     Keyboard,
-    KeyboardAvoidingView,
-    Platform,
     TextInput,
-    TouchableOpacity,
     View,
-    Alert,
     Pressable
 } from 'react-native';
-import { getTranslation, TransText } from 'react-native-translation';
+import { getTranslation } from 'react-native-translation';
 import { connect } from 'react-redux';
 import * as actions from '../../../actions';
 import { Body, Caption, Colors } from '../../components';

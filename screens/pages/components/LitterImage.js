@@ -14,6 +14,7 @@ import { connect } from 'react-redux';
 import TagsActionButton from './TagsActionButton';
 import LitterCategories from './LitterCategories';
 import LitterBottomSearch from './LitterBottomSearch';
+import LitterTags from './LitterTags';
 import CATEGORIES from '../../../assets/data/categories';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -91,12 +92,18 @@ class LitterImage extends PureComponent {
                         }));
                     }}
                 />
+
                 <ActionSheet ref={this.actionsheetRef}>
                     <View
                         style={{
                             // height: 200,
                             maxWidth: SCREEN_WIDTH
                         }}>
+                        <LitterTags
+                            tags={this.props.photoSelected?.tags}
+                            lang={this.props.lang}
+                            swiperIndex={this.props.swiperIndex}
+                        />
                         <LitterCategories
                             categories={CATEGORIES}
                             category={this.props.category}

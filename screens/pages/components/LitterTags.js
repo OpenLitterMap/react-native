@@ -1,75 +1,24 @@
 import React, { Component } from 'react';
-import { Dimensions, Platform, ScrollView, View } from 'react-native';
+import {
+    Dimensions,
+    Platform,
+    Pressable,
+    ScrollView,
+    StyleSheet,
+    View
+} from 'react-native';
 import { Text, TouchableHighlight } from 'react-native';
 import { TransText } from 'react-native-translation';
 import { connect } from 'react-redux';
 import * as actions from '../../../actions';
 import DeviceInfo from 'react-native-device-info';
+import { Body, Caption, Colors } from '../../components';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
 // Tags not being deleted when using PureComponent
 class LitterTags extends Component {
-    /**
-     * The tags container is positioned absolutely from the top
-     *
-     * Some devices need slightly different settings
-     *
-     * Todo - extract common css and update comment block with styles per device
-     */
-    _computeTagsContainer() {
-        if (Platform.OS === 'android') {
-            return this.props.keyboardOpen
-                ? styles.aTagsContainerOpen
-                : styles.androidTagsContainer;
-        }
-
-        // if iPhone 10+, return 17% card height
-        const x = DeviceInfo.getModel().split(' ');
-
-        if (x.includes('X') || parseInt(x[1]) >= 10) {
-            // iPhone 11 Pro
-            if (x[1] === '11' && x[2] === 'Pro') {
-                return this.props.keyboardOpen
-                    ? styles.iPhone11ProTagsContainerKeyboardOpen
-                    : styles.iPhone11ProTagsContainerKeyboardClosed;
-            }
-
-            // iPhone 12
-            else if (x[1] === '12' && x.length === 2) {
-                return this.props.keyboardOpen
-                    ? styles.iPhone11ProTagsContainerKeyboardOpen
-                    : styles.iPhone11ProTagsContainerKeyboardClosed;
-            }
-
-            // iPhone 12 mini
-            else if (x[1] === '12' && x[2] === 'mini') {
-                return this.props.keyboardOpen
-                    ? styles.iPhone11ProTagsContainerKeyboardOpen
-                    : styles.iPhone11ProTagsContainerKeyboardClosed;
-            }
-
-            // iPhone 12 Pro
-            else if (x[1] === '12' && x[2] === 'Pro' && x[3] === 'undefined') {
-                return this.props.keyboardOpen
-                    ? styles.iPhone11ProTagsContainerKeyboardOpen
-                    : styles.iPhone11ProTagsContainerKeyboardClosed;
-            }
-
-            // iPhone 11 & iPhone 12 Pro Max
-            return this.props.keyboardOpen
-                ? styles.iTagsContainerOpen
-                : styles.iTagsContainer;
-        }
-
-        // iPhone 8, iPhone 8 Plus
-        return this.props.keyboardOpen &&
-            Object.keys(this.props.tags).length > 0
-            ? styles.tagsContainerOpen
-            : styles.tagsContainer;
-    }
-
     /**
      * Display a card for each tag
      */
@@ -80,35 +29,25 @@ class LitterTags extends Component {
                     const value = this.props.tags[category][tag];
 
                     return (
-                        <TouchableHighlight
+                        <Pressable
                             key={tag}
-                            onPress={this.removeTag.bind(this, category, tag)}
-                            underlayColor="transparent"
-                            onLayout={event => {
-                                const layout = event.nativeEvent.layout;
-
-                                // When layout is rendered, save its X-positions to this.props.positions
-                                this.props.updateTagXPosition({
-                                    x: layout.x,
-                                    tag
-                                });
-                            }}>
+                            onPress={this.removeTag.bind(this, category, tag)}>
                             <View style={styles.card}>
-                                <TransText
-                                    style={styles.category}
+                                <Caption
                                     dictionary={`${
                                         this.props.lang
                                     }.litter.categories.${category}`}
                                 />
-                                <TransText
-                                    style={styles.item}
-                                    dictionary={`${
-                                        this.props.lang
-                                    }.litter.${category}.${tag}`}
-                                />
-                                <Text style={styles.val}>&nbsp; ({value})</Text>
+                                <View style={{ flexDirection: 'row' }}>
+                                    <Body
+                                        dictionary={`${
+                                            this.props.lang
+                                        }.litter.${category}.${tag}`}
+                                    />
+                                    <Body>&nbsp; ({value})</Body>
+                                </View>
                             </View>
-                        </TouchableHighlight>
+                        </Pressable>
                     );
                 });
             });
@@ -135,14 +74,9 @@ class LitterTags extends Component {
     render() {
         return (
             <View
-                style={this._computeTagsContainer()}
-                key={Object.keys(this.props.positions).length}
-                onLayout={event => {
-                    this.scrollview_ref.scrollTo({
-                        x: this.props.positions[this.props.item],
-                        y: 0,
-                        animated: true
-                    });
+                style={{
+                    // height: 60,
+                    width: SCREEN_WIDTH
                 }}>
                 <ScrollView
                     bounces={false}
@@ -159,7 +93,7 @@ class LitterTags extends Component {
     }
 }
 
-const styles = {
+const styles = StyleSheet.create({
     aTagsContainerOpen: {
         alignItems: 'center',
         flexDirection: 'row',
@@ -180,14 +114,11 @@ const styles = {
     },
     card: {
         backgroundColor: 'white',
-        padding: SCREEN_WIDTH * 0.02,
-        borderRadius: 6,
-        alignItems: 'center',
-        flexDirection: 'row',
-        paddingTop: SCREEN_HEIGHT * 0.025,
-        height: '100%',
-        marginRight: SCREEN_WIDTH * 0.01,
-        zIndex: 9999
+        borderWidth: 1,
+        padding: 10,
+        margin: 10,
+        borderRadius: 12,
+        borderColor: Colors.muted
     },
     category: {
         position: 'absolute',
@@ -258,9 +189,15 @@ const styles = {
     val: {
         fontSize: SCREEN_HEIGHT * 0.02
     }
-};
+});
 
+const mapStateToProps = state => {
+    return {
+        item: state.litter.item,
+        items: state.litter.items
+    };
+};
 export default connect(
-    null,
+    mapStateToProps,
     actions
 )(LitterTags);
