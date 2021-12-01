@@ -21,21 +21,11 @@ let lang = RNLocalize.getLocales()['languageCode'];
 
 const INITIAL_STATE = {
     lang: 'en',
-    appLoading: true,
     appVersion: '',
-    buttonPressed: false,
-    buttonDisabled: false,
-    email: '',
-    isLoggingIn: false,
     isSubmitting: false,
-    loading: false,
-    password: '',
-    success: '',
     token: null,
     tokenIsValid: false,
     user: null,
-    username: '',
-    usernameError: '',
     serverStatusText: ''
 };
 
@@ -83,9 +73,6 @@ export default function(state = INITIAL_STATE, action) {
                 break;
 
             case ACCOUNT_CREATED:
-                draft.success = action.payload;
-                draft.buttonDisabled = false;
-                draft.isLoggingIn = true;
                 draft.isSubmitting = false;
 
                 break;
@@ -106,7 +93,6 @@ export default function(state = INITIAL_STATE, action) {
              */
 
             case LOGIN_FAIL:
-                draft.password = '';
                 draft.serverStatusText = action.payload;
                 draft.isSubmitting = false;
 
@@ -117,14 +103,8 @@ export default function(state = INITIAL_STATE, action) {
              */
 
             case LOGIN_OR_SIGNUP_RESET:
-                draft.email = '';
-                draft.password = '';
-                draft.buttonPressed = false;
-                draft.buttonDisabled = false;
-                draft.success = '';
                 draft.isSubmitting = false;
-                draft.username = '';
-                draft.usernameError = '';
+                draft.serverStatusText = '';
 
                 break;
 
@@ -134,7 +114,6 @@ export default function(state = INITIAL_STATE, action) {
 
             case LOGIN_SUCCESS:
                 draft.token = action.payload;
-                draft.appLoading = !draft.appLoading;
                 draft.isSubmitting = false;
 
                 break;
@@ -183,7 +162,6 @@ export default function(state = INITIAL_STATE, action) {
 
                 draft.user = user;
                 draft.token = action.payload.token;
-                draft.appLoading = !draft.appLoading;
                 draft.isSubmitting = false;
 
                 break;
