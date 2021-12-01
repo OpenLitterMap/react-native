@@ -18,6 +18,7 @@ import LitterBottomSearch from './LitterBottomSearch';
 import LitterPickerWheels from './LitterPickerWheels';
 import LitterTags from './LitterTags';
 import CATEGORIES from '../../../assets/data/categories';
+import { SubTitle, Colors, Title } from '../../components';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
@@ -69,6 +70,28 @@ class LitterImage extends PureComponent {
 
     _imageLoaded() {
         this.setState({ imageLoaded: true });
+    }
+
+    /**
+     * Add tag on a specific image
+     */
+    addTag() {
+        const tag = {
+            category: this.props.category.title.toString(),
+            title: this.props.item.toString(),
+            quantity: this.props.q
+        };
+
+        // currentGlobalIndex
+        const currentIndex = this.props.swiperIndex;
+
+        this.props.addTagToImage({
+            tag,
+            currentIndex,
+            quantityChanged: this.props.quantityChanged
+        });
+
+        this.props.changeQuantiyStatus(false);
     }
 
     /**
@@ -152,6 +175,11 @@ class LitterImage extends PureComponent {
                                 lang={this.props.lang}
                             />
                         )}
+                        <Pressable
+                            onPress={() => this.addTag()}
+                            style={styles.buttonStyle}>
+                            <SubTitle color="white">ADD TAG</SubTitle>
+                        </Pressable>
                     </View>
                 </ActionSheet>
             </View>
@@ -170,10 +198,30 @@ const styles = {
     image: {
         width: SCREEN_WIDTH,
         height: SCREEN_HEIGHT
+    },
+    buttonStyle: {
+        height: 56,
+        width: SCREEN_WIDTH - 40,
+        backgroundColor: Colors.accent,
+        marginBottom: 40,
+        marginLeft: 20,
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderRadius: 12
     }
 };
 
+const mapStateToProps = state => {
+    return {
+        category: state.litter.category,
+        item: state.litter.item,
+        items: state.litter.items,
+        q: state.litter.q,
+        quantityChanged: state.litter.quantityChanged
+    };
+};
+
 export default connect(
-    null,
+    mapStateToProps,
     actions
 )(LitterImage);
