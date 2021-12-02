@@ -411,7 +411,7 @@ class HomeScreen extends PureComponent {
 
                     ImageData.append('lat', img.lat);
                     ImageData.append('lon', img.lon);
-                    ImageData.append('date', img.date);
+                    ImageData.append('date', parseInt(img.date));
                     ImageData.append('picked_up', img.picked_up ? 1 : 0);
                     ImageData.append('model', model);
                     ImageData.append('tags', JSON.stringify(img.tags));
@@ -466,8 +466,10 @@ class HomeScreen extends PureComponent {
         }
 
         //  Last step - if all photos have been deleted, close modal
-        if (this.state.uploaded + this.state.failedUpload === this.state.total)
-        {
+        if (
+            this.state.uploaded + this.state.failedUpload ===
+            this.state.total
+        ) {
             // shared_actions
             this.props.toggleUpload();
             this.props.toggleThankYou();

@@ -256,19 +256,19 @@ PODS:
     - React-cxxreact (= 0.63.4)
     - React-jsi (= 0.63.4)
   - React-jsinspector (0.63.4)
-  - react-native-camera (4.2.1):
+  - react-native-camera (3.43.8):
     - React-Core
-    - react-native-camera/RCT (= 4.2.1)
-    - react-native-camera/RN (= 4.2.1)
-  - react-native-camera/RCT (4.2.1):
+    - react-native-camera/RCT (= 3.43.8)
+    - react-native-camera/RN (= 3.43.8)
+  - react-native-camera/RCT (3.43.8):
     - React-Core
-  - react-native-camera/RN (4.2.1):
+  - react-native-camera/RN (3.43.8):
     - React-Core
-  - react-native-cameraroll (4.1.2):
+  - react-native-cameraroll (4.0.4):
     - React-Core
   - react-native-location (2.5.0):
     - React
-  - react-native-safe-area-context (3.3.2):
+  - react-native-safe-area-context (3.2.0):
     - React-Core
   - react-native-splash-screen (3.2.0):
     - React
@@ -340,7 +340,7 @@ PODS:
     - React
   - RNCPicker (1.8.1):
     - React-Core
-  - RNDeviceInfo (7.4.0):
+  - RNDeviceInfo (8.4.8):
     - React-Core
   - RNGestureHandler (1.10.3):
     - React-Core
@@ -349,11 +349,11 @@ PODS:
     - React-Core
     - React-RCTImage
     - RSKImageCropper
-  - RNLocalize (2.1.5):
+  - RNLocalize (2.0.3):
     - React-Core
   - RNPermissions (2.2.2):
     - React-Core
-  - RNReanimated (2.2.4):
+  - RNReanimated (2.2.0):
     - DoubleConversion
     - FBLazyVector
     - FBReactNativeSpec
@@ -382,20 +382,20 @@ PODS:
     - React-RCTVibration
     - ReactCommon/turbomodule/core
     - Yoga
-  - RNScreens (3.9.0):
+  - RNScreens (3.4.0):
     - React-Core
     - React-RCTImage
-  - RNSentry (3.2.3):
+  - RNSentry (3.1.0):
     - React-Core
-    - Sentry (= 7.5.1)
+    - Sentry (= 7.2.6)
   - RNSVG (12.1.1):
     - React
   - RNVectorIcons (8.1.0):
     - React-Core
   - RSKImageCropper (3.0.2)
-  - Sentry (7.5.1):
-    - Sentry/Core (= 7.5.1)
-  - Sentry/Core (7.5.1)
+  - Sentry (7.2.6):
+    - Sentry/Core (= 7.2.6)
+  - Sentry/Core (7.2.6)
   - Yoga (1.14.0)
   - YogaKit (1.18.1):
     - Yoga (~> 1.14)
@@ -626,10 +626,10 @@ SPEC CHECKSUMS:
   React-jsi: a0418934cf48f25b485631deb27c64dc40fb4c31
   React-jsiexecutor: 93bd528844ad21dc07aab1c67cb10abae6df6949
   React-jsinspector: 58aef7155bc9a9683f5b60b35eccea8722a4f53a
-  react-native-camera: 3eae183c1d111103963f3dd913b65d01aef8110f
-  react-native-cameraroll: 2957f2bce63ae896a848fbe0d5352c1bd4d20866
+  react-native-camera: a22b33e521dbf3f8cd886f79f3aa310f401443d5
+  react-native-cameraroll: 88f4e62d9ecd0e1f253abe4f685474f2ea14bfa2
   react-native-location: 5a40ec1cc6abf2f6d94df979f98ec76c3a415681
-  react-native-safe-area-context: 584dc04881deb49474363f3be89e4ca0e854c057
+  react-native-safe-area-context: f0906bf8bc9835ac9a9d3f97e8bde2a997d8da79
   react-native-splash-screen: 200d11d188e2e78cea3ad319964f6142b6384865
   react-native-viewpager: f730c1d175a2c1ae789464855d4a2c14247d3109
   React-RCTActionSheet: 89a0ca9f4a06c1f93c26067af074ccdce0f40336
@@ -645,18 +645,18 @@ SPEC CHECKSUMS:
   RNCAsyncStorage: b03032fdbdb725bea0bd9e5ec5a7272865ae7398
   RNCMaskedView: 0e1bc4bfa8365eba5fbbb71e07fbdc0555249489
   RNCPicker: 914b557e20b3b8317b084aca9ff4b4edb95f61e4
-  RNDeviceInfo: 9538a884f862fe4aa0d7cead9f34e292d41ba8f6
+  RNDeviceInfo: 0400a6d0c94186d1120c3cbd97b23abc022187a9
   RNGestureHandler: a479ebd5ed4221a810967000735517df0d2db211
   RNImageCropPicker: 9d1a7eea4f8368fc479cbd2bf26459bd3c74d9aa
-  RNLocalize: 74b82db20cc3895ccc25af992c644879bcec2815
+  RNLocalize: 99e59cad311ca1b6872b1764514009416ccba03d
   RNPermissions: 5df468064df661a4c8c017e2791ce90d7695eea5
-  RNReanimated: e5040efc7c90da0b190a6525fcfc7e1e75973b21
-  RNScreens: 4d79118be80f79fa1f4aa131909a1d6e86280af3
-  RNSentry: 97bc62fa65b7d663daee16fbf9771470852217cf
+  RNReanimated: d9da990fc90123f4ffbfdda93d00fc15174863a8
+  RNScreens: 21b73c94c9117e1110a79ee0ee80c93ccefed8ce
+  RNSentry: a3c522c9f17f191e4972c3e4d6065aba253b593e
   RNSVG: 551acb6562324b1d52a4e0758f7ca0ec234e278f
   RNVectorIcons: 31cebfcf94e8cf8686eb5303ae0357da64d7a5a4
   RSKImageCropper: 1ac71e9a82e3f41eea3eedfff8eacb0d3821c9ec
-  Sentry: 0718c3ad7a08e1107599610795adaf08864102f3
+  Sentry: be2f8f7a63e5274cc83d0813e40c1680119c0153
   Yoga: 4bd86afe9883422a7c4028c00e34790f560923d6
   YogaKit: f782866e155069a2cca2517aafea43200b01fd5a
 
