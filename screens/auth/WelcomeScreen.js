@@ -146,8 +146,7 @@ const styles = StyleSheet.create({
 const mapStateToProps = state => {
     return {
         lang: state.auth.lang,
-        token: state.auth.token,
-        appLoading: state.auth.appLoading
+        token: state.auth.token
     };
 };
 

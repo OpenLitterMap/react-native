@@ -26,6 +26,7 @@
     "axios": "^0.24.0",
     "babel-plugin-dotenv-import": "^2.2.0",
     "clone-deep": "^4.0.1",
+    "formik": "^2.2.9",
     "i18next": "^19.9.2",
     "immer": "^9.0.6",
     "install": "^0.13.0",
@@ -60,11 +61,13 @@
     "react-native-translation": "git+https://git@github.com/xlcrr/react-native-translation.git",
     "react-native-vector-icons": "^8.1.0",
     "react-redux": "^7.2.4",
+    "react-style-proptype": "^3.2.2",
     "redux": "^4.1.0",
     "redux-persist": "^6.0.0",
     "redux-thunk": "^2.3.0",
     "typescript": "^3.9.9",
-    "use-count-up": "^2.3.1"
+    "use-count-up": "^2.3.1",
+    "yup": "^0.32.11"
   },
   "devDependencies": {
     "@babel/core": "7.9.0",
