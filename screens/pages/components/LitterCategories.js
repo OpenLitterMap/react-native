@@ -71,7 +71,8 @@ const styles = StyleSheet.create({
         borderRadius: 12,
         padding: 8,
         borderWidth: 2,
-        borderColor: Colors.accentLight
+        borderColor: Colors.accentLight,
+        backgroundColor: Colors.white
     },
     selectedCard: {
         backgroundColor: Colors.accentLight,

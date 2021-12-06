@@ -7,11 +7,13 @@ import {
     StatusBar,
     TouchableOpacity,
     View,
-    Text
+    Text,
+    Animated,
+    Easing,
+    StyleSheet,
+    Pressable
 } from 'react-native';
-import ActionSheet from 'react-native-actions-sheet';
-import { TransText } from 'react-native-translation';
-import { Icon } from 'react-native-elements';
+
 import Swiper from 'react-native-swiper';
 import { connect } from 'react-redux';
 import * as actions from '../../actions';
@@ -25,21 +27,15 @@ import LitterBottomSearch from './components/LitterBottomSearch';
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 
-import DeviceInfo from 'react-native-device-info';
 import LITTERKEYS from '../../assets/data/litterkeys';
-const cloneDeep = require('clone-deep');
 
 class AddTags extends PureComponent {
     constructor(props) {
         super(props);
 
         this.state = {
-            loading: false,
-            webLoading: false,
-            keyboardOpen: false,
-            bottomHeight: 0,
-            topPadding: 0,
-            height: 0
+            categoryAnimation: new Animated.Value(0),
+            isCategoriesVisible: false
         };
         this.actionsheetRef = createRef();
     }
@@ -56,101 +52,29 @@ class AddTags extends PureComponent {
      */
     componentWillUnmount() {}
 
-    /**
-     * Set params when keyboard has been closed to hide bottom nav panel
-     *
-     * 2 bugs here
-     *
-     * 1. On android, we need to set height of keyboardAvoidingView to 10% screen height when closed...not sure why
-     *
-     * 2. When a tag is set from the keyboard, the tag.key changes (eg "facemask") but the category does not change.
-     *    onKeyboardClose, we need to reset tag.key to the first item of the currently selected category
-     */
-    _keyboardDidHide() {
-        let height = 0;
-
-        // this is necessary to allow the user to click on text input because of a bug with keyboardAvoidingView on Android
-        if (Platform.OS === 'android') {
-            height = SCREEN_HEIGHT * 0.1;
-        }
-
-        // we need to reset item for currently selected category
-        if (this.props.category.hasOwnProperty('title')) {
-            const first = LITTERKEYS[this.props.category.title][0];
-
-            this.props.changeItem(first);
-        }
-
-        this.setState({
-            keyboardOpen: false,
-            bottomHeight: 0,
-            height
-        });
-    }
-
-    /**
-     * Close the modal and all content types
-     */
-    _closeModal() {
-        this.props.setLitterPickerModal(false);
-
-        this.props.showAllTags(false);
-
-        this.setState({
-            webLoading: false
-        });
-    }
-
-    /**
-     * This container is showing on Android when the board is open
-     * We can hide it here
-     */
-    hideBottomContainer() {
-        return this.state.keyboardOpen ? styles.hide : styles.bottomContainer;
-    }
-
-    /**
-     * If we are an Android, we need to close the keyboard programatically
-     *
-     * as onClickOutside is not working yet
-     */
-    closeKeyboardAndroid() {
-        if (Platform.OS === 'android') {
-            this.setState({
-                keyboardOpen: false
-            });
-
-            Keyboard.dismiss();
-        }
-    }
-
-    /**
-     * A category card has been clicked
-     *
-     * This is a callback function from LitterCategories
-     */
-    categoryClicked = () => {
-        this.closeKeyboardAndroid();
+    startAnimation = () => {
+        Animated.timing(this.state.categoryAnimation, {
+            toValue: 200,
+            duration: 500,
+            useNativeDriver: true,
+            easing: Easing.elastic(1)
+        }).start();
     };
-
-    openActionSheet = () => {
-        this.actionsheetRef.current?.setModalVisible();
-    };
-
     /**
      * The LitterPicker component
      */
     render() {
         const { lang, swiperIndex } = this.props;
 
-        const IMAGES_COUNT = this.props.images.length;
+        const categoryAnimatedStyle = {
+            transform: [{ translateY: this.state.categoryAnimation }]
+        };
 
         return (
             <View style={{ flex: 1 }}>
                 <View style={styles.container}>
                     <StatusBar hidden />
 
-                    {/* Second - Image. Height: 80% */}
                     <Swiper
                         style={{ zIndex: 20 }}
                         index={swiperIndex}
@@ -164,221 +88,34 @@ class AddTags extends PureComponent {
                         {this._renderLitterImage()}
                     </Swiper>
                     {/* First - Top Bar position: 'absolute'  */}
-                    <View
-                        style={{
-                            position: 'absolute',
-                            top: 40,
-                            left: 20,
-                            zIndex: 100
-                        }}>
-                        <LitterCategories
-                            categories={CATEGORIES}
-                            category={this.props.category}
-                            lang={this.props.lang}
-                            callback={this.categoryClicked}
-                        />
-                    </View>
-                    {/* Third - Tags. position: absolute */}
-                    {/* <LitterTags
-                        tags={this.props.images[this.props.swiperIndex]?.tags}
-                        previousTags={this.props.previousTags}
-                        positions={this.props.positions}
-                        item={this.props.item}
-                        keyboardOpen={this.state.keyboardOpen}
-                        lang={this.props.lang}
-                        swiperIndex={swiperIndex}
-                    /> */}
-
-                    {/* Fourth - bottomContainer 20% height */}
-                    {/* <View style={styles.bottomContainer} /> */}
-                    {/* <TouchableOpacity
-                        onPress={() => {
-                            this.actionsheetRef.current?.setModalVisible();
-                        }}>
-                        <Text>Open ActionSheet</Text>
-                    </TouchableOpacity> */}
-
-                    {/* <LitterBottomSearch
-                        keyboardOpen={this.state.keyboardOpen}
-                        suggestedTags={this.props.suggestedTags}
-                        height={this.state.height}
-                        bottomHeight={this.state.bottomHeight}
-                        presence={this.props.presence}
-                        lang={this.props.lang}
-                        swiperIndex={swiperIndex}
-                    /> */}
-                </View>
-                {/* <ActionSheet ref={this.actionsheetRef}>
-                    <View>
-                        <View style={this._computePickerWheelsContainer()}>
-                            <LitterPickerWheels
-                                item={this.props.item}
-                                items={this.props.items}
-                                model={this.props.model}
+                    {this.state.isCategoriesVisible && (
+                        <Animated.View
+                            style={[
+                                {
+                                    position: 'absolute',
+                                    top: -150,
+                                    left: 20,
+                                    zIndex: 2
+                                },
+                                categoryAnimatedStyle
+                            ]}>
+                            <LitterCategories
+                                categories={CATEGORIES}
                                 category={this.props.category}
-                                q={this.props.q}
                                 lang={this.props.lang}
                             />
-                        </View>
-
-                        <View style={this._computeButtonsContainer()}>
-                            {swiperIndex === 0 && (
-                                <View style={{ flex: 0.15 }} />
-                            )}
-                            {swiperIndex > 0 && (
-                                <TouchableOpacity
-                                    onPress={this.previousImage.bind(this)}
-                                    style={styles.tabArrowIconContainer}>
-                                    <Icon
-                                        name="arrow-back"
-                                        size={SCREEN_HEIGHT * 0.05}
-                                    />
-                                </TouchableOpacity>
-                            )}
-
-                            <TouchableOpacity
-                                onPress={this.addTag.bind(this)}
-                                style={styles.addTagButtonOuter}
-                                disabled={this.props.images.length === 0}>
-                                <View style={styles.addTagButtonInner}>
-                                    <Icon
-                                        name="add"
-                                        size={SCREEN_HEIGHT * 0.05}
-                                    />
-                                    <TransText
-                                        style={styles.textIconStyle}
-                                        dictionary={`${lang}.tag.add-tag`}
-                                    />
-                                </View>
-                            </TouchableOpacity>
-
-                            {swiperIndex === IMAGES_COUNT - 1 && (
-                                <View style={{ flex: 0.15 }} />
-                            )}
-                            {swiperIndex >= 0 &&
-                                swiperIndex !== IMAGES_COUNT - 1 && (
-                                    <TouchableOpacity
-                                        onPress={this.nextImage.bind(this)}
-                                        style={styles.tabArrowIconContainer}>
-                                        <Icon
-                                            name="arrow-forward"
-                                            size={SCREEN_HEIGHT * 0.05}
-                                        />
-                                    </TouchableOpacity>
-                                )}
-                        </View>
-                        <LitterBottomSearch
-                            keyboardOpen={this.state.keyboardOpen}
-                            suggestedTags={this.props.suggestedTags}
-                            height={this.state.height}
-                            bottomHeight={this.state.bottomHeight}
-                            presence={this.props.presence}
-                            lang={this.props.lang}
-                            swiperIndex={swiperIndex}
-                        />
-                    </View>
-                </ActionSheet> */}
+                        </Animated.View>
+                    )}
+                </View>
             </View>
         );
-    }
-
-    /**
-     * Position absolute
-     * bottom: pickerWheelsContainer 15%
-     * bottom: iPickerWheelsContainer 12%
-     *
-     * @hide on Android when keyboard is open
-     */
-    _computePickerWheelsContainer() {
-        // if (this.state.keyboardOpen) {
-        //     return styles.hide;
-        // }
-
-        if (Platform.OS === 'android') {
-            return styles.pickerWheelsContainer;
-        }
-
-        // if "iPhone 10+", return 17% card height
-        let x = DeviceInfo.getModel().split(' ')[1];
-
-        if (x.includes('X') || parseInt(x) >= 10) {
-            return styles.iPickerWheelsContainer;
-        }
-
-        return styles.pickerWheelsContainer;
-    }
-
-    /**
-     * Container for Confirm, Add Tag buttons
-     * marginTop: 5%
-     * if iPhoneX+ marginTop: 8%;
-     *
-     * @hide on Android when keyboard is open
-     */
-    _computeButtonsContainer() {
-        // if (this.state.keyboardOpen) {
-        //     return styles.hide;
-        // }
-
-        if (Platform.OS === 'android') {
-            return styles.buttonsContainer;
-        }
-
-        // if iPhone 10+, return 17% card height
-        let x = DeviceInfo.getModel().split(' ')[1];
-
-        if (x.includes('X') || parseInt(x) >= 10) {
-            return styles.iButtonsContainer;
-        }
-
-        return styles.buttonsContainer;
-    }
-
-    /**
-     * Check length of tags object
-     *
-     * Return True or False
-     */
-    _checkCollectionLength() {
-        return Object.keys(this.props.tags).length === 0;
-    }
-
-    /**
-     * Show the leftArrow when the currentIndex is greater than 0
-     */
-    getLeftArrowContainer() {
-        return this.props.swiperIndex === 0
-            ? styles.hideArrowContainer
-            : styles.tabArrowIconContainer;
-    }
-
-    /**
-     * Load the previous image
-     */
-    previousImage() {
-        const currentIndex = this.props.swiperIndex;
-
-        if (currentIndex > 0) {
-            this.props.swiperIndexChanged(currentIndex - 1);
-        }
-    }
-
-    /**
-     * Load the next image
-     */
-    nextImage() {
-        const currentIndex = this.props.swiperIndex;
-
-        this.props.swiperIndexChanged(currentIndex + 1);
     }
 
     /**
      * The user has swiped left or right across an array of all photo types.
      *
      * This function gives us the new index the user has swiped to.
-     *
-     *
-     * @param newGlobalIndex (int): the global index across all photo types.
+    
      */
     swiperIndexChanged = newGlobalIndex => {
         console.log('swiperIndexChanged', newGlobalIndex);
@@ -419,6 +156,13 @@ class AddTags extends PureComponent {
                         key={image.id}
                         photoSelected={image}
                         swiperIndex={this.props.swiperIndex}
+                        toggleFn={() => {
+                            this.startAnimation();
+                            this.setState({
+                                isCategoriesVisible: !this.state
+                                    .isCategoriesVisible
+                            });
+                        }}
                     />
                 );
             }
@@ -427,33 +171,9 @@ class AddTags extends PureComponent {
             return <View key={image.id} />;
         });
     };
-
-    /**
-     * Add or Update Tags
-     *
-     * on a specific image
-     */
-    addTag() {
-        const tag = {
-            category: this.props.category.title.toString(),
-            title: this.props.item.toString(),
-            quantity: this.props.q
-        };
-
-        // currentGlobalIndex
-        const currentIndex = this.props.swiperIndex;
-
-        this.props.addTagToImage({
-            tag,
-            currentIndex,
-            quantityChanged: this.props.quantityChanged
-        });
-
-        this.props.changeQuantiyStatus(false);
-    }
 }
 
-const styles = {
+const styles = StyleSheet.create({
     container: {
         flex: 1,
         // paddingTop: SCREEN_HEIGHT * 0.05,
@@ -575,7 +295,7 @@ const styles = {
         fontSize: SCREEN_HEIGHT * 0.02,
         paddingLeft: SCREEN_WIDTH * 0.04
     }
-};
+});
 
 const mapStateToProps = state => {
     return {

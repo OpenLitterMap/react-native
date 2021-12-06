@@ -7,7 +7,9 @@ import {
     ScrollView,
     Pressable,
     Text,
-    View
+    View,
+    Animated,
+    Easing
 } from 'react-native';
 import ActionSheet from 'react-native-actions-sheet';
 import * as actions from '../../../actions';
@@ -25,21 +27,16 @@ const SCREEN_HEIGHT = Dimensions.get('window').height;
 
 class LitterImage extends PureComponent {
     // ScrollView Image Props
-    static defaultProps = {
-        doAnimateZoomReset: false,
-        maximumZoomScale: 2,
-        minimumZoomScale: 1,
-        zoomHeight: SCREEN_HEIGHT,
-        zoomWidth: SCREEN_WIDTH
-    };
 
     constructor(props) {
         super(props);
 
         this.state = {
+            sheetAnmiation: new Animated.Value(0),
             imageLoaded: false,
             isOverlayDisplayed: false,
-            isKeyboardOpen: false
+            isKeyboardOpen: false,
+            isSheetVisible: false
         };
         this.actionsheetRef = createRef();
     }
@@ -72,6 +69,15 @@ class LitterImage extends PureComponent {
         this.setState({ imageLoaded: true });
     }
 
+    startAnimation = () => {
+        Animated.timing(this.state.sheetAnmiation, {
+            toValue: -400,
+            duration: 500,
+            useNativeDriver: true,
+            easing: Easing.elastic(1)
+        }).start();
+    };
+
     /**
      * Add tag on a specific image
      */
@@ -102,6 +108,9 @@ class LitterImage extends PureComponent {
      * and again when imageLoaded is true
      */
     render() {
+        const sheetAnimatedStyle = {
+            transform: [{ translateY: this.state.sheetAnmiation }]
+        };
         return (
             <View style={{ backgroundColor: 'black' }}>
                 <Image
@@ -130,7 +139,12 @@ class LitterImage extends PureComponent {
 
                 <TagsActionButton
                     openTagSheet={() => {
-                        this.actionsheetRef.current?.setModalVisible();
+                        // this.actionsheetRef.current?.setModalVisible();
+                        this.startAnimation();
+                        this.props.toggleFn();
+                        this.setState({
+                            isSheetVisible: !this.state.isSheetVisible
+                        });
                     }}
                     toggleOverlay={() => {
                         this.setState(previousState => ({
@@ -139,24 +153,31 @@ class LitterImage extends PureComponent {
                     }}
                 />
 
-                <ActionSheet
-                    ref={this.actionsheetRef}
-                    closeOnTouchBackdrop={true}
-                    gestureEnabled
-                    // closable={false}
-                    // bottomOffset={10}
-                    keyboardShouldPersistTaps="always">
-                    <View
-                        style={{
-                            // height: 200,
-                            maxWidth: SCREEN_WIDTH
-                        }}>
-                        <LitterTags
-                            tags={this.props.photoSelected?.tags}
-                            lang={this.props.lang}
-                            swiperIndex={this.props.swiperIndex}
-                        />
-                        {/* {!this.state.isKeyboardOpen && (
+                {this.state.isSheetVisible && (
+                    <Animated.View
+                        style={[
+                            {
+                                backgroundColor: 'white',
+                                position: 'absolute',
+                                bottom: -400,
+                                left: 0,
+                                paddingVertical: 20,
+                                borderTopLeftRadius: 8,
+                                borderTopRightRadius: 8
+                            },
+                            sheetAnimatedStyle
+                        ]}>
+                        <View
+                            style={{
+                                // height: 200,
+                                maxWidth: SCREEN_WIDTH
+                            }}>
+                            <LitterTags
+                                tags={this.props.photoSelected?.tags}
+                                lang={this.props.lang}
+                                swiperIndex={this.props.swiperIndex}
+                            />
+                            {/* {!this.state.isKeyboardOpen && (
                             <LitterCategories
                                 categories={CATEGORIES}
                                 category={this.props.category}
@@ -164,31 +185,34 @@ class LitterImage extends PureComponent {
                                 callback={this.categoryClicked}
                             />
                         )} */}
-                        <LitterBottomSearch
-                            suggestedTags={this.props.suggestedTags}
-                            // height={this.state.height}
-                            lang={this.props.lang}
-                            swiperIndex={this.props.swiperIndex}
-                            isKeyboardOpen={this.state.isKeyboardOpen}
-                        />
-                        {!this.state.isKeyboardOpen && (
-                            <LitterPickerWheels
-                                item={this.props.item}
-                                items={this.props.items}
-                                model={this.props.model}
-                                category={this.props.category}
+                            <LitterBottomSearch
+                                suggestedTags={this.props.suggestedTags}
+                                // height={this.state.height}
                                 lang={this.props.lang}
+                                swiperIndex={this.props.swiperIndex}
+                                isKeyboardOpen={this.state.isKeyboardOpen}
                             />
-                        )}
-                        {!this.state.isKeyboardOpen && (
-                            <Pressable
-                                onPress={() => this.addTag()}
-                                style={styles.buttonStyle}>
-                                <SubTitle color="white">ADD TAG</SubTitle>
-                            </Pressable>
-                        )}
-                    </View>
-                </ActionSheet>
+                            {!this.state.isKeyboardOpen && (
+                                <LitterPickerWheels
+                                    item={this.props.item}
+                                    items={this.props.items}
+                                    model={this.props.model}
+                                    category={this.props.category}
+                                    lang={this.props.lang}
+                                />
+                            )}
+                            {!this.state.isKeyboardOpen && (
+                                <Pressable
+                                    onPress={() => this.addTag()}
+                                    style={styles.buttonStyle}>
+                                    <SubTitle color="white">ADD TAG</SubTitle>
+                                </Pressable>
+                            )}
+                        </View>
+                    </Animated.View>
+                )}
+
+                {/* </ActionSheet> */}
             </View>
         );
     }
