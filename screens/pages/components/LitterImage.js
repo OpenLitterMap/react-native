@@ -46,7 +46,7 @@ class LitterImage extends PureComponent {
 
     componentDidMount() {
         // TODO: remove this -- only for dev
-        this.actionsheetRef.current?.setModalVisible(true);
+        // this.actionsheetRef.current?.setModalVisible(true);
         this.keyboardDidShowSubscription = Keyboard.addListener(
             'keyboardDidShow',
             () => {
@@ -141,7 +141,10 @@ class LitterImage extends PureComponent {
 
                 <ActionSheet
                     ref={this.actionsheetRef}
-                    closeOnTouchBackdrop={false}
+                    closeOnTouchBackdrop={true}
+                    gestureEnabled
+                    // closable={false}
+                    // bottomOffset={10}
                     keyboardShouldPersistTaps="always">
                     <View
                         style={{
@@ -153,12 +156,14 @@ class LitterImage extends PureComponent {
                             lang={this.props.lang}
                             swiperIndex={this.props.swiperIndex}
                         />
-                        <LitterCategories
-                            categories={CATEGORIES}
-                            category={this.props.category}
-                            lang={this.props.lang}
-                            callback={this.categoryClicked}
-                        />
+                        {/* {!this.state.isKeyboardOpen && (
+                            <LitterCategories
+                                categories={CATEGORIES}
+                                category={this.props.category}
+                                lang={this.props.lang}
+                                callback={this.categoryClicked}
+                            />
+                        )} */}
                         <LitterBottomSearch
                             suggestedTags={this.props.suggestedTags}
                             // height={this.state.height}
@@ -175,11 +180,13 @@ class LitterImage extends PureComponent {
                                 lang={this.props.lang}
                             />
                         )}
-                        <Pressable
-                            onPress={() => this.addTag()}
-                            style={styles.buttonStyle}>
-                            <SubTitle color="white">ADD TAG</SubTitle>
-                        </Pressable>
+                        {!this.state.isKeyboardOpen && (
+                            <Pressable
+                                onPress={() => this.addTag()}
+                                style={styles.buttonStyle}>
+                                <SubTitle color="white">ADD TAG</SubTitle>
+                            </Pressable>
+                        )}
                     </View>
                 </ActionSheet>
             </View>

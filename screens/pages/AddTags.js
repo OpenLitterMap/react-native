@@ -150,16 +150,9 @@ class AddTags extends PureComponent {
                 <View style={styles.container}>
                     <StatusBar hidden />
 
-                    {/* First - Top Bar position: 'absolute'  */}
-                    {/* <LitterCategories
-                        categories={CATEGORIES}
-                        category={this.props.category}
-                        lang={this.props.lang}
-                        callback={this.categoryClicked}
-                    /> */}
-
                     {/* Second - Image. Height: 80% */}
                     <Swiper
+                        style={{ zIndex: 20 }}
                         index={swiperIndex}
                         loop={false}
                         showsPagination={false}
@@ -170,7 +163,21 @@ class AddTags extends PureComponent {
                         }>
                         {this._renderLitterImage()}
                     </Swiper>
-
+                    {/* First - Top Bar position: 'absolute'  */}
+                    <View
+                        style={{
+                            position: 'absolute',
+                            top: 40,
+                            left: 20,
+                            zIndex: 100
+                        }}>
+                        <LitterCategories
+                            categories={CATEGORIES}
+                            category={this.props.category}
+                            lang={this.props.lang}
+                            callback={this.categoryClicked}
+                        />
+                    </View>
                     {/* Third - Tags. position: absolute */}
                     {/* <LitterTags
                         tags={this.props.images[this.props.swiperIndex]?.tags}
