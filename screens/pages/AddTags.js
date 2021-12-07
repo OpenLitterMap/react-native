@@ -23,11 +23,13 @@ import LitterImage from './components/LitterImage';
 import LitterPickerWheels from './components/LitterPickerWheels';
 import LitterTags from './components/LitterTags';
 import LitterBottomSearch from './components/LitterBottomSearch';
-
+import TagsActionButton from './components/TagsActionButton';
+import { SubTitle, Colors, Body } from '../components';
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 
 import LITTERKEYS from '../../assets/data/litterkeys';
+import Icon from 'react-native-vector-icons/Ionicons';
 
 class AddTags extends PureComponent {
     constructor(props) {
@@ -35,23 +37,65 @@ class AddTags extends PureComponent {
 
         this.state = {
             categoryAnimation: new Animated.Value(0),
-            isCategoriesVisible: false
+            sheetAnmiation: new Animated.Value(0),
+            isCategoriesVisible: false,
+            isKeyboardOpen: false,
+            isOverlayDisplayed: false
         };
         this.actionsheetRef = createRef();
     }
 
     /**
-     * Check if the user has any photos on web
-     *
-     * @photo_actions.js
      */
-    async componentDidMount() {}
+    async componentDidMount() {
+        this.keyboardDidShowSubscription = Keyboard.addListener(
+            'keyboardDidShow',
+            () => {
+                this.setState({ isKeyboardOpen: true });
+            }
+        );
+        this.keyboardDidHideSubscription = Keyboard.addListener(
+            'keyboardDidHide',
+            () => {
+                this.setState({ isKeyboardOpen: false });
+            }
+        );
+    }
 
     /**
      * Cancel event listeners
      */
-    componentWillUnmount() {}
+    componentWillUnmount() {
+        this.keyboardDidShowSubscription.remove();
+        this.keyboardDidHideSubscription.remove();
+    }
 
+    /**
+     * Add tag on a specific image
+     */
+    addTag() {
+        const tag = {
+            category: this.props.category.title.toString(),
+            title: this.props.item.toString(),
+            quantity: this.props.q
+        };
+
+        // currentGlobalIndex
+        const currentIndex = this.props.swiperIndex;
+        this.props.addTagToImage({
+            tag,
+            currentIndex,
+            quantityChanged: this.props.quantityChanged
+        });
+
+        this.props.changeQuantiyStatus(false);
+    }
+
+    /**
+     * fn for start animation on add tags floating button click
+     * animates categories from top
+     * and Tags sheet with search box from bottom
+     */
     startAnimation = () => {
         Animated.timing(this.state.categoryAnimation, {
             toValue: 200,
@@ -59,8 +103,18 @@ class AddTags extends PureComponent {
             useNativeDriver: true,
             easing: Easing.elastic(1)
         }).start();
+        Animated.timing(this.state.sheetAnmiation, {
+            toValue: -400,
+            duration: 500,
+            useNativeDriver: true,
+            easing: Easing.elastic(1)
+        }).start();
     };
 
+    /**
+     * Fn for close animation
+     * happen on backdrop click
+     */
     returnAnimation = () => {
         Animated.timing(this.state.categoryAnimation, {
             toValue: 0,
@@ -72,6 +126,12 @@ class AddTags extends PureComponent {
                 isCategoriesVisible: false
             });
         });
+        Animated.timing(this.state.sheetAnmiation, {
+            toValue: 0,
+            duration: 500,
+            useNativeDriver: true,
+            easing: Easing.elastic(1)
+        }).start();
     };
     /**
      * The LitterPicker component
@@ -82,6 +142,9 @@ class AddTags extends PureComponent {
         const categoryAnimatedStyle = {
             transform: [{ translateY: this.state.categoryAnimation }]
         };
+        const sheetAnimatedStyle = {
+            transform: [{ translateY: this.state.sheetAnmiation }]
+        };
 
         return (
             <View style={{ flex: 1 }}>
@@ -89,9 +152,30 @@ class AddTags extends PureComponent {
                     <StatusBar hidden />
 
                     <Swiper
+                        showsButtons
+                        nextButton={
+                            <View style={styles.slideButtonStyle}>
+                                <Icon
+                                    name="ios-chevron-forward"
+                                    color={Colors.accent}
+                                    size={32}
+                                />
+                            </View>
+                        }
+                        prevButton={
+                            <View style={styles.slideButtonStyle}>
+                                <Icon
+                                    name="ios-chevron-back"
+                                    color={Colors.accent}
+                                    size={32}
+                                />
+                            </View>
+                        }
                         style={{ zIndex: 20 }}
                         index={swiperIndex}
                         loop={false}
+                        loadMinimal
+                        loadMinimalSize={2}
                         showsPagination={false}
                         keyboardShouldPersistTaps="handled"
                         ref="imageSwiper"
@@ -119,6 +203,97 @@ class AddTags extends PureComponent {
                             />
                         </Animated.View>
                     )}
+
+                    {/* Black overlay */}
+                    {this.state.isOverlayDisplayed && (
+                        <View
+                            style={{
+                                position: 'absolute',
+                                flex: 1,
+                                backgroundColor: 'black',
+                                opacity: 0.4,
+                                width: SCREEN_WIDTH,
+                                height: SCREEN_HEIGHT
+                            }}
+                        />
+                    )}
+                    {/* Floating action button */}
+                    <TagsActionButton
+                        openTagSheet={() => {
+                            if (this.state.isCategoriesVisible) {
+                                this.returnAnimation();
+                            } else {
+                                this.startAnimation();
+                                this.setState({
+                                    isCategoriesVisible: true
+                                });
+                            }
+                        }}
+                        toggleOverlay={() => {
+                            this.setState(previousState => ({
+                                isOverlayDisplayed: !previousState.isOverlayDisplayed
+                            }));
+                        }}
+                    />
+
+                    {/* Bottom action sheet with Tags picker and add tags section */}
+                    {this.state.isCategoriesVisible && (
+                        <Animated.View
+                            style={[
+                                {
+                                    backgroundColor: 'white',
+                                    position: 'absolute',
+                                    bottom: -400,
+                                    left: 0,
+                                    paddingVertical: 20,
+                                    borderTopLeftRadius: 8,
+                                    borderTopRightRadius: 8
+                                },
+                                sheetAnimatedStyle
+                            ]}>
+                            <View
+                                style={{
+                                    // height: 200,
+                                    maxWidth: SCREEN_WIDTH
+                                }}>
+                                <LitterTags
+                                    tags={
+                                        this.props.images[
+                                            this.props.swiperIndex
+                                        ]?.tags
+                                    }
+                                    lang={this.props.lang}
+                                    swiperIndex={this.props.swiperIndex}
+                                />
+
+                                <LitterBottomSearch
+                                    suggestedTags={this.props.suggestedTags}
+                                    // height={this.state.height}
+                                    lang={this.props.lang}
+                                    swiperIndex={this.props.swiperIndex}
+                                    isKeyboardOpen={this.state.isKeyboardOpen}
+                                />
+                                {!this.state.isKeyboardOpen && (
+                                    <LitterPickerWheels
+                                        item={this.props.item}
+                                        items={this.props.items}
+                                        model={this.props.model}
+                                        category={this.props.category}
+                                        lang={this.props.lang}
+                                    />
+                                )}
+                                {!this.state.isKeyboardOpen && (
+                                    <Pressable
+                                        onPress={() => this.addTag()}
+                                        style={styles.buttonStyle}>
+                                        <SubTitle color="white">
+                                            ADD TAG
+                                        </SubTitle>
+                                    </Pressable>
+                                )}
+                            </View>
+                        </Animated.View>
+                    )}
                 </View>
             </View>
         );
@@ -131,25 +306,10 @@ class AddTags extends PureComponent {
     
      */
     swiperIndexChanged = newGlobalIndex => {
-        console.log('swiperIndexChanged', newGlobalIndex);
-
         // Without this, we get "cannot update a component from within the function body of another component"
         setTimeout(() => {
             // litter.js swiperIndex
             this.props.swiperIndexChanged(newGlobalIndex);
-
-            // If we are browsing web photos
-            // At the end of the search, we need to check to see if we need to load more images
-            // Currently we are loading 10 images at a time
-            // if (currentPhotoType === 'web')
-            // {
-            //     // If this is the last webPhoto, load more
-            //     if (this.props.photoSelected.id === this.props.webPhotos[this.props.webPhotos.length -1].id)
-            //     {
-            //         // show loading more images from web
-            //         this.props.loadMoreWebImages(this.props.token, this.props.photoSelected.id);
-            //     }
-            // }
         }, 0);
     };
 
@@ -160,31 +320,20 @@ class AddTags extends PureComponent {
     _renderLitterImage = () => {
         // Return an array of all photos
         return this.props.images.map((image, index) => {
-            // Only render one image
-            if (index === this.props.swiperIndex) {
-                return (
-                    <LitterImage
-                        category={this.props.category}
-                        lang={this.props.lang}
-                        key={image.id}
-                        photoSelected={image}
-                        swiperIndex={this.props.swiperIndex}
-                        toggleFn={() => {
-                            if (this.state.isCategoriesVisible) {
-                                this.returnAnimation();
-                            } else {
-                                this.startAnimation();
-                                this.setState({
-                                    isCategoriesVisible: true
-                                });
-                            }
-                        }}
-                    />
-                );
-            }
-
-            // Otherwise, just return an empty view
-            return <View key={image.id} />;
+            return (
+                <LitterImage
+                    category={this.props.category}
+                    lang={this.props.lang}
+                    key={image.id}
+                    photoSelected={image}
+                    swiperIndex={this.props.swiperIndex}
+                    toggleFn={() => {
+                        if (this.state.isCategoriesVisible) {
+                            this.returnAnimation();
+                        }
+                    }}
+                />
+            );
         });
     };
 }
@@ -310,6 +459,24 @@ const styles = StyleSheet.create({
         marginBottom: 'auto',
         fontSize: SCREEN_HEIGHT * 0.02,
         paddingLeft: SCREEN_WIDTH * 0.04
+    },
+    buttonStyle: {
+        height: 56,
+        width: SCREEN_WIDTH - 40,
+        backgroundColor: Colors.accent,
+        marginBottom: 40,
+        marginLeft: 20,
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderRadius: 12
+    },
+    slideButtonStyle: {
+        backgroundColor: '#fff',
+        borderRadius: 100,
+        width: 40,
+        height: 40,
+        justifyContent: 'center',
+        alignItems: 'center'
     }
 });
 
