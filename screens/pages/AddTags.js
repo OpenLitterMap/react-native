@@ -60,6 +60,19 @@ class AddTags extends PureComponent {
             easing: Easing.elastic(1)
         }).start();
     };
+
+    returnAnimation = () => {
+        Animated.timing(this.state.categoryAnimation, {
+            toValue: 0,
+            duration: 500,
+            useNativeDriver: true,
+            easing: Easing.elastic(1)
+        }).start(() => {
+            this.setState({
+                isCategoriesVisible: false
+            });
+        });
+    };
     /**
      * The LitterPicker component
      */
@@ -157,11 +170,14 @@ class AddTags extends PureComponent {
                         photoSelected={image}
                         swiperIndex={this.props.swiperIndex}
                         toggleFn={() => {
-                            this.startAnimation();
-                            this.setState({
-                                isCategoriesVisible: !this.state
-                                    .isCategoriesVisible
-                            });
+                            if (this.state.isCategoriesVisible) {
+                                this.returnAnimation();
+                            } else {
+                                this.startAnimation();
+                                this.setState({
+                                    isCategoriesVisible: true
+                                });
+                            }
                         }}
                     />
                 );

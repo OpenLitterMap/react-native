@@ -5,7 +5,8 @@ import {
     Keyboard,
     TextInput,
     View,
-    Pressable
+    Pressable,
+    StyleSheet
 } from 'react-native';
 import { getTranslation } from 'react-native-translation';
 import { connect } from 'react-redux';
@@ -106,13 +107,7 @@ class LitterBottomSearch extends PureComponent {
             <View>
                 <View style={{ paddingHorizontal: 20, paddingVertical: 10 }}>
                     <TextInput
-                        style={{
-                            width: SCREEN_WIDTH - 40,
-                            height: 60,
-                            backgroundColor: Colors.accentLight,
-                            borderRadius: 12,
-                            padding: 10
-                        }}
+                        style={styles.textFieldStyle}
                         placeholder={suggest}
                         placeholderTextColor={Colors.muted}
                         onChangeText={text => this.updateText(text)}
@@ -147,81 +142,21 @@ class LitterBottomSearch extends PureComponent {
     }
 }
 
-const styles = {
-    androidTextFilterClosed: {
-        alignItems: 'center',
-        borderRadius: 50,
-        borderColor: 'gray',
-        borderWidth: 1,
-        padding: SCREEN_WIDTH * 0.001, // works better on android
-        // height: SCREEN_HEIGHT * 0.045, // works better on iOS
-        textAlign: 'center',
-        width: '50%'
+const styles = StyleSheet.create({
+    textFieldStyle: {
+        width: SCREEN_WIDTH - 40,
+        height: 60,
+        backgroundColor: '#fafafa',
+        borderRadius: 12,
+        padding: 10,
+        borderColor: Colors.muted,
+        borderWidth: 0.5
     },
+
     category: {
         marginBottom: SCREEN_HEIGHT * 0.01
     },
-    container: {
-        // position: 'absolute',
-        bottom: -10,
-        left: 0,
-        right: 0,
-        backgroundColor: 'white',
-        height: SCREEN_HEIGHT * 0.05,
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        width: SCREEN_WIDTH
-    },
-    closedBottomContainer: {
-        // position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        backgroundColor: 'white',
-        height: SCREEN_HEIGHT * 0.07,
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        width: SCREEN_WIDTH
-    },
-    openContainerAndroid: {
-        // position: 'absolute',
-        // top: SCREEN_HEIGHT * 0.1,
-        bottom: 0,
-        left: 0,
-        right: 0,
-        backgroundColor: 'white',
-        borderRadius: 6,
-        height: SCREEN_HEIGHT * 0.25
-    },
-    openContaineriOS: {
-        // position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        backgroundColor: 'white',
-        borderRadius: 6,
-        height: SCREEN_HEIGHT * 0.2
-    },
-    hide: {
-        display: 'none'
-    },
-    icon: {
-        alignItems: 'center',
-        justifyContent: 'center',
-        width: SCREEN_WIDTH * 0.25
-    },
-    iOSTextFilterClosed: {
-        alignItems: 'center',
-        borderRadius: 50,
-        borderColor: 'gray',
-        borderWidth: 1,
-        // padding: SCREEN_WIDTH * 0.001, // works better on android
-        height: SCREEN_HEIGHT * 0.045, // works better on iOS
-        textAlign: 'center',
-        width: '50%'
-    },
+
     item: {
         fontSize: SCREEN_HEIGHT * 0.02
     },
@@ -239,24 +174,8 @@ const styles = {
     tagsOuterContainer: {
         marginLeft: 20,
         marginBottom: 40
-    },
-
-    textInputOpen: {
-        borderRadius: 50,
-        borderColor: 'gray',
-        borderWidth: 1,
-        backgroundColor: 'white',
-        height: SCREEN_HEIGHT * 0.045,
-        paddingTop: 0, // android
-        paddingBottom: 0, // android
-        paddingLeft: SCREEN_WIDTH * 0.05,
-        marginTop: SCREEN_HEIGHT * 0.01,
-        marginLeft: SCREEN_WIDTH * 0.25,
-        marginRight: SCREEN_WIDTH * 0.25,
-        marginBottom: SCREEN_HEIGHT * 0.01,
-        width: '50%'
     }
-};
+});
 
 const mapStateToProps = state => {
     return {

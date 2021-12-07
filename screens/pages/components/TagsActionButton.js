@@ -14,7 +14,7 @@ class TagsActionButton extends Component {
 
     startAnimation = () => {
         Animated.timing(this.state.animation, {
-            toValue: -150,
+            toValue: -120,
             duration: 500,
             useNativeDriver: true,
             easing: Easing.elastic(1)
@@ -28,7 +28,7 @@ class TagsActionButton extends Component {
         }).start();
 
         Animated.timing(this.state.diagonalAnimation, {
-            toValue: -100,
+            toValue: -80,
             duration: 500,
             useNativeDriver: true,
             easing: Easing.elastic(1)
@@ -156,8 +156,8 @@ const styles = StyleSheet.create({
     },
     smallButton: {
         backgroundColor: '#1976D2',
-        width: 60,
-        height: 60,
+        width: 70,
+        height: 70,
         borderRadius: 100,
         justifyContent: 'center',
         alignItems: 'center',

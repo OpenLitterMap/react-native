@@ -77,6 +77,18 @@ class LitterImage extends PureComponent {
             easing: Easing.elastic(1)
         }).start();
     };
+    returnAnimation = () => {
+        Animated.timing(this.state.sheetAnmiation, {
+            toValue: 0,
+            duration: 500,
+            useNativeDriver: true,
+            easing: Easing.elastic(1)
+        }).start(() => {
+            this.setState({
+                isSheetVisible: false
+            });
+        });
+    };
 
     /**
      * Add tag on a specific image
@@ -112,7 +124,14 @@ class LitterImage extends PureComponent {
             transform: [{ translateY: this.state.sheetAnmiation }]
         };
         return (
-            <View style={{ backgroundColor: 'black' }}>
+            <Pressable
+                onPress={() => {
+                    if (this.state.isSheetVisible) {
+                        this.returnAnimation();
+                        this.props.toggleFn();
+                    }
+                }}
+                style={{ backgroundColor: 'black' }}>
                 <Image
                     resizeMode="cover"
                     source={{ uri: this.props.photoSelected.uri }}
@@ -143,7 +162,7 @@ class LitterImage extends PureComponent {
                         this.startAnimation();
                         this.props.toggleFn();
                         this.setState({
-                            isSheetVisible: !this.state.isSheetVisible
+                            isSheetVisible: true
                         });
                     }}
                     toggleOverlay={() => {
@@ -213,7 +232,7 @@ class LitterImage extends PureComponent {
                 )}
 
                 {/* </ActionSheet> */}
-            </View>
+            </Pressable>
         );
     }
 }
