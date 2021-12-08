@@ -71,7 +71,7 @@ class LitterTags extends Component {
         return (
             <View
                 style={{
-                    // height: 60,
+                    marginLeft: 10,
                     width: SCREEN_WIDTH
                 }}>
                 <ScrollView

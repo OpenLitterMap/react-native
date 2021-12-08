@@ -115,6 +115,10 @@ class LitterBottomSearch extends PureComponent {
                         blurOnSubmit={false}
                         clearButtonMode="always"
                         value={this.state.text}
+                        onSubmitEditing={() => {
+                            this.updateText('');
+                            Keyboard.dismiss();
+                        }}
                     />
                 </View>
 
