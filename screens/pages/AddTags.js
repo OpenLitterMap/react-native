@@ -13,7 +13,9 @@ import {
     StyleSheet,
     Pressable
 } from 'react-native';
-
+import GestureRecognizer, {
+    swipeDirections
+} from 'react-native-swipe-gestures';
 import Swiper from 'react-native-swiper';
 import { connect } from 'react-redux';
 import * as actions from '../../actions';
@@ -170,185 +172,190 @@ class AddTags extends PureComponent {
         };
 
         return (
-            <View style={{ flex: 1 }}>
-                <View style={styles.container}>
-                    {/* Hide status bar on this screen */}
-                    <StatusBar hidden />
+            <GestureRecognizer onSwipeDown={state => this.props.toggleLitter()}>
+                <View style={{ flex: 1 }}>
+                    <View style={styles.container}>
+                        {/* Hide status bar on this screen */}
+                        <StatusBar hidden />
 
-                    {/* Images swiper  */}
-                    <Swiper
-                        showsButtons
-                        nextButton={
-                            <View style={styles.slideButtonStyle}>
-                                <Icon
-                                    name="ios-chevron-forward"
-                                    color={Colors.accent}
-                                    size={32}
-                                />
-                            </View>
-                        }
-                        prevButton={
-                            <View style={styles.slideButtonStyle}>
-                                <Icon
-                                    name="ios-chevron-back"
-                                    color={Colors.accent}
-                                    size={32}
-                                />
-                            </View>
-                        }
-                        index={swiperIndex}
-                        loop={false}
-                        loadMinimal //
-                        loadMinimalSize={2} // loads only 2 images at a time
-                        showsPagination={false}
-                        keyboardShouldPersistTaps="handled"
-                        ref="imageSwiper"
-                        onIndexChanged={index =>
-                            this.swiperIndexChanged(index)
-                        }>
-                        {this._renderLitterImage()}
-                    </Swiper>
+                        {/* Images swiper  */}
+                        <Swiper
+                            showsButtons
+                            nextButton={
+                                <View style={styles.slideButtonStyle}>
+                                    <Icon
+                                        name="ios-chevron-forward"
+                                        color={Colors.accent}
+                                        size={32}
+                                    />
+                                </View>
+                            }
+                            prevButton={
+                                <View style={styles.slideButtonStyle}>
+                                    <Icon
+                                        name="ios-chevron-back"
+                                        color={Colors.accent}
+                                        size={32}
+                                    />
+                                </View>
+                            }
+                            index={swiperIndex}
+                            loop={false}
+                            loadMinimal //
+                            loadMinimalSize={2} // loads only 2 images at a time
+                            showsPagination={false}
+                            keyboardShouldPersistTaps="handled"
+                            ref="imageSwiper"
+                            onIndexChanged={index =>
+                                this.swiperIndexChanged(index)
+                            }>
+                            {this._renderLitterImage()}
+                        </Swiper>
 
-                    {/* Category component -- show only if add tag button is clicked
+                        {/* Category component -- show only if add tag button is clicked
                         hidden when backdrop is pressed
                     */}
-                    {this.state.isCategoriesVisible && (
-                        <Animated.View
-                            style={[
-                                {
-                                    position: 'absolute',
-                                    top: -150,
-                                    left: 20,
-                                    zIndex: 2
-                                },
-                                categoryAnimatedStyle
-                            ]}>
-                            <LitterCategories
-                                categories={CATEGORIES}
-                                category={this.props.category}
-                                lang={this.props.lang}
-                            />
-                        </Animated.View>
-                    )}
+                        {this.state.isCategoriesVisible && (
+                            <Animated.View
+                                style={[
+                                    {
+                                        position: 'absolute',
+                                        top: -150,
+                                        left: 20,
+                                        zIndex: 2
+                                    },
+                                    categoryAnimatedStyle
+                                ]}>
+                                <LitterCategories
+                                    categories={CATEGORIES}
+                                    category={this.props.category}
+                                    lang={this.props.lang}
+                                />
+                            </Animated.View>
+                        )}
 
-                    {/* Black overlay */}
-                    {this.state.isOverlayDisplayed && (
-                        <View
-                            style={{
-                                position: 'absolute',
-                                flex: 1,
-                                backgroundColor: 'black',
-                                opacity: 0.4,
-                                width: SCREEN_WIDTH,
-                                height: SCREEN_HEIGHT
-                            }}
-                        />
-                    )}
-                    {this.state.isOverlayDisplayed && (
-                        <View
-                            style={{
-                                position: 'absolute',
-                                backgroundColor: Colors.white,
-                                width: SCREEN_WIDTH - 40,
-                                marginLeft: 20,
-                                // height: 100,
-                                top: 100,
-                                borderRadius: 12,
-                                padding: 20
-                            }}>
-                            <Caption>Litter Status</Caption>
-                            {this.props.images[this.props.swiperIndex]
-                                ?.picked_up ? (
-                                <Body color="accent">Picked up 👍🏻</Body>
-                            ) : (
-                                <Body color="error">Not picked up 👎🏻</Body>
-                            )}
-                        </View>
-                    )}
-
-                    {/* Floating action button */}
-                    <TagsActionButton
-                        pickedUpStatus={
-                            this.props.images[this.props.swiperIndex]?.picked_up
-                        }
-                        openTagSheet={() => {
-                            if (this.state.isCategoriesVisible) {
-                                this.returnAnimation();
-                            } else {
-                                this.startAnimation(-400);
-                                this.setState({
-                                    isCategoriesVisible: true
-                                });
-                            }
-                        }}
-                        toggleOverlay={() => {
-                            this.setState(previousState => ({
-                                isOverlayDisplayed: !previousState.isOverlayDisplayed
-                            }));
-                        }}
-                    />
-
-                    {/* Bottom action sheet with Tags picker and add tags section */}
-
-                    {this.state.isCategoriesVisible && (
-                        <Animated.View
-                            style={[
-                                {
-                                    backgroundColor: 'white',
-                                    position: 'absolute',
-                                    bottom: -400,
-                                    left: 0,
-                                    paddingVertical: 20,
-                                    borderTopLeftRadius: 8,
-                                    borderTopRightRadius: 8
-                                },
-                                sheetAnimatedStyle
-                            ]}>
+                        {/* Black overlay */}
+                        {this.state.isOverlayDisplayed && (
                             <View
                                 style={{
-                                    // height: 200,
-                                    maxWidth: SCREEN_WIDTH
+                                    position: 'absolute',
+                                    flex: 1,
+                                    backgroundColor: 'black',
+                                    opacity: 0.4,
+                                    width: SCREEN_WIDTH,
+                                    height: SCREEN_HEIGHT
+                                }}
+                            />
+                        )}
+                        {this.state.isOverlayDisplayed && (
+                            <View
+                                style={{
+                                    position: 'absolute',
+                                    backgroundColor: Colors.white,
+                                    width: SCREEN_WIDTH - 40,
+                                    marginLeft: 20,
+                                    // height: 100,
+                                    top: 100,
+                                    borderRadius: 12,
+                                    padding: 20
                                 }}>
-                                <LitterTags
-                                    tags={
-                                        this.props.images[
-                                            this.props.swiperIndex
-                                        ]?.tags
-                                    }
-                                    lang={this.props.lang}
-                                    swiperIndex={this.props.swiperIndex}
-                                />
-
-                                <LitterBottomSearch
-                                    suggestedTags={this.props.suggestedTags}
-                                    // height={this.state.height}
-                                    lang={this.props.lang}
-                                    swiperIndex={this.props.swiperIndex}
-                                    isKeyboardOpen={this.state.isKeyboardOpen}
-                                />
-                                {!this.state.isKeyboardOpen && (
-                                    <LitterPickerWheels
-                                        item={this.props.item}
-                                        items={this.props.items}
-                                        model={this.props.model}
-                                        category={this.props.category}
-                                        lang={this.props.lang}
-                                    />
-                                )}
-                                {!this.state.isKeyboardOpen && (
-                                    <Pressable
-                                        onPress={() => this.addTag()}
-                                        style={styles.buttonStyle}>
-                                        <SubTitle color="white">
-                                            ADD TAG
-                                        </SubTitle>
-                                    </Pressable>
+                                <Caption>Litter Status</Caption>
+                                {this.props.images[this.props.swiperIndex]
+                                    ?.picked_up ? (
+                                    <Body color="accent">Picked up 👍🏻</Body>
+                                ) : (
+                                    <Body color="error">Not picked up 👎🏻</Body>
                                 )}
                             </View>
-                        </Animated.View>
-                    )}
+                        )}
+
+                        {/* Floating action button */}
+                        <TagsActionButton
+                            pickedUpStatus={
+                                this.props.images[this.props.swiperIndex]
+                                    ?.picked_up
+                            }
+                            openTagSheet={() => {
+                                if (this.state.isCategoriesVisible) {
+                                    this.returnAnimation();
+                                } else {
+                                    this.startAnimation(-400);
+                                    this.setState({
+                                        isCategoriesVisible: true
+                                    });
+                                }
+                            }}
+                            toggleOverlay={() => {
+                                this.setState(previousState => ({
+                                    isOverlayDisplayed: !previousState.isOverlayDisplayed
+                                }));
+                            }}
+                        />
+
+                        {/* Bottom action sheet with Tags picker and add tags section */}
+
+                        {this.state.isCategoriesVisible && (
+                            <Animated.View
+                                style={[
+                                    {
+                                        backgroundColor: 'white',
+                                        position: 'absolute',
+                                        bottom: -400,
+                                        left: 0,
+                                        paddingVertical: 20,
+                                        borderTopLeftRadius: 8,
+                                        borderTopRightRadius: 8
+                                    },
+                                    sheetAnimatedStyle
+                                ]}>
+                                <View
+                                    style={{
+                                        // height: 200,
+                                        maxWidth: SCREEN_WIDTH
+                                    }}>
+                                    <LitterTags
+                                        tags={
+                                            this.props.images[
+                                                this.props.swiperIndex
+                                            ]?.tags
+                                        }
+                                        lang={this.props.lang}
+                                        swiperIndex={this.props.swiperIndex}
+                                    />
+
+                                    <LitterBottomSearch
+                                        suggestedTags={this.props.suggestedTags}
+                                        // height={this.state.height}
+                                        lang={this.props.lang}
+                                        swiperIndex={this.props.swiperIndex}
+                                        isKeyboardOpen={
+                                            this.state.isKeyboardOpen
+                                        }
+                                    />
+                                    {!this.state.isKeyboardOpen && (
+                                        <LitterPickerWheels
+                                            item={this.props.item}
+                                            items={this.props.items}
+                                            model={this.props.model}
+                                            category={this.props.category}
+                                            lang={this.props.lang}
+                                        />
+                                    )}
+                                    {!this.state.isKeyboardOpen && (
+                                        <Pressable
+                                            onPress={() => this.addTag()}
+                                            style={styles.buttonStyle}>
+                                            <SubTitle color="white">
+                                                ADD TAG
+                                            </SubTitle>
+                                        </Pressable>
+                                    )}
+                                </View>
+                            </Animated.View>
+                        )}
+                    </View>
                 </View>
-            </View>
+            </GestureRecognizer>
         );
     }
 
