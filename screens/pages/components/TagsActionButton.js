@@ -112,11 +112,19 @@ class TagsActionButton extends Component {
                     </AnimatedPressable>
                     <AnimatedPressable
                         style={[styles.smallButton, animatedXStyle]}>
-                        <Icon
-                            name="ios-cloud-upload-outline"
-                            color={Colors.white}
-                            size={28}
-                        />
+                        {this.props.pickedUpStatus ? (
+                            <Icon
+                                name="ios-chevron-down"
+                                color={Colors.white}
+                                size={28}
+                            />
+                        ) : (
+                            <Icon
+                                name="ios-chevron-up"
+                                color={Colors.white}
+                                size={28}
+                            />
+                        )}
                     </AnimatedPressable>
 
                     <AnimatedPressable

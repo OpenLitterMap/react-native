@@ -24,7 +24,7 @@ import LitterPickerWheels from './components/LitterPickerWheels';
 import LitterTags from './components/LitterTags';
 import LitterBottomSearch from './components/LitterBottomSearch';
 import TagsActionButton from './components/TagsActionButton';
-import { SubTitle, Colors, Body } from '../components';
+import { SubTitle, Colors, Body, Caption } from '../components';
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 
@@ -244,9 +244,33 @@ class AddTags extends PureComponent {
                             }}
                         />
                     )}
+                    {this.state.isOverlayDisplayed && (
+                        <View
+                            style={{
+                                position: 'absolute',
+                                backgroundColor: Colors.white,
+                                width: SCREEN_WIDTH - 40,
+                                marginLeft: 20,
+                                // height: 100,
+                                top: 100,
+                                borderRadius: 12,
+                                padding: 20
+                            }}>
+                            <Caption>Litter Status</Caption>
+                            {this.props.images[this.props.swiperIndex]
+                                ?.picked_up ? (
+                                <Body color="accent">Picked up 👍🏻</Body>
+                            ) : (
+                                <Body color="error">Not picked up 👎🏻</Body>
+                            )}
+                        </View>
+                    )}
 
                     {/* Floating action button */}
                     <TagsActionButton
+                        pickedUpStatus={
+                            this.props.images[this.props.swiperIndex]?.picked_up
+                        }
                         openTagSheet={() => {
                             if (this.state.isCategoriesVisible) {
                                 this.returnAnimation();
