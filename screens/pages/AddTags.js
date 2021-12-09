@@ -325,6 +325,12 @@ class AddTags extends PureComponent {
                             verticalButtonPress={
                                 this.actionSheetRef.current?.setModalVisible
                             }
+                            horizontalButtonPress={() =>
+                                this.props.togglePickedUp(
+                                    this.props.images[this.props.swiperIndex]
+                                        ?.id
+                                )
+                            }
                         />
 
                         {/* Bottom action sheet with Tags picker and add tags section */}

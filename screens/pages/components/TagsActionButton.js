@@ -113,6 +113,7 @@ class TagsActionButton extends Component {
                         />
                     </AnimatedPressable>
                     <AnimatedPressable
+                        onPress={this.props.horizontalButtonPress}
                         style={[styles.smallButton, animatedXStyle]}>
                         {this.props.pickedUpStatus ? (
                             <Icon

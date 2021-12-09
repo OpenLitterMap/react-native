@@ -8,6 +8,7 @@ import {
     DESELECT_ALL_IMAGES,
     INCREMENT_SELECTED,
     REMOVE_TAG_FROM_IMAGE,
+    TOGGLE_PICKED_UP,
     TOGGLE_SELECTING,
     TOGGLE_SELECTED_IMAGES,
     URL
@@ -160,6 +161,17 @@ export const removeTagFromImage = data => {
     return {
         type: REMOVE_TAG_FROM_IMAGE,
         payload: data
+    };
+};
+
+/**
+ * toggles picked_up status on an image based on id
+ * @param id
+ */
+export const togglePickedUp = id => {
+    return {
+        type: TOGGLE_PICKED_UP,
+        payload: id
     };
 };
 
