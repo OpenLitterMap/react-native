@@ -90,13 +90,15 @@ class TagsActionButton extends Component {
         return (
             <View>
                 <View style={[styles.container]}>
-                    <Animated.View style={[styles.smallButton, animatedStyle]}>
+                    <AnimatedPressable
+                        onPress={this.props.verticalButtonPress}
+                        style={[styles.smallButton, animatedStyle]}>
                         <Icon
                             name="ios-trash-outline"
                             color={Colors.white}
                             size={28}
                         />
-                    </Animated.View>
+                    </AnimatedPressable>
                     <AnimatedPressable
                         onPress={() => {
                             this.returnAnimation();

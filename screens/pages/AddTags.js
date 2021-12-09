@@ -18,6 +18,8 @@ import GestureRecognizer, {
 } from 'react-native-swipe-gestures';
 import Swiper from 'react-native-swiper';
 import { connect } from 'react-redux';
+import LottieView from 'lottie-react-native';
+import ActionSheet from 'react-native-actions-sheet';
 import * as actions from '../../actions';
 import CATEGORIES from '../../assets/data/categories';
 import LitterCategories from './components/LitterCategories';
@@ -45,7 +47,7 @@ class AddTags extends PureComponent {
             keyboardHeight: 0,
             isOverlayDisplayed: false
         };
-        this.actionsheetRef = createRef();
+        this.actionSheetRef = createRef();
     }
 
     /**
@@ -158,6 +160,36 @@ class AddTags extends PureComponent {
             easing: Easing.elastic(1)
         }).start();
     };
+
+    /** function for deleting image
+     * currentIndex is current swiper index
+     * if WEB image hit api and delete uploaded image and then delete from state
+     *  else delete from state by id
+     */
+    deleteImage = async () => {
+        const currentIndex = this.props.swiperIndex;
+
+        const { id, type } = this.props.images[currentIndex];
+
+        if (type === 'WEB') {
+            const photoId = this.props.images[currentIndex].photoId;
+
+            await this.props.deleteWebImage(this.props.token, photoId, id);
+        } else {
+            this.props.deleteImage(id);
+        }
+
+        // close delete confirmation action sheet
+
+        if (currentIndex === 0) {
+            // this.props.resetLitterTags();
+            this.props.toggleLitter();
+        } else {
+            this.actionSheetRef.current?.hide();
+            this.props.swiperIndexChanged(currentIndex - 1);
+        }
+    };
+
     /**
      * The LitterPicker component
      */
@@ -290,6 +322,9 @@ class AddTags extends PureComponent {
                                     isOverlayDisplayed: !previousState.isOverlayDisplayed
                                 }));
                             }}
+                            verticalButtonPress={
+                                this.actionSheetRef.current?.setModalVisible
+                            }
                         />
 
                         {/* Bottom action sheet with Tags picker and add tags section */}
@@ -342,19 +377,60 @@ class AddTags extends PureComponent {
                                         />
                                     )}
                                     {!this.state.isKeyboardOpen && (
-                                        <Pressable
+                                        <TouchableOpacity
                                             onPress={() => this.addTag()}
                                             style={styles.buttonStyle}>
                                             <SubTitle color="white">
                                                 ADD TAG
                                             </SubTitle>
-                                        </Pressable>
+                                        </TouchableOpacity>
                                     )}
                                 </View>
                             </Animated.View>
                         )}
                     </View>
                 </View>
+
+                {/* delete confirmation action sheet */}
+                <ActionSheet ref={this.actionSheetRef}>
+                    <View
+                        style={{
+                            // height: 300,
+                            padding: 40,
+                            alignItems: 'center'
+                        }}>
+                        <LottieView
+                            source={require('../../assets/lottie/trash_can_lottie.json')}
+                            autoPlay
+                            loop
+                            style={{ width: 80, height: 80, marginBottom: 20 }}
+                        />
+                        <Body style={{ textAlign: 'center' }}>
+                            Are you sure you want to delete this image ?
+                        </Body>
+                        <View
+                            style={{
+                                flexDirection: 'row',
+                                justifyContent: 'space-around',
+                                marginVertical: 40,
+                                width: SCREEN_WIDTH - 40
+                            }}>
+                            <Pressable
+                                onPress={this.actionSheetRef.current?.hide}
+                                style={[styles.actionButtonStyle]}>
+                                <Body>Cancel</Body>
+                            </Pressable>
+                            <Pressable
+                                onPress={this.deleteImage}
+                                style={[
+                                    styles.actionButtonStyle,
+                                    { backgroundColor: Colors.error }
+                                ]}>
+                                <Body color="white">Yes, Delete</Body>
+                            </Pressable>
+                        </View>
+                    </View>
+                </ActionSheet>
             </GestureRecognizer>
         );
     }
@@ -421,29 +497,27 @@ const styles = StyleSheet.create({
         height: 40,
         justifyContent: 'center',
         alignItems: 'center'
+    },
+    actionButtonStyle: {
+        height: 48,
+        borderRadius: 8,
+        paddingHorizontal: 20,
+        paddingVertical: 12,
+        justifyContent: 'center',
+        alignItems: 'center'
     }
 });
 
 const mapStateToProps = state => {
     return {
         category: state.litter.category,
-        collectionLength: state.litter.collectionLength,
-        currentTotalItems: state.litter.currentTotalItems,
-        displayAllTags: state.litter.displayAllTags,
-        indexSelected: state.litter.indexSelected, // index of photos, gallery, web
         item: state.litter.item,
         items: state.litter.items,
         lang: state.auth.lang,
         model: state.settings.model,
         photoSelected: state.litter.photoSelected,
-        photoType: state.litter.photoType,
-        positions: state.litter.positions,
-        presence: state.litter.presence,
-        previous_tags: state.auth.user.previous_tags,
-        previousTags: state.litter.previousTags,
         suggestedTags: state.litter.suggestedTags,
         swiperIndex: state.litter.swiperIndex,
-        totalLitterCount: state.litter.totalLitterCount,
         tags: state.litter.tags,
         tagsModalVisible: state.litter.tagsModalVisible,
         token: state.auth.token,
