@@ -13,6 +13,9 @@ import {
 } from 'react-native';
 import * as actions from '../../../actions';
 import { connect } from 'react-redux';
+import GestureRecognizer, {
+    swipeDirections
+} from 'react-native-swipe-gestures';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
@@ -41,23 +44,28 @@ class LitterImage extends PureComponent {
      */
     render() {
         return (
-            <Pressable
-                onPress={() => {
-                    this.props.toggleFn();
-                }}
-                style={{ backgroundColor: 'black' }}>
-                <Image
-                    resizeMode="cover"
-                    source={{ uri: this.props.photoSelected.uri }}
-                    style={styles.image}
-                    onLoad={this._imageLoaded.bind(this)}
-                />
+            <GestureRecognizer
+                onSwipeDown={state => {
+                    this.props.toggleLitter();
+                }}>
+                <Pressable
+                    onPress={() => {
+                        this.props.toggleFn();
+                    }}
+                    style={{ backgroundColor: 'black' }}>
+                    <Image
+                        resizeMode="cover"
+                        source={{ uri: this.props.photoSelected.uri }}
+                        style={styles.image}
+                        onLoad={this._imageLoaded.bind(this)}
+                    />
 
-                <ActivityIndicator
-                    style={styles.activityIndicator}
-                    animating={!this.state.imageLoaded}
-                />
-            </Pressable>
+                    <ActivityIndicator
+                        style={styles.activityIndicator}
+                        animating={!this.state.imageLoaded}
+                    />
+                </Pressable>
+            </GestureRecognizer>
         );
     }
 }

@@ -13,9 +13,7 @@ import {
     StyleSheet,
     Pressable
 } from 'react-native';
-import GestureRecognizer, {
-    swipeDirections
-} from 'react-native-swipe-gestures';
+
 import Swiper from 'react-native-swiper';
 import { connect } from 'react-redux';
 import LottieView from 'lottie-react-native';
@@ -204,7 +202,7 @@ class AddTags extends PureComponent {
         };
 
         return (
-            <GestureRecognizer onSwipeDown={state => this.props.toggleLitter()}>
+            <View>
                 <View style={{ flex: 1 }}>
                     <View style={styles.container}>
                         {/* Hide status bar on this screen */}
@@ -437,7 +435,7 @@ class AddTags extends PureComponent {
                         </View>
                     </View>
                 </ActionSheet>
-            </GestureRecognizer>
+            </View>
         );
     }
 
