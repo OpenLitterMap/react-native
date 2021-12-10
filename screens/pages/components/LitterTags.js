@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, createRef } from 'react';
 import {
     Dimensions,
     Pressable,
@@ -15,6 +15,12 @@ const SCREEN_WIDTH = Dimensions.get('window').width;
 
 // Tags not being deleted when using PureComponent
 class LitterTags extends Component {
+    constructor(props) {
+        super(props);
+
+        this.scrollRef = createRef();
+    }
+
     /**
      * Display a card for each tag
      */
@@ -27,7 +33,16 @@ class LitterTags extends Component {
                     return (
                         <Pressable
                             key={tag}
-                            onPress={this.removeTag.bind(this, category, tag)}>
+                            onPress={this.removeTag.bind(this, category, tag)}
+                            onLayout={event => {
+                                const layout = event.nativeEvent.layout;
+
+                                this.scrollRef.current.scrollTo({
+                                    x: layout.x,
+                                    y: layout.y,
+                                    animated: true
+                                });
+                            }}>
                             <View style={styles.card}>
                                 <Caption
                                     dictionary={`${
@@ -75,6 +90,7 @@ class LitterTags extends Component {
                     width: SCREEN_WIDTH
                 }}>
                 <ScrollView
+                    ref={this.scrollRef}
                     bounces={false}
                     horizontal={true}
                     showsHorizontalScrollIndicator={false}>
