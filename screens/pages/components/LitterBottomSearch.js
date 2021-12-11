@@ -102,7 +102,7 @@ class LitterBottomSearch extends PureComponent {
 
     render() {
         const lang = this.props.lang;
-        const suggest = getTranslation(`${lang}.litter.tags.type-to-suggest`);
+        const suggest = getTranslation(`${lang}.tag.type-to-suggest`);
         return (
             <View>
                 <View style={{ paddingHorizontal: 20, paddingVertical: 10 }}>
@@ -126,7 +126,7 @@ class LitterBottomSearch extends PureComponent {
                     <View style={styles.tagsOuterContainer}>
                         <Caption
                             style={styles.suggest}
-                            dictionary={`${lang}.litter.tags.suggested`}
+                            dictionary={`${lang}.tag.suggested`}
                             values={{
                                 count: this.props.suggestedTags.length
                             }}

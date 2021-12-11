@@ -12,8 +12,6 @@ class LitterCategories extends PureComponent {
      */
     changeCategory(id) {
         this.props.changeCategory(id);
-
-        // this.callback();
     }
 
     /**
@@ -32,7 +30,11 @@ class LitterCategories extends PureComponent {
                     ]}>
                     <Image source={category.path} style={styles.image} />
                     <Body
-                        color="muted"
+                        color={
+                            category.title === this.props.category.title
+                                ? 'text'
+                                : 'muted'
+                        }
                         dictionary={`${this.props.lang}.litter.categories.${
                             category.title
                         }`}
@@ -75,8 +77,8 @@ const styles = StyleSheet.create({
         backgroundColor: Colors.white
     },
     selectedCard: {
-        backgroundColor: Colors.accentLight,
-        borderColor: Colors.accent
+        backgroundColor: Colors.accent,
+        borderColor: Colors.accentLight
     },
     category: {
         alignItems: 'center',

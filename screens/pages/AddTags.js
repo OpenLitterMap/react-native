@@ -210,7 +210,9 @@ class AddTags extends PureComponent {
 
                         {/* Images swiper  */}
                         <Swiper
-                            showsButtons
+                            showsButtons={
+                                this.state.isCategoriesVisible ? false : true
+                            }
                             nextButton={
                                 <View style={styles.slideButtonStyle}>
                                     <Icon
@@ -384,7 +386,9 @@ class AddTags extends PureComponent {
                                         <TouchableOpacity
                                             onPress={() => this.addTag()}
                                             style={styles.buttonStyle}>
-                                            <SubTitle color="white">
+                                            <SubTitle
+                                                color="white"
+                                                dictionary={`${lang}.tag.suggested-tags`}>
                                                 ADD TAG
                                             </SubTitle>
                                         </TouchableOpacity>
