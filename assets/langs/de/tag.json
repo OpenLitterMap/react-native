@@ -8,5 +8,8 @@
     "picked-up": "Der Abfall ist weggenommen",
     "litter-status": "Wurfstatus",
     "picked-thumb": "Abgeholt 👍🏻",
-    "not-picked-thumb": "Nicht abgeholt 👎🏻"
+    "not-picked-thumb": "Nicht abgeholt 👎🏻",
+    "delete-message": "Möchten Sie dieses Bild wirklich löschen?",
+    "cancel": "Abbrechen",
+    "delete": "Ja, löschen"
 }

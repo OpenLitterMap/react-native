@@ -8,5 +8,8 @@
     "picked-up": "Les déchets ont été collectés",
     "litter-status": "Statut de la portée",
     "picked-thumb": "Ramassé 👍🏻",
-    "not-picked-thumb": "Non ramassé 👎🏻"
+    "not-picked-thumb": "Non ramassé 👎🏻",
+    "delete-message": "Êtes-vous sûr de vouloir supprimer cette image ?",
+    "cancel": "Annuler",
+    "delete": "Oui, supprimer"
 }

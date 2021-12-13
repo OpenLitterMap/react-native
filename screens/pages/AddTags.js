@@ -426,9 +426,10 @@ class AddTags extends PureComponent {
                             loop
                             style={{ width: 80, height: 80, marginBottom: 20 }}
                         />
-                        <Body style={{ textAlign: 'center' }}>
-                            Are you sure you want to delete this image ?
-                        </Body>
+                        <Body
+                            style={{ textAlign: 'center' }}
+                            dictionary={`${lang}.tag.delete-message`}
+                        />
                         <View
                             style={{
                                 flexDirection: 'row',
@@ -439,7 +440,7 @@ class AddTags extends PureComponent {
                             <Pressable
                                 onPress={this.actionSheetRef.current?.hide}
                                 style={[styles.actionButtonStyle]}>
-                                <Body>Cancel</Body>
+                                <Body dictionary={`${lang}.tag.cancel`} />
                             </Pressable>
                             <Pressable
                                 onPress={this.deleteImage}
@@ -447,7 +448,11 @@ class AddTags extends PureComponent {
                                     styles.actionButtonStyle,
                                     { backgroundColor: Colors.error }
                                 ]}>
-                                <Body color="white">Yes, Delete</Body>
+                                <Body
+                                    color="white"
+                                    dictionary={`${lang}.tag.delete`}>
+                                    Yes, Delete
+                                </Body>
                             </Pressable>
                         </View>
                     </View>
