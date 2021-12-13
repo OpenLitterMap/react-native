@@ -63,10 +63,8 @@ class TagsActionButton extends Component {
         };
         const diagonalAnimatedStyle = {
             transform: [
-                {
-                    translateY: this.state.diagonalAnimation,
-                    translateX: this.state.diagonalAnimation
-                }
+                { translateY: this.state.diagonalAnimation },
+                { translateX: this.state.diagonalAnimation }
             ]
         };
 

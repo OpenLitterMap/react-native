@@ -58,8 +58,9 @@ class AddTags extends PureComponent {
                     isKeyboardOpen: true,
                     keyboardHeight: e.endCoordinates.height
                 });
+
+                // when keyboard opens animate sheet till the height of keyboard
                 this.keyboardStartAnimation(-this.state.keyboardHeight - 400);
-                // this.startAnimation(-this.state.keyboardHeight - 400);
             }
         );
         this.keyboardDidHideSubscription = Keyboard.addListener(
@@ -102,12 +103,16 @@ class AddTags extends PureComponent {
     }
 
     keyboardStartAnimation = sheetValue => {
-        Animated.timing(this.state.sheetAnmiation, {
-            toValue: sheetValue,
-            duration: 500,
-            useNativeDriver: true,
-            easing: Easing.elastic(1)
-        }).start();
+        // Animate keyboard only for ios
+        // TODO: need testing on other andrid devices
+
+        Platform.OS === 'ios' &&
+            Animated.timing(this.state.sheetAnmiation, {
+                toValue: sheetValue,
+                duration: 500,
+                useNativeDriver: true,
+                easing: Easing.elastic(1)
+            }).start();
 
         Animated.timing(this.state.categoryAnimation, {
             toValue: 0,
