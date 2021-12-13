@@ -401,7 +401,7 @@ class AddTags extends PureComponent {
                                             style={styles.buttonStyle}>
                                             <SubTitle
                                                 color="white"
-                                                dictionary={`${lang}.tag.suggested-tags`}>
+                                                dictionary={`${lang}.tag.add-tag`}>
                                                 ADD TAG
                                             </SubTitle>
                                         </TouchableOpacity>
