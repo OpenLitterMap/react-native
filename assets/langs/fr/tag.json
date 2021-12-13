@@ -5,5 +5,8 @@
     "suggested-tags": "Etiquettes suggérées",
     "alert": "Alerte",
     "still-there": "Les déchets sont toujours là",
-    "picked-up": "Les déchets ont été collectés"
+    "picked-up": "Les déchets ont été collectés",
+    "litter-status": "Statut de la portée",
+    "picked-thumb": "Ramassé 👍🏻",
+    "not-picked-thumb": "Non ramassé 👎🏻"
 }

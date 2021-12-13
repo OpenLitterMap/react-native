@@ -126,7 +126,7 @@ class LitterBottomSearch extends PureComponent {
                     <View style={styles.tagsOuterContainer}>
                         <Caption
                             style={styles.suggest}
-                            dictionary={`${lang}.tag.suggested`}
+                            dictionary={`${lang}.tag.suggested-tags`}
                             values={{
                                 count: this.props.suggestedTags.length
                             }}

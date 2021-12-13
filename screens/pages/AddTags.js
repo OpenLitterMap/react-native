@@ -296,12 +296,20 @@ class AddTags extends PureComponent {
                                     borderRadius: 12,
                                     padding: 20
                                 }}>
-                                <Caption>Litter Status</Caption>
+                                <Caption
+                                    dictionary={`${lang}.tag.litter-status`}
+                                />
                                 {this.props.images[this.props.swiperIndex]
                                     ?.picked_up ? (
-                                    <Body color="accent">Picked up 👍🏻</Body>
+                                    <Body
+                                        color="accent"
+                                        dictionary={`${lang}.tag.picked-thumb`}
+                                    />
                                 ) : (
-                                    <Body color="error">Not picked up 👎🏻</Body>
+                                    <Body
+                                        color="error"
+                                        dictionary={`${lang}.tag.not-picked-thumb`}
+                                    />
                                 )}
                             </View>
                         )}

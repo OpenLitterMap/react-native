@@ -5,5 +5,8 @@
     "suggested-tags": "Voorgestelde Tags",
     "alert": "Waarschuwing",
     "still-there": "Het afval ligt er nog",
-    "picked-up": "Het afval is opgeraapt"
+    "picked-up": "Het afval is opgeraapt",
+    "litter-status": "Neststatus",
+    "picked-thumb": "Opgehaald 👍🏻",
+    "not-picked-thumb": "Niet opgehaald 👎🏻"
 }

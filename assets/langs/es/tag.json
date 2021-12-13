@@ -5,5 +5,8 @@
     "suggested-tags": "Etiquetas sugeridas",
     "alert": "Alerta",
     "still-there": "¡La basura sigue ahí!",
-    "picked-up": "¡La basura ha sido recogida!"
+    "picked-up": "¡La basura ha sido recogida!",
+    "litter-status": "Estado de la camada",
+    "picked-thumb": "Recogido 👍🏻",
+    "not-picked-thumb": "No recogido 👎🏻"
 }

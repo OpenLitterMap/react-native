@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { Pressable, StyleSheet, Animated, View, Easing } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { Colors } from '../../components';
+import { Colors, SubTitle } from '../../components';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 class TagsActionButton extends Component {
@@ -114,17 +114,9 @@ class TagsActionButton extends Component {
                         onPress={this.props.horizontalButtonPress}
                         style={[styles.smallButton, animatedXStyle]}>
                         {this.props.pickedUpStatus ? (
-                            <Icon
-                                name="ios-chevron-down"
-                                color={Colors.white}
-                                size={28}
-                            />
+                            <SubTitle>👎🏻</SubTitle>
                         ) : (
-                            <Icon
-                                name="ios-chevron-up"
-                                color={Colors.white}
-                                size={28}
-                            />
+                            <SubTitle>👍🏻</SubTitle>
                         )}
                     </AnimatedPressable>
 

@@ -5,5 +5,8 @@
     "suggested-tags": "Vorgestellter Tag",
     "alert": "Warnung",
     "still-there": "Der Abfall ist immernoch dort",
-    "picked-up": "Der Abfall ist weggenommen"
+    "picked-up": "Der Abfall ist weggenommen",
+    "litter-status": "Wurfstatus",
+    "picked-thumb": "Abgeholt 👍🏻",
+    "not-picked-thumb": "Nicht abgeholt 👎🏻"
 }
