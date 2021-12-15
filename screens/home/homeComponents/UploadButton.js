@@ -13,7 +13,10 @@ const UploadButton = ({ onPress, lang }) => {
                 size={32}
                 style={{ marginRight: 20 }}
             />
-            <SubTitle color="white" dictionary={`${lang}.leftpage.upload`} />
+            <SubTitle
+                color="white"
+                dictionary={`${lang}.leftpage.upload`}
+            />
         </Pressable>
     );
 };

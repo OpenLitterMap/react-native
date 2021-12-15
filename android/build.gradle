@@ -17,8 +17,8 @@ buildscript {
         firebaseIidVersion = "19.0.1"
         buildToolsVersion = "30.0.2"
         minSdkVersion = 16
-        compileSdkVersion = 29
-        targetSdkVersion = 29
+        compileSdkVersion = 30
+        targetSdkVersion = 30
         supportLibVersion = '1.0.2'
     }
     repositories {

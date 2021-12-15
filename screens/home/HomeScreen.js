@@ -63,7 +63,6 @@ class HomeScreen extends PureComponent {
 
         // if not in DEV mode check for new version
         !__DEV__ && this.checkNewVersion();
-
         this.checkGalleryPermission();
     }
 
@@ -411,7 +410,7 @@ class HomeScreen extends PureComponent {
 
                     ImageData.append('lat', img.lat);
                     ImageData.append('lon', img.lon);
-                    ImageData.append('date', img.date);
+                    ImageData.append('date', parseInt(img.date));
                     ImageData.append('picked_up', img.picked_up ? 1 : 0);
                     ImageData.append('model', model);
                     ImageData.append('tags', JSON.stringify(img.tags));

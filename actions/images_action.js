@@ -18,6 +18,7 @@ import {
  * action to add images to state
  * @param {Array} images
  * @param {('CAMERA' | 'GALLERY' | 'WEB')} type
+ * @param picked_up
  */
 export const addImages = (images, type, picked_up) => {
     return {
@@ -199,6 +200,7 @@ export const toggleSelectedImage = id => {
  * fn to upload images along with tags
  * @param {string} token
  * @param  image form data
+ * @param imageId
  * @returns
  */
 export const uploadImage = (token, image, imageId) => {
