@@ -67,7 +67,6 @@ class AddTags extends PureComponent {
             'keyboardDidHide',
             () => {
                 this.setState({ isKeyboardOpen: false, keyboardHeight: 0 });
-                console.log(this.state.keyboardHeight);
                 this.startAnimation(-400);
             }
         );
@@ -99,7 +98,16 @@ class AddTags extends PureComponent {
             quantityChanged: this.props.quantityChanged
         });
 
-        this.props.changeQuantiyStatus(false);
+        /**
+         * If quantityChanged is true -- then while clicking Add Tag button
+         * the quantilty value currently in PICKER is added to tag
+         *
+         * else if quantityChanged is false -- then while clicking Add Tag button
+         * quantity currently on TAG + 1 is added on tag.
+         *
+         * here we are changing status to false once Add tag button is pressed
+         */
+        this.props.changeQuantityStatus(false);
     }
 
     keyboardStartAnimation = sheetValue => {
@@ -291,7 +299,6 @@ class AddTags extends PureComponent {
                                     backgroundColor: Colors.white,
                                     width: SCREEN_WIDTH - 40,
                                     marginLeft: 20,
-                                    // height: 100,
                                     top: 100,
                                     borderRadius: 12,
                                     padding: 20
@@ -401,9 +408,8 @@ class AddTags extends PureComponent {
                                             style={styles.buttonStyle}>
                                             <SubTitle
                                                 color="white"
-                                                dictionary={`${lang}.tag.add-tag`}>
-                                                ADD TAG
-                                            </SubTitle>
+                                                dictionary={`${lang}.tag.add-tag`}
+                                            />
                                         </TouchableOpacity>
                                     )}
                                 </View>
@@ -450,9 +456,8 @@ class AddTags extends PureComponent {
                                 ]}>
                                 <Body
                                     color="white"
-                                    dictionary={`${lang}.tag.delete`}>
-                                    Yes, Delete
-                                </Body>
+                                    dictionary={`${lang}.tag.delete`}
+                                />
                             </Pressable>
                         </View>
                     </View>
@@ -503,7 +508,6 @@ class AddTags extends PureComponent {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        // paddingTop: SCREEN_HEIGHT * 0.05,
         backgroundColor: 'white'
     },
     buttonStyle: {
