@@ -24,13 +24,10 @@ import { isGeotagged } from '../../utils/isGeotagged';
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 
-const equalWidth = SCREEN_WIDTH / 3;
-
 // Components
 import { UploadImagesGrid, ActionButton, UploadButton } from './homeComponents';
 import AddTags from '../pages/AddTags';
 import DeviceInfo from 'react-native-device-info';
-import moment from 'moment';
 
 class HomeScreen extends PureComponent {
     constructor(props) {
@@ -222,6 +219,7 @@ class HomeScreen extends PureComponent {
                     </Modal>
                     {/* Grid to display images -- 3 columns */}
                     <UploadImagesGrid
+                        navigation={this.props.navigation}
                         photos={this.props.images}
                         lang={this.props.lang}
                         uniqueValue={this.props.uniqueValue}
