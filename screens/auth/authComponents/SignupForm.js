@@ -83,7 +83,7 @@ class SignupForm extends Component {
                             }
                             touched={touched.username}
                             placeholder={usernameTranslation}
-                            leftIconName="ios-person-circle"
+                            leftIconName="at-outline"
                             returnKeyType="next"
                         />
 

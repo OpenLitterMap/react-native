@@ -10,6 +10,7 @@ import PermissionStack from './permissionRoutes';
 import { SettingScreen, NewUpdateScreen } from '../screens';
 // import AlbumList from '../screens/pages/library/AlbumList';
 import GalleryStack from './galleryRoutes';
+import AddTags from '../screens/pages/AddTags';
 
 const Stack = createStackNavigator();
 
@@ -98,6 +99,7 @@ class MainRoutes extends Component {
                                 name="UPDATE"
                                 component={NewUpdateScreen}
                             />
+                            {/* <Stack.Screen name="ADD_TAGS" component={AddTags} /> */}
                         </>
                     )}
                 </Stack.Navigator>
