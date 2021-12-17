@@ -20,12 +20,14 @@ import LottieView from 'lottie-react-native';
 import ActionSheet from 'react-native-actions-sheet';
 import * as actions from '../../actions';
 import CATEGORIES from '../../assets/data/categories';
-import LitterCategories from './components/LitterCategories';
-import LitterImage from './components/LitterImage';
-import LitterPickerWheels from './components/LitterPickerWheels';
-import LitterTags from './components/LitterTags';
-import LitterBottomSearch from './components/LitterBottomSearch';
-import TagsActionButton from './components/TagsActionButton';
+import {
+    LitterCategories,
+    LitterImage,
+    LitterPickerWheels,
+    LitterTags,
+    LitterBottomSearch,
+    TagsActionButton
+} from './addTagComponents';
 import { SubTitle, Colors, Body, Caption } from '../components';
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
