@@ -1,22 +1,8 @@
 import React, { PureComponent } from 'react';
-import {
-    Dimensions,
-    Image,
-    FlatList,
-    Platform,
-    SafeAreaView,
-    TouchableHighlight,
-    View
-} from 'react-native';
-import { TransText } from 'react-native-translation';
-import { Card } from 'react-native-elements';
+import { Image, FlatList, StyleSheet, View, Pressable } from 'react-native';
 import * as actions from '../../../actions';
 import { connect } from 'react-redux';
-
-const SCREEN_HEIGHT = Dimensions.get('window').height;
-const SCREEN_WIDTH = Dimensions.get('window').width;
-
-import DeviceInfo from 'react-native-device-info';
+import { Body, Colors } from '../../components';
 
 class LitterCategories extends PureComponent {
     /**
@@ -26,31 +12,6 @@ class LitterCategories extends PureComponent {
      */
     changeCategory(id) {
         this.props.changeCategory(id);
-
-        this.callback();
-    }
-
-    /**
-     * Send callback to the parent method to trigger that a category was clicked
-     *
-     * This is needed for Android devices to close the keyboard
-     */
-    callback = () => {
-        this.props.callback();
-    };
-
-    /**
-     * Compute the style based on device type
-     */
-    computeStyle() {
-        if (Platform.OS === 'android') return styles.container;
-
-        // if "iPhone 10+", return 17% card height
-        const x = DeviceInfo.getModel().split(' ')[1];
-
-        if (x.includes('X') || parseInt(x) >= 10) return styles.biggerContainer;
-
-        return styles.container;
     }
 
     /**
@@ -58,32 +19,28 @@ class LitterCategories extends PureComponent {
      */
     renderCategory(category) {
         return (
-            <TouchableHighlight
+            <Pressable
                 onPress={this.changeCategory.bind(this, category.title)}
-                key={category.id}
-                underlayColor="transparent">
-                <Card
-                    containerStyle={[
+                key={category.id}>
+                <View
+                    style={[
                         styles.card,
-                        category.title === this.props.category.title
-                            ? styles.selectedCard
-                            : ''
-                    ]}
-                    style={styles.category}
-                    wrapperStyle={{
-                        alignItems: 'center',
-                        justifyContent: 'center'
-                    }}>
+                        category.title === this.props.category.title &&
+                            styles.selectedCard
+                    ]}>
                     <Image source={category.path} style={styles.image} />
-                    <TransText
-                        style={styles.text}
-                        key={category.id}
+                    <Body
+                        color={
+                            category.title === this.props.category.title
+                                ? 'text'
+                                : 'muted'
+                        }
                         dictionary={`${this.props.lang}.litter.categories.${
                             category.title
                         }`}
                     />
-                </Card>
-            </TouchableHighlight>
+                </View>
+            </Pressable>
         );
     }
 
@@ -92,58 +49,50 @@ class LitterCategories extends PureComponent {
      */
     render() {
         return (
-            <View style={this.computeStyle()}>
-                <SafeAreaView>
-                    <FlatList
-                        data={this.props.categories}
-                        horizontal={true}
-                        renderItem={({ item }) => this.renderCategory(item)}
-                        keyExtractor={category => category.title}
-                        keyboardShouldPersistTaps="handled"
-                    />
-                </SafeAreaView>
+            <View style={{ marginVertical: 20 }}>
+                <FlatList
+                    showsHorizontalScrollIndicator={false}
+                    data={this.props.categories}
+                    horizontal={true}
+                    renderItem={({ item }) => this.renderCategory(item)}
+                    keyExtractor={category => category.title}
+                    keyboardShouldPersistTaps="handled"
+                />
             </View>
         );
     }
 }
 
-const styles = {
-    biggerContainer: {
-        height: SCREEN_HEIGHT * 0.17,
-        position: 'absolute',
-        zIndex: 1
-    },
+const styles = StyleSheet.create({
     card: {
-        marginBottom: 20,
-        borderRadius: 6,
-        paddingTop: 10
-    },
-    container: {
-        height: SCREEN_HEIGHT * 0.125,
-        position: 'absolute',
-        zIndex: 1
+        height: 100,
+        minWidth: 100,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginHorizontal: 10,
+        borderRadius: 12,
+        padding: 8,
+        borderWidth: 2,
+        borderColor: Colors.accentLight,
+        backgroundColor: Colors.white
     },
     selectedCard: {
-        backgroundColor: '#0be881'
+        backgroundColor: Colors.accent,
+        borderColor: Colors.accentLight
     },
     category: {
         alignItems: 'center',
         justifyContent: 'center',
         borderRadius: 6
     },
-    categoryPanel: {
-        flexDirection: 'row'
-    },
+
     image: {
         borderRadius: 6,
-        height: SCREEN_HEIGHT * 0.05,
+        height: 30,
         resizeMode: 'contain',
-        width: SCREEN_WIDTH * 0.09
-    },
-    text: {
-        fontSize: SCREEN_HEIGHT * 0.02
+        width: 30
     }
-};
+});
 
 export default connect(
     null,

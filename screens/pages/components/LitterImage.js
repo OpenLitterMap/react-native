@@ -1,25 +1,27 @@
-import React, { PureComponent } from 'react';
+import React, { PureComponent, createRef } from 'react';
 import {
     ActivityIndicator,
     Dimensions,
     Image,
+    Keyboard,
     ScrollView,
-    View
+    Pressable,
+    Text,
+    View,
+    Animated,
+    Easing
 } from 'react-native';
 import * as actions from '../../../actions';
 import { connect } from 'react-redux';
+import GestureRecognizer, {
+    swipeDirections
+} from 'react-native-swipe-gestures';
+
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 
 class LitterImage extends PureComponent {
     // ScrollView Image Props
-    static defaultProps = {
-        doAnimateZoomReset: false,
-        maximumZoomScale: 2,
-        minimumZoomScale: 1,
-        zoomHeight: SCREEN_HEIGHT,
-        zoomWidth: SCREEN_WIDTH
-    };
 
     constructor(props) {
         super(props);
@@ -28,26 +30,6 @@ class LitterImage extends PureComponent {
             imageLoaded: false
         };
     }
-
-    // ScrollView Image - Reset Zoom
-    handleResetZoomScale = event => {
-        this.scrollResponderRef.scrollResponderZoomTo({
-            x: 0,
-            y: 0,
-            width: this.props.zoomWidth,
-            height: this.props.zoomHeight,
-            animated: true
-        });
-    };
-
-    // The ScrollView has a scrollResponder which allows us to access
-    // more methods to control the ScrollView component
-    setZoomRef = node => {
-        if (node) {
-            this.zoomRef = node;
-            this.scrollResponderRef = this.zoomRef.getScrollResponder();
-        }
-    };
 
     _imageLoaded() {
         this.setState({ imageLoaded: true });
@@ -62,19 +44,15 @@ class LitterImage extends PureComponent {
      */
     render() {
         return (
-            <View>
-                <ScrollView
-                    contentContainerStyle={{
-                        alignItems: 'center',
-                        justifyContent: 'center'
+            <GestureRecognizer
+                onSwipeDown={state => {
+                    this.props.toggleLitter();
+                }}>
+                <Pressable
+                    onPress={() => {
+                        this.props.toggleFn();
                     }}
-                    maximumZoomScale={this.props.maximumZoomScale}
-                    minimumZoomScale={this.props.minimumZoomScale}
-                    showsHorizontalScrollIndicator={false}
-                    showsVerticalScrollIndicator={false}
-                    ref={this.setZoomRef}
-                    scrollEnabled={true}
-                    style={{ overflow: 'hidden' }}>
+                    style={{ backgroundColor: 'black' }}>
                     <Image
                         resizeMode="cover"
                         source={{ uri: this.props.photoSelected.uri }}
@@ -86,8 +64,8 @@ class LitterImage extends PureComponent {
                         style={styles.activityIndicator}
                         animating={!this.state.imageLoaded}
                     />
-                </ScrollView>
-            </View>
+                </Pressable>
+            </GestureRecognizer>
         );
     }
 }
@@ -100,30 +78,23 @@ const styles = {
         top: 0,
         bottom: 0
     },
-    box: {
-        width: SCREEN_WIDTH,
-        height: 500,
-        position: 'absolute',
-        zIndex: 99,
-        top: SCREEN_HEIGHT * 0.15,
-        color: 'black',
-        borderWidth: 10
-    },
-    emptyContainer: {
-        alignItems: 'center',
-        backgroundColor: '#3498db',
-        flex: 0.8,
-        justifyContent: 'center',
-        paddingLeft: SCREEN_WIDTH * 0.1,
-        paddingRight: SCREEN_WIDTH * 0.1
-    },
     image: {
         width: SCREEN_WIDTH,
-        height: SCREEN_HEIGHT * 0.8
+        height: SCREEN_HEIGHT
     }
 };
 
+const mapStateToProps = state => {
+    return {
+        category: state.litter.category,
+        item: state.litter.item,
+        items: state.litter.items,
+        q: state.litter.q,
+        quantityChanged: state.litter.quantityChanged
+    };
+};
+
 export default connect(
-    null,
+    mapStateToProps,
     actions
 )(LitterImage);

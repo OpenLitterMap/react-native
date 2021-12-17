@@ -24,7 +24,6 @@ export const placeInTime = date => {
     let thisWeek = moment().startOf('week');
     let thisMonth = moment().startOf('month');
     let thisYear = moment().startOf('year');
-
     const momentOfFile = moment(date);
 
     if (momentOfFile.isSameOrAfter(today)) {
@@ -34,7 +33,7 @@ export const placeInTime = date => {
     } else if (momentOfFile.isSameOrAfter(thisMonth)) {
         return 'month';
     } else if (momentOfFile.isSameOrAfter(thisYear)) {
-        return momentOfFile.month();
+        return momentOfFile.month() + 1;
     } else {
         return momentOfFile.year();
     }
@@ -143,7 +142,7 @@ class GalleryScreen extends Component {
     renderSection({ item, index }) {
         let headerTitle = item?.title;
         if (Number.isInteger(headerTitle) && headerTitle < 12) {
-            headerTitle = moment(headerTitle).format('MMMM');
+            headerTitle = moment(headerTitle.toString(), 'MM').format('MMMM');
         }
 
         if (headerTitle === 'today') {

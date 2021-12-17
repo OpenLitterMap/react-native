@@ -9,6 +9,7 @@ import {
     DESELECT_ALL_IMAGES,
     INCREMENT_SELECTED,
     REMOVE_TAG_FROM_IMAGE,
+    TOGGLE_PICKED_UP,
     TOGGLE_SELECTING,
     TOGGLE_SELECTED_IMAGES
 } from '../actions/types';
@@ -20,8 +21,8 @@ const INITIAL_STATE = {
     selectedImages: []
 };
 
-export default function (state = INITIAL_STATE, action) {
-    return produce(state, (draft) => {
+export default function(state = INITIAL_STATE, action) {
+    return produce(state, draft => {
         switch (action.type) {
             /**
              * Add images to state
@@ -44,10 +45,10 @@ export default function (state = INITIAL_STATE, action) {
                 const images = action.payload.images;
 
                 images &&
-                    images.map((image) => {
+                    images.map(image => {
                         if (action.payload.type === 'WEB') {
                             const index = draft.imagesArray.findIndex(
-                                (webimg) => webimg.photoId === image.id
+                                webimg => webimg.photoId === image.id
                             );
                             if (index === -1) {
                                 draft.imagesArray.push({
@@ -134,7 +135,7 @@ export default function (state = INITIAL_STATE, action) {
 
             case DELETE_IMAGE:
                 const index = draft.imagesArray.findIndex(
-                    (image) => image.id === action.payload
+                    image => image.id === action.payload
                 );
                 if (index !== -1) draft.imagesArray.splice(index, 1);
 
@@ -146,7 +147,7 @@ export default function (state = INITIAL_STATE, action) {
 
             case DELETE_SELECTED_IMAGES:
                 draft.imagesArray = draft.imagesArray.filter(
-                    (image) => !image.selected
+                    image => !image.selected
                 );
                 draft.selected = 0;
 
@@ -159,7 +160,7 @@ export default function (state = INITIAL_STATE, action) {
              */
 
             case DESELECT_ALL_IMAGES:
-                draft.imagesArray.map((image) => {
+                draft.imagesArray.map(image => {
                     image.selected = false;
                 });
 
@@ -197,6 +198,19 @@ export default function (state = INITIAL_STATE, action) {
                 break;
 
             /**
+             * toggles picked_up status on an image based on id
+             */
+            case TOGGLE_PICKED_UP:
+                const imageIndex = draft.imagesArray.findIndex(
+                    image => image.id === action.payload
+                );
+                if (imageIndex !== -1)
+                    draft.imagesArray[imageIndex].picked_up = !draft
+                        .imagesArray[imageIndex].picked_up;
+
+                break;
+
+            /**
              * Toggles isSelecting -- selecting images for deletion
              */
             case TOGGLE_SELECTING:
@@ -210,8 +224,9 @@ export default function (state = INITIAL_STATE, action) {
              */
 
             case TOGGLE_SELECTED_IMAGES:
-                draft.imagesArray[action.payload].selected =
-                    !draft.imagesArray[action.payload].selected;
+                draft.imagesArray[action.payload].selected = !draft.imagesArray[
+                    action.payload
+                ].selected;
 
                 break;
 
