@@ -26,7 +26,7 @@ const SCREEN_HEIGHT = Dimensions.get('window').height;
 
 // Components
 import { UploadImagesGrid, ActionButton, UploadButton } from './homeComponents';
-import AddTags from '../pages/AddTags';
+import AddTags from '../addTag/AddTags';
 import DeviceInfo from 'react-native-device-info';
 
 class HomeScreen extends PureComponent {
