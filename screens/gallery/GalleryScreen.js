@@ -254,9 +254,9 @@ class GalleryScreen extends Component {
                                 />
                                 <Body color="white">
                                     {this.state.selectedImages?.length > 0 &&
-                                        ` (${
+                                        ` : ${
                                             this.state.selectedImages?.length
-                                        })`}
+                                        }`}
                                 </Body>
                             </View>
                         </Pressable>
