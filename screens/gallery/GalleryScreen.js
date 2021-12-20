@@ -213,6 +213,7 @@ class GalleryScreen extends Component {
     }
 
     render() {
+        const { lang } = this.props;
         return (
             <>
                 <Header
@@ -222,10 +223,18 @@ class GalleryScreen extends Component {
                                 this.props.navigation.navigate('HOME');
                                 // this.props.setImageLoading;
                             }}>
-                            <Body color="white">Cancel</Body>
+                            <Body
+                                color="white"
+                                dictionary={`${lang}.leftpage.cancel`}
+                            />
                         </Pressable>
                     }
-                    centerContent={<SubTitle color="white">Geotagged</SubTitle>}
+                    centerContent={
+                        <SubTitle
+                            color="white"
+                            dictionary={`${lang}.leftpage.geotagged`}
+                        />
+                    }
                     centerContainerStyle={{ flex: 2 }}
                     rightContent={
                         <Pressable
@@ -233,11 +242,23 @@ class GalleryScreen extends Component {
                                 await this.handleDoneClick();
                                 this.props.navigation.navigate('HOME');
                             }}>
-                            <Body color="white">
-                                Done
-                                {this.state.selectedImages?.length > 0 &&
-                                    ` (${this.state.selectedImages?.length})`}
-                            </Body>
+                            <View
+                                style={{
+                                    flexDirection: 'row',
+                                    justifyContent: 'center',
+                                    alignItems: 'center'
+                                }}>
+                                <Body
+                                    color="white"
+                                    dictionary={`${lang}.leftpage.next`}
+                                />
+                                <Body color="white">
+                                    {this.state.selectedImages?.length > 0 &&
+                                        ` (${
+                                            this.state.selectedImages?.length
+                                        })`}
+                                </Body>
+                            </View>
                         </Pressable>
                     }
                 />
@@ -267,7 +288,8 @@ class GalleryScreen extends Component {
 const mapStateToProps = state => {
     return {
         geotaggedImages: state.gallery.geotaggedImages,
-        user: state.auth.user
+        user: state.auth.user,
+        lang: state.auth.lang
     };
 };
 
