@@ -13,7 +13,6 @@ import {
     StyleSheet,
     Pressable
 } from 'react-native';
-
 import Swiper from 'react-native-swiper';
 import { connect } from 'react-redux';
 import LottieView from 'lottie-react-native';
@@ -294,6 +293,49 @@ class AddTags extends PureComponent {
                                 }}
                             />
                         )}
+
+                        <View
+                            style={{
+                                position: 'absolute',
+                                top: 60,
+                                left: 20,
+                                flexDirection: 'row',
+                                justifyContent: 'space-between',
+                                width: SCREEN_WIDTH - 40
+                            }}>
+                            <View
+                                style={{
+                                    minWidth: 100,
+                                    paddingHorizontal: 20,
+                                    height: 40,
+                                    backgroundColor: 'rgba(255, 255, 255, 1)',
+                                    borderRadius: 100,
+                                    justifyContent: 'center',
+                                    alignItems: 'center'
+                                }}>
+                                <Body color="text">
+                                    {this.props.swiperIndex + 1}/
+                                    {this.props.images.length}
+                                </Body>
+                            </View>
+                            <Pressable
+                                onPress={this.props.toggleLitter}
+                                style={{
+                                    width: 40,
+                                    height: 40,
+                                    backgroundColor: 'white',
+                                    borderRadius: 100,
+                                    justifyContent: 'center',
+                                    alignItems: 'center'
+                                }}>
+                                <Icon
+                                    name="ios-close-outline"
+                                    color="black"
+                                    size={32}
+                                />
+                            </Pressable>
+                        </View>
+
                         {this.state.isOverlayDisplayed && (
                             <View
                                 style={{
@@ -301,7 +343,7 @@ class AddTags extends PureComponent {
                                     backgroundColor: Colors.white,
                                     width: SCREEN_WIDTH - 40,
                                     marginLeft: 20,
-                                    top: 100,
+                                    top: 110,
                                     borderRadius: 12,
                                     padding: 20
                                 }}>
