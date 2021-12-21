@@ -282,71 +282,39 @@ class AddTags extends PureComponent {
 
                         {/* Black overlay */}
                         {this.state.isOverlayDisplayed && (
-                            <View
-                                style={{
-                                    position: 'absolute',
-                                    flex: 1,
-                                    backgroundColor: 'black',
-                                    opacity: 0.4,
-                                    width: SCREEN_WIDTH,
-                                    height: SCREEN_HEIGHT
-                                }}
-                            />
+                            <View style={styles.overlayStyle} />
                         )}
 
-                        <View
-                            style={{
-                                position: 'absolute',
-                                top: 60,
-                                left: 20,
-                                flexDirection: 'row',
-                                justifyContent: 'space-between',
-                                width: SCREEN_WIDTH - 40
-                            }}>
-                            <View
-                                style={{
-                                    minWidth: 100,
-                                    paddingHorizontal: 20,
-                                    height: 40,
-                                    backgroundColor: 'rgba(255, 255, 255, 1)',
-                                    borderRadius: 100,
-                                    justifyContent: 'center',
-                                    alignItems: 'center'
-                                }}>
-                                <Body color="text">
-                                    {this.props.swiperIndex + 1}/
-                                    {this.props.images.length}
-                                </Body>
-                            </View>
-                            <Pressable
-                                onPress={this.props.toggleLitter}
-                                style={{
-                                    width: 40,
-                                    height: 40,
-                                    backgroundColor: 'white',
-                                    borderRadius: 100,
-                                    justifyContent: 'center',
-                                    alignItems: 'center'
-                                }}>
-                                <Icon
-                                    name="ios-close-outline"
-                                    color="black"
-                                    size={32}
-                                />
-                            </Pressable>
-                        </View>
-
-                        {this.state.isOverlayDisplayed && (
+                        {!this.state.isCategoriesVisible && (
                             <View
                                 style={{
                                     position: 'absolute',
-                                    backgroundColor: Colors.white,
-                                    width: SCREEN_WIDTH - 40,
-                                    marginLeft: 20,
-                                    top: 110,
-                                    borderRadius: 12,
-                                    padding: 20
+                                    top: 60,
+                                    left: 20,
+                                    flexDirection: 'row',
+                                    justifyContent: 'space-between',
+                                    width: SCREEN_WIDTH - 40
                                 }}>
+                                <View style={styles.indexStyle}>
+                                    <Body color="text">
+                                        {this.props.swiperIndex + 1}/
+                                        {this.props.images.length}
+                                    </Body>
+                                </View>
+                                <Pressable
+                                    onPress={this.props.toggleLitter}
+                                    style={styles.closeButton}>
+                                    <Icon
+                                        name="ios-close-outline"
+                                        color="black"
+                                        size={32}
+                                    />
+                                </Pressable>
+                            </View>
+                        )}
+
+                        {this.state.isOverlayDisplayed && (
+                            <View style={styles.indexRow}>
                                 <Caption
                                     dictionary={`${lang}.tag.litter-status`}
                                 />
@@ -402,15 +370,7 @@ class AddTags extends PureComponent {
                         {this.state.isCategoriesVisible && (
                             <Animated.View
                                 style={[
-                                    {
-                                        backgroundColor: 'white',
-                                        position: 'absolute',
-                                        bottom: -400,
-                                        left: 0,
-                                        paddingVertical: 20,
-                                        borderTopLeftRadius: 8,
-                                        borderTopRightRadius: 8
-                                    },
+                                    styles.bottomSheet,
                                     sheetAnimatedStyle
                                 ]}>
                                 <View
@@ -554,6 +514,15 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: 'white'
     },
+    indexRow: {
+        position: 'absolute',
+        backgroundColor: Colors.white,
+        width: SCREEN_WIDTH - 40,
+        marginLeft: 20,
+        top: 110,
+        borderRadius: 12,
+        padding: 20
+    },
     buttonStyle: {
         height: 56,
         width: SCREEN_WIDTH - 40,
@@ -579,6 +548,40 @@ const styles = StyleSheet.create({
         paddingVertical: 12,
         justifyContent: 'center',
         alignItems: 'center'
+    },
+    overlayStyle: {
+        position: 'absolute',
+        flex: 1,
+        backgroundColor: 'black',
+        opacity: 0.4,
+        width: SCREEN_WIDTH,
+        height: SCREEN_HEIGHT
+    },
+    indexStyle: {
+        minWidth: 80,
+        paddingHorizontal: 20,
+        height: 40,
+        backgroundColor: 'rgba(255, 255, 255, 1)',
+        borderRadius: 100,
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
+    closeButton: {
+        width: 40,
+        height: 40,
+        backgroundColor: 'white',
+        borderRadius: 100,
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
+    bottomSheet: {
+        backgroundColor: 'white',
+        position: 'absolute',
+        bottom: -400,
+        left: 0,
+        paddingVertical: 20,
+        borderTopLeftRadius: 8,
+        borderTopRightRadius: 8
     }
 });
 
