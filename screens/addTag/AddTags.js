@@ -3,17 +3,16 @@ import {
     Dimensions,
     Keyboard,
     Platform,
-    SafeAreaView,
     StatusBar,
     TouchableOpacity,
     View,
-    Text,
     Animated,
     Easing,
     StyleSheet,
     Pressable
 } from 'react-native';
 import Swiper from 'react-native-swiper';
+import GestureRecognizer from 'react-native-swipe-gestures';
 import { connect } from 'react-redux';
 import LottieView from 'lottie-react-native';
 import ActionSheet from 'react-native-actions-sheet';
@@ -31,7 +30,6 @@ import { SubTitle, Colors, Body, Caption } from '../components';
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 
-import LITTERKEYS from '../../assets/data/litterkeys';
 import Icon from 'react-native-vector-icons/Ionicons';
 
 class AddTags extends PureComponent {
@@ -282,54 +280,121 @@ class AddTags extends PureComponent {
 
                         {/* Black overlay */}
                         {this.state.isOverlayDisplayed && (
-                            <View style={styles.overlayStyle} />
+                            <GestureRecognizer
+                                onSwipeDown={state => {
+                                    this.props.toggleLitter();
+                                }}>
+                                <View style={styles.overlayStyle} />
+                            </GestureRecognizer>
                         )}
 
-                        {!this.state.isCategoriesVisible && (
+                        <View
+                            style={{
+                                position: 'absolute',
+                                top: 20,
+                                left: 20,
+                                flexDirection: 'row',
+                                justifyContent: 'space-between',
+                                width: SCREEN_WIDTH - 40
+                            }}>
+                            <View style={styles.indexStyle}>
+                                <Body color="text">
+                                    {this.props.swiperIndex + 1}/
+                                    {this.props.images.length}
+                                </Body>
+                            </View>
+                            <Pressable
+                                onPress={this.props.toggleLitter}
+                                style={styles.closeButton}>
+                                <Icon
+                                    name="ios-close-outline"
+                                    color="black"
+                                    size={32}
+                                />
+                            </Pressable>
+                        </View>
+
+                        {this.state.isOverlayDisplayed && (
                             <View
                                 style={{
                                     position: 'absolute',
-                                    top: 60,
-                                    left: 20,
-                                    flexDirection: 'row',
-                                    justifyContent: 'space-between',
-                                    width: SCREEN_WIDTH - 40
+                                    marginLeft: 20,
+                                    top: 70
                                 }}>
-                                <View style={styles.indexStyle}>
-                                    <Body color="text">
-                                        {this.props.swiperIndex + 1}/
-                                        {this.props.images.length}
-                                    </Body>
+                                <View style={styles.statusCard}>
+                                    <Caption
+                                        dictionary={`${lang}.tag.litter-status`}
+                                    />
+                                    {this.props.images[this.props.swiperIndex]
+                                        ?.picked_up ? (
+                                        <Body
+                                            color="accent"
+                                            dictionary={`${lang}.tag.picked-thumb`}
+                                        />
+                                    ) : (
+                                        <Body
+                                            color="error"
+                                            dictionary={`${lang}.tag.not-picked-thumb`}
+                                        />
+                                    )}
                                 </View>
-                                <Pressable
-                                    onPress={this.props.toggleLitter}
-                                    style={styles.closeButton}>
-                                    <Icon
-                                        name="ios-close-outline"
-                                        color="black"
-                                        size={32}
-                                    />
-                                </Pressable>
-                            </View>
-                        )}
-
-                        {this.state.isOverlayDisplayed && (
-                            <View style={styles.indexRow}>
-                                <Caption
-                                    dictionary={`${lang}.tag.litter-status`}
-                                />
-                                {this.props.images[this.props.swiperIndex]
-                                    ?.picked_up ? (
-                                    <Body
-                                        color="accent"
-                                        dictionary={`${lang}.tag.picked-thumb`}
-                                    />
-                                ) : (
-                                    <Body
-                                        color="error"
-                                        dictionary={`${lang}.tag.not-picked-thumb`}
-                                    />
-                                )}
+                                <View style={styles.statusCard}>
+                                    <Body>Tags</Body>
+                                    <View>
+                                        {Object.keys(
+                                            this.props.images[
+                                                this.props.swiperIndex
+                                            ]?.tags
+                                        ).map(category => {
+                                            return (
+                                                <View>
+                                                    <Body
+                                                        dictionary={`${
+                                                            this.props.lang
+                                                        }.litter.categories.${category}`}
+                                                    />
+                                                    <View
+                                                        style={{
+                                                            flexDirection:
+                                                                'row',
+                                                            flexWrap: 'wrap'
+                                                        }}>
+                                                        {Object.keys(
+                                                            this.props.images[
+                                                                this.props
+                                                                    .swiperIndex
+                                                            ]?.tags[category]
+                                                        ).map(tag => {
+                                                            const value = this
+                                                                .props.images[
+                                                                this.props
+                                                                    .swiperIndex
+                                                            ]?.tags[category][
+                                                                tag
+                                                            ];
+                                                            return (
+                                                                <>
+                                                                    <Caption
+                                                                        dictionary={`${
+                                                                            this
+                                                                                .props
+                                                                                .lang
+                                                                        }.litter.${category}.${tag}`}
+                                                                    />
+                                                                    <Caption>
+                                                                        :{' '}
+                                                                        {value}
+                                                                        &nbsp;
+                                                                    </Caption>
+                                                                </>
+                                                            );
+                                                        })}
+                                                    </View>
+                                                </View>
+                                            );
+                                        })}
+                                    </View>
+                                </View>
                             </View>
                         )}
 
@@ -514,14 +579,12 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: 'white'
     },
-    indexRow: {
-        position: 'absolute',
+    statusCard: {
         backgroundColor: Colors.white,
         width: SCREEN_WIDTH - 40,
-        marginLeft: 20,
-        top: 110,
         borderRadius: 12,
-        padding: 20
+        padding: 20,
+        marginBottom: 20
     },
     buttonStyle: {
         height: 56,
@@ -552,7 +615,7 @@ const styles = StyleSheet.create({
     overlayStyle: {
         position: 'absolute',
         flex: 1,
-        backgroundColor: 'black',
+        backgroundColor: 'red',
         opacity: 0.4,
         width: SCREEN_WIDTH,
         height: SCREEN_HEIGHT
