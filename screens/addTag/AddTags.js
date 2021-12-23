@@ -3,18 +3,16 @@ import {
     Dimensions,
     Keyboard,
     Platform,
-    SafeAreaView,
     StatusBar,
     TouchableOpacity,
     View,
-    Text,
     Animated,
     Easing,
     StyleSheet,
     Pressable
 } from 'react-native';
-
 import Swiper from 'react-native-swiper';
+import GestureRecognizer from 'react-native-swipe-gestures';
 import { connect } from 'react-redux';
 import LottieView from 'lottie-react-native';
 import ActionSheet from 'react-native-actions-sheet';
@@ -26,13 +24,13 @@ import {
     LitterPickerWheels,
     LitterTags,
     LitterBottomSearch,
-    TagsActionButton
+    TagsActionButton,
+    LitterTagsCard
 } from './addTagComponents';
 import { SubTitle, Colors, Body, Caption } from '../components';
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 
-import LITTERKEYS from '../../assets/data/litterkeys';
 import Icon from 'react-native-vector-icons/Ionicons';
 
 class AddTags extends PureComponent {
@@ -283,43 +281,74 @@ class AddTags extends PureComponent {
 
                         {/* Black overlay */}
                         {this.state.isOverlayDisplayed && (
-                            <View
-                                style={{
-                                    position: 'absolute',
-                                    flex: 1,
-                                    backgroundColor: 'black',
-                                    opacity: 0.4,
-                                    width: SCREEN_WIDTH,
-                                    height: SCREEN_HEIGHT
-                                }}
-                            />
+                            <GestureRecognizer
+                                onSwipeDown={state => {
+                                    this.props.toggleLitter();
+                                }}>
+                                <View style={styles.overlayStyle} />
+                            </GestureRecognizer>
                         )}
+
+                        <View
+                            style={{
+                                position: 'absolute',
+                                top: 20,
+                                left: 20,
+                                flexDirection: 'row',
+                                justifyContent: 'space-between',
+                                width: SCREEN_WIDTH - 40
+                            }}>
+                            <View style={styles.indexStyle}>
+                                <Body color="text">
+                                    {this.props.swiperIndex + 1}/
+                                    {this.props.images.length}
+                                </Body>
+                            </View>
+                            <Pressable
+                                onPress={this.props.toggleLitter}
+                                style={styles.closeButton}>
+                                <Icon
+                                    name="ios-close-outline"
+                                    color="black"
+                                    size={32}
+                                />
+                            </Pressable>
+                        </View>
+
                         {this.state.isOverlayDisplayed && (
                             <View
                                 style={{
                                     position: 'absolute',
-                                    backgroundColor: Colors.white,
-                                    width: SCREEN_WIDTH - 40,
                                     marginLeft: 20,
-                                    top: 100,
-                                    borderRadius: 12,
-                                    padding: 20
+                                    top: 70
                                 }}>
-                                <Caption
-                                    dictionary={`${lang}.tag.litter-status`}
+                                {/* Shows the status of litter if "picked up" or not */}
+                                <View style={styles.statusCard}>
+                                    <Caption
+                                        dictionary={`${lang}.tag.litter-status`}
+                                    />
+                                    {this.props.images[this.props.swiperIndex]
+                                        ?.picked_up ? (
+                                        <Body
+                                            color="accent"
+                                            dictionary={`${lang}.tag.picked-thumb`}
+                                        />
+                                    ) : (
+                                        <Body
+                                            color="error"
+                                            dictionary={`${lang}.tag.not-picked-thumb`}
+                                        />
+                                    )}
+                                </View>
+                                {/* Shows the list of tags */}
+                                <LitterTagsCard
+                                    tags={
+                                        this.props.images[
+                                            this.props.swiperIndex
+                                        ]?.tags
+                                    }
+                                    lang={this.props.lang}
                                 />
-                                {this.props.images[this.props.swiperIndex]
-                                    ?.picked_up ? (
-                                    <Body
-                                        color="accent"
-                                        dictionary={`${lang}.tag.picked-thumb`}
-                                    />
-                                ) : (
-                                    <Body
-                                        color="error"
-                                        dictionary={`${lang}.tag.not-picked-thumb`}
-                                    />
-                                )}
                             </View>
                         )}
 
@@ -360,15 +389,7 @@ class AddTags extends PureComponent {
                         {this.state.isCategoriesVisible && (
                             <Animated.View
                                 style={[
-                                    {
-                                        backgroundColor: 'white',
-                                        position: 'absolute',
-                                        bottom: -400,
-                                        left: 0,
-                                        paddingVertical: 20,
-                                        borderTopLeftRadius: 8,
-                                        borderTopRightRadius: 8
-                                    },
+                                    styles.bottomSheet,
                                     sheetAnimatedStyle
                                 ]}>
                                 <View
@@ -512,6 +533,13 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: 'white'
     },
+    statusCard: {
+        backgroundColor: Colors.white,
+        width: SCREEN_WIDTH - 40,
+        borderRadius: 12,
+        padding: 20,
+        marginBottom: 20
+    },
     buttonStyle: {
         height: 56,
         width: SCREEN_WIDTH - 40,
@@ -537,6 +565,40 @@ const styles = StyleSheet.create({
         paddingVertical: 12,
         justifyContent: 'center',
         alignItems: 'center'
+    },
+    overlayStyle: {
+        position: 'absolute',
+        flex: 1,
+        backgroundColor: 'red',
+        opacity: 0.4,
+        width: SCREEN_WIDTH,
+        height: SCREEN_HEIGHT
+    },
+    indexStyle: {
+        minWidth: 80,
+        paddingHorizontal: 20,
+        height: 40,
+        backgroundColor: 'rgba(255, 255, 255, 1)',
+        borderRadius: 100,
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
+    closeButton: {
+        width: 40,
+        height: 40,
+        backgroundColor: 'white',
+        borderRadius: 100,
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
+    bottomSheet: {
+        backgroundColor: 'white',
+        position: 'absolute',
+        bottom: -400,
+        left: 0,
+        paddingVertical: 20,
+        borderTopLeftRadius: 8,
+        borderTopRightRadius: 8
     }
 });
 

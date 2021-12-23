@@ -12,6 +12,10 @@ class TagsActionButton extends Component {
         isClosed: true
     };
 
+    componentDidMount() {
+        this.showButtons();
+    }
+
     startAnimation = () => {
         Animated.timing(this.state.animation, {
             toValue: -120,
@@ -57,6 +61,12 @@ class TagsActionButton extends Component {
             easing: Easing.elastic(1)
         }).start(() => this.setState({ isClosed: true }));
     };
+
+    showButtons = () => {
+        this.props.toggleOverlay();
+        this.state.isClosed ? this.startAnimation() : this.returnAnimation();
+    };
+
     render() {
         const animatedStyle = {
             transform: [{ translateY: this.state.animation }]
@@ -122,12 +132,7 @@ class TagsActionButton extends Component {
 
                     <AnimatedPressable
                         style={[styles.mainButton, animatedMainButton]}
-                        onPress={() => {
-                            this.props.toggleOverlay();
-                            this.state.isClosed
-                                ? this.startAnimation()
-                                : this.returnAnimation();
-                        }}>
+                        onPress={this.showButtons}>
                         <Icon name="ios-add" color={Colors.white} size={42} />
                     </AnimatedPressable>
                 </View>

@@ -34,6 +34,7 @@ export const TOKEN_IS_VALID = 'TOKEN_IS_VALID';
 // Images - Single array for Photos/Gallery/Web
 export const ADD_IMAGES = 'ADD_IMAGES';
 export const ADD_TAG_TO_IMAGE = 'ADD_TAG_TO_IMAGE';
+export const CHANGE_LITTER_STATUS = 'CHANGE_LITTER_STATUS';
 export const DECREMENT_SELECTED = 'DECREMENT_SELECTED';
 export const DELETE_IMAGE = 'DELETE_IMAGE';
 export const DELETE_SELECTED_IMAGES = 'DELETE_SELECTED_IMAGES';
