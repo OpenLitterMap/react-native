@@ -3,6 +3,7 @@ import produce from 'immer';
 import {
     ADD_IMAGES,
     ADD_TAG_TO_IMAGE,
+    CHANGE_LITTER_STATUS,
     DECREMENT_SELECTED,
     DELETE_IMAGE,
     DELETE_SELECTED_IMAGES,
@@ -118,6 +119,18 @@ export default function(state = INITIAL_STATE, action) {
                         [payloadTitle]: quantity
                     };
                 }
+
+                break;
+
+            /**
+             * Changes litter picked up status of all images
+             * to payload
+             *
+             * action.payload -- {boolean}
+             */
+            case CHANGE_LITTER_STATUS:
+                console.log(action.payload);
+                draft.imagesArray.map(img => (img.picked_up = action.payload));
 
                 break;
 

@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, createRef } from 'react';
 import {
     ActivityIndicator,
     Alert,
@@ -17,6 +17,7 @@ import { getTranslation, TransText } from 'react-native-translation';
 import Icon from 'react-native-vector-icons/Ionicons';
 import * as actions from '../../actions';
 import { connect } from 'react-redux';
+import ActionSheet from 'react-native-actions-sheet';
 import { Body, SubTitle, Title, Header, Colors, Caption } from '../components';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -27,13 +28,15 @@ import SettingsComponent from './settingComponents/SettingsComponent';
 class SettingsScreen extends Component {
     constructor(props) {
         super(props);
+
+        this.actionSheetRef = createRef();
     }
 
     render() {
         const lang = this.props.lang;
 
         return (
-            <>
+            <View style={{ flex: 1 }}>
                 <Header
                     leftContent={
                         <Pressable
@@ -171,8 +174,57 @@ class SettingsScreen extends Component {
                         />
                     </View>
                 </View>
-                <SafeAreaView style={{ flex: 0, backgroundColor: '#f7f7f7' }} />
-            </>
+                <ActionSheet
+                    closeOnTouchBackdrop={false}
+                    ref={this.actionSheetRef}>
+                    <View
+                        style={{
+                            height: 300,
+                            padding: 40,
+                            borderTopLeftRadius: 8,
+                            borderTopRightRadius: 8,
+                            alignItems: 'center',
+                            backgroundColor: 'white',
+                            justifyContent: 'center'
+                        }}>
+                        <Body style={{ textAlign: 'center' }}>
+                            Do you want to change picked up status of all the
+                            images ?
+                        </Body>
+                        <View
+                            style={{
+                                marginTop: 20,
+                                marginBottom: 40,
+                                width: SCREEN_WIDTH - 40
+                            }}>
+                            <Pressable
+                                onPress={() => {
+                                    this.props.changeLitterStatus(
+                                        this.props.user.picked_up
+                                    );
+
+                                    this.actionSheetRef.current?.hide();
+                                }}
+                                style={[
+                                    styles.actionButtonStyle,
+                                    {
+                                        backgroundColor: Colors.accent,
+                                        marginVertical: 20
+                                    }
+                                ]}>
+                                <Body color="white">Yes, Change</Body>
+                            </Pressable>
+                            <Pressable
+                                onPress={this.actionSheetRef.current?.hide}
+                                style={[styles.actionButtonStyle]}>
+                                <Body color="accent">No, Don't Change</Body>
+                            </Pressable>
+                        </View>
+                    </View>
+                </ActionSheet>
+
+                {/* <SafeAreaView style={{ flex: 0, backgroundColor: '#f7f7f7' }} /> */}
+            </View>
         );
     }
 
@@ -251,16 +303,19 @@ class SettingsScreen extends Component {
             [
                 {
                     text: ok,
-                    onPress: () => {
+                    onPress: async () => {
                         if (id === 11) {
                             // Toggle picked_up value
                             // sending opposite of current value to api
-
-                            this.props.saveSettings(
+                            await this.props.saveSettings(
                                 { id: 11, key: 'picked_up' },
                                 !this.props.user.picked_up,
                                 this.props.token
                             );
+                            this.actionSheetRef.current?.setModalVisible();
+                            // this.props.changeLitterStatus(
+                            //     this.props.user.picked_up
+                            // );
                         } else {
                             this.props.toggleSettingsSwitch(
                                 id,
@@ -389,6 +444,14 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(0,0,0,0.6)',
         alignItems: 'center',
         justifyContent: 'center'
+    },
+    actionButtonStyle: {
+        height: 48,
+        borderRadius: 8,
+        paddingHorizontal: 20,
+        paddingVertical: 12,
+        justifyContent: 'center',
+        alignItems: 'center'
     }
 });
 

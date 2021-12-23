@@ -2,6 +2,7 @@ import axios from 'axios';
 import {
     ADD_IMAGES,
     ADD_TAG_TO_IMAGE,
+    CHANGE_LITTER_STATUS,
     DECREMENT_SELECTED,
     DELETE_IMAGE,
     DELETE_SELECTED_IMAGES,
@@ -34,6 +35,17 @@ export const addTagToImage = payload => {
     return {
         type: ADD_TAG_TO_IMAGE,
         payload: payload
+    };
+};
+
+/**
+ * fn to change litter status on all images in state
+ * @param {boolean} value
+ */
+export const changeLitterStatus = value => {
+    return {
+        type: CHANGE_LITTER_STATUS,
+        payload: value
     };
 };
 
