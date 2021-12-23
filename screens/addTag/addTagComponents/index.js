@@ -4,3 +4,4 @@ export { default as LitterPickerWheels } from './LitterPickerWheels';
 export { default as LitterTags } from './LitterTags';
 export { default as LitterBottomSearch } from './LitterBottomSearch';
 export { default as TagsActionButton } from './TagsActionButton';
+export { default as LitterTagsCard } from './LitterTagsCard';

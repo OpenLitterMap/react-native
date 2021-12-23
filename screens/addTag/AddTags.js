@@ -24,7 +24,8 @@ import {
     LitterPickerWheels,
     LitterTags,
     LitterBottomSearch,
-    TagsActionButton
+    TagsActionButton,
+    LitterTagsCard
 } from './addTagComponents';
 import { SubTitle, Colors, Body, Caption } from '../components';
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -321,6 +322,7 @@ class AddTags extends PureComponent {
                                     marginLeft: 20,
                                     top: 70
                                 }}>
+                                {/* Shows the status of litter if "picked up" or not */}
                                 <View style={styles.statusCard}>
                                     <Caption
                                         dictionary={`${lang}.tag.litter-status`}
@@ -338,63 +340,15 @@ class AddTags extends PureComponent {
                                         />
                                     )}
                                 </View>
-                                <View style={styles.statusCard}>
-                                    <Body>Tags</Body>
-                                    <View>
-                                        {Object.keys(
-                                            this.props.images[
-                                                this.props.swiperIndex
-                                            ]?.tags
-                                        ).map(category => {
-                                            return (
-                                                <View>
-                                                    <Body
-                                                        dictionary={`${
-                                                            this.props.lang
-                                                        }.litter.categories.${category}`}
-                                                    />
-                                                    <View
-                                                        style={{
-                                                            flexDirection:
-                                                                'row',
-                                                            flexWrap: 'wrap'
-                                                        }}>
-                                                        {Object.keys(
-                                                            this.props.images[
-                                                                this.props
-                                                                    .swiperIndex
-                                                            ]?.tags[category]
-                                                        ).map(tag => {
-                                                            const value = this
-                                                                .props.images[
-                                                                this.props
-                                                                    .swiperIndex
-                                                            ]?.tags[category][
-                                                                tag
-                                                            ];
-                                                            return (
-                                                                <>
-                                                                    <Caption
-                                                                        dictionary={`${
-                                                                            this
-                                                                                .props
-                                                                                .lang
-                                                                        }.litter.${category}.${tag}`}
-                                                                    />
-                                                                    <Caption>
-                                                                        :{' '}
-                                                                        {value}
-                                                                        &nbsp;
-                                                                    </Caption>
-                                                                </>
-                                                            );
-                                                        })}
-                                                    </View>
-                                                </View>
-                                            );
-                                        })}
-                                    </View>
-                                </View>
+                                {/* Shows the list of tags */}
+                                <LitterTagsCard
+                                    tags={
+                                        this.props.images[
+                                            this.props.swiperIndex
+                                        ]?.tags
+                                    }
+                                    lang={this.props.lang}
+                                />
                             </View>
                         )}
 
