@@ -1,4 +1,4 @@
-import React, { PureComponent, createRef } from 'react';
+import React, { Component, createRef } from 'react';
 import {
     Dimensions,
     Keyboard,
@@ -33,7 +33,7 @@ const SCREEN_HEIGHT = Dimensions.get('window').height;
 
 import Icon from 'react-native-vector-icons/Ionicons';
 
-class AddTags extends PureComponent {
+class AddTags extends Component {
     constructor(props) {
         super(props);
 
@@ -46,6 +46,7 @@ class AddTags extends PureComponent {
             isOverlayDisplayed: false
         };
         this.actionSheetRef = createRef();
+        this.swiper = createRef();
     }
 
     /**
@@ -178,6 +179,8 @@ class AddTags extends PureComponent {
      *  else delete from state by id
      */
     deleteImage = async () => {
+        // length of all images in state
+        const length = this.props.images.length;
         const currentIndex = this.props.swiperIndex;
 
         const { id, type } = this.props.images[currentIndex];
@@ -191,13 +194,14 @@ class AddTags extends PureComponent {
         }
 
         // close delete confirmation action sheet
+        // if last image is deleted close AddTags modal
+        // else hide delete modal
+        // swiper index is changed by onIndexChanged fn of Swiper
 
-        if (currentIndex === 0) {
-            // this.props.resetLitterTags();
+        if (currentIndex === length - 1) {
             this.props.toggleLitter();
-        } else {
+        } else if (currentIndex < length - 1) {
             this.actionSheetRef.current?.hide();
-            this.props.swiperIndexChanged(currentIndex - 1);
         }
     };
 
@@ -205,7 +209,7 @@ class AddTags extends PureComponent {
      * The LitterPicker component
      */
     render() {
-        const { lang, swiperIndex } = this.props;
+        const { lang } = this.props;
 
         const categoryAnimatedStyle = {
             transform: [{ translateY: this.state.categoryAnimation }]
@@ -223,6 +227,7 @@ class AddTags extends PureComponent {
 
                         {/* Images swiper  */}
                         <Swiper
+                            ref={this.swiper}
                             showsButtons={
                                 this.state.isCategoriesVisible ? false : true
                             }
@@ -244,16 +249,15 @@ class AddTags extends PureComponent {
                                     />
                                 </View>
                             }
-                            index={swiperIndex}
+                            index={this.props.swiperIndex}
                             loop={false}
                             loadMinimal //
                             loadMinimalSize={2} // loads only 2 images at a time
                             showsPagination={false}
                             keyboardShouldPersistTaps="handled"
-                            ref="imageSwiper"
-                            onIndexChanged={index =>
-                                this.swiperIndexChanged(index)
-                            }>
+                            onIndexChanged={index => {
+                                this.swiperIndexChanged(index);
+                            }}>
                             {this._renderLitterImage()}
                         </Swiper>
 
@@ -373,9 +377,9 @@ class AddTags extends PureComponent {
                                     isOverlayDisplayed: !previousState.isOverlayDisplayed
                                 }));
                             }}
-                            verticalButtonPress={
-                                this.actionSheetRef.current?.setModalVisible
-                            }
+                            verticalButtonPress={() => {
+                                this.actionSheetRef.current?.setModalVisible();
+                            }}
                             horizontalButtonPress={() =>
                                 this.props.togglePickedUp(
                                     this.props.images[this.props.swiperIndex]
