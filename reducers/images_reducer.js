@@ -19,7 +19,8 @@ const INITIAL_STATE = {
     imagesArray: [],
     isSelecting: false,
     selected: 0,
-    selectedImages: []
+    selectedImages: [],
+    previousTags: []
 };
 
 export default function(state = INITIAL_STATE, action) {
@@ -120,6 +121,30 @@ export default function(state = INITIAL_STATE, action) {
                     };
                 }
 
+                // check if tag already exist in prev tags array
+                const prevImgIndex = draft.previousTags.findIndex(
+                    tag => tag.key === payloadTitle
+                );
+
+                // if tag doesn't exist add tag to array
+                // if length < 10 then add at the start of array
+                // else remove the last element and add new tag to the start of array
+
+                if (prevImgIndex === -1) {
+                    if (draft.previousTags.length <= 10) {
+                        draft.previousTags.unshift({
+                            category: payloadCategory,
+                            key: payloadTitle
+                        });
+                    } else {
+                        draft.previousTags.pop();
+                        draft.previousTags.unshift({
+                            category: payloadCategory,
+                            key: payloadTitle
+                        });
+                    }
+                }
+                // draft.previousTags = [];
                 break;
 
             /**
