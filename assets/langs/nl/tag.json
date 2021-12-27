@@ -2,7 +2,7 @@
     "add-tag": "Voeg Tag toe",
     "confirm": "Bevestig",
     "type-to-suggest": "Tik om Tags voor te stellen",
-    "suggested-tags": "Voorgestelde Tags",
+    "suggested-tags": "Voorgestelde Tags {count}",
     "alert": "Waarschuwing",
     "still-there": "Het afval ligt er nog",
     "picked-up": "Het afval is opgeraapt",

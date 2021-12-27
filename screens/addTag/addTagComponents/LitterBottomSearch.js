@@ -128,12 +128,19 @@ class LitterBottomSearch extends PureComponent {
                             style={styles.suggest}
                             dictionary={`${lang}.tag.suggested-tags`}
                             values={{
-                                count: this.props.suggestedTags.length
+                                count:
+                                    this.state.text === ''
+                                        ? this.props.previousTags.length
+                                        : this.props.suggestedTags.length
                             }}
                         />
 
                         <FlatList
-                            data={this.props.suggestedTags}
+                            data={
+                                this.state.text === ''
+                                    ? this.props.previousTags
+                                    : this.props.suggestedTags
+                            }
                             horizontal={true}
                             renderItem={this.renderTag}
                             keyExtractor={(item, index) => item.key + index}
@@ -183,7 +190,10 @@ const styles = StyleSheet.create({
 
 const mapStateToProps = state => {
     return {
-        suggestedTags: state.litter.suggestedTags
+        suggestedTags: state.litter.suggestedTags,
+        swiperIndex: state.litter.swiperIndex,
+        images: state.images.imagesArray,
+        previousTags: state.images.previousTags
     };
 };
 
