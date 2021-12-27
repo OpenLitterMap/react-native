@@ -2,7 +2,7 @@
     "add-tag": "Adicionar Tag",
     "confirm": "Confirmar",
     "type-to-suggest": "Digite para sugerir Tags",
-    "suggested-tags": "Tags Sugeridas",
+    "suggested-tags": "Tags Sugeridas {count}",
     "alert": "Alerta",
     "still-there": "O lixo ainda está lá!",
     "picked-up": "O lixo foi coletado!",
