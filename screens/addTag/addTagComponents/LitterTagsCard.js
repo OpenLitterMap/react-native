@@ -24,14 +24,14 @@ const LitterTagsCard = ({ tags, lang }) => {
     return (
         <>
             {/* Only show if atleast one tag is present */}
-            {Object.keys(tags).length !== 0 && (
+            {Object?.keys(tags)?.length !== 0 && (
                 <View style={styles.card}>
                     <Caption>Tags</Caption>
 
                     <View style={{ marginTop: 8 }}>
-                        {Object.keys(tags).map(category => {
+                        {Object?.keys(tags)?.map(category => {
                             return (
-                                <View>
+                                <View key={category}>
                                     <Body
                                         dictionary={`${lang}.litter.categories.${category}`}
                                     />
@@ -40,7 +40,7 @@ const LitterTagsCard = ({ tags, lang }) => {
                                             flexDirection: 'row',
                                             flexWrap: 'wrap'
                                         }}>
-                                        {Object.keys(tags[category]).map(
+                                        {Object?.keys(tags[category])?.map(
                                             tag => {
                                                 const value =
                                                     tags[category][tag];

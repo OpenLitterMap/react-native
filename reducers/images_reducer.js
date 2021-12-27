@@ -129,7 +129,6 @@ export default function(state = INITIAL_STATE, action) {
              * action.payload -- {boolean}
              */
             case CHANGE_LITTER_STATUS:
-                console.log(action.payload);
                 draft.imagesArray.map(img => (img.picked_up = action.payload));
 
                 break;
@@ -148,9 +147,11 @@ export default function(state = INITIAL_STATE, action) {
 
             case DELETE_IMAGE:
                 const index = draft.imagesArray.findIndex(
-                    image => image.id === action.payload
+                    delImg => delImg.id === action.payload
                 );
-                if (index !== -1) draft.imagesArray.splice(index, 1);
+                if (index !== -1) {
+                    draft.imagesArray.splice(index, 1);
+                }
 
                 break;
 
@@ -160,7 +161,7 @@ export default function(state = INITIAL_STATE, action) {
 
             case DELETE_SELECTED_IMAGES:
                 draft.imagesArray = draft.imagesArray.filter(
-                    image => !image.selected
+                    img => !img.selected
                 );
                 draft.selected = 0;
 
