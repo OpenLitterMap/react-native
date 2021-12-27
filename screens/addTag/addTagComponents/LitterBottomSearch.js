@@ -128,7 +128,10 @@ class LitterBottomSearch extends PureComponent {
                             style={styles.suggest}
                             dictionary={`${lang}.tag.suggested-tags`}
                             values={{
-                                count: this.props.suggestedTags.length
+                                count:
+                                    this.state.text === ''
+                                        ? this.props.previousTags.length
+                                        : this.props.suggestedTags.length
                             }}
                         />
 
