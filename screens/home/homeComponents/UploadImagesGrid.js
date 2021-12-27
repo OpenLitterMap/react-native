@@ -118,6 +118,7 @@ class UploadImagesGrid extends PureComponent {
                 }}>
                 {this.props.photos && (
                     <FlatList
+                        contentContainerStyle={{ paddingBottom: 100 }}
                         data={this.props.photos}
                         extraData={this.props.uniqueValue}
                         keyExtractor={(item, index) => item + index}
