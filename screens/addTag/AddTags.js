@@ -490,11 +490,6 @@ class AddTags extends Component {
                                                         color="white"
                                                     />
                                                 )}
-
-                                                {/* <SubTitle
-                                                    color="white"
-                                                    dictionary={`${lang}.tag.add-tag`}
-                                                /> */}
                                             </TouchableOpacity>
                                         </View>
                                     )}
@@ -632,7 +627,7 @@ const styles = StyleSheet.create({
     overlayStyle: {
         position: 'absolute',
         flex: 1,
-        backgroundColor: 'green',
+        backgroundColor: 'red',
         opacity: 0.4,
         width: SCREEN_WIDTH,
         height: SCREEN_HEIGHT
