@@ -33,6 +33,7 @@ const SCREEN_HEIGHT = Dimensions.get('window').height;
 
 import Icon from 'react-native-vector-icons/Ionicons';
 
+const AnimatedSwiper = Animated.createAnimatedComponent(Swiper);
 class AddTags extends Component {
     constructor(props) {
         super(props);
@@ -43,7 +44,9 @@ class AddTags extends Component {
             isCategoriesVisible: false,
             isKeyboardOpen: false,
             keyboardHeight: 0,
-            isOverlayDisplayed: false
+            isOverlayDisplayed: false,
+            animation: new Animated.Value(0),
+            imageViewPosition: 'TOP'
         };
         this.actionSheetRef = createRef();
         this.swiper = createRef();
@@ -150,6 +153,23 @@ class AddTags extends Component {
         }).start();
     };
 
+    imageAnimation = () => {
+        if (this.state.imageViewPosition === 'TOP') {
+            Animated.timing(this.state.animation, {
+                toValue: -SCREEN_HEIGHT / 2,
+                duration: 500,
+                useNativeDriver: true,
+                easing: Easing.elastic(1)
+            }).start(() => this.setState({ imageViewPosition: 'BOTTOM' }));
+        } else {
+            Animated.timing(this.state.animation, {
+                toValue: 0,
+                duration: 500,
+                useNativeDriver: true,
+                easing: Easing.elastic(1)
+            }).start(() => this.setState({ imageViewPosition: 'TOP' }));
+        }
+    };
     /**
      * Fn for close animation
      * happen on backdrop click
@@ -217,6 +237,9 @@ class AddTags extends Component {
         const sheetAnimatedStyle = {
             transform: [{ translateY: this.state.sheetAnmiation }]
         };
+        const animatedStyle = {
+            transform: [{ translateY: this.state.animation }]
+        };
 
         return (
             <View>
@@ -226,7 +249,9 @@ class AddTags extends Component {
                         <StatusBar hidden />
 
                         {/* Images swiper  */}
-                        <Swiper
+
+                        <AnimatedSwiper
+                            style={[animatedStyle]}
                             ref={this.swiper}
                             showsButtons={
                                 this.state.isCategoriesVisible ? false : true
@@ -259,7 +284,7 @@ class AddTags extends Component {
                                 this.swiperIndexChanged(index);
                             }}>
                             {this._renderLitterImage()}
-                        </Swiper>
+                        </AnimatedSwiper>
 
                         {/* Category component -- show only if add tag button is clicked
                         hidden when backdrop is pressed
@@ -430,14 +455,48 @@ class AddTags extends Component {
                                         />
                                     )}
                                     {!this.state.isKeyboardOpen && (
-                                        <TouchableOpacity
-                                            onPress={() => this.addTag()}
-                                            style={styles.buttonStyle}>
-                                            <SubTitle
-                                                color="white"
-                                                dictionary={`${lang}.tag.add-tag`}
-                                            />
-                                        </TouchableOpacity>
+                                        <View style={{ flexDirection: 'row' }}>
+                                            <TouchableOpacity
+                                                onPress={() => this.addTag()}
+                                                style={styles.buttonStyle}>
+                                                <SubTitle
+                                                    color="white"
+                                                    dictionary={`${lang}.tag.add-tag`}
+                                                />
+                                            </TouchableOpacity>
+                                            <TouchableOpacity
+                                                onPress={() => {
+                                                    this.imageAnimation();
+                                                }}
+                                                style={[
+                                                    styles.buttonStyle,
+                                                    {
+                                                        width:
+                                                            SCREEN_WIDTH * 0.25
+                                                    }
+                                                ]}>
+                                                {this.state
+                                                    .imageViewPosition ===
+                                                'TOP' ? (
+                                                    <Icon
+                                                        name="chevron-up-outline"
+                                                        size={32}
+                                                        color="white"
+                                                    />
+                                                ) : (
+                                                    <Icon
+                                                        name="chevron-down-outline"
+                                                        size={32}
+                                                        color="white"
+                                                    />
+                                                )}
+
+                                                {/* <SubTitle
+                                                    color="white"
+                                                    dictionary={`${lang}.tag.add-tag`}
+                                                /> */}
+                                            </TouchableOpacity>
+                                        </View>
                                     )}
                                 </View>
                             </Animated.View>
@@ -535,7 +594,7 @@ class AddTags extends Component {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: 'white'
+        backgroundColor: 'black'
     },
     statusCard: {
         backgroundColor: Colors.white,
@@ -546,7 +605,7 @@ const styles = StyleSheet.create({
     },
     buttonStyle: {
         height: 56,
-        width: SCREEN_WIDTH - 40,
+        width: SCREEN_WIDTH * 0.6,
         backgroundColor: Colors.accent,
         marginBottom: 40,
         marginLeft: 20,
@@ -573,7 +632,7 @@ const styles = StyleSheet.create({
     overlayStyle: {
         position: 'absolute',
         flex: 1,
-        backgroundColor: 'red',
+        backgroundColor: 'green',
         opacity: 0.4,
         width: SCREEN_WIDTH,
         height: SCREEN_HEIGHT
