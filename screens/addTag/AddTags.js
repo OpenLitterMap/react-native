@@ -40,7 +40,8 @@ class AddTags extends Component {
 
         this.state = {
             categoryAnimation: new Animated.Value(100),
-            sheetAnmiation: new Animated.Value(0),
+            sheetAnimation: new Animated.Value(0),
+            opacityAnimation: new Animated.Value(1),
             isCategoriesVisible: false,
             isKeyboardOpen: false,
             keyboardHeight: 0,
@@ -119,7 +120,7 @@ class AddTags extends Component {
         // TODO: need testing on other andrid devices
 
         Platform.OS === 'ios' &&
-            Animated.timing(this.state.sheetAnmiation, {
+            Animated.timing(this.state.sheetAnimation, {
                 toValue: sheetValue,
                 duration: 500,
                 useNativeDriver: true,
@@ -145,7 +146,7 @@ class AddTags extends Component {
             useNativeDriver: true,
             easing: Easing.elastic(1)
         }).start();
-        Animated.timing(this.state.sheetAnmiation, {
+        Animated.timing(this.state.sheetAnimation, {
             toValue: sheetToValue,
             duration: 500,
             useNativeDriver: true,
@@ -185,8 +186,26 @@ class AddTags extends Component {
                 isCategoriesVisible: false
             });
         });
-        Animated.timing(this.state.sheetAnmiation, {
+        Animated.timing(this.state.sheetAnimation, {
             toValue: 100,
+            duration: 500,
+            useNativeDriver: true,
+            easing: Easing.elastic(1)
+        }).start();
+    };
+
+    opacityAnmiation = async () => {
+        Animated.timing(this.state.opacityAnimation, {
+            toValue: 0,
+            duration: 500,
+            useNativeDriver: true,
+            easing: Easing.elastic(1)
+        }).start();
+    };
+
+    returnOpacityAnmiation = async () => {
+        Animated.timing(this.state.opacityAnimation, {
+            toValue: 1,
             duration: 500,
             useNativeDriver: true,
             easing: Easing.elastic(1)
@@ -235,12 +254,15 @@ class AddTags extends Component {
             transform: [{ translateY: this.state.categoryAnimation }]
         };
         const sheetAnimatedStyle = {
-            transform: [{ translateY: this.state.sheetAnmiation }]
+            transform: [{ translateY: this.state.sheetAnimation }]
         };
         const animatedStyle = {
             transform: [{ translateY: this.state.animation }]
         };
 
+        const opacityStyle = {
+            opacity: this.state.opacityAnimation
+        };
         return (
             <View>
                 <View style={{ flex: 1 }}>
@@ -298,7 +320,8 @@ class AddTags extends Component {
                                         left: 20,
                                         zIndex: 2
                                     },
-                                    categoryAnimatedStyle
+                                    categoryAnimatedStyle,
+                                    opacityStyle
                                 ]}>
                                 <LitterCategories
                                     categories={CATEGORIES}
@@ -419,7 +442,8 @@ class AddTags extends Component {
                             <Animated.View
                                 style={[
                                     styles.bottomSheet,
-                                    sheetAnimatedStyle
+                                    sheetAnimatedStyle,
+                                    opacityStyle
                                 ]}>
                                 <View
                                     style={{
@@ -465,8 +489,14 @@ class AddTags extends Component {
                                                 />
                                             </TouchableOpacity>
                                             <TouchableOpacity
+                                                onLongPress={() => {
+                                                    this.opacityAnmiation();
+                                                }}
                                                 onPress={() => {
                                                     this.imageAnimation();
+                                                }}
+                                                onPressOut={() => {
+                                                    this.returnOpacityAnmiation();
                                                 }}
                                                 style={[
                                                     styles.buttonStyle,
