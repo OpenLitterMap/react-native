@@ -645,7 +645,7 @@ const styles = StyleSheet.create({
         height: 56,
         width: SCREEN_WIDTH * 0.6,
         backgroundColor: Colors.accent,
-        marginBottom: 40,
+        marginBottom: Platform.OS === 'ios' ? 40 : 0,
         marginLeft: 20,
         justifyContent: 'center',
         alignItems: 'center',
