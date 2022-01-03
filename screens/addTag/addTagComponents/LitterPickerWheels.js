@@ -19,13 +19,14 @@ class LitterPickerWheels extends PureComponent {
         return (
             <View
                 style={{
-                    marginVertical: 20,
+                    margin: 20,
                     flexDirection: 'row',
-                    backgroundColor: '#fafafa'
+                    backgroundColor: '#fafafa',
+                    borderRadius: 8
                 }}>
                 <Picker
                     itemStyle={styles.itemStyle}
-                    style={{ width: SCREEN_WIDTH * 0.7 }}
+                    style={{ width: SCREEN_WIDTH * 0.7 - 20 }}
                     selectedValue={this.props.item}
                     onValueChange={item => this.props.changeItem(item)}>
                     {this.props.items.map((item, i) => {
@@ -40,7 +41,7 @@ class LitterPickerWheels extends PureComponent {
                 </Picker>
                 <Picker
                     itemStyle={styles.itemStyle}
-                    style={{ width: SCREEN_WIDTH * 0.3 }}
+                    style={{ width: SCREEN_WIDTH * 0.3 - 20 }}
                     selectedValue={this.props.q}
                     onValueChange={q => this.props.changeQ(q)}>
                     {QUANTITIES.map((q, i) => (
