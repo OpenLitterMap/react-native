@@ -130,6 +130,8 @@ export default function(state = INITIAL_STATE, action) {
                 // if length < 10 then add at the start of array
                 // else remove the last element and add new tag to the start of array
 
+                // if item in array remove it and add to the start of array
+
                 if (prevImgIndex === -1) {
                     if (draft.previousTags.length <= 10) {
                         draft.previousTags.unshift({
@@ -143,6 +145,12 @@ export default function(state = INITIAL_STATE, action) {
                             key: payloadTitle
                         });
                     }
+                } else {
+                    draft.previousTags.splice(prevImgIndex, 1);
+                    draft.previousTags.unshift({
+                        category: payloadCategory,
+                        key: payloadTitle
+                    });
                 }
                 // draft.previousTags = [];
                 break;
