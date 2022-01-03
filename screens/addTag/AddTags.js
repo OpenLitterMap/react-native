@@ -155,9 +155,18 @@ class AddTags extends Component {
     };
 
     imageAnimation = () => {
+        let toValue = -380;
+        // checking if image have tags
+        // if tags animate value to value -460
+        // else translate value to value -380
+        const tags = this.props.images[this.props.swiperIndex]?.tags;
+        if (tags !== undefined && Object.keys(tags).length !== 0) {
+            toValue = -460;
+        }
+
         if (this.state.imageViewPosition === 'TOP') {
             Animated.timing(this.state.animation, {
-                toValue: -SCREEN_HEIGHT / 2,
+                toValue,
                 duration: 500,
                 useNativeDriver: true,
                 easing: Easing.elastic(1)
@@ -608,6 +617,10 @@ class AddTags extends Component {
                     toggleFn={() => {
                         if (this.state.isCategoriesVisible) {
                             this.returnAnimation();
+                            // Move image to bottom position if Tags Sheet is closed
+                            // By clicking on the image
+                            this.state.imageViewPosition === 'BOTTOM' &&
+                                this.imageAnimation();
                         }
                     }}
                 />
