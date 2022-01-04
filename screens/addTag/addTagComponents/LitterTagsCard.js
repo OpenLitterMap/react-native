@@ -1,8 +1,15 @@
-import React from 'react';
-import { StyleSheet, Text, View, Dimensions } from 'react-native';
+import React, { Component } from 'react';
+import {
+    StyleSheet,
+    ScrollView,
+    View,
+    Dimensions,
+    Animated,
+    Pressable
+} from 'react-native';
 import { Colors, Body, Caption } from '../../components';
-
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+import Icon from 'react-native-vector-icons/Ionicons';
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 /**
  * component to show added tags on image when AddTags screen is opened
@@ -20,57 +27,100 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
  * @param {String} lang --> Selected Global Language
  * @returns
  */
-const LitterTagsCard = ({ tags, lang }) => {
-    return (
-        <>
-            {/* Only show if atleast one tag is present */}
-            {Object?.keys(tags)?.length !== 0 && (
-                <View style={styles.card}>
-                    <Caption>Tags</Caption>
+class LitterTagsCard extends Component {
+    state = {
+        animation: new Animated.Value(200),
+        boxState: 'CLOSE'
+    };
 
-                    <View style={{ marginTop: 8 }}>
-                        {Object?.keys(tags)?.map(category => {
-                            return (
-                                <View key={category}>
-                                    <Body
-                                        dictionary={`${lang}.litter.categories.${category}`}
-                                    />
-                                    <View
-                                        style={{
-                                            flexDirection: 'row',
-                                            flexWrap: 'wrap'
-                                        }}>
-                                        {Object?.keys(tags[category])?.map(
-                                            tag => {
-                                                const value =
-                                                    tags[category][tag];
-                                                return (
-                                                    <View
-                                                        key={tag}
-                                                        style={
-                                                            styles.tagBadges
-                                                        }>
-                                                        <Caption
-                                                            color="text"
-                                                            dictionary={`${lang}.litter.${category}.${tag}`}
-                                                        />
-                                                        <Caption color="text">
-                                                            : {value} &nbsp;
-                                                        </Caption>
-                                                    </View>
-                                                );
-                                            }
-                                        )}
+    boxAnimation = () => {
+        if (this.state.boxState === 'CLOSE') {
+            Animated.timing(this.state.animation, {
+                toValue: SCREEN_HEIGHT / 2,
+                duration: 200,
+                useNativeDriver: false
+            }).start(() => this.setState({ boxState: 'OPEN' }));
+        } else {
+            Animated.timing(this.state.animation, {
+                toValue: 200,
+                duration: 200,
+                useNativeDriver: false
+            }).start(() => this.setState({ boxState: 'CLOSE' }));
+        }
+    };
+    render() {
+        const boxStyle = {
+            height: this.state.animation
+        };
+        const { tags, lang } = this.props;
+        return (
+            <>
+                {/* Only show if atleast one tag is present */}
+                {Object?.keys(tags)?.length !== 0 && (
+                    <Animated.View style={[styles.card, boxStyle]}>
+                        <Caption>Tags</Caption>
+
+                        <ScrollView
+                            alwaysBounceVertical={false}
+                            style={{ marginTop: 8 }}>
+                            {Object?.keys(tags)?.map(category => {
+                                return (
+                                    <View key={category}>
+                                        <Body
+                                            dictionary={`${lang}.litter.categories.${category}`}
+                                        />
+                                        <View
+                                            style={{
+                                                flexDirection: 'row',
+                                                flexWrap: 'wrap'
+                                            }}>
+                                            {Object?.keys(tags[category])?.map(
+                                                tag => {
+                                                    const value =
+                                                        tags[category][tag];
+                                                    return (
+                                                        <View
+                                                            key={tag}
+                                                            style={
+                                                                styles.tagBadges
+                                                            }>
+                                                            <Caption
+                                                                color="text"
+                                                                dictionary={`${lang}.litter.${category}.${tag}`}
+                                                            />
+                                                            <Caption color="text">
+                                                                : {value} &nbsp;
+                                                            </Caption>
+                                                        </View>
+                                                    );
+                                                }
+                                            )}
+                                        </View>
                                     </View>
-                                </View>
-                            );
-                        })}
-                    </View>
-                </View>
-            )}
-        </>
-    );
-};
+                                );
+                            })}
+                        </ScrollView>
+                        <Pressable
+                            style={{
+                                justifyContent: 'center',
+                                alignItems: 'center'
+                            }}
+                            onPress={this.boxAnimation}>
+                            <Icon
+                                name={
+                                    this.state.boxState === 'CLOSE'
+                                        ? 'chevron-down-outline'
+                                        : 'chevron-up-outline'
+                                }
+                                size={32}
+                            />
+                        </Pressable>
+                    </Animated.View>
+                )}
+            </>
+        );
+    }
+}
 
 export default LitterTagsCard;
 
@@ -80,7 +130,8 @@ const styles = StyleSheet.create({
         width: SCREEN_WIDTH - 40,
         borderRadius: 12,
         padding: 20,
-        marginBottom: 20
+        paddingBottom: 0,
+        minHeight: 100
     },
     tagBadges: {
         flexDirection: 'row',
