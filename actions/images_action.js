@@ -148,7 +148,6 @@ export const deleteWebImage = (token, photoId, id) => {
         } catch (error) {
             console.log('delete web image', error);
         }
-        console.log(response.data);
         if (response && response?.data?.success) {
             dispatch({
                 type: DELETE_IMAGE,

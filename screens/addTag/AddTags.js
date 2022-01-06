@@ -236,7 +236,7 @@ class AddTags extends Component {
         if (type === 'WEB') {
             const photoId = this.props.images[currentIndex].photoId;
 
-            await this.props.deleteWebImage(this.props.token, photoId, id);
+            this.props.deleteWebImage(this.props.token, photoId, id);
         } else {
             this.props.deleteImage(id);
         }
