@@ -693,7 +693,7 @@ const styles = StyleSheet.create({
         alignItems: 'center'
     },
     bottomSheet: {
-        backgroundColor: 'white',
+        // backgroundColor: 'white',
         position: 'absolute',
         bottom: -400,
         left: 0,
