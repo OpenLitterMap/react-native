@@ -136,8 +136,8 @@ android {
         applicationId "com.geotech.openlittermap"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 26 // increment this
-        versionName "3.1.0"
+        versionCode 27 // increment this
+        versionName "3.1.2"
         missingDimensionStrategy 'react-native-camera', 'general'
         multiDexEnabled true
     }
