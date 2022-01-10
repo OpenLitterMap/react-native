@@ -3,8 +3,7 @@ import {
     StyleSheet,
     ScrollView,
     View,
-    Dimensions,
-    Animated
+    Dimensions
 } from 'react-native';
 import { Colors, Body, Caption } from '../../components';
 

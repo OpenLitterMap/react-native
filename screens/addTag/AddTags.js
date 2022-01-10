@@ -236,7 +236,7 @@ class AddTags extends Component {
         if (type === 'WEB') {
             const photoId = this.props.images[currentIndex].photoId;
 
-            await this.props.deleteWebImage(this.props.token, photoId, id);
+            this.props.deleteWebImage(this.props.token, photoId, id);
         } else {
             this.props.deleteImage(id);
         }
@@ -645,7 +645,7 @@ const styles = StyleSheet.create({
         height: 56,
         width: SCREEN_WIDTH * 0.6,
         backgroundColor: Colors.accent,
-        marginBottom: 40,
+        marginBottom: Platform.OS === 'ios' ? 40 : 0,
         marginLeft: 20,
         justifyContent: 'center',
         alignItems: 'center',
@@ -693,7 +693,7 @@ const styles = StyleSheet.create({
         alignItems: 'center'
     },
     bottomSheet: {
-        backgroundColor: 'white',
+        // backgroundColor: 'white',
         position: 'absolute',
         bottom: -400,
         left: 0,
