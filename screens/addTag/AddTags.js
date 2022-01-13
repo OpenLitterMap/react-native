@@ -413,37 +413,42 @@ class AddTags extends Component {
                             </View>
                         )}
 
-                        {/* Floating action button */}
-                        <TagsActionButton
-                            pickedUpStatus={
-                                this.props.images[this.props.swiperIndex]
-                                    ?.picked_up
-                            }
-                            openTagSheet={() => {
-                                if (this.state.isCategoriesVisible) {
-                                    this.returnAnimation();
-                                } else {
-                                    this.startAnimation(-400);
-                                    this.setState({
-                                        isCategoriesVisible: true
-                                    });
-                                }
-                            }}
-                            toggleOverlay={() => {
-                                this.setState(previousState => ({
-                                    isOverlayDisplayed: !previousState.isOverlayDisplayed
-                                }));
-                            }}
-                            verticalButtonPress={() => {
-                                this.actionSheetRef.current?.setModalVisible();
-                            }}
-                            horizontalButtonPress={() =>
-                                this.props.togglePickedUp(
+                        {/* Floating action button
+                         // shows only when Tags action sheet is not open
+                        */}
+                        {!this.state.isCategoriesVisible && (
+                            <TagsActionButton
+                                pickedUpStatus={
                                     this.props.images[this.props.swiperIndex]
-                                        ?.id
-                                )
-                            }
-                        />
+                                        ?.picked_up
+                                }
+                                openTagSheet={() => {
+                                    if (this.state.isCategoriesVisible) {
+                                        this.returnAnimation();
+                                    } else {
+                                        this.startAnimation(-400);
+                                        this.setState({
+                                            isCategoriesVisible: true
+                                        });
+                                    }
+                                }}
+                                toggleOverlay={() => {
+                                    this.setState(previousState => ({
+                                        isOverlayDisplayed: !previousState.isOverlayDisplayed
+                                    }));
+                                }}
+                                verticalButtonPress={() => {
+                                    this.actionSheetRef.current?.setModalVisible();
+                                }}
+                                horizontalButtonPress={() =>
+                                    this.props.togglePickedUp(
+                                        this.props.images[
+                                            this.props.swiperIndex
+                                        ]?.id
+                                    )
+                                }
+                            />
+                        )}
 
                         {/* Bottom action sheet with Tags picker and add tags section */}
 
