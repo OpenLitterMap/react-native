@@ -1,8 +1,13 @@
-import React from 'react';
-import { StyleSheet, View, Dimensions } from 'react-native';
+import React, { Component } from 'react';
+import {
+    StyleSheet,
+    ScrollView,
+    View,
+    Dimensions
+} from 'react-native';
 import { Colors, Body, Caption } from '../../components';
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 /**
  * component to show added tags on image when AddTags screen is opened
@@ -25,10 +30,13 @@ const LitterTagsCard = ({ tags, lang }) => {
         <>
             {/* Only show if atleast one tag is present */}
             {Object?.keys(tags)?.length !== 0 && (
-                <View style={styles.card}>
+                <View style={[styles.card]}>
                     <Caption>Tags</Caption>
 
-                    <View style={{ marginTop: 8 }}>
+                    <ScrollView
+                        showsVerticalScrollIndicator={false}
+                        alwaysBounceVertical={false}
+                        style={{ marginTop: 8 }}>
                         {Object?.keys(tags)?.map(category => {
                             return (
                                 <View key={category}>
@@ -65,7 +73,7 @@ const LitterTagsCard = ({ tags, lang }) => {
                                 </View>
                             );
                         })}
-                    </View>
+                    </ScrollView>
                 </View>
             )}
         </>
@@ -80,7 +88,7 @@ const styles = StyleSheet.create({
         width: SCREEN_WIDTH - 40,
         borderRadius: 12,
         padding: 20,
-        marginBottom: 20
+        maxHeight: SCREEN_HEIGHT / 2
     },
     tagBadges: {
         flexDirection: 'row',
