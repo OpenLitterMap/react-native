@@ -51,6 +51,7 @@ class LitterCategories extends PureComponent {
         return (
             <View style={{ marginVertical: 20 }}>
                 <FlatList
+                    contentContainerStyle={{ paddingHorizontal: 10 }}
                     showsHorizontalScrollIndicator={false}
                     data={this.props.categories}
                     horizontal={true}
