@@ -29,9 +29,6 @@ class LitterBottomSearch extends PureComponent {
      * A tag has been selected
      */
     addTag(tag) {
-        // update selected tag to execute scrollTo
-        this.props.changeItem(tag);
-
         const newTag = {
             category: tag.category,
             title: tag.key
