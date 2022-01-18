@@ -1,12 +1,24 @@
 import React, { Component } from 'react';
-import { Text, View, StyleSheet } from 'react-native';
+import { Text, View, StyleSheet, ScrollView } from 'react-native';
+import { Header, Title, SubTitle, Caption } from '../components';
+import * as actions from '../../actions';
+import { connect } from 'react-redux';
 
 class TeamScreen extends Component {
+    componentDidMount() {
+        this.props.getTopTeams();
+    }
     render() {
         return (
-            <View style={styles.container}>
-                <Text> Team screen </Text>
-            </View>
+            <>
+                <Header leftContent={<Title color="white">Teams</Title>} />
+                <ScrollView style={styles.container}>
+                    <View style={styles.headingRow}>
+                        <SubTitle>Top Teams</SubTitle>
+                        <Caption color="accent">View All</Caption>
+                    </View>
+                </ScrollView>
+            </>
         );
     }
 }
@@ -14,8 +26,24 @@ class TeamScreen extends Component {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center'
+        backgroundColor: 'white',
+        padding: 20
+    },
+    headingRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'baseline'
     }
 });
-export default TeamScreen;
+
+const mapStateToProps = state => {
+    return {
+        topTeams: state.teams.topTeams,
+        lang: state.auth.lang
+    };
+};
+
+export default connect(
+    mapStateToProps,
+    actions
+)(TeamScreen);

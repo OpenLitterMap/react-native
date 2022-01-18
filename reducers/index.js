@@ -6,6 +6,7 @@ import litter from './litter_reducer';
 import shared from './shared_reducer';
 import settings from './settings_reducer';
 import stats from './stats_reducer';
+import teams from './team_reducer';
 import web from './web_reducer';
 
 export default {
@@ -17,5 +18,6 @@ export default {
     shared,
     settings,
     stats,
+    teams,
     web
 };

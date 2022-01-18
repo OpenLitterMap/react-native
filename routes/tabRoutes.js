@@ -8,7 +8,8 @@ import {
     UserStatsScreen,
     GlobalDataScreen,
     HomeScreen,
-    CameraScreen
+    CameraScreen,
+    TeamScreen
 } from '../screens';
 // import { CameraPage } from '../screens/pages';
 import { Colors } from '../screens/components';
@@ -39,11 +40,11 @@ const TabRoutes = ({ navigation }) => (
                                 ? 'ios-trending-up'
                                 : 'ios-trending-up-outline';
                             break;
-                        // case 'TEAM':
-                        //     iconName = focused
-                        //         ? 'ios-people'
-                        //         : 'ios-people-outline';
-                        //     break;
+                        case 'TEAM':
+                            iconName = focused
+                                ? 'ios-people'
+                                : 'ios-people-outline';
+                            break;
                         // case 'RANKING':
                         //     iconName = focused
                         //         ? 'ios-trophy'
@@ -108,9 +109,9 @@ const TabRoutes = ({ navigation }) => (
                 component={CameraScreen}
                 options={{ unmountOnBlur: true }}
             />
+            <Tab.Screen name="TEAM" component={TeamScreen} />
             <Tab.Screen name="GLOBAL_DATA" component={GlobalDataScreen} />
 
-            {/* <Tab.Screen name="TEAM" component={TeamScreen} /> */}
             {/* <Tab.Screen name="RANKING" component={RankingScreen} /> */}
             <Tab.Screen name="USER_STATS" component={UserStatsScreen} />
         </Tab.Navigator>
