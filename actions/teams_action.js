@@ -11,6 +11,7 @@ export const getTopTeams = () => {
         try {
             response = await axios({
                 url: URL + '/api/teams/leaderboard',
+                // url: 'https://openlittermap.com/api/teams/leaderboard',
                 method: 'GET',
                 headers: {
                     Accept: 'application/json'
@@ -33,9 +34,11 @@ export const getTopTeams = () => {
         }
 
         if (response.data) {
+            const topFiveTeams =
+                response.data.length >= 5 && response.data.slice(0, 5);
             dispatch({
                 type: TOP_TEAMS_REQUEST_SUCCESS,
-                payload: response.data
+                payload: topFiveTeams
             });
         }
     };
