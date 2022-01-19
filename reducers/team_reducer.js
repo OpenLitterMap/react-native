@@ -1,11 +1,14 @@
 import produce from 'immer';
 import {
     TOP_TEAMS_REQUEST_SUCCESS,
-    TOP_TEAMS_REQUEST_ERROR
+    TOP_TEAMS_REQUEST_ERROR,
+    USER_TEAMS_REQUEST_SUCCESS,
+    USER_TEAMS_REQUEST_ERROR
 } from '../actions/types';
 
 const INITIAL_STATE = {
-    topTeams: []
+    topTeams: [],
+    userTeams: []
 };
 
 export default function(state = INITIAL_STATE, action) {
@@ -13,6 +16,11 @@ export default function(state = INITIAL_STATE, action) {
         switch (action.type) {
             case TOP_TEAMS_REQUEST_SUCCESS:
                 draft.topTeams = action.payload;
+
+                break;
+
+            case USER_TEAMS_REQUEST_SUCCESS:
+                draft.userTeams = action.payload;
 
                 break;
 
