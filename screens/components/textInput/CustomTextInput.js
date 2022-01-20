@@ -59,6 +59,7 @@ const CustomTextInput = React.forwardRef(
                         {...rest}
                         ref={ref}
                         style={[
+                            inputStyle,
                             styles.input,
                             touched && error && styles.errorText
                         ]}
