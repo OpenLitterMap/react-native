@@ -36,19 +36,17 @@ export const getTopTeams = () => {
         }
 
         if (response.data) {
-            const topFiveTeams =
-                response.data.length >= 5 && response.data.slice(0, 5);
+            // const topFiveTeams =
+            //     response.data.length >= 5 && response.data.slice(0, 5);
             dispatch({
                 type: TOP_TEAMS_REQUEST_SUCCESS,
-                payload: topFiveTeams
+                payload: response.data
             });
         }
     };
 };
 
 export const getUserTeams = token => {
-    console.log(token);
-
     return async dispatch => {
         let response;
         try {
