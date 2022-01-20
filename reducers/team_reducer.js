@@ -1,5 +1,6 @@
 import produce from 'immer';
 import {
+    JOIN_TEAM_SUCCESS,
     TOP_TEAMS_REQUEST_SUCCESS,
     TOP_TEAMS_REQUEST_ERROR,
     USER_TEAMS_REQUEST_SUCCESS,
@@ -21,6 +22,11 @@ export default function(state = INITIAL_STATE, action) {
 
             case USER_TEAMS_REQUEST_SUCCESS:
                 draft.userTeams = action.payload;
+
+                break;
+
+            case JOIN_TEAM_SUCCESS:
+                draft.userTeams.push(action.payload.team);
 
                 break;
 

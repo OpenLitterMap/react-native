@@ -2,7 +2,7 @@ import React, { Component, createRef } from 'react';
 import { StyleSheet, ScrollView, View, Text, Pressable } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import ActionSheet from 'react-native-actions-sheet';
-import { Header, Title, Colors, Body } from '../components';
+import { Header, Title, Colors, Body, CustomTextInput } from '../components';
 import * as actions from '../../actions';
 import { connect } from 'react-redux';
 import { JoinTeamForm, TopTeamsList, UserTeamsList } from './teamComponents';
@@ -78,9 +78,9 @@ class TeamScreen extends Component {
                                 </Pressable>
                             </>
                         ) : (
-                            <>
+                            <View>
                                 <JoinTeamForm />
-                            </>
+                            </View>
                         )}
                     </View>
                 </ActionSheet>

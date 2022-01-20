@@ -41,6 +41,7 @@ const CustomTextInput = React.forwardRef(
                 <View
                     style={[
                         styles.textfieldContainer,
+                        style,
                         touched && error && styles.errorBorder
                     ]}>
                     {leftContent}
@@ -59,8 +60,8 @@ const CustomTextInput = React.forwardRef(
                         {...rest}
                         ref={ref}
                         style={[
-                            inputStyle,
                             styles.input,
+                            inputStyle,
                             touched && error && styles.errorText
                         ]}
                         placeholder={placeholder}

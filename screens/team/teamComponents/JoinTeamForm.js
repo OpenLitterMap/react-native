@@ -1,29 +1,75 @@
 import { StyleSheet, Pressable, View, TextInput } from 'react-native';
-import React from 'react';
-import { Body, CustomTextInput, Colors } from '../../components';
+import React, { Component } from 'react';
+import { Formik } from 'formik';
+import * as Yup from 'yup';
+import * as actions from '../../../actions';
+import { connect } from 'react-redux';
+import { Body, CustomTextInput, Colors, Caption } from '../../components';
 
-const JoinTeamForm = () => {
-    return (
-        <>
-            <Body>Join team by identifier</Body>
+const JoinTeamSchema = Yup.object().shape({
+    id: Yup.string()
+        .required('Enter identifier')
+        .min(3, 'Minimum 3 characters long')
+        .max(15, 'Maximum 15 characters long')
+});
+class JoinTeamForm extends Component {
+    render() {
+        return (
+            <View>
+                <Body>Join team by identifier</Body>
+                <Formik
+                    initialValues={{ id: '' }}
+                    validationSchema={JoinTeamSchema}
+                    onSubmit={values => {
+                        console.log('called');
+                        // this.props.sendResetPasswordRequest(values.email);
+                        this.props.joinTeam(this.props.token, values.id);
+                    }}>
+                    {({
+                        handleSubmit,
+                        setFieldValue,
+                        values,
+                        errors,
+                        touched,
+                        handleChange
+                    }) => (
+                        <>
+                            <TextInput
+                                name="id"
+                                autoFocus={false}
+                                autoCorrect={false}
+                                autoCapitalize={'none'}
+                                autoCompleteType="off"
+                                textContentType="none"
+                                onChangeText={handleChange('id')}
+                                style={styles.input}
+                                onSubmitEditing={handleSubmit}
+                                returnKeyType="go"
+                                placeholder="Enter ID to join a team"
+                            />
+                            {touched.id && errors.id && (
+                                <Caption color="error">{errors.id}</Caption>
+                            )}
+                            <Pressable
+                                onPress={handleSubmit}
+                                style={[
+                                    styles.buttonStyle,
+                                    {
+                                        backgroundColor: Colors.accent,
+                                        marginVertical: 40
+                                    }
+                                ]}>
+                                <Body color="white">JOIN TEAM</Body>
+                            </Pressable>
+                        </>
+                    )}
+                </Formik>
+            </View>
+        );
+    }
+}
 
-            <TextInput
-                style={styles.input}
-                placeholder="Enter ID to join a team"
-            />
-            <Pressable
-                onPress={() => this.setState({ showFormType: 'JOIN' })}
-                style={[
-                    styles.buttonStyle,
-                    { backgroundColor: Colors.accent, marginVertical: 40 }
-                ]}>
-                <Body color="white">JOIN TEAM</Body>
-            </Pressable>
-        </>
-    );
-};
-
-export default JoinTeamForm;
+// export default JoinTeamForm;
 
 const styles = StyleSheet.create({
     input: {
@@ -48,3 +94,16 @@ const styles = StyleSheet.create({
         marginBottom: 20
     }
 });
+
+const mapStateToProps = state => {
+    return {
+        lang: state.auth.lang,
+        token: state.auth.token
+    };
+};
+
+// bind all action creators to AuthScreen
+export default connect(
+    mapStateToProps,
+    actions
+)(JoinTeamForm);
