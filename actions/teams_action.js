@@ -1,14 +1,62 @@
 import {
     JOIN_TEAM_SUCCESS,
+    TEAM_TYPES,
+    TEAMS_REQUEST_ERROR,
     TOP_TEAMS_REQUEST_SUCCESS,
-    TOP_TEAMS_REQUEST_ERROR,
     URL,
     USER_TEAMS_REQUEST_ERROR,
     USER_TEAMS_REQUEST_SUCCESS
 } from './types';
 import axios from 'axios';
 
-export const getTopTeams = () => {
+export const clearTeamStatus = () => {
+    return {
+        type: TEAMS_REQUEST_ERROR
+    };
+};
+
+export const getTeamTypes = token => {
+    return async dispatch => {
+        let response;
+        try {
+            response = await axios({
+                url: URL + '/api/teams/types',
+                // url: 'https://openlittermap.com/api/teams/leaderboard',
+                method: 'GET',
+                headers: {
+                    Authorization: 'Bearer ' + token,
+                    Accept: 'application/json',
+                    'content-type': 'application/json'
+                }
+            });
+        } catch (error) {
+            console.log(error);
+            // if (error.response) {
+            //     dispatch({
+            //         type: TOP_TEAMS_REQUEST_ERROR,
+            //         payload: 'Something went wrong, please try again'
+            //     });
+            // } else {
+            //     dispatch({
+            //         type: TOP_TEAMS_REQUEST_ERROR,
+            //         payload: 'Network Error, please try again'
+            //     });
+            // }
+            return;
+        }
+
+        if (response.data) {
+            console.log(response.data);
+            dispatch({
+                type: TEAM_TYPES,
+                payload: response.data
+            });
+        }
+    };
+};
+
+export const getTopTeams = token => {
+    console.log(token);
     return async dispatch => {
         let response;
         try {
@@ -17,21 +65,23 @@ export const getTopTeams = () => {
                 // url: 'https://openlittermap.com/api/teams/leaderboard',
                 method: 'GET',
                 headers: {
-                    Accept: 'application/json'
+                    Authorization: 'Bearer ' + token,
+                    Accept: 'application/json',
+                    'content-type': 'application/json'
                 }
             });
         } catch (error) {
             console.log(error);
             if (error.response) {
-                dispatch({
-                    type: TOP_TEAMS_REQUEST_ERROR,
-                    payload: 'Something went wrong, please try again'
-                });
+                // dispatch({
+                //     type: TOP_TEAMS_REQUEST_ERROR,
+                //     payload: 'Something went wrong, please try again'
+                // });
             } else {
-                dispatch({
-                    type: TOP_TEAMS_REQUEST_ERROR,
-                    payload: 'Network Error, please try again'
-                });
+                // dispatch({
+                //     type: TOP_TEAMS_REQUEST_ERROR,
+                //     payload: 'Network Error, please try again'
+                // });
             }
             return;
         }

@@ -5,7 +5,12 @@ import ActionSheet from 'react-native-actions-sheet';
 import { Header, Title, Colors, Body, CustomTextInput } from '../components';
 import * as actions from '../../actions';
 import { connect } from 'react-redux';
-import { JoinTeamForm, TopTeamsList, UserTeamsList } from './teamComponents';
+import {
+    CreateTeamForm,
+    JoinTeamForm,
+    TopTeamsList,
+    UserTeamsList
+} from './teamComponents';
 
 class TeamScreen extends Component {
     constructor(props) {
@@ -17,7 +22,7 @@ class TeamScreen extends Component {
         };
     }
     componentDidMount() {
-        this.props.getTopTeams();
+        this.props.getTopTeams(this.props.token);
         this.props.getUserTeams(this.props.token);
     }
     render() {
@@ -55,7 +60,7 @@ class TeamScreen extends Component {
                     gestureEnabled
                     ref={this.actionSheetRef}>
                     <View style={{ padding: 20 }}>
-                        {this.state.showFormType ? (
+                        {!this.state.showFormType ? (
                             <>
                                 <Pressable
                                     onPress={() =>
@@ -78,9 +83,13 @@ class TeamScreen extends Component {
                                 </Pressable>
                             </>
                         ) : (
-                            <View>
-                                <JoinTeamForm />
-                            </View>
+                            <>
+                                {this.state.showFormType === 'JOIN' ? (
+                                    <JoinTeamForm />
+                                ) : (
+                                    <CreateTeamForm />
+                                )}
+                            </>
                         )}
                     </View>
                 </ActionSheet>
