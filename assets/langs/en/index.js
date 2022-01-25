@@ -6,6 +6,7 @@ import settings from './settings.json';
 import stats from './stats.json';
 import tag from './tag.json';
 import user from './user.json';
+import team from './team.json';
 import welcome from './welcome.json';
 
 export const en = {
@@ -17,5 +18,6 @@ export const en = {
     stats,
     tag,
     user,
+    team,
     welcome
 };

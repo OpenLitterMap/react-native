@@ -1,52 +1,83 @@
-import { StyleSheet, Text, View } from 'react-native';
-import React from 'react';
+import { StyleSheet, Pressable, View } from 'react-native';
+import React, { Component } from 'react';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { SubTitle, Body, Caption, Colors } from '../../components';
+import * as actions from '../../../actions';
+import { connect } from 'react-redux';
 
-const UserTeamsList = ({ userTeams, activeTeam }) => {
-    return (
-        <>
-            {/* Users Teams */}
-            <View style={[styles.headingRow, { marginTop: 20 }]}>
-                <SubTitle>My Teams</SubTitle>
-                {/* <Caption color="accent">View All</Caption> */}
-            </View>
-            {userTeams.map((team, index) => (
-                <View key={`${team.name}${index}`} style={styles.itemContainer}>
-                    <View
-                        style={{
-                            flexDirection: 'row',
-                            justifyContent: 'space-between',
-                            alignItems: 'center'
-                        }}>
-                        {activeTeam === team.id && (
-                            <Icon
-                                name="ios-star-sharp"
-                                size={24}
-                                color={Colors.accent}
-                            />
-                        )}
+class UserTeamsList extends Component {
+    componentDidMount() {
+        this.props.getUserTeams(this.props.token);
+    }
+
+    setTeam = team => {
+        this.props.setSelectedTeam(team);
+        this.props.navigation.navigate('TEAM_DETAILS');
+    };
+
+    render() {
+        const { userTeams, user } = this.props;
+        const activeTeam = user?.active_team;
+        return (
+            <>
+                {/* Users Teams */}
+                <View style={[styles.headingRow, { marginTop: 20 }]}>
+                    <SubTitle>My Teams</SubTitle>
+                    {/* <Caption color="accent">View All</Caption> */}
+                </View>
+                {userTeams.map((team, index) => (
+                    <Pressable
+                        onPress={() => this.setTeam(team)}
+                        key={`${team.name}${index}`}
+                        style={styles.itemContainer}>
                         <View
                             style={{
-                                marginLeft: activeTeam !== team.id ? 44 : 20
+                                flexDirection: 'row',
+                                justifyContent: 'space-between',
+                                alignItems: 'center'
                             }}>
-                            <Body>{team.name}</Body>
-                            <Caption>{team.total_images} PHOTOS</Caption>
+                            {activeTeam === team.id && (
+                                <Icon
+                                    name="ios-star-sharp"
+                                    size={24}
+                                    color={Colors.accent}
+                                />
+                            )}
+                            <View
+                                style={{
+                                    marginLeft: activeTeam !== team.id ? 44 : 20
+                                }}>
+                                <Body>{team.name}</Body>
+                                <Caption>{team.total_images} PHOTOS</Caption>
+                            </View>
                         </View>
-                    </View>
-                    <View>
-                        <Caption style={styles.alignRight}>
-                            {team.total_litter}
-                        </Caption>
-                        <Caption style={styles.alignRight}>LITTER</Caption>
-                    </View>
-                </View>
-            ))}
-        </>
-    );
+                        <View>
+                            <Caption style={styles.alignRight}>
+                                {team.total_litter}
+                            </Caption>
+                            <Caption style={styles.alignRight}>LITTER</Caption>
+                        </View>
+                    </Pressable>
+                ))}
+            </>
+        );
+    }
+}
+
+const mapStateToProps = state => {
+    return {
+        lang: state.auth.lang,
+        token: state.auth.token,
+        user: state.auth.user,
+        userTeams: state.teams.userTeams
+    };
 };
 
-export default UserTeamsList;
+export default connect(
+    mapStateToProps,
+    actions
+)(UserTeamsList);
+
 const styles = StyleSheet.create({
     headingRow: {
         flexDirection: 'row',

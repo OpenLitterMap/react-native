@@ -5,7 +5,8 @@ import {
     TOP_TEAMS_REQUEST_SUCCESS,
     URL,
     USER_TEAMS_REQUEST_ERROR,
-    USER_TEAMS_REQUEST_SUCCESS
+    USER_TEAMS_REQUEST_SUCCESS,
+    SET_SELECTED_TEAM
 } from './types';
 import axios from 'axios';
 
@@ -127,6 +128,7 @@ export const getUserTeams = token => {
         }
 
         if (response.data) {
+            console.log(JSON.stringify(response.data, null, 2));
             dispatch({
                 type: USER_TEAMS_REQUEST_SUCCESS,
                 payload: response.data
@@ -175,5 +177,12 @@ export const joinTeam = (token, identifier) => {
                 payload: response.data
             });
         }
+    };
+};
+
+export const setSelectedTeam = teamData => {
+    return {
+        type: SET_SELECTED_TEAM,
+        payload: teamData
     };
 };

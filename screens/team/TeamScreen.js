@@ -23,19 +23,19 @@ class TeamScreen extends Component {
     }
     componentDidMount() {
         this.props.getTopTeams(this.props.token);
-        this.props.getUserTeams(this.props.token);
+        // this.props.getUserTeams(this.props.token);
     }
     render() {
-        const { user, userTeams, topTeams } = this.props;
+        const { topTeams } = this.props;
         return (
             <>
                 <Header
                     leftContent={<Title color="white">Teams</Title>}
                     rightContent={
                         <Pressable
-                            onPress={
-                                this.actionSheetRef.current?.setModalVisible
-                            }>
+                            onPress={() => {
+                                this.actionSheetRef.current?.setModalVisible();
+                            }}>
                             <Icon
                                 color={Colors.white}
                                 size={32}
@@ -50,10 +50,7 @@ class TeamScreen extends Component {
                     {/* list of top 5 teams  */}
                     <TopTeamsList topTeams={topTeams.slice(0, 5)} />
                     {/* list of users teams */}
-                    <UserTeamsList
-                        userTeams={userTeams}
-                        activeTeam={user?.active_team}
-                    />
+                    <UserTeamsList navigation={this.props.navigation} />
                 </ScrollView>
                 <ActionSheet
                     onClose={() => this.setState({ showFormType: undefined })}
@@ -117,9 +114,7 @@ const mapStateToProps = state => {
     return {
         lang: state.auth.lang,
         topTeams: state.teams.topTeams,
-        token: state.auth.token,
-        user: state.auth.user,
-        userTeams: state.teams.userTeams
+        token: state.auth.token
     };
 };
 

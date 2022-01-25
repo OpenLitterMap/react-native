@@ -3,13 +3,15 @@ import {
     JOIN_TEAM_SUCCESS,
     TEAMS_REQUEST_ERROR,
     TOP_TEAMS_REQUEST_SUCCESS,
-    USER_TEAMS_REQUEST_SUCCESS
+    USER_TEAMS_REQUEST_SUCCESS,
+    SET_SELECTED_TEAM
 } from '../actions/types';
 
 const INITIAL_STATE = {
     topTeams: [],
     userTeams: [],
-    teamsRequestStatus: ''
+    teamsRequestStatus: '',
+    selectedTeam: {}
 };
 
 export default function(state = INITIAL_STATE, action) {
@@ -33,6 +35,11 @@ export default function(state = INITIAL_STATE, action) {
             case JOIN_TEAM_SUCCESS:
                 draft.userTeams.push(action.payload.team);
                 draft.teamsRequestStatus = 'SUCCESS';
+
+                break;
+
+            case SET_SELECTED_TEAM:
+                draft.selectedTeam = action.payload;
 
                 break;
 

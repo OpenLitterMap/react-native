@@ -1,6 +1,5 @@
 import React from 'react';
 import { View, SafeAreaView } from 'react-native';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -8,13 +7,11 @@ import {
     UserStatsScreen,
     GlobalDataScreen,
     HomeScreen,
-    CameraScreen,
-    TeamScreen
+    CameraScreen
 } from '../screens';
-// import { CameraPage } from '../screens/pages';
+import TeamStack from './teamRoutes';
 import { Colors } from '../screens/components';
 
-// const Tab = createBottomTabNavigator();
 const Tab = createMaterialTopTabNavigator();
 
 const TabRoutes = ({ navigation }) => (
@@ -109,7 +106,7 @@ const TabRoutes = ({ navigation }) => (
                 component={CameraScreen}
                 options={{ unmountOnBlur: true }}
             />
-            <Tab.Screen name="TEAM" component={TeamScreen} />
+            <Tab.Screen name="TEAM" component={TeamStack} />
             <Tab.Screen name="GLOBAL_DATA" component={GlobalDataScreen} />
 
             {/* <Tab.Screen name="RANKING" component={RankingScreen} /> */}

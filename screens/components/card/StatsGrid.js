@@ -1,9 +1,11 @@
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, Dimensions } from 'react-native';
 import PropTypes from 'prop-types';
 import Icon from 'react-native-vector-icons/Ionicons';
 
 import IconStatsCard from './IconStatsCard';
+
+const { width } = Dimensions.get('window');
 
 const StatsGrid = ({ statsData }) => {
     // console.log(statsData);
@@ -14,11 +16,13 @@ const StatsGrid = ({ statsData }) => {
                     <IconStatsCard
                         key={`${stat.title}`}
                         imageContent={
-                            <Icon
-                                name={stat.icon}
-                                size={36}
-                                color={stat.color}
-                            />
+                            stat.icon && (
+                                <Icon
+                                    name={stat.icon}
+                                    size={36}
+                                    color={stat.color}
+                                />
+                            )
                         }
                         value={stat.value}
                         startValue={stat.startValue}
@@ -27,6 +31,7 @@ const StatsGrid = ({ statsData }) => {
                         backgroundColor={stat.bgColor}
                         fontColor={stat.color}
                         ordinal={stat.ordinal}
+                        width={width / 2 - 30}
                     />
                 ))}
             </View>
