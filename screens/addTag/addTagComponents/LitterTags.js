@@ -86,10 +86,10 @@ class LitterTags extends Component {
         return (
             <View
                 style={{
-                    marginLeft: 10,
                     width: SCREEN_WIDTH
                 }}>
                 <ScrollView
+                    contentContainerStyle={{ paddingHorizontal: 10 }}
                     ref={this.scrollRef}
                     bounces={false}
                     horizontal={true}
