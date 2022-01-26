@@ -7,11 +7,6 @@ import RankingMedal from './RankingMedal';
 const TopTeamsList = ({ topTeams }) => {
     return (
         <>
-            {/* Top Teams */}
-            <View style={styles.headingRow}>
-                <SubTitle>Top Teams</SubTitle>
-                <Caption color="accent">View All</Caption>
-            </View>
             {topTeams.map((team, index) => (
                 <View key={`${team.name}${index}`} style={styles.itemContainer}>
                     <View
@@ -42,11 +37,6 @@ const TopTeamsList = ({ topTeams }) => {
 export default TopTeamsList;
 
 const styles = StyleSheet.create({
-    headingRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'baseline'
-    },
     itemContainer: {
         height: 60,
         // backgroundColor: Colors.accentLight,

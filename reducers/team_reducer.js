@@ -1,6 +1,8 @@
 import produce from 'immer';
 import {
+    CLEAR_TEAMS_FORM_ERROR,
     JOIN_TEAM_SUCCESS,
+    TEAMS_FORM_ERROR,
     TEAMS_REQUEST_ERROR,
     TOP_TEAMS_REQUEST_SUCCESS,
     USER_TEAMS_REQUEST_SUCCESS,
@@ -11,12 +13,21 @@ const INITIAL_STATE = {
     topTeams: [],
     userTeams: [],
     teamsRequestStatus: '',
-    selectedTeam: {}
+    selectedTeam: {},
+    teamsFormError: ''
 };
 
 export default function(state = INITIAL_STATE, action) {
     return produce(state, draft => {
         switch (action.type) {
+            case CLEAR_TEAMS_FORM_ERROR:
+                draft.teamsFormError = '';
+                break;
+
+            case TEAMS_FORM_ERROR:
+                draft.teamsFormError = action.payload;
+
+                break;
             case TEAMS_REQUEST_ERROR:
                 draft.teamsRequestStatus = action.payload;
 
@@ -28,13 +39,11 @@ export default function(state = INITIAL_STATE, action) {
 
             case USER_TEAMS_REQUEST_SUCCESS:
                 draft.userTeams = action.payload;
-                draft.teamsRequestStatus = 'SUCCESS';
 
                 break;
 
             case JOIN_TEAM_SUCCESS:
                 draft.userTeams.push(action.payload.team);
-                draft.teamsRequestStatus = 'SUCCESS';
 
                 break;
 

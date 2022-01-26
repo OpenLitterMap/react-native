@@ -1,11 +1,17 @@
-import { StyleSheet, Pressable, View, TextInput } from 'react-native';
-import React, { Component } from 'react';
+import {
+    ActivityIndicator,
+    StyleSheet,
+    Pressable,
+    View,
+    TextInput
+} from 'react-native';
+import React, { Component, createRef } from 'react';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
+import Icon from 'react-native-vector-icons/Ionicons';
 import * as actions from '../../../actions';
 import { connect } from 'react-redux';
-import DropDownPicker from 'react-native-dropdown-picker';
-import { Body, CustomTextInput, Colors, Caption } from '../../components';
+import { Body, Colors, Caption, SubTitle } from '../../components';
 
 const JoinTeamSchema = Yup.object().shape({
     identifier: Yup.string()
@@ -15,25 +21,31 @@ const JoinTeamSchema = Yup.object().shape({
     name: Yup.string()
         .required('Enter identifier')
         .min(3, 'Minimum 3 characters long')
-        .max(100, 'Maximum 15 characters long'),
-    teamType: Yup.number().required()
+        .max(100, 'Maximum 100 characters long')
 });
 class CreateTeamForm extends Component {
-    componentDidMount() {
-        this.props.getTeamTypes(this.props.token);
+    constructor(props) {
+        super(props);
+
+        this.identifierRef = React.createRef();
     }
     render() {
+        const { user, teamsFormError, token } = this.props;
         return (
             <View>
                 <Formik
-                    initialValues={{ id: '' }}
+                    initialValues={{ name: '', identifier: '' }}
                     validationSchema={JoinTeamSchema}
                     onSubmit={values => {
                         console.log('called');
-                        // this.props.sendResetPasswordRequest(values.email);
-                        // this.props.joinTeam(this.props.token, values.id);
+                        this.props.createTeam(
+                            values.name,
+                            values.identifier,
+                            token
+                        );
                     }}>
                     {({
+                        isSubmitting,
                         handleSubmit,
                         setFieldValue,
                         values,
@@ -42,36 +54,43 @@ class CreateTeamForm extends Component {
                         handleChange
                     }) => (
                         <>
-                            {/* <DropDownPicker
-                                // open={open}
-                                // value={value}
-                                items={[
-                                    { label: 'Apple', value: 'apple' },
-                                    { label: 'Banana', value: 'banana' }
-                                ]}
-                                setOpen={false}
-                                // setValue={setValue}
-                                setItems={[
-                                    { label: 'Apple', value: 'apple' },
-                                    { label: 'Banana', value: 'banana' }
-                                ]}
-                            /> */}
+                            <SubTitle>Create a Team</SubTitle>
+                            <View
+                                style={{
+                                    flexDirection: 'row',
+                                    alignItems: 'center',
+                                    marginTop: 8,
+                                    marginBottom: 20
+                                }}>
+                                <Icon
+                                    name="ios-information-circle-sharp"
+                                    style={{ marginRight: 8 }}
+                                    size={18}
+                                    color={Colors.muted}
+                                />
+                                <Caption>
+                                    You are allowed to create{' '}
+                                    {user?.remaining_teams} team(s)
+                                </Caption>
+                            </View>
                             <Body>Team Name</Body>
                             <TextInput
-                                name="id"
+                                name="name"
                                 autoFocus={false}
                                 autoCorrect={false}
                                 autoCapitalize={'none'}
                                 autoCompleteType="off"
                                 textContentType="none"
-                                onChangeText={handleChange('id')}
+                                onChangeText={handleChange('name')}
                                 style={styles.input}
-                                onSubmitEditing={handleSubmit}
-                                returnKeyType="go"
-                                placeholder="Enter ID to join a team"
+                                onSubmitEditing={() =>
+                                    this.identifierRef.current.focus()
+                                }
+                                returnKeyType="next"
+                                placeholder="My Litterpicker Team"
                             />
-                            {touched.id && errors.id && (
-                                <Caption color="error">{errors.id}</Caption>
+                            {touched.name && errors.name && (
+                                <Caption color="error">{errors.name}</Caption>
                             )}
                             <Body style={{ marginTop: 20 }}>
                                 Unique Team Identifier
@@ -81,21 +100,35 @@ class CreateTeamForm extends Component {
                                 team.
                             </Caption>
                             <TextInput
-                                name="id"
+                                ref={this.identifierRef}
+                                name="identifier"
                                 autoFocus={false}
                                 autoCorrect={false}
                                 autoCapitalize={'none'}
                                 autoCompleteType="off"
                                 textContentType="none"
-                                onChangeText={handleChange('id')}
+                                onChangeText={handleChange('identifier')}
                                 style={styles.input}
                                 onSubmitEditing={handleSubmit}
                                 returnKeyType="go"
-                                placeholder="Enter ID to join a team"
+                                placeholder="LitterTeam2022"
                             />
-                            {touched.id && errors.id && (
-                                <Caption color="error">{errors.id}</Caption>
+                            {touched.identifier && errors.identifier && (
+                                <Caption color="error">
+                                    {errors.identifier}
+                                </Caption>
                             )}
+
+                            <View
+                                style={{
+                                    height: 30,
+                                    justifyContent: 'center',
+                                    alignItems: 'center'
+                                }}>
+                                <Caption color="error">
+                                    {teamsFormError}
+                                </Caption>
+                            </View>
 
                             <Pressable
                                 onPress={handleSubmit}
@@ -103,7 +136,7 @@ class CreateTeamForm extends Component {
                                     styles.buttonStyle,
                                     {
                                         backgroundColor: Colors.accent,
-                                        marginVertical: 40
+                                        marginVertical: 20
                                     }
                                 ]}>
                                 <Body color="white">CREATE TEAM</Body>
@@ -145,7 +178,9 @@ const styles = StyleSheet.create({
 const mapStateToProps = state => {
     return {
         lang: state.auth.lang,
-        token: state.auth.token
+        teamsFormError: state.teams.teamsFormError,
+        token: state.auth.token,
+        user: state.auth.user
     };
 };
 

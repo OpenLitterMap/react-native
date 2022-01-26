@@ -14,6 +14,7 @@ const JoinTeamSchema = Yup.object().shape({
 });
 class JoinTeamForm extends Component {
     render() {
+        const { teamsFormError } = this.props;
         return (
             <View>
                 <Body>Join team by identifier</Body>
@@ -50,6 +51,18 @@ class JoinTeamForm extends Component {
                             {touched.id && errors.id && (
                                 <Caption color="error">{errors.id}</Caption>
                             )}
+
+                            <View
+                                style={{
+                                    height: 30,
+                                    justifyContent: 'center',
+                                    alignItems: 'center'
+                                }}>
+                                <Caption color="error">
+                                    {teamsFormError}
+                                </Caption>
+                            </View>
+
                             <Pressable
                                 onPress={handleSubmit}
                                 style={[
@@ -98,6 +111,7 @@ const styles = StyleSheet.create({
 const mapStateToProps = state => {
     return {
         lang: state.auth.lang,
+        teamsFormError: state.teams.teamsFormError,
         token: state.auth.token
     };
 };

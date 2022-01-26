@@ -2,7 +2,7 @@ import React, { Component, createRef } from 'react';
 import { StyleSheet, ScrollView, View, Text, Pressable } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import ActionSheet from 'react-native-actions-sheet';
-import { Header, Title, Colors, Body, CustomTextInput } from '../components';
+import { Header, Title, Colors, Body, SubTitle, Caption } from '../components';
 import * as actions from '../../actions';
 import { connect } from 'react-redux';
 import {
@@ -25,8 +25,13 @@ class TeamScreen extends Component {
         this.props.getTopTeams(this.props.token);
         // this.props.getUserTeams(this.props.token);
     }
+
+    actionSheetOnClose = () => {
+        this.setState({ showFormType: undefined });
+        this.props.clearTeamsFormError();
+    };
     render() {
-        const { topTeams } = this.props;
+        const { topTeams, user } = this.props;
         return (
             <>
                 <Header
@@ -48,12 +53,22 @@ class TeamScreen extends Component {
                     style={styles.container}
                     alwaysBounceVertical={false}>
                     {/* list of top 5 teams  */}
-                    <TopTeamsList topTeams={topTeams.slice(0, 5)} />
+                    {/* Top Teams */}
+                    <View style={styles.headingRow}>
+                        <SubTitle>Top Teams</SubTitle>
+                        <Pressable
+                            onPress={() =>
+                                this.props.navigation.navigate('TOP_TEAMS')
+                            }>
+                            <Caption color="accent">View All</Caption>
+                        </Pressable>
+                    </View>
+                    <TopTeamsList topTeams={topTeams} />
                     {/* list of users teams */}
                     <UserTeamsList navigation={this.props.navigation} />
                 </ScrollView>
                 <ActionSheet
-                    onClose={() => this.setState({ showFormType: undefined })}
+                    onClose={this.actionSheetOnClose}
                     gestureEnabled
                     ref={this.actionSheetRef}>
                     <View style={{ padding: 20 }}>
@@ -107,6 +122,11 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         borderRadius: 8,
         marginBottom: 20
+    },
+    headingRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'baseline'
     }
 });
 

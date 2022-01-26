@@ -43,7 +43,6 @@
     "react-native-base64": "0.0.2",
     "react-native-camera": "git+https://git@github.com/react-native-community/react-native-camera.git",
     "react-native-device-info": "^8.4.8",
-    "react-native-dropdown-picker": "^5.3.0",
     "react-native-elements": "^1.2.7",
     "react-native-extended-stylesheet": "^0.12.0",
     "react-native-gesture-handler": "^1.10.3",

@@ -1,69 +1,82 @@
 import {
+    CLEAR_TEAMS_FORM_ERROR,
     JOIN_TEAM_SUCCESS,
+    TEAMS_FORM_ERROR,
     TEAM_TYPES,
     TEAMS_REQUEST_ERROR,
     TOP_TEAMS_REQUEST_SUCCESS,
     URL,
-    USER_TEAMS_REQUEST_ERROR,
     USER_TEAMS_REQUEST_SUCCESS,
     SET_SELECTED_TEAM
 } from './types';
 import axios from 'axios';
 
-export const clearTeamStatus = () => {
+export const clearTeamsFormError = () => {
     return {
-        type: TEAMS_REQUEST_ERROR
+        type: CLEAR_TEAMS_FORM_ERROR
     };
 };
 
-export const getTeamTypes = token => {
+export const createTeam = (name, identifier, token) => {
+    console.log(name, identifier);
     return async dispatch => {
+        // clearing form error before submitting again
+        dispatch({
+            type: CLEAR_TEAMS_FORM_ERROR
+        });
         let response;
         try {
             response = await axios({
-                url: URL + '/api/teams/types',
-                // url: 'https://openlittermap.com/api/teams/leaderboard',
-                method: 'GET',
+                url: URL + '/api/teams/create',
+                method: 'POST',
                 headers: {
                     Authorization: 'Bearer ' + token,
                     Accept: 'application/json',
                     'content-type': 'application/json'
+                },
+                data: {
+                    name,
+                    identifier,
+                    team_type: 1
                 }
             });
         } catch (error) {
-            console.log(error);
-            // if (error.response) {
-            //     dispatch({
-            //         type: TOP_TEAMS_REQUEST_ERROR,
-            //         payload: 'Something went wrong, please try again'
-            //     });
-            // } else {
-            //     dispatch({
-            //         type: TOP_TEAMS_REQUEST_ERROR,
-            //         payload: 'Network Error, please try again'
-            //     });
-            // }
+            if (error.response) {
+                let payload = 'Something went wrong, please try again';
+                if (error.response?.status === 422) {
+                    const errorData = error.response?.data?.errors;
+
+                    payload = errorData?.name || errorData?.identifier;
+                }
+
+                dispatch({
+                    type: TEAMS_FORM_ERROR,
+                    payload: payload
+                });
+            } else {
+                dispatch({
+                    type: TEAMS_FORM_ERROR,
+                    payload: 'Network Error, please try again'
+                });
+            }
             return;
         }
 
         if (response.data) {
-            console.log(response.data);
-            dispatch({
-                type: TEAM_TYPES,
-                payload: response.data
-            });
+            // dispatch({
+            //     type: TOP_TEAMS_REQUEST_SUCCESS,
+            //     payload: response.data
+            // });
         }
     };
 };
 
 export const getTopTeams = token => {
-    console.log(token);
     return async dispatch => {
         let response;
         try {
             response = await axios({
                 url: URL + '/api/teams/leaderboard',
-                // url: 'https://openlittermap.com/api/teams/leaderboard',
                 method: 'GET',
                 headers: {
                     Authorization: 'Bearer ' + token,
@@ -74,15 +87,15 @@ export const getTopTeams = token => {
         } catch (error) {
             console.log(error);
             if (error.response) {
-                // dispatch({
-                //     type: TOP_TEAMS_REQUEST_ERROR,
-                //     payload: 'Something went wrong, please try again'
-                // });
+                dispatch({
+                    type: TEAMS_REQUEST_ERROR,
+                    payload: 'Something went wrong, please try again'
+                });
             } else {
-                // dispatch({
-                //     type: TOP_TEAMS_REQUEST_ERROR,
-                //     payload: 'Network Error, please try again'
-                // });
+                dispatch({
+                    type: TEAMS_REQUEST_ERROR,
+                    payload: 'Network Error, please try again'
+                });
             }
             return;
         }
@@ -115,30 +128,28 @@ export const getUserTeams = token => {
             console.log(error);
             if (error.response) {
                 dispatch({
-                    type: USER_TEAMS_REQUEST_ERROR,
+                    type: TEAMS_REQUEST_ERROR,
                     payload: 'Something went wrong, please try again'
                 });
             } else {
                 dispatch({
-                    type: USER_TEAMS_REQUEST_ERROR,
+                    type: TEAMS_REQUEST_ERROR,
                     payload: 'Network Error, please try again'
                 });
             }
             return;
         }
 
-        if (response.data) {
-            console.log(JSON.stringify(response.data, null, 2));
+        if (response.data && response.data.success) {
             dispatch({
                 type: USER_TEAMS_REQUEST_SUCCESS,
-                payload: response.data
+                payload: response.data.teams
             });
         }
     };
 };
 
 export const joinTeam = (token, identifier) => {
-    console.log({ token, identifier });
     return async dispatch => {
         let response;
         try {
@@ -155,27 +166,31 @@ export const joinTeam = (token, identifier) => {
                 }
             });
         } catch (error) {
-            console.log(error);
-            // if (error.response) {
-            //     dispatch({
-            //         type: USER_TEAMS_REQUEST_ERROR,
-            //         payload: 'Something went wrong, please try again'
-            //     });
-            // } else {
-            //     dispatch({
-            //         type: USER_TEAMS_REQUEST_ERROR,
-            //         payload: 'Network Error, please try again'
-            //     });
-            // }
+            if (error.response) {
+                dispatch({
+                    type: TEAMS_FORM_ERROR,
+                    payload: 'Something went wrong, please try again'
+                });
+            } else {
+                dispatch({
+                    type: TEAMS_FORM_ERROR,
+                    payload: 'Network Error, please try again'
+                });
+            }
             return;
         }
-
         if (response.data) {
-            console.log(response.data);
-            dispatch({
-                type: JOIN_TEAM_SUCCESS,
-                payload: response.data
-            });
+            if (!response.data.success) {
+                dispatch({
+                    type: TEAMS_FORM_ERROR,
+                    payload: 'Already a member'
+                });
+            } else {
+                dispatch({
+                    type: JOIN_TEAM_SUCCESS,
+                    payload: response.data
+                });
+            }
         }
     };
 };

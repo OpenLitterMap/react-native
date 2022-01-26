@@ -25,7 +25,7 @@ class UserTeamsList extends Component {
                     <SubTitle>My Teams</SubTitle>
                     {/* <Caption color="accent">View All</Caption> */}
                 </View>
-                {userTeams.map((team, index) => (
+                {userTeams?.map((team, index) => (
                     <Pressable
                         onPress={() => this.setTeam(team)}
                         key={`${team.name}${index}`}

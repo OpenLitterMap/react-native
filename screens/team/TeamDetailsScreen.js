@@ -44,12 +44,14 @@ class TeamDetailsScreen extends Component {
             <>
                 <Header
                     leftContent={
-                        <>
-                            <Title color="white">{selectedTeam?.name}</Title>
-                            <Caption color="white">
-                                {selectedTeam.identifier}
-                            </Caption>
-                        </>
+                        <Pressable
+                            onPress={() => this.props.navigation.goBack()}>
+                            <Icon
+                                name="ios-chevron-back-outline"
+                                color={Colors.white}
+                                size={24}
+                            />
+                        </Pressable>
                     }
                     rightContent={
                         <Pressable>
@@ -67,6 +69,15 @@ class TeamDetailsScreen extends Component {
                     {/* <Body style={{ paddingHorizontal: 20 }}>
                         {JSON.stringify(selectedTeam, null, 2)}
                     </Body> */}
+                    <View
+                        style={{
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            marginTop: 20
+                        }}>
+                        <Title>{selectedTeam?.name}</Title>
+                        <Caption>{selectedTeam.identifier}</Caption>
+                    </View>
                     <StatsGrid statsData={teamStats} />
 
                     <IconStatsCard
@@ -77,7 +88,7 @@ class TeamDetailsScreen extends Component {
                                 color="#F59E0B"
                             />
                         }
-                        value={selectedTeam?.member}
+                        value={selectedTeam?.members}
                         // startValue={stat.startValue}
                         title={`${lang}.team.total-members`}
                         contentCenter
