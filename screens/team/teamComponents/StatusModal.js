@@ -3,11 +3,28 @@ import React from 'react';
 import LottieView from 'lottie-react-native';
 import { Body } from '../../components';
 
-const SuccessModal = ({ text }) => {
+// animations
+const SuccessAnimation = require('../../../assets/lottie/success.json');
+const ErrorAnimation = require('../../../assets/lottie/error.json');
+
+const StatusModal = ({ text, type }) => {
+    let animationSource;
+    switch (type) {
+        case 'SUCCESS':
+            animationSource = SuccessAnimation;
+            break;
+
+        case 'ERROR':
+            animationSource = ErrorAnimation;
+            break;
+        default:
+            animationSource = SuccessAnimation;
+            break;
+    }
     return (
         <View style={styles.container}>
             <LottieView
-                source={require('../../../assets/lottie/success.json')}
+                source={animationSource}
                 autoPlay
                 loop
                 style={{ width: 80, height: 80, marginBottom: 20 }}
@@ -17,7 +34,7 @@ const SuccessModal = ({ text }) => {
     );
 };
 
-export default SuccessModal;
+export default StatusModal;
 
 const styles = StyleSheet.create({
     container: {

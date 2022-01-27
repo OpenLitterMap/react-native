@@ -72,7 +72,10 @@ export const createTeam = (name, identifier, token) => {
                 });
             } else {
                 console.log(response.data);
-
+                dispatch({
+                    type: CHANGE_ACTIVE_TEAM,
+                    payload: response.data?.team?.id
+                });
                 dispatch({
                     type: TEAMS_FORM_SUCCESS,
                     payload: { team: response.data?.team, type: 'CREATE' }

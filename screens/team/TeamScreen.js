@@ -11,7 +11,7 @@ import {
     TopTeamsList,
     UserTeamsList
 } from './teamComponents';
-import SuccessModal from './teamComponents/SuccessModal';
+import StatusModal from './teamComponents/StatusModal';
 
 class TeamScreen extends Component {
     constructor(props) {
@@ -52,7 +52,8 @@ class TeamScreen extends Component {
                 />
                 <ScrollView
                     style={styles.container}
-                    alwaysBounceVertical={false}>
+                    alwaysBounceVertical={false}
+                    showsVerticalScrollIndicator={false}>
                     {/* list of top 5 teams  */}
                     {/* Top Teams */}
                     <View style={styles.headingRow}>
@@ -64,7 +65,7 @@ class TeamScreen extends Component {
                             <Caption color="accent">View All</Caption>
                         </Pressable>
                     </View>
-                    <TopTeamsList topTeams={topTeams} />
+                    <TopTeamsList topTeams={topTeams?.slice(0, 5)} />
                     {/* list of users teams */}
                     <UserTeamsList navigation={this.props.navigation} />
                 </ScrollView>
@@ -117,9 +118,8 @@ class TeamScreen extends Component {
                                 )}
                             </>
                         ) : (
-                            <SuccessModal text={successMessage} />
+                            <StatusModal text={successMessage} type="SUCCESS" />
                         )}
-                        {/* <SuccessModal text="Congrats! you have joined a new team" /> */}
                     </View>
                 </ActionSheet>
             </>
