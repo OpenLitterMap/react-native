@@ -66,9 +66,6 @@ class TeamDetailsScreen extends Component {
                 <ScrollView
                     style={styles.container}
                     alwaysBounceVertical={false}>
-                    {/* <Body style={{ paddingHorizontal: 20 }}>
-                        {JSON.stringify(selectedTeam, null, 2)}
-                    </Body> */}
                     <View
                         style={{
                             justifyContent: 'center',
@@ -99,19 +96,9 @@ class TeamDetailsScreen extends Component {
                         style={{ marginHorizontal: 20 }}
                     />
 
-                    {/* <View
-                        style={{
-                            backgroundColor: '#FEF9C3',
-                            marginHorizontal: 20,
-                            borderRadius: 12,
-                            height: 120,
-                            justifyContent: 'center',
-                            alignItems: 'center'
-                        }}>
-                        <Body style={{ color: '#F59E0B' }}>
-                            {selectedTeam?.members}
-                        </Body>
-                    </View> */}
+                    <Pressable style={[styles.buttonStyle]}>
+                        <Body color="white">LEAVE TEAM</Body>
+                    </Pressable>
                 </ScrollView>
                 {/* <ActionSheet
                     onClose={() => this.setState({ showFormType: undefined })}
@@ -166,7 +153,9 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         borderRadius: 8,
-        marginBottom: 20
+        marginTop: 60,
+        margin: 20,
+        backgroundColor: Colors.accent
     }
 });
 

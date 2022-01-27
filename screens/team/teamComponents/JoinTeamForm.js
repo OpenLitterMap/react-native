@@ -69,7 +69,7 @@ class JoinTeamForm extends Component {
                                     styles.buttonStyle,
                                     {
                                         backgroundColor: Colors.accent,
-                                        marginVertical: 40
+                                        marginVertical: 20
                                     }
                                 ]}>
                                 <Body color="white">JOIN TEAM</Body>

@@ -11,6 +11,7 @@ import {
     TopTeamsList,
     UserTeamsList
 } from './teamComponents';
+import SuccessModal from './teamComponents/SuccessModal';
 
 class TeamScreen extends Component {
     constructor(props) {
@@ -31,7 +32,7 @@ class TeamScreen extends Component {
         this.props.clearTeamsFormError();
     };
     render() {
-        const { topTeams, user } = this.props;
+        const { topTeams, user, teamFormStatus } = this.props;
         return (
             <>
                 <Header
@@ -72,37 +73,53 @@ class TeamScreen extends Component {
                     gestureEnabled
                     ref={this.actionSheetRef}>
                     <View style={{ padding: 20 }}>
-                        {!this.state.showFormType ? (
+                        {teamFormStatus === null ? (
                             <>
-                                <Pressable
-                                    onPress={() =>
-                                        this.setState({ showFormType: 'JOIN' })
-                                    }
-                                    style={[
-                                        styles.buttonStyle,
-                                        { backgroundColor: Colors.accent }
-                                    ]}>
-                                    <Body color="white">JOIN A TEAM</Body>
-                                </Pressable>
-                                <Pressable
-                                    onPress={() =>
-                                        this.setState({
-                                            showFormType: 'CREATE'
-                                        })
-                                    }
-                                    style={styles.buttonStyle}>
-                                    <Body color="accent">CREATE A TEAM</Body>
-                                </Pressable>
-                            </>
-                        ) : (
-                            <>
-                                {this.state.showFormType === 'JOIN' ? (
-                                    <JoinTeamForm />
+                                {!this.state.showFormType ? (
+                                    <>
+                                        <Pressable
+                                            onPress={() =>
+                                                this.setState({
+                                                    showFormType: 'JOIN'
+                                                })
+                                            }
+                                            style={[
+                                                styles.buttonStyle,
+                                                {
+                                                    backgroundColor:
+                                                        Colors.accent
+                                                }
+                                            ]}>
+                                            <Body color="white">
+                                                JOIN A TEAM
+                                            </Body>
+                                        </Pressable>
+                                        <Pressable
+                                            onPress={() =>
+                                                this.setState({
+                                                    showFormType: 'CREATE'
+                                                })
+                                            }
+                                            style={styles.buttonStyle}>
+                                            <Body color="accent">
+                                                CREATE A TEAM
+                                            </Body>
+                                        </Pressable>
+                                    </>
                                 ) : (
-                                    <CreateTeamForm />
+                                    <>
+                                        {this.state.showFormType === 'JOIN' ? (
+                                            <JoinTeamForm />
+                                        ) : (
+                                            <CreateTeamForm />
+                                        )}
+                                    </>
                                 )}
                             </>
+                        ) : (
+                            <SuccessModal text="Congrats! you have joined a new team" />
                         )}
+                        {/* <SuccessModal text="Congrats! you have joined a new team" /> */}
                     </View>
                 </ActionSheet>
             </>
@@ -134,6 +151,7 @@ const mapStateToProps = state => {
     return {
         lang: state.auth.lang,
         topTeams: state.teams.topTeams,
+        teamFormStatus: state.teams.teamFormStatus,
         token: state.auth.token
     };
 };

@@ -1,7 +1,9 @@
 import {
-    CLEAR_TEAMS_FORM_ERROR,
+    CHANGE_ACTIVE_TEAM,
+    CLEAR_TEAMS_FORM,
     JOIN_TEAM_SUCCESS,
     TEAMS_FORM_ERROR,
+    TEAMS_FORM_SUCCESS,
     TEAM_TYPES,
     TEAMS_REQUEST_ERROR,
     TOP_TEAMS_REQUEST_SUCCESS,
@@ -13,7 +15,7 @@ import axios from 'axios';
 
 export const clearTeamsFormError = () => {
     return {
-        type: CLEAR_TEAMS_FORM_ERROR
+        type: CLEAR_TEAMS_FORM
     };
 };
 
@@ -22,7 +24,7 @@ export const createTeam = (name, identifier, token) => {
     return async dispatch => {
         // clearing form error before submitting again
         dispatch({
-            type: CLEAR_TEAMS_FORM_ERROR
+            type: CLEAR_TEAMS_FORM
         });
         let response;
         try {
@@ -166,10 +168,17 @@ export const joinTeam = (token, identifier) => {
                 }
             });
         } catch (error) {
+            console.log(error);
             if (error.response) {
+                let payload = 'Something went wrong, please try again';
+                if (error.response?.status === 422) {
+                    const errorData = error.response?.data?.errors;
+                    payload = errorData?.identifier;
+                }
+
                 dispatch({
                     type: TEAMS_FORM_ERROR,
-                    payload: 'Something went wrong, please try again'
+                    payload: payload
                 });
             } else {
                 dispatch({
@@ -186,9 +195,14 @@ export const joinTeam = (token, identifier) => {
                     payload: 'Already a member'
                 });
             } else {
+                console.log(response.data);
                 dispatch({
-                    type: JOIN_TEAM_SUCCESS,
-                    payload: response.data
+                    type: CHANGE_ACTIVE_TEAM,
+                    payload: response.data?.activeTeam?.id
+                });
+                dispatch({
+                    type: TEAMS_FORM_SUCCESS,
+                    payload: response.data?.team
                 });
             }
         }
