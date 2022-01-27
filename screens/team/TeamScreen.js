@@ -32,7 +32,7 @@ class TeamScreen extends Component {
         this.props.clearTeamsFormError();
     };
     render() {
-        const { topTeams, user, teamFormStatus } = this.props;
+        const { topTeams, teamFormStatus, successMessage } = this.props;
         return (
             <>
                 <Header
@@ -117,7 +117,7 @@ class TeamScreen extends Component {
                                 )}
                             </>
                         ) : (
-                            <SuccessModal text="Congrats! you have joined a new team" />
+                            <SuccessModal text={successMessage} />
                         )}
                         {/* <SuccessModal text="Congrats! you have joined a new team" /> */}
                     </View>
@@ -150,6 +150,7 @@ const styles = StyleSheet.create({
 const mapStateToProps = state => {
     return {
         lang: state.auth.lang,
+        successMessage: state.teams.successMessage,
         topTeams: state.teams.topTeams,
         teamFormStatus: state.teams.teamFormStatus,
         token: state.auth.token

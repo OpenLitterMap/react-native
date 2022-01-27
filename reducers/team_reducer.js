@@ -16,7 +16,8 @@ const INITIAL_STATE = {
     teamsRequestStatus: '',
     selectedTeam: {},
     teamsFormError: '',
-    teamFormStatus: null // SUCCESS || ERROR
+    teamFormStatus: null, // SUCCESS || ERROR
+    successMessage: ''
 };
 
 export default function(state = INITIAL_STATE, action) {
@@ -24,6 +25,7 @@ export default function(state = INITIAL_STATE, action) {
         switch (action.type) {
             case CLEAR_TEAMS_FORM:
                 draft.teamsFormError = '';
+                draft.successMessage = '';
                 draft.teamFormStatus = null;
                 break;
 
@@ -38,8 +40,13 @@ export default function(state = INITIAL_STATE, action) {
                 break;
 
             case TEAMS_FORM_SUCCESS:
-                draft.userTeams.push(action.payload);
+                draft.userTeams.push(action.payload.team);
                 draft.teamFormStatus = 'SUCCESS';
+                action.payload.type === 'JOIN'
+                    ? (draft.successMessage =
+                          'Congrats! you have joined a new team')
+                    : (draft.successMessage =
+                          'Congrats! you created a new team');
 
                 break;
             case TOP_TEAMS_REQUEST_SUCCESS:

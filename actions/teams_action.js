@@ -65,10 +65,19 @@ export const createTeam = (name, identifier, token) => {
         }
 
         if (response.data) {
-            // dispatch({
-            //     type: TOP_TEAMS_REQUEST_SUCCESS,
-            //     payload: response.data
-            // });
+            if (!response.data.success) {
+                dispatch({
+                    type: TEAMS_FORM_ERROR,
+                    payload: 'Max teams reached'
+                });
+            } else {
+                console.log(response.data);
+
+                dispatch({
+                    type: TEAMS_FORM_SUCCESS,
+                    payload: { team: response.data?.team, type: 'CREATE' }
+                });
+            }
         }
     };
 };
@@ -202,7 +211,7 @@ export const joinTeam = (token, identifier) => {
                 });
                 dispatch({
                     type: TEAMS_FORM_SUCCESS,
-                    payload: response.data?.team
+                    payload: { team: response.data?.team, type: 'JOIN' }
                 });
             }
         }
