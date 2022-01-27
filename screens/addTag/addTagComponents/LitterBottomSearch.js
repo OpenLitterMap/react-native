@@ -29,9 +29,6 @@ class LitterBottomSearch extends PureComponent {
      * A tag has been selected
      */
     addTag(tag) {
-        // update selected tag to execute scrollTo
-        this.props.changeItem(tag);
-
         const newTag = {
             category: tag.category,
             title: tag.key
@@ -124,18 +121,21 @@ class LitterBottomSearch extends PureComponent {
 
                 {this.props.isKeyboardOpen && (
                     <View style={styles.tagsOuterContainer}>
-                        <Caption
-                            style={styles.suggest}
-                            dictionary={`${lang}.tag.suggested-tags`}
-                            values={{
-                                count:
-                                    this.state.text === ''
-                                        ? this.props.previousTags.length
-                                        : this.props.suggestedTags.length
-                            }}
-                        />
+                        <View style={styles.suggest}>
+                            <Caption
+                                dictionary={`${lang}.tag.suggested-tags`}
+                                values={{
+                                    count:
+                                        this.state.text === ''
+                                            ? this.props.previousTags.length
+                                            : this.props.suggestedTags.length
+                                }}
+                            />
+                        </View>
 
                         <FlatList
+                            showsHorizontalScrollIndicator={false}
+                            contentContainerStyle={{ paddingHorizontal: 10 }}
                             data={
                                 this.state.text === ''
                                     ? this.props.previousTags
@@ -172,18 +172,25 @@ const styles = StyleSheet.create({
         fontSize: SCREEN_HEIGHT * 0.02
     },
     suggest: {
-        marginBottom: SCREEN_HEIGHT * 0.01
+        marginBottom: 8,
+        marginLeft: 20,
+        backgroundColor: 'white',
+        paddingHorizontal: 10,
+        paddingVertical: 2,
+        borderRadius: 100,
+        justifyContent: 'center',
+        alignItems: 'center',
+        alignSelf: 'flex-start'
     },
     tag: {
         padding: 10,
         backgroundColor: 'white',
         borderRadius: 8,
-        marginRight: 10,
+        marginHorizontal: 10,
         borderWidth: 1,
         borderColor: Colors.muted
     },
     tagsOuterContainer: {
-        marginLeft: 20,
         marginBottom: 40
     }
 });

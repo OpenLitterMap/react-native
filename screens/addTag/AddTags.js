@@ -326,7 +326,6 @@ class AddTags extends Component {
                                     {
                                         position: 'absolute',
                                         top: -150,
-                                        left: 20,
                                         zIndex: 2
                                     },
                                     categoryAnimatedStyle,
