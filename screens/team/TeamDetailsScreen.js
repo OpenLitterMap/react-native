@@ -1,5 +1,11 @@
 import React, { Component, createRef } from 'react';
-import { StyleSheet, ScrollView, View, Text, Pressable } from 'react-native';
+import {
+    StyleSheet,
+    ScrollView,
+    View,
+    Dimensions,
+    Pressable
+} from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import ActionSheet from 'react-native-actions-sheet';
 import {
@@ -8,31 +14,41 @@ import {
     Colors,
     Body,
     Caption,
-    SubTitle,
     StatsGrid,
     IconStatsCard
 } from '../components';
 import * as actions from '../../actions';
 import { connect } from 'react-redux';
 
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 class TeamDetailsScreen extends Component {
     constructor(props) {
         super(props);
-        // this.actionSheetRef = createRef();
+        this.actionSheetRef = createRef();
     }
+    leave = async () => {
+        console.log('called');
+        await this.props.leaveTeam(
+            this.props.token,
+            this.props.selectedTeam.id
+        );
+
+        this.actionSheetRef.current.hide();
+        this.props.navigation.navigate('TEAM_HOME');
+    };
 
     render() {
         const { lang, selectedTeam } = this.props;
         const teamStats = [
             {
-                value: selectedTeam?.total_litter,
+                value: selectedTeam?.total_litter || 0,
                 title: `${lang}.stats.total-litter`,
                 icon: 'ios-trash-outline',
                 color: '#14B8A6',
                 bgColor: '#CCFBF1'
             },
             {
-                value: selectedTeam?.total_images,
+                value: selectedTeam?.total_images || 0,
                 title: `${lang}.stats.total-photos`,
                 icon: 'ios-images-outline',
                 color: '#A855F7',
@@ -95,49 +111,53 @@ class TeamDetailsScreen extends Component {
                         // width={width / 2 - 30}
                         style={{ marginHorizontal: 20 }}
                     />
-
-                    <Pressable style={[styles.buttonStyle]}>
-                        <Body color="white">LEAVE TEAM</Body>
-                    </Pressable>
+                    {selectedTeam?.members > 1 && (
+                        <Pressable
+                            onPress={() =>
+                                this.actionSheetRef.current?.setModalVisible()
+                            }
+                            style={[styles.buttonStyle]}>
+                            <Body color="white">LEAVE TEAM</Body>
+                        </Pressable>
+                    )}
                 </ScrollView>
-                {/* <ActionSheet
-                    onClose={() => this.setState({ showFormType: undefined })}
+                <ActionSheet
+                    // onClose={() => this.setState({ showFormType: undefined })}
                     gestureEnabled
                     ref={this.actionSheetRef}>
                     <View style={{ padding: 20 }}>
-                        {!this.state.showFormType ? (
-                            <>
-                                <Pressable
-                                    onPress={() =>
-                                        this.setState({ showFormType: 'JOIN' })
-                                    }
-                                    style={[
-                                        styles.buttonStyle,
-                                        { backgroundColor: Colors.accent }
-                                    ]}>
-                                    <Body color="white">JOIN A TEAM</Body>
-                                </Pressable>
-                                <Pressable
-                                    onPress={() =>
-                                        this.setState({
-                                            showFormType: 'CREATE'
-                                        })
-                                    }
-                                    style={styles.buttonStyle}>
-                                    <Body color="accent">CREATE A TEAM</Body>
-                                </Pressable>
-                            </>
-                        ) : (
-                            <>
-                                {this.state.showFormType === 'JOIN' ? (
-                                    <JoinTeamForm />
-                                ) : (
-                                    <CreateTeamForm />
-                                )}
-                            </>
-                        )}
+                        <Body style={{ textAlign: 'center' }}>
+                            Are you sure?
+                        </Body>
+                        <Body style={{ textAlign: 'center' }}>
+                            You can always rejoin and your contribution will be
+                            saved.
+                        </Body>
+                        <View
+                            style={{
+                                flexDirection: 'row',
+                                justifyContent: 'space-around',
+                                marginVertical: 40,
+                                width: SCREEN_WIDTH - 40
+                            }}>
+                            <Pressable
+                                onPress={() =>
+                                    this.actionSheetRef.current?.hide()
+                                }
+                                style={[styles.actionButtonStyle]}>
+                                <Body dictionary={`${lang}.tag.cancel`} />
+                            </Pressable>
+                            <Pressable
+                                onPress={this.leave}
+                                style={[
+                                    styles.actionButtonStyle,
+                                    { backgroundColor: Colors.error }
+                                ]}>
+                                <Body color="white">Yes, Leave</Body>
+                            </Pressable>
+                        </View>
                     </View>
-                </ActionSheet> */}
+                </ActionSheet>
             </>
         );
     }
@@ -156,6 +176,14 @@ const styles = StyleSheet.create({
         marginTop: 60,
         margin: 20,
         backgroundColor: Colors.accent
+    },
+    actionButtonStyle: {
+        height: 48,
+        borderRadius: 8,
+        paddingHorizontal: 20,
+        paddingVertical: 12,
+        justifyContent: 'center',
+        alignItems: 'center'
     }
 });
 

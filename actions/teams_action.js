@@ -2,6 +2,7 @@ import {
     CHANGE_ACTIVE_TEAM,
     CLEAR_TEAMS_FORM,
     JOIN_TEAM_SUCCESS,
+    LEAVE_TEAM,
     TEAMS_FORM_ERROR,
     TEAMS_FORM_SUCCESS,
     TEAM_TYPES,
@@ -85,6 +86,40 @@ export const createTeam = (name, identifier, token) => {
     };
 };
 
+export const leaveTeam = (token, teamId) => {
+    return async dispatch => {
+        let response;
+        try {
+            response = await axios({
+                url: URL + '/api/teams/leave',
+                method: 'POST',
+                headers: {
+                    Authorization: 'Bearer ' + token,
+                    Accept: 'application/json',
+                    'content-type': 'application/json'
+                },
+                data: {
+                    team_id: teamId
+                }
+            });
+        } catch (error) {
+            console.log(error.response);
+            return;
+        }
+
+        if (response.data) {
+            dispatch({
+                type: CHANGE_ACTIVE_TEAM,
+                payload: response.data?.activeTeam?.id
+            });
+
+            dispatch({
+                type: LEAVE_TEAM,
+                payload: response.data.team
+            });
+        }
+    };
+};
 export const getTopTeams = token => {
     return async dispatch => {
         let response;
@@ -99,7 +134,6 @@ export const getTopTeams = token => {
                 }
             });
         } catch (error) {
-            console.log(error);
             if (error.response) {
                 dispatch({
                     type: TEAMS_REQUEST_ERROR,
@@ -115,8 +149,6 @@ export const getTopTeams = token => {
         }
 
         if (response.data) {
-            // const topFiveTeams =
-            //     response.data.length >= 5 && response.data.slice(0, 5);
             dispatch({
                 type: TOP_TEAMS_REQUEST_SUCCESS,
                 payload: response.data

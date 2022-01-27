@@ -1,6 +1,7 @@
 import produce from 'immer';
 import {
     CLEAR_TEAMS_FORM,
+    LEAVE_TEAM,
     JOIN_TEAM_SUCCESS,
     TEAMS_FORM_ERROR,
     TEAMS_FORM_SUCCESS,
@@ -28,7 +29,15 @@ export default function(state = INITIAL_STATE, action) {
                 draft.successMessage = '';
                 draft.teamFormStatus = null;
                 break;
+            case LEAVE_TEAM:
+                const index = draft.userTeams.findIndex(
+                    team => team.id === action.payload?.id
+                );
+                if (index !== -1) {
+                    draft.userTeams.splice(index, 1);
+                }
 
+                break;
             case TEAMS_FORM_ERROR:
                 draft.teamsFormError = action.payload;
 
