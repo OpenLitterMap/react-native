@@ -1,7 +1,6 @@
 import {
     CHANGE_ACTIVE_TEAM,
     CLEAR_TEAMS_FORM,
-    JOIN_TEAM_SUCCESS,
     LEAVE_TEAM,
     TEAMS_FORM_ERROR,
     TEAMS_FORM_SUCCESS,
@@ -14,12 +13,28 @@ import {
 } from './types';
 import axios from 'axios';
 
+/**
+ * clears JOIN and CREATE team form errors
+ * and resets status
+ */
 export const clearTeamsFormError = () => {
     return {
         type: CLEAR_TEAMS_FORM
     };
 };
 
+/**
+ * fn to create team
+ * 422 error if identifier already taken
+ *
+ * if success change active team in user state
+ * add new team object to userTeams
+ *
+ * @param {string} name - name of the team
+ * @param {string} identifier - unique identifier for creating team
+ * @param {*} token
+ * @returns
+ */
 export const createTeam = (name, identifier, token) => {
     console.log(name, identifier);
     return async dispatch => {
@@ -72,7 +87,7 @@ export const createTeam = (name, identifier, token) => {
                     payload: 'Max teams reached'
                 });
             } else {
-                console.log(response.data);
+                // change active team in user object
                 dispatch({
                     type: CHANGE_ACTIVE_TEAM,
                     payload: response.data?.team?.id
@@ -86,6 +101,16 @@ export const createTeam = (name, identifier, token) => {
     };
 };
 
+/**
+ * leave team
+ *
+ * if success change active team in user state
+ * remove team object from userTeams
+ *
+ * @param {*} token
+ * @param {string} teamId - identifier of a team
+ * @returns
+ */
 export const leaveTeam = (token, teamId) => {
     return async dispatch => {
         let response;
@@ -120,6 +145,12 @@ export const leaveTeam = (token, teamId) => {
         }
     };
 };
+
+/**
+ * fn to get top teams
+ *
+ * @param {*} token
+ */
 export const getTopTeams = token => {
     return async dispatch => {
         let response;
@@ -157,6 +188,10 @@ export const getTopTeams = token => {
     };
 };
 
+/**
+ * fn to get users teams
+ * @param {*} token
+ */
 export const getUserTeams = token => {
     return async dispatch => {
         let response;
@@ -194,6 +229,12 @@ export const getUserTeams = token => {
         }
     };
 };
+
+/**
+ * fn to join new team
+ * @param {*} token
+ * @param {string} identifier - unique identifier for joining team
+ */
 
 export const joinTeam = (token, identifier) => {
     return async dispatch => {
@@ -253,6 +294,11 @@ export const joinTeam = (token, identifier) => {
     };
 };
 
+/**
+ * fn to set selected team for showing in team details screen
+ *
+ * @param {object} teamData - the team object
+ */
 export const setSelectedTeam = teamData => {
     return {
         type: SET_SELECTED_TEAM,

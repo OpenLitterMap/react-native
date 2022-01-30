@@ -70,15 +70,6 @@ class TeamDetailsScreen extends Component {
                             />
                         </Pressable>
                     }
-                    rightContent={
-                        <Pressable>
-                            <Icon
-                                color={Colors.white}
-                                size={24}
-                                name="ios-settings-outline"
-                            />
-                        </Pressable>
-                    }
                 />
                 <ScrollView
                     style={styles.container}
