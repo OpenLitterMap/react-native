@@ -1,17 +1,11 @@
-import {
-    ActivityIndicator,
-    StyleSheet,
-    Pressable,
-    View,
-    TextInput
-} from 'react-native';
-import React, { Component, createRef } from 'react';
+import { StyleSheet, View, TextInput } from 'react-native';
+import React, { Component } from 'react';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 import Icon from 'react-native-vector-icons/Ionicons';
 import * as actions from '../../../actions';
 import { connect } from 'react-redux';
-import { Body, Colors, Caption, SubTitle } from '../../components';
+import { Body, Colors, Caption, SubTitle, Button } from '../../components';
 import StatusModal from './StatusModal';
 
 const JoinTeamSchema = Yup.object().shape({
@@ -20,7 +14,7 @@ const JoinTeamSchema = Yup.object().shape({
         .min(3, 'Minimum 3 characters long')
         .max(15, 'Maximum 15 characters long'),
     name: Yup.string()
-        .required('Enter identifier')
+        .required('Enter team name')
         .min(3, 'Minimum 3 characters long')
         .max(100, 'Maximum 100 characters long')
 });
@@ -55,7 +49,7 @@ class CreateTeamForm extends Component {
                         handleChange
                     }) => (
                         <>
-                            {user?.remaining_teams === 0 ? (
+                            {user?.remaining_teams <= 0 ? (
                                 <StatusModal
                                     text="You have already created the maximum
                                 allowed number of teams."
@@ -144,17 +138,14 @@ class CreateTeamForm extends Component {
                                         </Caption>
                                     </View>
 
-                                    <Pressable
+                                    <Button
                                         onPress={handleSubmit}
-                                        style={[
-                                            styles.buttonStyle,
-                                            {
-                                                backgroundColor: Colors.accent,
-                                                marginVertical: 20
-                                            }
-                                        ]}>
+                                        style={{
+                                            backgroundColor: Colors.accent,
+                                            marginVertical: 20
+                                        }}>
                                         <Body color="white">CREATE TEAM</Body>
-                                    </Pressable>
+                                    </Button>
                                 </>
                             )}
                         </>
@@ -181,13 +172,6 @@ const styles = StyleSheet.create({
         fontFamily: 'Poppins-Regular',
         textAlignVertical: 'top',
         height: 60
-    },
-    buttonStyle: {
-        height: 60,
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderRadius: 8,
-        marginBottom: 20
     }
 });
 

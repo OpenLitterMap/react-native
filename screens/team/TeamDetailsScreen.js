@@ -15,7 +15,8 @@ import {
     Body,
     Caption,
     StatsGrid,
-    IconStatsCard
+    IconStatsCard,
+    Button
 } from '../components';
 import * as actions from '../../actions';
 import { connect } from 'react-redux';
@@ -102,23 +103,19 @@ class TeamDetailsScreen extends Component {
                             />
                         }
                         value={selectedTeam?.members}
-                        // startValue={stat.startValue}
                         title={`${lang}.team.total-members`}
                         contentCenter
                         backgroundColor="#FEF9C3"
                         fontColor="#F59E0B"
-                        // ordinal={stat.ordinal}
-                        // width={width / 2 - 30}
                         style={{ marginHorizontal: 20 }}
                     />
                     {selectedTeam?.members > 1 && (
-                        <Pressable
+                        <Button
                             onPress={() =>
                                 this.actionSheetRef.current?.setModalVisible()
-                            }
-                            style={[styles.buttonStyle]}>
+                            }>
                             <Body color="white">LEAVE TEAM</Body>
-                        </Pressable>
+                        </Button>
                     )}
                 </ScrollView>
                 <ActionSheet
@@ -167,15 +164,6 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: 'white'
-    },
-    buttonStyle: {
-        height: 60,
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderRadius: 8,
-        marginTop: 60,
-        margin: 20,
-        backgroundColor: Colors.accent
     },
     actionButtonStyle: {
         height: 48,

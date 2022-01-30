@@ -2,7 +2,15 @@ import React, { Component, createRef } from 'react';
 import { StyleSheet, ScrollView, View, Text, Pressable } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import ActionSheet from 'react-native-actions-sheet';
-import { Header, Title, Colors, Body, SubTitle, Caption } from '../components';
+import {
+    Header,
+    Title,
+    Colors,
+    Body,
+    SubTitle,
+    Caption,
+    Button
+} from '../components';
 import * as actions from '../../actions';
 import { connect } from 'react-redux';
 import {
@@ -78,34 +86,27 @@ class TeamScreen extends Component {
                             <>
                                 {!this.state.showFormType ? (
                                     <>
-                                        <Pressable
+                                        <Button
                                             onPress={() =>
                                                 this.setState({
                                                     showFormType: 'JOIN'
                                                 })
-                                            }
-                                            style={[
-                                                styles.buttonStyle,
-                                                {
-                                                    backgroundColor:
-                                                        Colors.accent
-                                                }
-                                            ]}>
+                                            }>
                                             <Body color="white">
                                                 JOIN A TEAM
                                             </Body>
-                                        </Pressable>
-                                        <Pressable
+                                        </Button>
+                                        <Button
+                                            variant="outline"
                                             onPress={() =>
                                                 this.setState({
                                                     showFormType: 'CREATE'
                                                 })
-                                            }
-                                            style={styles.buttonStyle}>
+                                            }>
                                             <Body color="accent">
                                                 CREATE A TEAM
                                             </Body>
-                                        </Pressable>
+                                        </Button>
                                     </>
                                 ) : (
                                     <>
@@ -132,13 +133,6 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: 'white',
         padding: 20
-    },
-    buttonStyle: {
-        height: 60,
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderRadius: 8,
-        marginBottom: 20
     },
     headingRow: {
         flexDirection: 'row',

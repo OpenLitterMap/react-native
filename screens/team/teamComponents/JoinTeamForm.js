@@ -4,7 +4,7 @@ import { Formik } from 'formik';
 import * as Yup from 'yup';
 import * as actions from '../../../actions';
 import { connect } from 'react-redux';
-import { Body, CustomTextInput, Colors, Caption } from '../../components';
+import { Body, Button, Colors, Caption } from '../../components';
 
 const JoinTeamSchema = Yup.object().shape({
     id: Yup.string()
@@ -63,17 +63,13 @@ class JoinTeamForm extends Component {
                                 </Caption>
                             </View>
 
-                            <Pressable
+                            <Button
                                 onPress={handleSubmit}
-                                style={[
-                                    styles.buttonStyle,
-                                    {
-                                        backgroundColor: Colors.accent,
-                                        marginVertical: 20
-                                    }
-                                ]}>
+                                style={{
+                                    marginVertical: 20
+                                }}>
                                 <Body color="white">JOIN TEAM</Body>
-                            </Pressable>
+                            </Button>
                         </>
                     )}
                 </Formik>
@@ -98,13 +94,6 @@ const styles = StyleSheet.create({
         fontFamily: 'Poppins-Regular',
         textAlignVertical: 'top',
         height: 60
-    },
-    buttonStyle: {
-        height: 60,
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderRadius: 8,
-        marginBottom: 20
     }
 });
 
