@@ -102,6 +102,7 @@ class TeamDetailsScreen extends Component {
                     />
                     {selectedTeam?.members > 1 && (
                         <Button
+                            style={{ margin: 20 }}
                             onPress={() =>
                                 this.actionSheetRef.current?.setModalVisible()
                             }>

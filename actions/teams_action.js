@@ -36,7 +36,6 @@ export const clearTeamsFormError = () => {
  * @returns
  */
 export const createTeam = (name, identifier, token) => {
-    console.log(name, identifier);
     return async dispatch => {
         // clearing form error before submitting again
         dispatch({
@@ -133,10 +132,12 @@ export const leaveTeam = (token, teamId) => {
         }
 
         if (response.data) {
-            dispatch({
-                type: CHANGE_ACTIVE_TEAM,
-                payload: response.data?.activeTeam?.id
-            });
+            if (response.data?.activeTeam) {
+                dispatch({
+                    type: CHANGE_ACTIVE_TEAM,
+                    payload: response.data?.activeTeam?.id
+                });
+            }
 
             dispatch({
                 type: LEAVE_TEAM,
@@ -206,7 +207,6 @@ export const getUserTeams = token => {
                 }
             });
         } catch (error) {
-            console.log(error);
             if (error.response) {
                 dispatch({
                     type: TEAMS_REQUEST_ERROR,
@@ -253,7 +253,6 @@ export const joinTeam = (token, identifier) => {
                 }
             });
         } catch (error) {
-            console.log(error);
             if (error.response) {
                 let payload = 'Something went wrong, please try again';
                 if (error.response?.status === 422) {
@@ -277,7 +276,7 @@ export const joinTeam = (token, identifier) => {
             if (!response.data.success) {
                 dispatch({
                     type: TEAMS_FORM_ERROR,
-                    payload: 'Already a member'
+                    payload: 'You have already joined this team.'
                 });
             } else {
                 console.log(response.data);

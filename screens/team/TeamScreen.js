@@ -34,7 +34,7 @@ class TeamScreen extends Component {
         this.actionSheetRef = createRef();
 
         this.state = {
-            showFormType: undefined,
+            showFormType: null,
             isLoading: true
         };
     }
@@ -48,8 +48,12 @@ class TeamScreen extends Component {
     };
 
     actionSheetOnClose = () => {
-        this.setState({ showFormType: undefined });
+        this.setState({ showFormType: null });
         this.props.clearTeamsFormError();
+    };
+
+    onBackPress = () => {
+        this.setState({ showFormType: null });
     };
 
     render() {
@@ -132,9 +136,13 @@ class TeamScreen extends Component {
                                 ) : (
                                     <>
                                         {this.state.showFormType === 'JOIN' ? (
-                                            <JoinTeamForm />
+                                            <JoinTeamForm
+                                                backPress={this.onBackPress}
+                                            />
                                         ) : (
-                                            <CreateTeamForm />
+                                            <CreateTeamForm
+                                                backPress={this.onBackPress}
+                                            />
                                         )}
                                     </>
                                 )}

@@ -17,13 +17,22 @@ class JoinTeamForm extends Component {
         const { teamsFormError } = this.props;
         return (
             <View>
-                <Body>Join team by identifier</Body>
+                <View
+                    style={{
+                        flexDirection: 'row',
+                        justifyContent: 'space-between',
+                        marginBottom: 20
+                    }}>
+                    <Body>Join team by identifier</Body>
+                    <Pressable onPress={this.props.backPress}>
+                        <Body color="accent">Back</Body>
+                    </Pressable>
+                </View>
+
                 <Formik
                     initialValues={{ id: '' }}
                     validationSchema={JoinTeamSchema}
                     onSubmit={values => {
-                        console.log('called');
-                        // this.props.sendResetPasswordRequest(values.email);
                         this.props.joinTeam(this.props.token, values.id);
                     }}>
                     {({

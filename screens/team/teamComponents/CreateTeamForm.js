@@ -1,4 +1,4 @@
-import { StyleSheet, View, TextInput } from 'react-native';
+import { StyleSheet, View, TextInput, Pressable } from 'react-native';
 import React, { Component } from 'react';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
@@ -57,7 +57,17 @@ class CreateTeamForm extends Component {
                                 />
                             ) : (
                                 <>
-                                    <SubTitle>Create a Team</SubTitle>
+                                    <View
+                                        style={{
+                                            flexDirection: 'row',
+                                            justifyContent: 'space-between'
+                                        }}>
+                                        <SubTitle>Create a Team</SubTitle>
+                                        <Pressable
+                                            onPress={this.props.backPress}>
+                                            <Body color="accent">Back</Body>
+                                        </Pressable>
+                                    </View>
                                     <View
                                         style={{
                                             flexDirection: 'row',
