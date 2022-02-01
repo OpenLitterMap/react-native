@@ -22,12 +22,16 @@ const Button = ({
               borderWidth: 1
           });
 
+    let disabledStyle = disabled && {
+        backgroundColor: `${Colors[buttonColor]}80` // adding 50% opacity to background
+    };
+
     return (
         <Pressable
             disabled={disabled || loading}
             {...rest}
             onPress={onPress}
-            style={[styles.buttonStyle, variantStyle, style]}>
+            style={[styles.buttonStyle, variantStyle, style, disabledStyle]}>
             {loading ? <ActivityIndicator color="white" /> : <>{children}</>}
         </Pressable>
     );

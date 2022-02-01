@@ -32,13 +32,13 @@ class JoinTeamForm extends Component {
                 <Formik
                     initialValues={{ id: '' }}
                     validationSchema={JoinTeamSchema}
-                    onSubmit={values => {
-                        this.props.joinTeam(this.props.token, values.id);
+                    onSubmit={async values => {
+                        await this.props.joinTeam(this.props.token, values.id);
                     }}>
                     {({
+                        isValid,
+                        isSubmitting,
                         handleSubmit,
-                        setFieldValue,
-                        values,
                         errors,
                         touched,
                         handleChange
@@ -73,6 +73,8 @@ class JoinTeamForm extends Component {
                             </View>
 
                             <Button
+                                disabled={!isValid}
+                                loading={isSubmitting}
                                 onPress={handleSubmit}
                                 style={{
                                     marginVertical: 20
