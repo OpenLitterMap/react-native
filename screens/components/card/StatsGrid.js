@@ -7,11 +7,11 @@ import IconStatsCard from './IconStatsCard';
 
 const { width } = Dimensions.get('window');
 
-const StatsGrid = ({ statsData }) => {
+const StatsGrid = ({ statsData, style }) => {
     // console.log(statsData);
     return (
         <View style={styles.statsContainer}>
-            <View style={styles.statsRow}>
+            <View style={[styles.statsRow, style]}>
                 {statsData.map(stat => (
                     <IconStatsCard
                         key={`${stat.title}`}
@@ -57,11 +57,11 @@ export default StatsGrid;
 
 const styles = StyleSheet.create({
     statsContainer: {
-        marginTop: 20,
+        // marginTop: 20,
         padding: 10
     },
     statsRow: {
-        justifyContent: 'space-between',
+        justifyContent: 'center',
         flexDirection: 'row',
         flexWrap: 'wrap'
     }
