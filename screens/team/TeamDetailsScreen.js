@@ -30,9 +30,25 @@ class TeamDetailsScreen extends Component {
         this.actionSheetRef = createRef();
 
         this.state = {
-            opacityAnimation: new Animated.Value(0)
+            opacityAnimation: new Animated.Value(0),
+            isLoading: false
         };
     }
+
+    /**
+     * activate team
+     */
+    activateDisableTeam = async (teamId, isActiveTeam) => {
+        this.setState({ isLoading: true });
+        isActiveTeam
+            ? await this.props.inactivateTeam(this.props.token)
+            : await this.props.changeActiveTeam(this.props.token, teamId);
+
+        this.setState({ isLoading: false });
+    };
+    /**
+     * fn to leave a team and navigate back to Teams Home screen
+     */
     leave = async () => {
         await this.props.leaveTeam(
             this.props.token,
@@ -43,11 +59,17 @@ class TeamDetailsScreen extends Component {
         this.props.navigation.navigate('TEAM_HOME');
     };
 
+    /**
+     * copy team unique identifier to Clipboard
+     */
     copyIdentifier = async () => {
         Clipboard.setString(this.props.selectedTeam?.identifier);
         this.opacityAnmiation();
     };
 
+    /**
+     * opactity animations for Copied message
+     */
     opacityAnmiation = async () => {
         Animated.timing(this.state.opacityAnimation, {
             toValue: 1,
@@ -71,21 +93,22 @@ class TeamDetailsScreen extends Component {
             opacity: this.state.opacityAnimation
         };
 
-        const { lang, selectedTeam } = this.props;
+        const { lang, selectedTeam, user } = this.props;
+        const isActiveTeam = user.active_team === selectedTeam?.id;
         const teamStats = [
-            {
-                value: selectedTeam?.total_litter || 0,
-                title: `${lang}.stats.total-litter`,
-                icon: 'ios-trash-outline',
-                color: '#14B8A6',
-                bgColor: '#CCFBF1'
-            },
             {
                 value: selectedTeam?.total_images || 0,
                 title: `${lang}.stats.total-photos`,
                 icon: 'ios-images-outline',
                 color: '#A855F7',
                 bgColor: '#F3E8FF'
+            },
+            {
+                value: selectedTeam?.total_litter || 0,
+                title: `${lang}.stats.total-litter`,
+                icon: 'ios-trash-outline',
+                color: '#14B8A6',
+                bgColor: '#CCFBF1'
             },
             {
                 value: selectedTeam?.members || 0,
@@ -136,7 +159,23 @@ class TeamDetailsScreen extends Component {
                     </Animated.View>
 
                     <StatsGrid statsData={teamStats} />
-
+                    {/* Disbale/Activate team button */}
+                    <Button
+                        loading={this.state.isLoading}
+                        variant="outline"
+                        style={{ margin: 20 }}
+                        onPress={() => {
+                            this.activateDisableTeam(
+                                selectedTeam.id,
+                                isActiveTeam
+                            );
+                        }}>
+                        <Body color="accent">
+                            {isActiveTeam
+                                ? 'DISABLE ACTIVE TEAM'
+                                : 'SET ACTIVE TEAM'}
+                        </Body>
+                    </Button>
                     {selectedTeam?.members > 1 && (
                         <Button
                             style={{ margin: 20 }}

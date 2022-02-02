@@ -15,15 +15,16 @@ const Button = ({
 }) => {
     let variantStyle;
 
+    const buttonThemeColor = Colors[`${buttonColor}`];
     variant === 'default'
-        ? (variantStyle = { backgroundColor: Colors[`${buttonColor}`] })
+        ? (variantStyle = { backgroundColor: buttonThemeColor })
         : (variantStyle = {
-              borderColor: Colors[`${buttonColor}`],
+              borderColor: buttonThemeColor,
               borderWidth: 1
           });
 
     let disabledStyle = disabled && {
-        backgroundColor: `${Colors[buttonColor]}80` // adding 50% opacity to background
+        backgroundColor: `${buttonThemeColor}80` // adding 50% opacity to background
     };
 
     return (
@@ -32,7 +33,13 @@ const Button = ({
             {...rest}
             onPress={onPress}
             style={[styles.buttonStyle, variantStyle, style, disabledStyle]}>
-            {loading ? <ActivityIndicator color="white" /> : <>{children}</>}
+            {loading ? (
+                <ActivityIndicator
+                    color={variant === 'default' ? 'white' : buttonThemeColor}
+                />
+            ) : (
+                <>{children}</>
+            )}
         </Pressable>
     );
 };

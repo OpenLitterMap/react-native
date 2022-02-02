@@ -13,6 +13,66 @@ import {
 } from './types';
 import axios from 'axios';
 
+export const changeActiveTeam = (token, teamId) => {
+    return async dispatch => {
+        let response;
+        try {
+            response = await axios({
+                url: URL + '/api/teams/active',
+                method: 'POST',
+                headers: {
+                    Authorization: 'Bearer ' + token,
+                    Accept: 'application/json',
+                    'content-type': 'application/json'
+                },
+                data: {
+                    team_id: teamId
+                }
+            });
+        } catch (error) {
+            console.log(error);
+            // if (error.response) {
+            //     let payload = 'Something went wrong, please try again';
+            //     if (error.response?.status === 422) {
+            //         const errorData = error.response?.data?.errors;
+
+            //         payload = errorData?.name || errorData?.identifier;
+            //     }
+
+            //     dispatch({
+            //         type: TEAMS_FORM_ERROR,
+            //         payload: payload
+            //     });
+            // } else {
+            //     dispatch({
+            //         type: TEAMS_FORM_ERROR,
+            //         payload: 'Network Error, please try again'
+            //     });
+            // }
+            return;
+        }
+
+        if (response.data) {
+            if (!response.data.success) {
+                // dispatch({
+                //     type: TEAMS_FORM_ERROR,
+                //     payload: 'Max teams reached'
+                // });
+            } else {
+                // change active team in user object
+                dispatch({
+                    type: CHANGE_ACTIVE_TEAM,
+                    payload: response.data?.team?.id
+                });
+                // dispatch({
+                //     type: TEAMS_FORM_SUCCESS,
+                //     payload: { team: response.data?.team, type: 'CREATE' }
+                // });
+                return;
+            }
+        }
+    };
+};
 /**
  * clears JOIN and CREATE team form errors
  * and resets status
@@ -100,6 +160,47 @@ export const createTeam = (name, identifier, token) => {
     };
 };
 
+export const inactivateTeam = token => {
+    return async dispatch => {
+        let response;
+        try {
+            response = await axios({
+                url: URL + '/api/teams/inactivate',
+                method: 'POST',
+                headers: {
+                    Authorization: 'Bearer ' + token,
+                    Accept: 'application/json',
+                    'content-type': 'application/json'
+                }
+            });
+        } catch (error) {
+            console.log(error);
+
+            return;
+        }
+
+        if (response.data) {
+            console.log(response.data);
+            if (!response.data.success) {
+                // dispatch({
+                //     type: TEAMS_FORM_ERROR,
+                //     payload: 'Max teams reached'
+                // });
+            } else {
+                // change active team in user object
+                dispatch({
+                    type: CHANGE_ACTIVE_TEAM,
+                    payload: null
+                });
+                // dispatch({
+                //     type: TEAMS_FORM_SUCCESS,
+                //     payload: { team: response.data?.team, type: 'CREATE' }
+                // });
+                return;
+            }
+        }
+    };
+};
 /**
  * leave team
  *
