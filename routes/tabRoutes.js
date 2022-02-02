@@ -1,6 +1,5 @@
 import React from 'react';
 import { View, SafeAreaView } from 'react-native';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -10,10 +9,9 @@ import {
     HomeScreen,
     CameraScreen
 } from '../screens';
-// import { CameraPage } from '../screens/pages';
+import TeamStack from './teamRoutes';
 import { Colors } from '../screens/components';
 
-// const Tab = createBottomTabNavigator();
 const Tab = createMaterialTopTabNavigator();
 
 const TabRoutes = ({ navigation }) => (
@@ -39,11 +37,11 @@ const TabRoutes = ({ navigation }) => (
                                 ? 'ios-trending-up'
                                 : 'ios-trending-up-outline';
                             break;
-                        // case 'TEAM':
-                        //     iconName = focused
-                        //         ? 'ios-people'
-                        //         : 'ios-people-outline';
-                        //     break;
+                        case 'TEAM':
+                            iconName = focused
+                                ? 'ios-people'
+                                : 'ios-people-outline';
+                            break;
                         // case 'RANKING':
                         //     iconName = focused
                         //         ? 'ios-trophy'
@@ -108,9 +106,9 @@ const TabRoutes = ({ navigation }) => (
                 component={CameraScreen}
                 options={{ unmountOnBlur: true }}
             />
+            <Tab.Screen name="TEAM" component={TeamStack} />
             <Tab.Screen name="GLOBAL_DATA" component={GlobalDataScreen} />
 
-            {/* <Tab.Screen name="TEAM" component={TeamScreen} /> */}
             {/* <Tab.Screen name="RANKING" component={RankingScreen} /> */}
             <Tab.Screen name="USER_STATS" component={UserStatsScreen} />
         </Tab.Navigator>

@@ -4,7 +4,7 @@ import { CountUp } from 'use-count-up';
 import PropTypes from 'prop-types';
 import { Title, Caption } from '../typography';
 import { Colors } from '../theme';
-const { width } = Dimensions.get('window');
+// const { width } = Dimensions.get('window');
 
 // fn to get ordinal of number
 export const getOrdinal = number => {
@@ -31,13 +31,14 @@ const IconStatsCard = ({
     imageContent,
     contentCenter,
     ordinal,
-    backgroundColor = Colors.accentLight
+    backgroundColor = Colors.accentLight,
+    width
 }) => {
     return (
         <View
             style={[
                 styles.container,
-                contentCenter && { alignItems: 'center' },
+                contentCenter && { alignItems: 'center', width: width },
                 {
                     backgroundColor
                 },
@@ -88,7 +89,8 @@ IconStatsCard.propTypes = {
     backgroundColor: PropTypes.string,
     contentCenter: PropTypes.bool,
     ordinal: PropTypes.bool,
-    imageContent: PropTypes.element
+    imageContent: PropTypes.element,
+    width: PropTypes.number
 };
 
 const styles = StyleSheet.create({
@@ -97,7 +99,7 @@ const styles = StyleSheet.create({
         padding: 20,
         borderRadius: 12,
         margin: 10,
-        width: width / 2 - 30,
+        // width: width / 2 - 30,
         height: 140
         // flex: 1
     }
