@@ -2,6 +2,7 @@ import produce from 'immer';
 import AsyncStorage from '@react-native-community/async-storage';
 import {
     ACCOUNT_CREATED,
+    CHANGE_ACTIVE_TEAM,
     CHANGE_LANG,
     CHANGE_SERVER_STATUS_TEXT,
     LOGIN_OR_SIGNUP_RESET,
@@ -32,6 +33,10 @@ const INITIAL_STATE = {
 export default function(state = INITIAL_STATE, action) {
     return produce(state, draft => {
         switch (action.type) {
+            case CHANGE_ACTIVE_TEAM:
+                draft.user.active_team = action.payload;
+
+                break;
             /**
              * Change app language
              * Language changeable from WelcomeScreen -- LanguageFlags.js
