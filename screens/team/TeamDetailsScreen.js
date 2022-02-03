@@ -159,32 +159,32 @@ class TeamDetailsScreen extends Component {
                     </Animated.View>
 
                     <StatsGrid statsData={teamStats} />
-                    {/* Disbale/Activate team button */}
-                    <Button
-                        loading={this.state.isLoading}
-                        variant="outline"
-                        style={{ margin: 20 }}
-                        onPress={() => {
-                            this.activateDisableTeam(
-                                selectedTeam.id,
-                                isActiveTeam
-                            );
-                        }}>
-                        <Body color="accent">
-                            {isActiveTeam
-                                ? 'DISABLE ACTIVE TEAM'
-                                : 'SET ACTIVE TEAM'}
-                        </Body>
-                    </Button>
-                    {selectedTeam?.members > 1 && (
+                    <View style={styles.buttonContainer}>
+                        {/* Disbale/Activate team button */}
                         <Button
-                            style={{ margin: 20 }}
-                            onPress={() =>
-                                this.actionSheetRef.current?.setModalVisible()
-                            }>
-                            <Body color="white">LEAVE TEAM</Body>
+                            loading={this.state.isLoading}
+                            variant="outline"
+                            onPress={() => {
+                                this.activateDisableTeam(
+                                    selectedTeam.id,
+                                    isActiveTeam
+                                );
+                            }}>
+                            <Body color="accent">
+                                {isActiveTeam
+                                    ? 'DISABLE ACTIVE TEAM'
+                                    : 'SET ACTIVE TEAM'}
+                            </Body>
                         </Button>
-                    )}
+                        {selectedTeam?.members > 1 && (
+                            <Button
+                                onPress={() =>
+                                    this.actionSheetRef.current?.setModalVisible()
+                                }>
+                                <Body color="white">LEAVE TEAM</Body>
+                            </Button>
+                        )}
+                    </View>
                 </ScrollView>
                 <ActionSheet
                     // onClose={() => this.setState({ showFormType: undefined })}
@@ -198,7 +198,7 @@ class TeamDetailsScreen extends Component {
                             You can always rejoin and your contribution will be
                             saved.
                         </Body>
-                        <View style={styles.buttonContainer}>
+                        <View style={styles.actionButtonContainer}>
                             <Pressable
                                 onPress={() =>
                                     this.actionSheetRef.current?.hide()
@@ -240,11 +240,14 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center'
     },
-    buttonContainer: {
+    actionButtonContainer: {
         flexDirection: 'row',
         justifyContent: 'space-around',
         marginVertical: 40,
         width: SCREEN_WIDTH - 40
+    },
+    buttonContainer: {
+        margin: 20
     }
 });
 
