@@ -184,6 +184,13 @@ class TeamDetailsScreen extends Component {
                                 <Body color="white">LEAVE TEAM</Body>
                             </Button>
                         )}
+                        <Button
+                            buttonColor="info"
+                            onPress={() =>
+                                this.actionSheetRef.current?.setModalVisible()
+                            }>
+                            <Body color="white">SEE LEADERBOARD</Body>
+                        </Button>
                     </View>
                 </ScrollView>
                 <ActionSheet

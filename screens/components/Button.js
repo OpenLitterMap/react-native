@@ -55,7 +55,7 @@ export default Button;
 
 const styles = StyleSheet.create({
     buttonStyle: {
-        height: 60,
+        height: 52,
         justifyContent: 'center',
         alignItems: 'center',
         borderRadius: 8,

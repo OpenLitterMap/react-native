@@ -19,7 +19,7 @@ const StatsGrid = ({ statsData, style }) => {
                             stat.icon && (
                                 <Icon
                                     name={stat.icon}
-                                    size={36}
+                                    size={28}
                                     color={stat.color}
                                 />
                             )
