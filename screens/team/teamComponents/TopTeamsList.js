@@ -19,12 +19,14 @@ const TopTeamsList = ({ topTeams }) => {
 
                         <View style={{ marginLeft: 20 }}>
                             <Body>{team.name}</Body>
-                            <Caption>{team.total_images} PHOTOS</Caption>
+                            <Caption>
+                                {team.total_images.toLocaleString()} PHOTOS
+                            </Caption>
                         </View>
                     </View>
                     <View>
                         <Caption style={styles.alignRight}>
-                            {team.total_litter}
+                            {team.total_litter.toLocaleString()}
                         </Caption>
                         <Caption style={styles.alignRight}>LITTER</Caption>
                     </View>
