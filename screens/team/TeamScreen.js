@@ -54,6 +54,7 @@ class TeamScreen extends Component {
 
     onBackPress = () => {
         this.setState({ showFormType: null });
+        this.props.clearTeamsFormError();
     };
 
     render() {
