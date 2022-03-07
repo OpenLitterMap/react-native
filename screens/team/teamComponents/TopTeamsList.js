@@ -1,9 +1,10 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View, Dimensions } from 'react-native';
 import React from 'react';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { SubTitle, Body, Caption, Colors } from '../../components';
 import RankingMedal from './RankingMedal';
 
+const { width } = Dimensions.get('window');
 const TopTeamsList = ({ topTeams }) => {
     return (
         <>
@@ -17,8 +18,12 @@ const TopTeamsList = ({ topTeams }) => {
                         }}>
                         <RankingMedal index={index} />
 
-                        <View style={{ marginLeft: 20 }}>
+                        <View
+                            style={{
+                                marginLeft: 20
+                            }}>
                             <Body>{team.name}</Body>
+
                             <Caption>
                                 {team.total_images.toLocaleString()} PHOTOS
                             </Caption>
@@ -41,10 +46,10 @@ export default TopTeamsList;
 const styles = StyleSheet.create({
     itemContainer: {
         height: 60,
-        // backgroundColor: Colors.accentLight,
         flexDirection: 'row',
         justifyContent: 'space-between',
-        alignItems: 'center'
+        alignItems: 'center',
+        maxWidth: width - 40
     },
     alignRight: {
         textAlign: 'right'

@@ -2,6 +2,7 @@ import produce from 'immer';
 import {
     CLEAR_TEAMS_FORM,
     LEAVE_TEAM,
+    LOAD_TEAM_MEMBERS_SUCCESS,
     TEAMS_FORM_ERROR,
     TEAMS_FORM_SUCCESS,
     TEAMS_REQUEST_ERROR,
@@ -13,6 +14,7 @@ import {
 const INITIAL_STATE = {
     topTeams: [],
     userTeams: [],
+    teamMembers: [],
     teamsRequestStatus: '',
     selectedTeam: {},
     teamsFormError: '',
@@ -43,6 +45,10 @@ export default function(state = INITIAL_STATE, action) {
                     draft.userTeams.splice(index, 1);
                 }
 
+                break;
+
+            case LOAD_TEAM_MEMBERS_SUCCESS:
+                draft.teamMembers = action.payload;
                 break;
 
             /**
@@ -92,6 +98,7 @@ export default function(state = INITIAL_STATE, action) {
              * set selected team for showing in team details screen
              */
             case SET_SELECTED_TEAM:
+                draft.teamMembers = [];
                 draft.selectedTeam = action.payload;
                 break;
 

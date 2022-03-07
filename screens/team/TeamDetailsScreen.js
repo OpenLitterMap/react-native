@@ -93,7 +93,7 @@ class TeamDetailsScreen extends Component {
             opacity: this.state.opacityAnimation
         };
 
-        const { lang, selectedTeam, user } = this.props;
+        const { lang, selectedTeam, user, token } = this.props;
         const isActiveTeam = user.active_team === selectedTeam?.id;
         const teamStats = [
             {
@@ -186,8 +186,16 @@ class TeamDetailsScreen extends Component {
                         )}
                         <Button
                             buttonColor="info"
-                            onPress={() =>
-                                this.actionSheetRef.current?.setModalVisible()
+                            onPress={
+                                () => {
+                                    this.props.navigation.navigate(
+                                        'TEAM_LEADERBOARD'
+                                    );
+                                }
+                                // this.props.getTeamMembers(
+                                //     token,
+                                //     selectedTeam.id
+                                // )
                             }>
                             <Body color="white">SEE LEADERBOARD</Body>
                         </Button>

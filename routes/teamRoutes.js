@@ -1,6 +1,11 @@
 import React from 'react';
 import { createStackNavigator } from '@react-navigation/stack';
-import { TeamScreen, TeamDetailsScreen, TopTeamsScreen } from '../screens';
+import {
+    TeamScreen,
+    TeamDetailsScreen,
+    TopTeamsScreen,
+    TeamLeaderboardScreen
+} from '../screens';
 
 const Stack = createStackNavigator();
 
@@ -13,6 +18,10 @@ const TeamStack = () => {
             <Stack.Screen name="TEAM_HOME" component={TeamScreen} />
             <Stack.Screen name="TEAM_DETAILS" component={TeamDetailsScreen} />
             <Stack.Screen name="TOP_TEAMS" component={TopTeamsScreen} />
+            <Stack.Screen
+                name="TEAM_LEADERBOARD"
+                component={TeamLeaderboardScreen}
+            />
         </Stack.Navigator>
     );
 };

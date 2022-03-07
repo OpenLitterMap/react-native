@@ -83,6 +83,7 @@ class TeamScreen extends Component {
                     </View>
                 ) : (
                     <ScrollView
+                        contentContainerStyle={{ paddingBottom: 20 }}
                         style={styles.container}
                         alwaysBounceVertical={false}
                         showsVerticalScrollIndicator={false}>

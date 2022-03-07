@@ -9,7 +9,8 @@ import {
     TOP_TEAMS_REQUEST_SUCCESS,
     URL,
     USER_TEAMS_REQUEST_SUCCESS,
-    SET_SELECTED_TEAM
+    SET_SELECTED_TEAM,
+    LOAD_TEAM_MEMBERS_SUCCESS
 } from './types';
 import axios from 'axios';
 
@@ -243,6 +244,35 @@ export const leaveTeam = (token, teamId) => {
             dispatch({
                 type: LEAVE_TEAM,
                 payload: response.data.team
+            });
+        }
+    };
+};
+
+export const getTeamMembers = (token, teamId) => {
+    return async dispatch => {
+        let response;
+        try {
+            response = await axios({
+                url: URL + '/api/teams/members',
+                method: 'GET',
+                headers: {
+                    Authorization: 'Bearer ' + token,
+                    Accept: 'application/json',
+                    'content-type': 'application/json'
+                },
+                params: { team_id: teamId }
+            });
+        } catch (error) {
+            console.log(error);
+            return;
+        }
+
+        if (response.data) {
+            // console.log(JSON.stringify(response.data, null, 2));
+            dispatch({
+                type: LOAD_TEAM_MEMBERS_SUCCESS,
+                payload: response.data?.result?.data
             });
         }
     };
