@@ -13,8 +13,8 @@ const TopTeamsList = ({ topTeams }) => {
                     <View
                         style={{
                             flexDirection: 'row',
-                            justifyContent: 'space-between',
-                            alignItems: 'center'
+                            marginRight: 10,
+                            flexShrink: 1
                         }}>
                         <RankingMedal index={index} />
 
@@ -22,7 +22,9 @@ const TopTeamsList = ({ topTeams }) => {
                             style={{
                                 marginLeft: 20
                             }}>
-                            <Body>{team.name}</Body>
+                            <Body style={{ flexShrink: 1 }} numberOfLines={2}>
+                                {team.name}
+                            </Body>
 
                             <Caption>
                                 {team.total_images.toLocaleString()} PHOTOS
@@ -48,8 +50,7 @@ const styles = StyleSheet.create({
         height: 60,
         flexDirection: 'row',
         justifyContent: 'space-between',
-        alignItems: 'center',
-        maxWidth: width - 40
+        alignItems: 'center'
     },
     alignRight: {
         textAlign: 'right'
