@@ -19,7 +19,8 @@ const INITIAL_STATE = {
     selectedTeam: {},
     teamsFormError: '',
     teamFormStatus: null, // SUCCESS || ERROR
-    successMessage: ''
+    successMessage: '',
+    memberNextPage: 1
 };
 
 export default function(state = INITIAL_STATE, action) {
@@ -48,7 +49,12 @@ export default function(state = INITIAL_STATE, action) {
                 break;
 
             case LOAD_TEAM_MEMBERS_SUCCESS:
-                draft.teamMembers = action.payload;
+                draft.teamMembers.push(...action.payload.data);
+                const nextPage = action.payload.next_page_url;
+
+                draft.memberNextPage =
+                    nextPage !== null ? nextPage.split('=')[1] : null;
+
                 break;
 
             /**
@@ -100,6 +106,8 @@ export default function(state = INITIAL_STATE, action) {
             case SET_SELECTED_TEAM:
                 draft.teamMembers = [];
                 draft.selectedTeam = action.payload;
+                draft.memberNextPage = 1;
+                draft.teamMembers = [];
                 break;
 
             default:

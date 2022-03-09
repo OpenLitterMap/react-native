@@ -1,80 +1,44 @@
-import { Pressable, StyleSheet, View, FlatList } from 'react-native';
+import {
+    Pressable,
+    StyleSheet,
+    View,
+    FlatList,
+    ActivityIndicator
+} from 'react-native';
 import React, { Component } from 'react';
-import { Header, Colors, Body, Caption, SubTitle, Title } from '../components';
+import { Header, Colors, Body, SubTitle } from '../components';
 import * as actions from '../../actions';
 import { connect } from 'react-redux';
 import Icon from 'react-native-vector-icons/Ionicons';
-import RankingMedal from './teamComponents/RankingMedal';
-
-const RenderCard = ({ data, teamId, index }) => {
-    const isActiveTeam = teamId === data?.team?.id;
-    return (
-        <View
-            style={{
-                borderWidth: 1,
-                borderColor: '#eee',
-                padding: 8,
-                borderRadius: 8,
-                marginBottom: 20,
-                backgroundColor: 'white'
-            }}>
-            <View style={{ flexDirection: 'row' }}>
-                <RankingMedal index={index} />
-                <View style={{ marginLeft: 10 }}>
-                    <SubTitle>{data?.name || 'Anonymous'}</SubTitle>
-                    <Caption>{data?.username}</Caption>
-                </View>
-            </View>
-            <View
-                style={{
-                    marginTop: 16,
-                    flexDirection: 'row',
-                    justifyContent: 'space-between'
-                }}>
-                <View
-                    style={{
-                        justifyContent: 'center',
-                        alignItems: 'center'
-                    }}>
-                    <Body>{data?.pivot?.total_photos}</Body>
-                    <Caption>PHOTOS</Caption>
-                </View>
-                <View
-                    style={{
-                        justifyContent: 'center',
-                        alignItems: 'center'
-                    }}>
-                    <Body>{data?.pivot?.total_litter}</Body>
-                    <Caption>LITTER</Caption>
-                </View>
-                <View
-                    style={{
-                        justifyContent: 'center',
-                        alignItems: 'center'
-                    }}>
-                    <Body color={isActiveTeam ? 'accent' : 'warn'}>
-                        {isActiveTeam ? 'Active' : 'Inactive'}
-                    </Body>
-                    <Caption>STATUS</Caption>
-                </View>
-            </View>
-        </View>
-    );
-};
+import { MemberCard } from './teamComponents';
 
 class TeamLeaderboardScreen extends Component {
+    constructor(props) {
+        super(props);
+        this.state = { isLoading: false };
+    }
     componentDidMount() {
-        this.props.getTeamMembers(this.props.token, this.props.selectedTeam.id);
+        this.props.memberNextPage === 1 && this.loadTeamMembers();
     }
 
     renderItem = ({ item, index }) => {
         return (
-            <RenderCard
+            <MemberCard
                 data={item}
                 teamId={this.props.selectedTeam.id}
                 index={index}
             />
         );
+    };
+
+    loadTeamMembers = async () => {
+        this.setState({ isLoading: true });
+        await this.props.getTeamMembers(
+            this.props.token,
+            this.props.selectedTeam.id,
+            this.props.memberNextPage
+        );
+        this.setState({ isLoading: false });
     };
     render() {
         return (
@@ -97,11 +61,35 @@ class TeamLeaderboardScreen extends Component {
                 />
                 <View style={styles.container}>
                     <FlatList
+                        alwaysBounceVertical={false}
                         data={this.props.teamMembers}
+                        showsVerticalScrollIndicator={false}
                         renderItem={({ item, index }) =>
                             this.renderItem({ item, index })
                         }
                         keyExtractor={item => `${item.id}`}
+                        ListFooterComponent={
+                            <>
+                                {this.props.memberNextPage && (
+                                    <>
+                                        <Pressable
+                                            disabled={this.state.isLoading}
+                                            style={{ alignItems: 'center' }}
+                                            onPress={this.loadTeamMembers}>
+                                            {this.state.isLoading ? (
+                                                <ActivityIndicator
+                                                    color={Colors.accent}
+                                                />
+                                            ) : (
+                                                <Body color="accent">
+                                                    Load More
+                                                </Body>
+                                            )}
+                                        </Pressable>
+                                    </>
+                                )}
+                            </>
+                        }
                     />
                 </View>
             </>
@@ -122,7 +110,8 @@ const mapStateToProps = state => {
         lang: state.auth.lang,
         token: state.auth.token,
         selectedTeam: state.teams.selectedTeam,
-        teamMembers: state.teams.teamMembers
+        teamMembers: state.teams.teamMembers,
+        memberNextPage: state.teams.memberNextPage
     };
 };
 

@@ -249,7 +249,7 @@ export const leaveTeam = (token, teamId) => {
     };
 };
 
-export const getTeamMembers = (token, teamId) => {
+export const getTeamMembers = (token, teamId, page = 1) => {
     return async dispatch => {
         let response;
         try {
@@ -261,7 +261,7 @@ export const getTeamMembers = (token, teamId) => {
                     Accept: 'application/json',
                     'content-type': 'application/json'
                 },
-                params: { team_id: teamId }
+                params: { team_id: teamId, page }
             });
         } catch (error) {
             console.log(error);
@@ -269,10 +269,9 @@ export const getTeamMembers = (token, teamId) => {
         }
 
         if (response.data) {
-            // console.log(JSON.stringify(response.data, null, 2));
             dispatch({
                 type: LOAD_TEAM_MEMBERS_SUCCESS,
-                payload: response.data?.result?.data
+                payload: response.data?.result
             });
         }
     };
