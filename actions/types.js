@@ -4,7 +4,7 @@ import { SECRET_CLIENT } from '@env';
 import { ID_CLIENT } from '@env';
 import { OLM_ENDPOINT } from '@env';
 
-export const IS_PRODUCTION = true; // change this when working locally to disable sentry
+export const IS_PRODUCTION = false; // change this when working locally to disable sentry
 
 export const CLIENT_ID = ID_CLIENT;
 export const CLIENT_SECRET = SECRET_CLIENT;
@@ -111,6 +111,8 @@ export const STATS_REQUEST_ERROR = 'STATS_REQUEST_ERROR';
 export const CHANGE_ACTIVE_TEAM = 'CHANGE_ACTIVE_TEAM';
 export const CLEAR_TEAMS_FORM = 'CLEAR_TEAMS_FORM';
 export const LEAVE_TEAM = 'LEAVE_TEAM';
+export const LOAD_TEAM_MEMBERS_SUCCESS = 'LOAD_TEAM_MEMBERS_SUCCESS';
+export const MEMBERS_REQUEST_SUCCESS = 'MEMBERS_REQUEST_SUCCESS';
 export const TEAMS_ERROR = 'TEAMS_ERROR';
 export const TEAMS_SUCCESS = 'TEAMS_SUCCESS';
 export const TEAMS_FORM_ERROR = 'TEAMS_FORM_ERROR';

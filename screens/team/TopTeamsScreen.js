@@ -26,7 +26,8 @@ export class TopTeamsScreen extends Component {
                 />
                 <ScrollView
                     style={styles.container}
-                    alwaysBounceVertical={false}>
+                    alwaysBounceVertical={false}
+                    contentContainerStyle={{ paddingBottom: 20 }}>
                     {/* list of top 5 teams  */}
                     <TopTeamsList topTeams={topTeams} />
                 </ScrollView>

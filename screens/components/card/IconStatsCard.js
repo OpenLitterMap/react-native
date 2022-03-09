@@ -4,7 +4,7 @@ import { CountUp } from 'use-count-up';
 import PropTypes from 'prop-types';
 import { Title, Caption } from '../typography';
 import { Colors } from '../theme';
-// const { width } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
 // fn to get ordinal of number
 export const getOrdinal = number => {
@@ -45,7 +45,7 @@ const IconStatsCard = ({
                 style
             ]}>
             {imageContent && (
-                <View style={{ marginBottom: 10 }}>{imageContent}</View>
+                <View style={{ marginBottom: 6 }}>{imageContent}</View>
             )}
 
             <Title
@@ -96,11 +96,11 @@ IconStatsCard.propTypes = {
 const styles = StyleSheet.create({
     container: {
         justifyContent: 'center',
-        padding: 20,
+        padding: 10,
         borderRadius: 12,
-        margin: 10,
+        margin: 10
         // width: width / 2 - 30,
-        height: 140
+        // height: width / 3
         // flex: 1
     }
 });
