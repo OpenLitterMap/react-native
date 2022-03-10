@@ -6,7 +6,7 @@ import {
     ActivityIndicator
 } from 'react-native';
 import React, { Component } from 'react';
-import { Header, Colors, Body, SubTitle } from '../components';
+import { Header, Colors, Body, Title, SubTitle } from '../components';
 import * as actions from '../../actions';
 import { connect } from 'react-redux';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -41,6 +41,7 @@ class TeamLeaderboardScreen extends Component {
         this.setState({ isLoading: false });
     };
     render() {
+        const { selectedTeam } = this.props;
         return (
             <>
                 <Header
@@ -60,7 +61,11 @@ class TeamLeaderboardScreen extends Component {
                     centerContainerStyle={{ flex: 2 }}
                 />
                 <View style={styles.container}>
+                    <Title style={{ textAlign: 'center' }}>
+                        {selectedTeam.identifier}
+                    </Title>
                     <FlatList
+                        contentContainerStyle={styles.flatListStyle}
                         alwaysBounceVertical={false}
                         data={this.props.teamMembers}
                         showsVerticalScrollIndicator={false}
@@ -102,6 +107,10 @@ const styles = StyleSheet.create({
         backgroundColor: 'white',
         flex: 1,
         padding: 20
+    },
+    flatListStyle: {
+        marginVertical: 20,
+        paddingBottom: 20
     }
 });
 
