@@ -4,6 +4,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { SubTitle, Body, Caption, Colors } from '../../components';
 import * as actions from '../../../actions';
 import { connect } from 'react-redux';
+import TeamListCard from './TeamListCard';
 
 class UserTeamsList extends Component {
     componentDidMount() {
@@ -28,37 +29,23 @@ class UserTeamsList extends Component {
                 {userTeams?.map((team, index) => (
                     <Pressable
                         onPress={() => this.setTeam(team)}
-                        key={`${team.name}${index}`}
-                        style={styles.itemContainer}>
-                        <View
-                            style={{
-                                flexDirection: 'row',
-                                justifyContent: 'space-between',
-                                alignItems: 'center'
-                            }}>
-                            {activeTeam === team.id && (
-                                <Icon
-                                    name="ios-star-sharp"
-                                    size={24}
-                                    color={Colors.accent}
-                                />
-                            )}
-                            <View
-                                style={{
-                                    marginLeft: activeTeam !== team.id ? 44 : 20
-                                }}>
-                                <Body>{team.name}</Body>
-                                <Caption>
-                                    {team.total_images.toLocaleString()} PHOTOS
-                                </Caption>
-                            </View>
-                        </View>
-                        <View>
-                            <Caption style={styles.alignRight}>
-                                {team.total_litter.toLocaleString()}
-                            </Caption>
-                            <Caption style={styles.alignRight}>LITTER</Caption>
-                        </View>
+                        key={`${team.name}${index}`}>
+                        <TeamListCard
+                            team={team}
+                            index={index}
+                            showRanking={false}
+                            leftContent={
+                                <View style={{ height: 24, width: 24 }}>
+                                    {activeTeam === team.id && (
+                                        <Icon
+                                            name="ios-star-sharp"
+                                            size={24}
+                                            color={Colors.accent}
+                                        />
+                                    )}
+                                </View>
+                            }
+                        />
                     </Pressable>
                 ))}
             </>
@@ -85,13 +72,6 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'baseline'
-    },
-    itemContainer: {
-        height: 60,
-        // backgroundColor: Colors.accentLight,
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center'
     },
     alignRight: {
         textAlign: 'right'

@@ -32,24 +32,7 @@ export const changeActiveTeam = (token, teamId) => {
             });
         } catch (error) {
             console.log(error);
-            // if (error.response) {
-            //     let payload = 'Something went wrong, please try again';
-            //     if (error.response?.status === 422) {
-            //         const errorData = error.response?.data?.errors;
 
-            //         payload = errorData?.name || errorData?.identifier;
-            //     }
-
-            //     dispatch({
-            //         type: TEAMS_FORM_ERROR,
-            //         payload: payload
-            //     });
-            // } else {
-            //     dispatch({
-            //         type: TEAMS_FORM_ERROR,
-            //         payload: 'Network Error, please try again'
-            //     });
-            // }
             return;
         }
 
