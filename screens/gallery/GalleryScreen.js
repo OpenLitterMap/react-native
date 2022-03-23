@@ -15,7 +15,8 @@ import { connect } from 'react-redux';
 import AsyncStorage from '@react-native-community/async-storage';
 import Icon from 'react-native-vector-icons/Ionicons';
 import * as actions from '../../actions';
-import { Header, SubTitle, Body } from '../components';
+import { Header, SubTitle, Body, Caption, Colors } from '../components';
+import { isGeotagged } from '../../utils/isGeotagged';
 
 const { width } = Dimensions.get('window');
 
@@ -172,10 +173,14 @@ class GalleryScreen extends Component {
                         const selected = this.state.selectedImages.includes(
                             image
                         );
+
+                        const isImageGeotagged = isGeotagged(image);
                         return (
                             <Pressable
                                 key={image.uri}
-                                onPress={() => this.selectImage(image)}>
+                                onPress={() =>
+                                    isImageGeotagged && this.selectImage(image)
+                                }>
                                 <Image
                                     source={{ uri: image.uri }}
                                     style={{
@@ -184,6 +189,7 @@ class GalleryScreen extends Component {
                                         margin: 1
                                     }}
                                 />
+                                {/* <Body>{JSON.stringify(image)}</Body> */}
                                 {selected && (
                                     <View
                                         style={{
@@ -200,6 +206,26 @@ class GalleryScreen extends Component {
                                         <Icon
                                             name="ios-checkmark-outline"
                                             size={20}
+                                            color="white"
+                                        />
+                                    </View>
+                                )}
+                                {isImageGeotagged && (
+                                    <View
+                                        style={{
+                                            position: 'absolute',
+                                            width: 24,
+                                            height: 24,
+                                            backgroundColor: '#0984e3',
+                                            right: 10,
+                                            top: 10,
+                                            borderRadius: 100,
+                                            justifyContent: 'center',
+                                            alignItems: 'center'
+                                        }}>
+                                        <Icon
+                                            name="ios-location-outline"
+                                            size={16}
                                             color="white"
                                         />
                                     </View>
@@ -262,6 +288,19 @@ class GalleryScreen extends Component {
                         </Pressable>
                     }
                 />
+                <View
+                    style={{
+                        flexDirection: 'row',
+                        marginTop: 4,
+                        justifyContent: 'center'
+                    }}>
+                    <Icon
+                        name="ios-information-circle-outline"
+                        style={{ color: Colors.muted }}
+                        size={18}
+                    />
+                    <Caption>Only geotagged images can be selected</Caption>
+                </View>
                 <SafeAreaView
                     style={{
                         flexDirection: 'row',

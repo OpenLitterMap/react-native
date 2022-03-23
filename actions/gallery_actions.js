@@ -2,6 +2,7 @@ import React from 'react';
 import CameraRoll from '@react-native-community/cameraroll';
 
 import { ADD_GEOTAGGED_IMAGES, TOGGLE_IMAGES_LOADING } from './types';
+import { isGeotagged } from '../utils/isGeotagged';
 
 /**
  * get photos from camera roll
@@ -76,6 +77,7 @@ export const getPhotosFromCameraroll = () => async (dispatch, getState) => {
         imagesArray.map(item => {
             id++;
 
+            let coordinates = {};
             if (
                 item.node?.location !== undefined &&
                 item.node?.location !== null &&
@@ -84,21 +86,26 @@ export const getPhotosFromCameraroll = () => async (dispatch, getState) => {
                 item.node?.location?.latitude !== undefined &&
                 item.node?.location?.latitude !== null
             ) {
-                geotagged.push({
-                    id,
-                    filename: item.node.image.filename, // this will get hashed on the backend
-                    uri: item.node.image.uri,
-                    size: item.node.image.fileSize,
-                    height: item.node.image.height,
-                    width: item.node.image.width,
-                    lat: item.node.location.latitude,
-                    lon: item.node.location.longitude,
-                    date: item.node.timestamp, // date -> unix/epoch timestamp
-                    selected: false,
-                    tags: {},
-                    type: 'gallery'
-                });
+                coordinates = {
+                    lat: item.node.location?.latitude,
+                    lon: item.node.location?.longitude
+                };
             }
+            geotagged.push({
+                id,
+                filename: item.node.image.filename, // this will get hashed on the backend
+                uri: item.node.image.uri,
+                size: item.node.image.fileSize,
+                height: item.node.image.height,
+                width: item.node.image.width,
+                date: item.node.timestamp, // date -> unix/epoch timestamp
+                selected: false,
+                // lat: item.node.location?.latitude,
+                // lon: item.node.location?.longitude,
+                tags: {},
+                type: 'gallery',
+                ...coordinates
+            });
         });
 
         dispatch({
