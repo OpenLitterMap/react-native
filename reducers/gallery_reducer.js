@@ -5,7 +5,9 @@ const INITIAL_STATE = {
     imagesLoading: false,
     geotaggedImages: [], // array of geotagged images
     camerarollImageFetched: false,
-    lastFetchTime: null
+    lastFetchTime: null,
+    isNextPageAvailable: false,
+    lastImageCursor: null
 };
 
 export default function(state = INITIAL_STATE, action) {
@@ -34,6 +36,10 @@ export default function(state = INITIAL_STATE, action) {
                 draft.camerarollImageFetched = true;
                 draft.lastFetchTime = Math.floor(new Date().getTime());
                 draft.imagesLoading = false;
+                if (action.payload.fetchType !== 'TIME') {
+                    draft.isNextPageAvailable = action.payload.hasNextPage;
+                    draft.lastImageCursor = action.payload.endCursor;
+                }
 
                 break;
 

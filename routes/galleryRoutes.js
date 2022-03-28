@@ -10,8 +10,8 @@ const GalleryStack = () => {
             screenOptions={{
                 headerShown: false
             }}>
-            <Stack.Screen name="ALBUM" component={AlbumScreen} />
             <Stack.Screen name="GALLERY" component={GalleryScreen} />
+            <Stack.Screen name="ALBUM" component={AlbumScreen} />
         </Stack.Navigator>
     );
 };

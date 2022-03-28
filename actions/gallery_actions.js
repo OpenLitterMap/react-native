@@ -17,22 +17,31 @@ import { isGeotagged } from '../utils/isGeotagged';
  * next fetch - Album screen or Home screen
  * if lastFetch !== null fetch images between lastFetch and Date.now()
  *
+ * @param {string} - fetchType --> "INITIAL" | "TIME" | "LOAD"
+ * "INITIAL" -> first load
+ * "TIME" -> images added to cameraroll/phone gallery after initial load
+ * "LOAD" -> loads more images on scroll after initial load
  */
 
-export const getPhotosFromCameraroll = () => async (dispatch, getState) => {
+export const getPhotosFromCameraroll = (fetchType = 'INITIAL') => async (
+    dispatch,
+    getState
+) => {
     const {
         geotaggedImages,
         camerarollImageFetched,
         lastFetchTime,
-        imagesLoading
+        imagesLoading,
+        isNextPageAvailable,
+        lastImageCursor
     } = getState().gallery;
     const { user } = getState().auth;
 
     let id = geotaggedImages.length;
 
     let camerarollData;
-    let fetchType = 'INITIAL';
 
+    console.log({ isNextPageAvailable, lastImageCursor });
     if (imagesLoading) {
         return;
     }
@@ -50,28 +59,51 @@ export const getPhotosFromCameraroll = () => async (dispatch, getState) => {
     };
     const initialParams = {
         // initially get first 100 images
-        first: 1000,
+        first: 5,
         // toTime: 1627819113000,
         // fromTime: 1626782313000
         // groupTypes: 'SavedPhotos',
         // assetType: 'Photos',
         include: ['location', 'filename', 'fileSize', 'imageSize']
     };
+
+    const loadParams = {
+        first: 30,
+        after: lastImageCursor,
+        // toTime: Math.floor(new Date().getTime()),
+        // toTime: 1627819113000,
+        // fromTime: lastFetchTime,
+        // fromTime: 1626782313000
+        include: ['location', 'filename', 'fileSize', 'imageSize']
+    };
+
     if (
-        geotaggedImages?.length === 0 &&
-        camerarollImageFetched === false &&
-        lastFetchTime === null
+        fetchType === 'LOAD' &&
+        isNextPageAvailable &&
+        lastImageCursor !== null
     ) {
-        camerarollData = await CameraRoll.getPhotos(initialParams);
-        fetchType = 'INITIAL';
-    }
-    if (lastFetchTime !== null) {
-        camerarollData = await CameraRoll.getPhotos(timeParams);
-        fetchType = 'TIME';
+        camerarollData = await CameraRoll.getPhotos(loadParams);
+    } else {
+        if (
+            geotaggedImages?.length === 0 &&
+            camerarollImageFetched === false &&
+            lastFetchTime === null
+        ) {
+            camerarollData = await CameraRoll.getPhotos(initialParams);
+            fetchType = 'INITIAL';
+        }
+        if (lastFetchTime !== null) {
+            camerarollData = await CameraRoll.getPhotos(timeParams);
+            fetchType = 'TIME';
+        }
     }
 
     if (camerarollData) {
         const imagesArray = camerarollData.edges;
+        const {
+            has_next_page: hasNextPage,
+            end_cursor: endCursor
+        } = camerarollData.page_info;
         let geotagged = [];
 
         imagesArray.map(item => {
@@ -110,7 +142,7 @@ export const getPhotosFromCameraroll = () => async (dispatch, getState) => {
 
         dispatch({
             type: ADD_GEOTAGGED_IMAGES,
-            payload: { geotagged, fetchType }
+            payload: { geotagged, fetchType, hasNextPage, endCursor }
         });
     }
 };
