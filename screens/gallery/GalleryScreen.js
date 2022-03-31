@@ -337,28 +337,22 @@ class GalleryScreen extends Component {
                                 flex: 1
                             }}>
                             <FlatList
+                                contentContainerStyle={{ paddingBottom: 40 }}
                                 style={{ flexDirection: 'column' }}
                                 alwaysBounceVertical={false}
                                 showsVerticalScrollIndicator={false}
-                                // numColumns={3}
                                 data={this.state.sortedData}
                                 renderItem={(item, index) =>
                                     this.renderSection(item, index)
                                 }
                                 extraData={this.state.selectedImages}
                                 keyExtractor={item => `${item.title}`}
+                                onEndReached={() => {
+                                    this.props.getPhotosFromCameraroll('LOAD');
+                                }}
+                                onEndReachedThreshold={0.05}
                             />
                         </SafeAreaView>
-                        <Pressable
-                            style={{
-                                padding: 10,
-                                backgroundColor: Colors.accent
-                            }}
-                            onPress={() =>
-                                this.props.getPhotosFromCameraroll('LOAD')
-                            }>
-                            <Body>LOAD MORE</Body>
-                        </Pressable>
                     </View>
                 ) : (
                     <View style={styles.container}>

@@ -41,7 +41,6 @@ export const getPhotosFromCameraroll = (fetchType = 'INITIAL') => async (
 
     let camerarollData;
 
-    console.log({ isNextPageAvailable, lastImageCursor });
     if (imagesLoading) {
         return;
     }
@@ -58,8 +57,8 @@ export const getPhotosFromCameraroll = (fetchType = 'INITIAL') => async (
         include: ['location', 'filename', 'fileSize', 'imageSize']
     };
     const initialParams = {
-        // initially get first 100 images
-        first: 5,
+        // initially get first 40 images
+        first: 40,
         // toTime: 1627819113000,
         // fromTime: 1626782313000
         // groupTypes: 'SavedPhotos',
@@ -68,7 +67,7 @@ export const getPhotosFromCameraroll = (fetchType = 'INITIAL') => async (
     };
 
     const loadParams = {
-        first: 30,
+        first: 20,
         after: lastImageCursor,
         // toTime: Math.floor(new Date().getTime()),
         // toTime: 1627819113000,
@@ -105,7 +104,6 @@ export const getPhotosFromCameraroll = (fetchType = 'INITIAL') => async (
             end_cursor: endCursor
         } = camerarollData.page_info;
         let geotagged = [];
-
         imagesArray.map(item => {
             id++;
 
