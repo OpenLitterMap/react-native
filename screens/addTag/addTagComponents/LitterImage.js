@@ -54,7 +54,7 @@ class LitterImage extends PureComponent {
                     }}
                     style={{ backgroundColor: 'black' }}>
                     <Image
-                        resizeMode="cover"
+                        resizeMode="contain"
                         source={{ uri: this.props.photoSelected.uri }}
                         style={styles.image}
                         onLoad={this._imageLoaded.bind(this)}
