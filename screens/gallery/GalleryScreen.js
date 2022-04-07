@@ -6,16 +6,18 @@ import {
     FlatList,
     Dimensions,
     Image,
-    SafeAreaView
+    SafeAreaView,
+    ActivityIndicator
 } from 'react-native';
 import moment from 'moment';
 import _ from 'lodash';
 
 import { connect } from 'react-redux';
-import AsyncStorage from '@react-native-community/async-storage';
 import Icon from 'react-native-vector-icons/Ionicons';
 import * as actions from '../../actions';
-import { Header, SubTitle, Body } from '../components';
+import { Header, SubTitle, Body, Caption, Colors } from '../components';
+import { isGeotagged } from '../../utils/isGeotagged';
+import { checkCameraRollPermission } from '../../utils/permissions';
 
 const { width } = Dimensions.get('window');
 
@@ -37,9 +39,6 @@ export const placeInTime = date => {
     } else {
         return momentOfFile.year();
     }
-    // unreachable code error -- FIXME: fix this eslint error
-    // eslint-disable-next-line no-unreachable
-    return 'error';
 };
 
 class GalleryScreen extends Component {
@@ -47,12 +46,40 @@ class GalleryScreen extends Component {
         super(props);
         this.state = {
             selectedImages: [],
-            sortedData: []
+            sortedData: [],
+            loading: false,
+            hasPermission: false
         };
     }
 
     componentDidMount() {
-        this.splitIntoRows(this.props.geotaggedImages);
+        this.checkGalleryPermission();
+    }
+
+    componentDidUpdate(prevProps) {
+        if (
+            prevProps.geotaggedImages?.length <
+            this.props.geotaggedImages?.length
+        ) {
+            this.splitIntoRows(this.props.geotaggedImages);
+        }
+    }
+    /**
+     * fn to check for cameraroll/gallery permissions
+     * if permissions granted setState, else navigate to GalleryPermissionScreen
+     */
+
+    async checkGalleryPermission() {
+        const result = await checkCameraRollPermission();
+        if (result === 'granted') {
+            await this.props.getPhotosFromCameraroll();
+            this.splitIntoRows(this.props.geotaggedImages);
+            this.setState({ hasPermission: true, loading: false });
+        } else {
+            this.props.navigation.navigate('PERMISSION', {
+                screen: 'GALLERY_PERMISSION'
+            });
+        }
     }
 
     async splitIntoRows(images) {
@@ -172,10 +199,14 @@ class GalleryScreen extends Component {
                         const selected = this.state.selectedImages.includes(
                             image
                         );
+
+                        const isImageGeotagged = isGeotagged(image);
                         return (
                             <Pressable
                                 key={image.uri}
-                                onPress={() => this.selectImage(image)}>
+                                onPress={() =>
+                                    isImageGeotagged && this.selectImage(image)
+                                }>
                                 <Image
                                     source={{ uri: image.uri }}
                                     style={{
@@ -200,6 +231,26 @@ class GalleryScreen extends Component {
                                         <Icon
                                             name="ios-checkmark-outline"
                                             size={20}
+                                            color="white"
+                                        />
+                                    </View>
+                                )}
+                                {isImageGeotagged && (
+                                    <View
+                                        style={{
+                                            position: 'absolute',
+                                            width: 24,
+                                            height: 24,
+                                            backgroundColor: '#0984e3',
+                                            right: 10,
+                                            top: 10,
+                                            borderRadius: 100,
+                                            justifyContent: 'center',
+                                            alignItems: 'center'
+                                        }}>
+                                        <Icon
+                                            name="ios-location-outline"
+                                            size={16}
                                             color="white"
                                         />
                                     </View>
@@ -262,24 +313,52 @@ class GalleryScreen extends Component {
                         </Pressable>
                     }
                 />
-                <SafeAreaView
-                    style={{
-                        flexDirection: 'row',
-                        flex: 1
-                    }}>
-                    <FlatList
-                        style={{ flexDirection: 'column' }}
-                        alwaysBounceVertical={false}
-                        showsVerticalScrollIndicator={false}
-                        // numColumns={3}
-                        data={this.state.sortedData}
-                        renderItem={(item, index) =>
-                            this.renderSection(item, index)
-                        }
-                        extraData={this.state.selectedImages}
-                        keyExtractor={item => `${item.title}`}
-                    />
-                </SafeAreaView>
+                {this.state.hasPermission && !this.state.loading ? (
+                    <View style={{ flex: 1 }}>
+                        <View
+                            style={{
+                                flexDirection: 'row',
+                                marginTop: 4,
+                                justifyContent: 'center'
+                            }}>
+                            <Icon
+                                name="ios-information-circle-outline"
+                                style={{ color: Colors.muted }}
+                                size={18}
+                            />
+                            <Caption>
+                                Only geotagged images can be selected
+                            </Caption>
+                        </View>
+
+                        <SafeAreaView
+                            style={{
+                                flexDirection: 'row',
+                                flex: 1
+                            }}>
+                            <FlatList
+                                contentContainerStyle={{ paddingBottom: 40 }}
+                                style={{ flexDirection: 'column' }}
+                                alwaysBounceVertical={false}
+                                showsVerticalScrollIndicator={false}
+                                data={this.state.sortedData}
+                                renderItem={(item, index) =>
+                                    this.renderSection(item, index)
+                                }
+                                extraData={this.state.selectedImages}
+                                keyExtractor={item => `${item.title}`}
+                                onEndReached={() => {
+                                    this.props.getPhotosFromCameraroll('LOAD');
+                                }}
+                                onEndReachedThreshold={0.05}
+                            />
+                        </SafeAreaView>
+                    </View>
+                ) : (
+                    <View style={styles.container}>
+                        <ActivityIndicator color={Colors.accent} />
+                    </View>
+                )}
             </>
         );
     }
@@ -303,5 +382,10 @@ const styles = StyleSheet.create({
         marginTop: 16,
         marginBottom: 5,
         paddingLeft: 5
+    },
+    container: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center'
     }
 });

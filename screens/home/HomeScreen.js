@@ -63,6 +63,7 @@ class HomeScreen extends PureComponent {
 
         // if not in DEV mode check for new version
         !__DEV__ && this.checkNewVersion();
+
         this.checkGalleryPermission();
     }
 
@@ -242,7 +243,7 @@ class HomeScreen extends PureComponent {
      *
      */
     loadGallery = async () => {
-        this.props.navigation.navigate('ALBUM');
+        this.props.navigation.navigate('ALBUM', { screen: 'GALLERY' });
     };
 
     /**
