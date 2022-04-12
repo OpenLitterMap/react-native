@@ -154,13 +154,6 @@ class HomeScreen extends PureComponent {
                             </View>
                         )}
 
-                        {/* Tag Litter to Images */}
-                        {this.props.litterVisible && (
-                            <View style={styles.litterModal}>
-                                <AddTags />
-                            </View>
-                        )}
-
                         {/* Thank you modal */}
                         {this.props.thankYouVisible && (
                             <View style={styles.modal}>

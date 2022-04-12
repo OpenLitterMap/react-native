@@ -20,10 +20,10 @@ class UploadImagesGrid extends PureComponent {
             this.props.toggleSelectedImage(index);
         } else {
             // shared_reducer - Open LitterPicker modal
-            this.props.toggleLitter();
 
             // litter.js
             this.props.swiperIndexChanged(index);
+            this.props.navigation.navigate('ADD_TAGS');
         }
     }
 

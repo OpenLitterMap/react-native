@@ -273,7 +273,7 @@ class AddTags extends Component {
             opacity: this.state.opacityAnimation
         };
         return (
-            <View>
+            <View style={{ flex: 1 }}>
                 <View style={{ flex: 1 }}>
                     <View style={styles.container}>
                         {/* Hide status bar on this screen */}
@@ -339,16 +339,6 @@ class AddTags extends Component {
                             </Animated.View>
                         )}
 
-                        {/* Black overlay */}
-                        {this.state.isOverlayDisplayed && (
-                            <GestureRecognizer
-                                onSwipeDown={state => {
-                                    this.props.toggleLitter();
-                                }}>
-                                <View style={styles.overlayStyle} />
-                            </GestureRecognizer>
-                        )}
-
                         <View
                             style={{
                                 position: 'absolute',
@@ -365,7 +355,9 @@ class AddTags extends Component {
                                 </Body>
                             </View>
                             <Pressable
-                                onPress={this.props.toggleLitter}
+                                onPress={() =>
+                                    this.props.navigation.navigate('HOME')
+                                }
                                 style={styles.closeButton}>
                                 <Icon
                                     name="ios-close-outline"
@@ -481,6 +473,7 @@ class AddTags extends Component {
                                         isKeyboardOpen={
                                             this.state.isKeyboardOpen
                                         }
+                                        navigation={this.props.navigation}
                                     />
                                     {!this.state.isKeyboardOpen && (
                                         <LitterPickerWheels
@@ -618,6 +611,7 @@ class AddTags extends Component {
                     key={image.id}
                     photoSelected={image}
                     swiperIndex={this.props.swiperIndex}
+                    navigation={this.props.navigation}
                     toggleFn={() => {
                         if (this.state.isCategoriesVisible) {
                             this.returnAnimation();
