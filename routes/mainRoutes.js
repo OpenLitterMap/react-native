@@ -7,7 +7,7 @@ import * as actions from '../actions';
 import AuthStack from './authRoutes';
 import TabRoutes from './tabRoutes';
 import PermissionStack from './permissionRoutes';
-import { SettingScreen, NewUpdateScreen } from '../screens';
+import { SettingScreen, NewUpdateScreen, GalleryScreen } from '../screens';
 // import AlbumList from '../screens/pages/library/AlbumList';
 import GalleryStack from './galleryRoutes';
 import AddTags from '../screens/addTag/AddTags';
@@ -85,7 +85,7 @@ class MainRoutes extends Component {
                             <Stack.Screen name="APP" component={TabRoutes} />
                             <Stack.Screen
                                 name="ALBUM"
-                                component={GalleryStack}
+                                component={GalleryScreen}
                             />
                             <Stack.Screen
                                 name="SETTING"

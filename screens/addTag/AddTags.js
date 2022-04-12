@@ -12,7 +12,7 @@ import {
     Pressable
 } from 'react-native';
 import Swiper from 'react-native-swiper';
-import GestureRecognizer from 'react-native-swipe-gestures';
+import { StackActions } from '@react-navigation/native';
 import { connect } from 'react-redux';
 import LottieView from 'lottie-react-native';
 import ActionSheet from 'react-native-actions-sheet';
@@ -240,14 +240,14 @@ class AddTags extends Component {
         } else {
             this.props.deleteImage(id);
         }
-
         // close delete confirmation action sheet
         // if last image is deleted close AddTags modal
         // else hide delete modal
         // swiper index is changed by onIndexChanged fn of Swiper
 
         if (currentIndex === length - 1) {
-            this.props.toggleLitter();
+            this.actionSheetRef.current?.hide();
+            this.props.navigation.dispatch(StackActions.popToTop());
         } else if (currentIndex < length - 1) {
             this.actionSheetRef.current?.hide();
         }

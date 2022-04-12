@@ -12,7 +12,6 @@ import {
 const INITIAL_STATE = {
     selected: 0,
     isSelecting: false,
-    litterVisible: false, // show LitterPicker
     modalVisible: false,
     thankYouVisible: false,
     uploadVisible: false,
@@ -28,15 +27,6 @@ export default function(state = INITIAL_STATE, action) {
 
             case CHECK_APP_VERSION:
                 draft.appVersion = action.payload;
-
-                break;
-
-            /**
-             * Toggle the modal and the litter (Add tags) component
-             */
-            case TOGGLE_LITTER:
-                draft.modalVisible = !draft.modalVisible;
-                draft.litterVisible = !draft.litterVisible;
 
                 break;
 

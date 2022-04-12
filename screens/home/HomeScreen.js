@@ -601,7 +601,6 @@ const mapStateToProps = state => {
         selected: state.images.selected,
         modalVisible: state.shared.modalVisible,
         model: state.settings.model,
-        litterVisible: state.shared.litterVisible,
         token: state.auth.token,
         thankYouVisible: state.shared.thankYouVisible,
         totalImagesToUpload: state.shared.totalImagesToUpload,

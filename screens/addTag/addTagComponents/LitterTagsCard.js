@@ -1,10 +1,5 @@
 import React, { Component } from 'react';
-import {
-    StyleSheet,
-    ScrollView,
-    View,
-    Dimensions
-} from 'react-native';
+import { StyleSheet, ScrollView, View, Dimensions } from 'react-native';
 import { Colors, Body, Caption } from '../../components';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -29,7 +24,7 @@ const LitterTagsCard = ({ tags, lang }) => {
     return (
         <>
             {/* Only show if atleast one tag is present */}
-            {Object?.keys(tags)?.length !== 0 && (
+            {tags && Object.keys(tags)?.length !== 0 && (
                 <View style={[styles.card]}>
                     <Caption>Tags</Caption>
 
