@@ -54,7 +54,6 @@ export const USER_FOUND = 'USER_FOUND';
 
 export const CHECK_APP_VERSION = 'CHECK_APP_VERSION';
 export const TOGGLE_MODAL = 'TOGGLE_MODAL';
-export const TOGGLE_LITTER = 'TOGGLE_LITTER';
 export const TOGGLE_THANK_YOU = 'TOGGLE_THANK_YOU';
 export const TOGGLE_UPLOAD = 'TOGGLE_UPLOAD';
 

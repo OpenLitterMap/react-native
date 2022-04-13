@@ -60,8 +60,7 @@ class LitterBottomSearch extends PureComponent {
         // litter_reducer
         this.props.resetLitterTags();
 
-        // shared_reducer
-        this.props.toggleLitter();
+        this.props.navigation.navigate('HOME');
     }
 
     /**

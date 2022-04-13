@@ -12,7 +12,7 @@ import {
     Pressable
 } from 'react-native';
 import Swiper from 'react-native-swiper';
-import GestureRecognizer from 'react-native-swipe-gestures';
+import { StackActions } from '@react-navigation/native';
 import { connect } from 'react-redux';
 import LottieView from 'lottie-react-native';
 import ActionSheet from 'react-native-actions-sheet';
@@ -240,14 +240,14 @@ class AddTags extends Component {
         } else {
             this.props.deleteImage(id);
         }
-
         // close delete confirmation action sheet
         // if last image is deleted close AddTags modal
         // else hide delete modal
         // swiper index is changed by onIndexChanged fn of Swiper
 
         if (currentIndex === length - 1) {
-            this.props.toggleLitter();
+            this.actionSheetRef.current?.hide();
+            this.props.navigation.dispatch(StackActions.popToTop());
         } else if (currentIndex < length - 1) {
             this.actionSheetRef.current?.hide();
         }
@@ -273,7 +273,7 @@ class AddTags extends Component {
             opacity: this.state.opacityAnimation
         };
         return (
-            <View>
+            <View style={{ flex: 1 }}>
                 <View style={{ flex: 1 }}>
                     <View style={styles.container}>
                         {/* Hide status bar on this screen */}
@@ -339,16 +339,6 @@ class AddTags extends Component {
                             </Animated.View>
                         )}
 
-                        {/* Black overlay */}
-                        {this.state.isOverlayDisplayed && (
-                            <GestureRecognizer
-                                onSwipeDown={state => {
-                                    this.props.toggleLitter();
-                                }}>
-                                <View style={styles.overlayStyle} />
-                            </GestureRecognizer>
-                        )}
-
                         <View
                             style={{
                                 position: 'absolute',
@@ -365,7 +355,9 @@ class AddTags extends Component {
                                 </Body>
                             </View>
                             <Pressable
-                                onPress={this.props.toggleLitter}
+                                onPress={() =>
+                                    this.props.navigation.navigate('HOME')
+                                }
                                 style={styles.closeButton}>
                                 <Icon
                                     name="ios-close-outline"
@@ -481,6 +473,7 @@ class AddTags extends Component {
                                         isKeyboardOpen={
                                             this.state.isKeyboardOpen
                                         }
+                                        navigation={this.props.navigation}
                                     />
                                     {!this.state.isKeyboardOpen && (
                                         <LitterPickerWheels
@@ -618,6 +611,7 @@ class AddTags extends Component {
                     key={image.id}
                     photoSelected={image}
                     swiperIndex={this.props.swiperIndex}
+                    navigation={this.props.navigation}
                     toggleFn={() => {
                         if (this.state.isCategoriesVisible) {
                             this.returnAnimation();
