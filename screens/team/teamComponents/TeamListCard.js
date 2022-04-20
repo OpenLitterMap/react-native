@@ -36,12 +36,12 @@ const styles = StyleSheet.create({
         height: 60,
         flexDirection: 'row',
         justifyContent: 'space-between',
-        alignItems: 'center'
+        alignItems: 'center',
+        marginTop: 10
     },
     titleRow: {
         flexDirection: 'row',
-        flexShrink: 1,
-        alignItems: 'center'
+        flexShrink: 1
     },
     alignRight: {
         textAlign: 'right'
