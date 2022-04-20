@@ -10,7 +10,7 @@ import { Header, Colors, Body, Title, SubTitle } from '../components';
 import * as actions from '../../actions';
 import { connect } from 'react-redux';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { MemberCard } from './teamComponents';
+import { MemberCard, TeamTitle } from './teamComponents';
 
 class TeamLeaderboardScreen extends Component {
     constructor(props) {
@@ -61,9 +61,10 @@ class TeamLeaderboardScreen extends Component {
                     centerContainerStyle={{ flex: 2 }}
                 />
                 <View style={styles.container}>
-                    <Title style={{ textAlign: 'center' }}>
-                        {selectedTeam.identifier}
-                    </Title>
+                    <TeamTitle
+                        teamName={selectedTeam?.name}
+                        identifier={selectedTeam.identifier}
+                    />
                     <FlatList
                         contentContainerStyle={styles.flatListStyle}
                         alwaysBounceVertical={false}
@@ -106,6 +107,7 @@ const styles = StyleSheet.create({
     container: {
         backgroundColor: 'white',
         flex: 1,
+        paddingTop: 0,
         padding: 20
     },
     flatListStyle: {

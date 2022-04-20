@@ -4,24 +4,14 @@ import {
     ScrollView,
     View,
     Dimensions,
-    Pressable,
-    Animated,
-    Easing
+    Pressable
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import Clipboard from '@react-native-community/clipboard';
 import ActionSheet from 'react-native-actions-sheet';
-import {
-    Header,
-    Title,
-    Colors,
-    Body,
-    StatsGrid,
-    Button,
-    Caption
-} from '../components';
+import { Header, Colors, Body, StatsGrid, Button } from '../components';
 import * as actions from '../../actions';
 import { connect } from 'react-redux';
+import { TeamTitle } from './teamComponents';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 class TeamDetailsScreen extends Component {
@@ -30,7 +20,6 @@ class TeamDetailsScreen extends Component {
         this.actionSheetRef = createRef();
 
         this.state = {
-            opacityAnimation: new Animated.Value(0),
             isLoading: false
         };
     }
@@ -59,40 +48,7 @@ class TeamDetailsScreen extends Component {
         this.props.navigation.navigate('TEAM_HOME');
     };
 
-    /**
-     * copy team unique identifier to Clipboard
-     */
-    copyIdentifier = async () => {
-        Clipboard.setString(this.props.selectedTeam?.identifier);
-        this.opacityAnmiation();
-    };
-
-    /**
-     * opactity animations for Copied message
-     */
-    opacityAnmiation = async () => {
-        Animated.timing(this.state.opacityAnimation, {
-            toValue: 1,
-            duration: 500,
-            useNativeDriver: true,
-            easing: Easing.elastic(1)
-        }).start(this.returnOpacityAnmiation);
-    };
-
-    returnOpacityAnmiation = async () => {
-        Animated.timing(this.state.opacityAnimation, {
-            toValue: 0,
-            duration: 800,
-            useNativeDriver: true,
-            easing: Easing.elastic(1)
-        }).start();
-    };
-
     render() {
-        const opacityStyle = {
-            opacity: this.state.opacityAnimation
-        };
-
         const { lang, selectedTeam, user, token } = this.props;
         const isActiveTeam = user.active_team === selectedTeam?.id;
         const teamStats = [
@@ -136,27 +92,10 @@ class TeamDetailsScreen extends Component {
                 <ScrollView
                     style={styles.container}
                     alwaysBounceVertical={false}>
-                    <Pressable
-                        onPress={this.copyIdentifier}
-                        style={styles.titleContainer}>
-                        <Title>{selectedTeam?.name}</Title>
-                        <View style={{ flexDirection: 'row' }}>
-                            <Body color="accent" style={{ marginRight: 10 }}>
-                                {selectedTeam.identifier}
-                            </Body>
-                            <Icon
-                                name="ios-copy-outline"
-                                color={Colors.accent}
-                                size={18}
-                            />
-                        </View>
-                    </Pressable>
-                    {/* Copied message */}
-                    <Animated.View style={opacityStyle}>
-                        <Caption color="accent" style={{ textAlign: 'center' }}>
-                            Copied
-                        </Caption>
-                    </Animated.View>
+                    <TeamTitle
+                        teamName={selectedTeam?.name}
+                        identifier={selectedTeam.identifier}
+                    />
 
                     <StatsGrid statsData={teamStats} />
                     <View style={styles.buttonContainer}>
@@ -241,11 +180,6 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: 'white'
-    },
-    titleContainer: {
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginTop: 20
     },
     actionButtonStyle: {
         height: 48,
