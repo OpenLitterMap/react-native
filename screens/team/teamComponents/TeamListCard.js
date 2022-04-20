@@ -40,7 +40,8 @@ const styles = StyleSheet.create({
     },
     titleRow: {
         flexDirection: 'row',
-        flexShrink: 1
+        flexShrink: 1,
+        alignItems: 'center'
     },
     alignRight: {
         textAlign: 'right'
