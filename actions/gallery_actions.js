@@ -51,28 +51,22 @@ export const getPhotosFromCameraroll = (fetchType = 'INITIAL') => async (
     const timeParams = {
         first: 1000,
         toTime: Math.floor(new Date().getTime()),
-        // toTime: 1627819113000,
+
         fromTime: lastFetchTime,
-        // fromTime: 1626782313000
+        assetType: 'Photos',
         include: ['location', 'filename', 'fileSize', 'imageSize']
     };
     const initialParams = {
         // initially get first 40 images
         first: 40,
-        // toTime: 1627819113000,
-        // fromTime: 1626782313000
-        // groupTypes: 'SavedPhotos',
-        // assetType: 'Photos',
+        assetType: 'Photos',
         include: ['location', 'filename', 'fileSize', 'imageSize']
     };
 
     const loadParams = {
         first: 20,
         after: lastImageCursor,
-        // toTime: Math.floor(new Date().getTime()),
-        // toTime: 1627819113000,
-        // fromTime: lastFetchTime,
-        // fromTime: 1626782313000
+        assetType: 'Photos',
         include: ['location', 'filename', 'fileSize', 'imageSize']
     };
 

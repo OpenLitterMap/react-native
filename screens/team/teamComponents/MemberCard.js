@@ -6,7 +6,9 @@ import RankingMedal from './RankingMedal';
 
 const MemberCard = ({ data, teamId, index }) => {
     const isActiveTeam = teamId === data?.team?.id;
-    const lastActivity = moment(data?.pivot?.updated_at);
+    const lastActivity = data?.pivot?.updated_at
+        ? moment(data?.pivot?.updated_at).fromNow()
+        : '-';
     return (
         <View
             style={{
@@ -60,7 +62,7 @@ const MemberCard = ({ data, teamId, index }) => {
                         justifyContent: 'center',
                         alignItems: 'center'
                     }}>
-                    <Body>{lastActivity.fromNow()}</Body>
+                    <Body>{lastActivity}</Body>
                     <Caption>LAST ACTIVITY</Caption>
                 </View>
             </View>
