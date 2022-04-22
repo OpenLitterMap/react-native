@@ -3,6 +3,7 @@ import produce from 'immer';
 import {
     ADD_IMAGES,
     ADD_TAG_TO_IMAGE,
+    CHANGE_LITTER_STATUS,
     DECREMENT_SELECTED,
     DELETE_IMAGE,
     DELETE_SELECTED_IMAGES,
@@ -18,7 +19,8 @@ const INITIAL_STATE = {
     imagesArray: [],
     isSelecting: false,
     selected: 0,
-    selectedImages: []
+    selectedImages: [],
+    previousTags: []
 };
 
 export default function(state = INITIAL_STATE, action) {
@@ -119,6 +121,49 @@ export default function(state = INITIAL_STATE, action) {
                     };
                 }
 
+                // check if tag already exist in prev tags array
+                const prevImgIndex = draft.previousTags.findIndex(
+                    tag => tag.key === payloadTitle
+                );
+
+                // if tag doesn't exist add tag to array
+                // if length < 10 then add at the start of array
+                // else remove the last element and add new tag to the start of array
+
+                // if item in array remove it and add to the start of array
+
+                if (prevImgIndex === -1) {
+                    if (draft.previousTags.length <= 10) {
+                        draft.previousTags.unshift({
+                            category: payloadCategory,
+                            key: payloadTitle
+                        });
+                    } else {
+                        draft.previousTags.pop();
+                        draft.previousTags.unshift({
+                            category: payloadCategory,
+                            key: payloadTitle
+                        });
+                    }
+                } else {
+                    draft.previousTags.splice(prevImgIndex, 1);
+                    draft.previousTags.unshift({
+                        category: payloadCategory,
+                        key: payloadTitle
+                    });
+                }
+                // draft.previousTags = [];
+                break;
+
+            /**
+             * Changes litter picked up status of all images
+             * to payload
+             *
+             * action.payload -- {boolean}
+             */
+            case CHANGE_LITTER_STATUS:
+                draft.imagesArray.map(img => (img.picked_up = action.payload));
+
                 break;
 
             /**
@@ -135,9 +180,11 @@ export default function(state = INITIAL_STATE, action) {
 
             case DELETE_IMAGE:
                 const index = draft.imagesArray.findIndex(
-                    image => image.id === action.payload
+                    delImg => delImg.id === action.payload
                 );
-                if (index !== -1) draft.imagesArray.splice(index, 1);
+                if (index !== -1) {
+                    draft.imagesArray.splice(index, 1);
+                }
 
                 break;
 
@@ -147,7 +194,7 @@ export default function(state = INITIAL_STATE, action) {
 
             case DELETE_SELECTED_IMAGES:
                 draft.imagesArray = draft.imagesArray.filter(
-                    image => !image.selected
+                    img => !img.selected
                 );
                 draft.selected = 0;
 

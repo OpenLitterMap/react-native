@@ -2,6 +2,7 @@ import React from 'react';
 import CameraRoll from '@react-native-community/cameraroll';
 
 import { ADD_GEOTAGGED_IMAGES, TOGGLE_IMAGES_LOADING } from './types';
+import { isGeotagged } from '../utils/isGeotagged';
 
 /**
  * get photos from camera roll
@@ -16,21 +17,29 @@ import { ADD_GEOTAGGED_IMAGES, TOGGLE_IMAGES_LOADING } from './types';
  * next fetch - Album screen or Home screen
  * if lastFetch !== null fetch images between lastFetch and Date.now()
  *
+ * @param {string} - fetchType --> "INITIAL" | "TIME" | "LOAD"
+ * "INITIAL" -> first load
+ * "TIME" -> images added to cameraroll/phone gallery after initial load
+ * "LOAD" -> loads more images on scroll after initial load
  */
 
-export const getPhotosFromCameraroll = () => async (dispatch, getState) => {
+export const getPhotosFromCameraroll = (fetchType = 'INITIAL') => async (
+    dispatch,
+    getState
+) => {
     const {
         geotaggedImages,
         camerarollImageFetched,
         lastFetchTime,
-        imagesLoading
+        imagesLoading,
+        isNextPageAvailable,
+        lastImageCursor
     } = getState().gallery;
     const { user } = getState().auth;
 
     let id = geotaggedImages.length;
 
     let camerarollData;
-    let fetchType = 'INITIAL';
 
     if (imagesLoading) {
         return;
@@ -42,40 +51,57 @@ export const getPhotosFromCameraroll = () => async (dispatch, getState) => {
     const timeParams = {
         first: 1000,
         toTime: Math.floor(new Date().getTime()),
-        // toTime: 1627819113000,
+
         fromTime: lastFetchTime,
-        // fromTime: 1626782313000
+        assetType: 'Photos',
         include: ['location', 'filename', 'fileSize', 'imageSize']
     };
     const initialParams = {
-        // initially get first 100 images
-        first: 1000,
-        // toTime: 1627819113000,
-        // fromTime: 1626782313000
-        // groupTypes: 'SavedPhotos',
-        // assetType: 'Photos',
+        // initially get first 40 images
+        first: 40,
+        assetType: 'Photos',
         include: ['location', 'filename', 'fileSize', 'imageSize']
     };
+
+    const loadParams = {
+        first: 20,
+        after: lastImageCursor,
+        assetType: 'Photos',
+        include: ['location', 'filename', 'fileSize', 'imageSize']
+    };
+
     if (
-        geotaggedImages?.length === 0 &&
-        camerarollImageFetched === false &&
-        lastFetchTime === null
+        fetchType === 'LOAD' &&
+        isNextPageAvailable &&
+        lastImageCursor !== null
     ) {
-        camerarollData = await CameraRoll.getPhotos(initialParams);
-        fetchType = 'INITIAL';
-    }
-    if (lastFetchTime !== null) {
-        camerarollData = await CameraRoll.getPhotos(timeParams);
-        fetchType = 'TIME';
+        camerarollData = await CameraRoll.getPhotos(loadParams);
+    } else {
+        if (
+            geotaggedImages?.length === 0 &&
+            camerarollImageFetched === false &&
+            lastFetchTime === null
+        ) {
+            camerarollData = await CameraRoll.getPhotos(initialParams);
+            fetchType = 'INITIAL';
+        }
+        if (lastFetchTime !== null) {
+            camerarollData = await CameraRoll.getPhotos(timeParams);
+            fetchType = 'TIME';
+        }
     }
 
     if (camerarollData) {
         const imagesArray = camerarollData.edges;
+        const {
+            has_next_page: hasNextPage,
+            end_cursor: endCursor
+        } = camerarollData.page_info;
         let geotagged = [];
-
         imagesArray.map(item => {
             id++;
 
+            let coordinates = {};
             if (
                 item.node?.location !== undefined &&
                 item.node?.location !== null &&
@@ -84,26 +110,31 @@ export const getPhotosFromCameraroll = () => async (dispatch, getState) => {
                 item.node?.location?.latitude !== undefined &&
                 item.node?.location?.latitude !== null
             ) {
-                geotagged.push({
-                    id,
-                    filename: item.node.image.filename, // this will get hashed on the backend
-                    uri: item.node.image.uri,
-                    size: item.node.image.fileSize,
-                    height: item.node.image.height,
-                    width: item.node.image.width,
-                    lat: item.node.location.latitude,
-                    lon: item.node.location.longitude,
-                    date: item.node.timestamp, // date -> unix/epoch timestamp
-                    selected: false,
-                    tags: {},
-                    type: 'gallery'
-                });
+                coordinates = {
+                    lat: item.node.location?.latitude,
+                    lon: item.node.location?.longitude
+                };
             }
+            geotagged.push({
+                id,
+                filename: item.node.image.filename, // this will get hashed on the backend
+                uri: item.node.image.uri,
+                size: item.node.image.fileSize,
+                height: item.node.image.height,
+                width: item.node.image.width,
+                date: item.node.timestamp, // date -> unix/epoch timestamp
+                selected: false,
+                // lat: item.node.location?.latitude,
+                // lon: item.node.location?.longitude,
+                tags: {},
+                type: 'gallery',
+                ...coordinates
+            });
         });
 
         dispatch({
             type: ADD_GEOTAGGED_IMAGES,
-            payload: { geotagged, fetchType }
+            payload: { geotagged, fetchType, hasNextPage, endCursor }
         });
     }
 };

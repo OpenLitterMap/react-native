@@ -1,24 +1,28 @@
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, Dimensions } from 'react-native';
 import PropTypes from 'prop-types';
 import Icon from 'react-native-vector-icons/Ionicons';
 
 import IconStatsCard from './IconStatsCard';
 
-const StatsGrid = ({ statsData }) => {
+const { width } = Dimensions.get('window');
+
+const StatsGrid = ({ statsData, style }) => {
     // console.log(statsData);
     return (
         <View style={styles.statsContainer}>
-            <View style={styles.statsRow}>
+            <View style={[styles.statsRow, style]}>
                 {statsData.map(stat => (
                     <IconStatsCard
                         key={`${stat.title}`}
                         imageContent={
-                            <Icon
-                                name={stat.icon}
-                                size={36}
-                                color={stat.color}
-                            />
+                            stat.icon && (
+                                <Icon
+                                    name={stat.icon}
+                                    size={28}
+                                    color={stat.color}
+                                />
+                            )
                         }
                         value={stat.value}
                         startValue={stat.startValue}
@@ -27,6 +31,7 @@ const StatsGrid = ({ statsData }) => {
                         backgroundColor={stat.bgColor}
                         fontColor={stat.color}
                         ordinal={stat.ordinal}
+                        width={width / 2 - 30}
                     />
                 ))}
             </View>
@@ -52,11 +57,11 @@ export default StatsGrid;
 
 const styles = StyleSheet.create({
     statsContainer: {
-        marginTop: 20,
+        // marginTop: 20,
         padding: 10
     },
     statsRow: {
-        justifyContent: 'space-between',
+        justifyContent: 'center',
         flexDirection: 'row',
         flexWrap: 'wrap'
     }

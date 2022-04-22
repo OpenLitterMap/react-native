@@ -1,51 +1,55 @@
-import React, { PureComponent, createRef } from 'react';
+import React, { Component, createRef } from 'react';
 import {
     Dimensions,
     Keyboard,
     Platform,
-    SafeAreaView,
     StatusBar,
     TouchableOpacity,
     View,
-    Text,
     Animated,
     Easing,
     StyleSheet,
     Pressable
 } from 'react-native';
-
 import Swiper from 'react-native-swiper';
+import { StackActions } from '@react-navigation/native';
 import { connect } from 'react-redux';
 import LottieView from 'lottie-react-native';
 import ActionSheet from 'react-native-actions-sheet';
 import * as actions from '../../actions';
 import CATEGORIES from '../../assets/data/categories';
-import LitterCategories from './components/LitterCategories';
-import LitterImage from './components/LitterImage';
-import LitterPickerWheels from './components/LitterPickerWheels';
-import LitterTags from './components/LitterTags';
-import LitterBottomSearch from './components/LitterBottomSearch';
-import TagsActionButton from './components/TagsActionButton';
+import {
+    LitterCategories,
+    LitterImage,
+    LitterPickerWheels,
+    LitterTags,
+    LitterBottomSearch,
+    TagsActionButton,
+    LitterTagsCard
+} from './addTagComponents';
 import { SubTitle, Colors, Body, Caption } from '../components';
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 
-import LITTERKEYS from '../../assets/data/litterkeys';
 import Icon from 'react-native-vector-icons/Ionicons';
 
-class AddTags extends PureComponent {
+const AnimatedSwiper = Animated.createAnimatedComponent(Swiper);
+class AddTags extends Component {
     constructor(props) {
         super(props);
 
         this.state = {
             categoryAnimation: new Animated.Value(100),
-            sheetAnmiation: new Animated.Value(0),
-            isCategoriesVisible: false,
+            sheetAnimation: new Animated.Value(0),
+            opacityAnimation: new Animated.Value(1),
+            isCategoriesVisible: true,
             isKeyboardOpen: false,
             keyboardHeight: 0,
-            isOverlayDisplayed: false
+            isOverlayDisplayed: false,
+            animation: new Animated.Value(0)
         };
         this.actionSheetRef = createRef();
+        this.swiper = createRef();
     }
 
     /**
@@ -70,6 +74,9 @@ class AddTags extends PureComponent {
                 this.startAnimation(-400);
             }
         );
+
+        // initially open tagging contaner
+        this.openTaggingContainer();
     }
 
     /**
@@ -115,7 +122,7 @@ class AddTags extends PureComponent {
         // TODO: need testing on other andrid devices
 
         Platform.OS === 'ios' &&
-            Animated.timing(this.state.sheetAnmiation, {
+            Animated.timing(this.state.sheetAnimation, {
                 toValue: sheetValue,
                 duration: 500,
                 useNativeDriver: true,
@@ -141,7 +148,7 @@ class AddTags extends PureComponent {
             useNativeDriver: true,
             easing: Easing.elastic(1)
         }).start();
-        Animated.timing(this.state.sheetAnmiation, {
+        Animated.timing(this.state.sheetAnimation, {
             toValue: sheetToValue,
             duration: 500,
             useNativeDriver: true,
@@ -164,12 +171,41 @@ class AddTags extends PureComponent {
                 isCategoriesVisible: false
             });
         });
-        Animated.timing(this.state.sheetAnmiation, {
+        Animated.timing(this.state.sheetAnimation, {
             toValue: 100,
             duration: 500,
             useNativeDriver: true,
             easing: Easing.elastic(1)
         }).start();
+    };
+
+    opacityAnmiation = async () => {
+        Animated.timing(this.state.opacityAnimation, {
+            toValue: 0,
+            duration: 500,
+            useNativeDriver: true,
+            easing: Easing.elastic(1)
+        }).start();
+    };
+
+    returnOpacityAnmiation = async () => {
+        Animated.timing(this.state.opacityAnimation, {
+            toValue: 1,
+            duration: 500,
+            useNativeDriver: true,
+            easing: Easing.elastic(1)
+        }).start();
+    };
+
+    /**
+     * fn to open tagging containers with animation
+     */
+
+    openTaggingContainer = () => {
+        this.startAnimation(-400);
+        this.setState({
+            isCategoriesVisible: true
+        });
     };
 
     /** function for deleting image
@@ -178,6 +214,8 @@ class AddTags extends PureComponent {
      *  else delete from state by id
      */
     deleteImage = async () => {
+        // length of all images in state
+        const length = this.props.images.length;
         const currentIndex = this.props.swiperIndex;
 
         const { id, type } = this.props.images[currentIndex];
@@ -185,19 +223,20 @@ class AddTags extends PureComponent {
         if (type === 'WEB') {
             const photoId = this.props.images[currentIndex].photoId;
 
-            await this.props.deleteWebImage(this.props.token, photoId, id);
+            this.props.deleteWebImage(this.props.token, photoId, id);
         } else {
             this.props.deleteImage(id);
         }
-
         // close delete confirmation action sheet
+        // if last image is deleted close AddTags modal
+        // else hide delete modal
+        // swiper index is changed by onIndexChanged fn of Swiper
 
-        if (currentIndex === 0) {
-            // this.props.resetLitterTags();
-            this.props.toggleLitter();
-        } else {
+        if (currentIndex === length - 1) {
             this.actionSheetRef.current?.hide();
-            this.props.swiperIndexChanged(currentIndex - 1);
+            this.props.navigation.dispatch(StackActions.popToTop());
+        } else if (currentIndex < length - 1) {
+            this.actionSheetRef.current?.hide();
         }
     };
 
@@ -205,24 +244,33 @@ class AddTags extends PureComponent {
      * The LitterPicker component
      */
     render() {
-        const { lang, swiperIndex } = this.props;
+        const { lang } = this.props;
 
         const categoryAnimatedStyle = {
             transform: [{ translateY: this.state.categoryAnimation }]
         };
         const sheetAnimatedStyle = {
-            transform: [{ translateY: this.state.sheetAnmiation }]
+            transform: [{ translateY: this.state.sheetAnimation }]
+        };
+        const animatedStyle = {
+            transform: [{ translateY: this.state.animation }]
         };
 
+        const opacityStyle = {
+            opacity: this.state.opacityAnimation
+        };
         return (
-            <View>
+            <View style={{ flex: 1 }}>
                 <View style={{ flex: 1 }}>
                     <View style={styles.container}>
                         {/* Hide status bar on this screen */}
                         <StatusBar hidden />
 
                         {/* Images swiper  */}
-                        <Swiper
+
+                        <AnimatedSwiper
+                            style={[animatedStyle]}
+                            ref={this.swiper}
                             showsButtons={
                                 this.state.isCategoriesVisible ? false : true
                             }
@@ -244,18 +292,17 @@ class AddTags extends PureComponent {
                                     />
                                 </View>
                             }
-                            index={swiperIndex}
+                            index={this.props.swiperIndex}
                             loop={false}
                             loadMinimal //
                             loadMinimalSize={2} // loads only 2 images at a time
                             showsPagination={false}
                             keyboardShouldPersistTaps="handled"
-                            ref="imageSwiper"
-                            onIndexChanged={index =>
-                                this.swiperIndexChanged(index)
-                            }>
+                            onIndexChanged={index => {
+                                this.swiperIndexChanged(index);
+                            }}>
                             {this._renderLitterImage()}
-                        </Swiper>
+                        </AnimatedSwiper>
 
                         {/* Category component -- show only if add tag button is clicked
                         hidden when backdrop is pressed
@@ -266,10 +313,10 @@ class AddTags extends PureComponent {
                                     {
                                         position: 'absolute',
                                         top: -150,
-                                        left: 20,
                                         zIndex: 2
                                     },
-                                    categoryAnimatedStyle
+                                    categoryAnimatedStyle,
+                                    opacityStyle
                                 ]}>
                                 <LitterCategories
                                     categories={CATEGORIES}
@@ -279,95 +326,107 @@ class AddTags extends PureComponent {
                             </Animated.View>
                         )}
 
-                        {/* Black overlay */}
-                        {this.state.isOverlayDisplayed && (
-                            <View
-                                style={{
-                                    position: 'absolute',
-                                    flex: 1,
-                                    backgroundColor: 'black',
-                                    opacity: 0.4,
-                                    width: SCREEN_WIDTH,
-                                    height: SCREEN_HEIGHT
-                                }}
-                            />
-                        )}
-                        {this.state.isOverlayDisplayed && (
-                            <View
-                                style={{
-                                    position: 'absolute',
-                                    backgroundColor: Colors.white,
-                                    width: SCREEN_WIDTH - 40,
-                                    marginLeft: 20,
-                                    top: 100,
-                                    borderRadius: 12,
-                                    padding: 20
-                                }}>
-                                <Caption
-                                    dictionary={`${lang}.tag.litter-status`}
+                        <View
+                            style={{
+                                position: 'absolute',
+                                top: 20,
+                                left: 20,
+                                flexDirection: 'row',
+                                justifyContent: 'space-between',
+                                width: SCREEN_WIDTH - 40
+                            }}>
+                            <View style={styles.indexStyle}>
+                                <Body color="text">
+                                    {this.props.swiperIndex + 1}/
+                                    {this.props.images.length}
+                                </Body>
+                            </View>
+                            <Pressable
+                                onPress={() =>
+                                    this.props.navigation.navigate('HOME')
+                                }
+                                style={styles.closeButton}>
+                                <Icon
+                                    name="ios-close-outline"
+                                    color="black"
+                                    size={32}
                                 />
-                                {this.props.images[this.props.swiperIndex]
-                                    ?.picked_up ? (
-                                    <Body
-                                        color="accent"
-                                        dictionary={`${lang}.tag.picked-thumb`}
+                            </Pressable>
+                        </View>
+
+                        {this.state.isOverlayDisplayed && (
+                            <View
+                                style={{
+                                    position: 'absolute',
+                                    marginLeft: 20,
+                                    top: 70
+                                }}>
+                                {/* Shows the status of litter if "picked up" or not */}
+                                <View style={styles.statusCard}>
+                                    <Caption
+                                        dictionary={`${lang}.tag.litter-status`}
                                     />
-                                ) : (
-                                    <Body
-                                        color="error"
-                                        dictionary={`${lang}.tag.not-picked-thumb`}
-                                    />
-                                )}
+                                    {this.props.images[this.props.swiperIndex]
+                                        ?.picked_up ? (
+                                        <Body
+                                            color="accent"
+                                            dictionary={`${lang}.tag.picked-thumb`}
+                                        />
+                                    ) : (
+                                        <Body
+                                            color="error"
+                                            dictionary={`${lang}.tag.not-picked-thumb`}
+                                        />
+                                    )}
+                                </View>
+                                {/* Shows the list of tags */}
+                                <LitterTagsCard
+                                    tags={
+                                        this.props.images[
+                                            this.props.swiperIndex
+                                        ]?.tags
+                                    }
+                                    lang={this.props.lang}
+                                />
                             </View>
                         )}
 
-                        {/* Floating action button */}
-                        <TagsActionButton
-                            pickedUpStatus={
-                                this.props.images[this.props.swiperIndex]
-                                    ?.picked_up
-                            }
-                            openTagSheet={() => {
-                                if (this.state.isCategoriesVisible) {
-                                    this.returnAnimation();
-                                } else {
-                                    this.startAnimation(-400);
-                                    this.setState({
-                                        isCategoriesVisible: true
-                                    });
-                                }
-                            }}
-                            toggleOverlay={() => {
-                                this.setState(previousState => ({
-                                    isOverlayDisplayed: !previousState.isOverlayDisplayed
-                                }));
-                            }}
-                            verticalButtonPress={
-                                this.actionSheetRef.current?.setModalVisible
-                            }
-                            horizontalButtonPress={() =>
-                                this.props.togglePickedUp(
+                        {/* Floating action button
+                         // shows only when Tags action sheet is not open
+                        */}
+                        {!this.state.isCategoriesVisible && (
+                            <TagsActionButton
+                                pickedUpStatus={
                                     this.props.images[this.props.swiperIndex]
-                                        ?.id
-                                )
-                            }
-                        />
+                                        ?.picked_up
+                                }
+                                openTagSheet={this.openTaggingContainer}
+                                toggleOverlay={() => {
+                                    this.setState(previousState => ({
+                                        isOverlayDisplayed: !previousState.isOverlayDisplayed
+                                    }));
+                                }}
+                                verticalButtonPress={() => {
+                                    this.actionSheetRef.current?.setModalVisible();
+                                }}
+                                horizontalButtonPress={() =>
+                                    this.props.togglePickedUp(
+                                        this.props.images[
+                                            this.props.swiperIndex
+                                        ]?.id
+                                    )
+                                }
+                            />
+                        )}
 
                         {/* Bottom action sheet with Tags picker and add tags section */}
 
                         {this.state.isCategoriesVisible && (
                             <Animated.View
                                 style={[
-                                    {
-                                        backgroundColor: 'white',
-                                        position: 'absolute',
-                                        bottom: -400,
-                                        left: 0,
-                                        paddingVertical: 20,
-                                        borderTopLeftRadius: 8,
-                                        borderTopRightRadius: 8
-                                    },
-                                    sheetAnimatedStyle
+                                    styles.bottomSheet,
+                                    sheetAnimatedStyle,
+                                    opacityStyle
                                 ]}>
                                 <View
                                     style={{
@@ -392,6 +451,7 @@ class AddTags extends PureComponent {
                                         isKeyboardOpen={
                                             this.state.isKeyboardOpen
                                         }
+                                        navigation={this.props.navigation}
                                     />
                                     {!this.state.isKeyboardOpen && (
                                         <LitterPickerWheels
@@ -403,14 +463,16 @@ class AddTags extends PureComponent {
                                         />
                                     )}
                                     {!this.state.isKeyboardOpen && (
-                                        <TouchableOpacity
-                                            onPress={() => this.addTag()}
-                                            style={styles.buttonStyle}>
-                                            <SubTitle
-                                                color="white"
-                                                dictionary={`${lang}.tag.add-tag`}
-                                            />
-                                        </TouchableOpacity>
+                                        <View style={{ flexDirection: 'row' }}>
+                                            <TouchableOpacity
+                                                onPress={() => this.addTag()}
+                                                style={styles.buttonStyle}>
+                                                <SubTitle
+                                                    color="white"
+                                                    dictionary={`${lang}.tag.add-tag`}
+                                                />
+                                            </TouchableOpacity>
+                                        </View>
                                     )}
                                 </View>
                             </Animated.View>
@@ -489,11 +551,12 @@ class AddTags extends PureComponent {
         return this.props.images.map((image, index) => {
             return (
                 <LitterImage
+                    key={image.id}
                     category={this.props.category}
                     lang={this.props.lang}
-                    key={image.id}
                     photoSelected={image}
                     swiperIndex={this.props.swiperIndex}
+                    navigation={this.props.navigation}
                     toggleFn={() => {
                         if (this.state.isCategoriesVisible) {
                             this.returnAnimation();
@@ -508,14 +571,21 @@ class AddTags extends PureComponent {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: 'white'
+        backgroundColor: 'black'
+    },
+    statusCard: {
+        backgroundColor: Colors.white,
+        width: SCREEN_WIDTH - 40,
+        borderRadius: 12,
+        padding: 20,
+        marginBottom: 20
     },
     buttonStyle: {
         height: 56,
-        width: SCREEN_WIDTH - 40,
+        flex: 1,
         backgroundColor: Colors.accent,
-        marginBottom: 40,
-        marginLeft: 20,
+        marginBottom: Platform.OS === 'ios' ? 40 : 0,
+        marginHorizontal: 20,
         justifyContent: 'center',
         alignItems: 'center',
         borderRadius: 12
@@ -535,6 +605,40 @@ const styles = StyleSheet.create({
         paddingVertical: 12,
         justifyContent: 'center',
         alignItems: 'center'
+    },
+    overlayStyle: {
+        position: 'absolute',
+        flex: 1,
+        backgroundColor: 'red',
+        opacity: 0.4,
+        width: SCREEN_WIDTH,
+        height: SCREEN_HEIGHT
+    },
+    indexStyle: {
+        minWidth: 80,
+        paddingHorizontal: 20,
+        height: 40,
+        backgroundColor: 'rgba(255, 255, 255, 1)',
+        borderRadius: 100,
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
+    closeButton: {
+        width: 40,
+        height: 40,
+        backgroundColor: 'white',
+        borderRadius: 100,
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
+    bottomSheet: {
+        // backgroundColor: 'white',
+        position: 'absolute',
+        bottom: -400,
+        left: 0,
+        paddingVertical: 20,
+        borderTopLeftRadius: 8,
+        borderTopRightRadius: 8
     }
 });
 

@@ -3,7 +3,6 @@ import {
     CHECK_APP_VERSION,
     DECREMENT_SELECTED,
     INCREMENT_SELECTED,
-    TOGGLE_LITTER,
     TOGGLE_SELECTING,
     TOGGLE_THANK_YOU,
     TOGGLE_UPLOAD,
@@ -17,7 +16,7 @@ import axios from 'axios';
  */
 
 export const checkAppVersion = () => {
-    return async (dispatch) => {
+    return async dispatch => {
         try {
             const response = await axios({
                 url: URL + '/api/mobile-app-version',
@@ -35,15 +34,6 @@ export const checkAppVersion = () => {
         } catch (error) {
             console.log('appversion check ' + error);
         }
-    };
-};
-
-/**
- * Toggle Litter content inside Modal on / off
- */
-export const toggleLitter = () => {
-    return {
-        type: TOGGLE_LITTER
     };
 };
 
