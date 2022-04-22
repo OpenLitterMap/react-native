@@ -42,7 +42,7 @@ class AddTags extends Component {
             categoryAnimation: new Animated.Value(100),
             sheetAnimation: new Animated.Value(0),
             opacityAnimation: new Animated.Value(1),
-            isCategoriesVisible: false,
+            isCategoriesVisible: true,
             isKeyboardOpen: false,
             keyboardHeight: 0,
             isOverlayDisplayed: false,
@@ -74,6 +74,9 @@ class AddTags extends Component {
                 this.startAnimation(-400);
             }
         );
+
+        // initially open tagging contaner
+        this.openTaggingContainer();
     }
 
     /**
@@ -192,6 +195,17 @@ class AddTags extends Component {
             useNativeDriver: true,
             easing: Easing.elastic(1)
         }).start();
+    };
+
+    /**
+     * fn to open tagging containers with animation
+     */
+
+    openTaggingContainer = () => {
+        this.startAnimation(-400);
+        this.setState({
+            isCategoriesVisible: true
+        });
     };
 
     /** function for deleting image
@@ -386,16 +400,7 @@ class AddTags extends Component {
                                     this.props.images[this.props.swiperIndex]
                                         ?.picked_up
                                 }
-                                openTagSheet={() => {
-                                    if (this.state.isCategoriesVisible) {
-                                        this.returnAnimation();
-                                    } else {
-                                        this.startAnimation(-400);
-                                        this.setState({
-                                            isCategoriesVisible: true
-                                        });
-                                    }
-                                }}
+                                openTagSheet={this.openTaggingContainer}
                                 toggleOverlay={() => {
                                     this.setState(previousState => ({
                                         isOverlayDisplayed: !previousState.isOverlayDisplayed
