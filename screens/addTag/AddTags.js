@@ -46,8 +46,7 @@ class AddTags extends Component {
             isKeyboardOpen: false,
             keyboardHeight: 0,
             isOverlayDisplayed: false,
-            animation: new Animated.Value(0),
-            imageViewPosition: 'TOP'
+            animation: new Animated.Value(0)
         };
         this.actionSheetRef = createRef();
         this.swiper = createRef();
@@ -154,32 +153,6 @@ class AddTags extends Component {
         }).start();
     };
 
-    imageAnimation = () => {
-        let toValue = -380;
-        // checking if image have tags
-        // if tags animate value to value -460
-        // else translate value to value -380
-        const tags = this.props.images[this.props.swiperIndex]?.tags;
-        if (tags !== undefined && Object.keys(tags).length !== 0) {
-            toValue = -460;
-        }
-
-        if (this.state.imageViewPosition === 'TOP') {
-            Animated.timing(this.state.animation, {
-                toValue,
-                duration: 500,
-                useNativeDriver: true,
-                easing: Easing.elastic(1)
-            }).start(() => this.setState({ imageViewPosition: 'BOTTOM' }));
-        } else {
-            Animated.timing(this.state.animation, {
-                toValue: 0,
-                duration: 500,
-                useNativeDriver: true,
-                easing: Easing.elastic(1)
-            }).start(() => this.setState({ imageViewPosition: 'TOP' }));
-        }
-    };
     /**
      * Fn for close animation
      * happen on backdrop click
@@ -494,39 +467,6 @@ class AddTags extends Component {
                                                     dictionary={`${lang}.tag.add-tag`}
                                                 />
                                             </TouchableOpacity>
-                                            <TouchableOpacity
-                                                onLongPress={() => {
-                                                    this.opacityAnmiation();
-                                                }}
-                                                onPress={() => {
-                                                    this.imageAnimation();
-                                                }}
-                                                onPressOut={() => {
-                                                    this.returnOpacityAnmiation();
-                                                }}
-                                                style={[
-                                                    styles.buttonStyle,
-                                                    {
-                                                        width:
-                                                            SCREEN_WIDTH * 0.25
-                                                    }
-                                                ]}>
-                                                {this.state
-                                                    .imageViewPosition ===
-                                                'TOP' ? (
-                                                    <Icon
-                                                        name="chevron-up-outline"
-                                                        size={32}
-                                                        color="white"
-                                                    />
-                                                ) : (
-                                                    <Icon
-                                                        name="chevron-down-outline"
-                                                        size={32}
-                                                        color="white"
-                                                    />
-                                                )}
-                                            </TouchableOpacity>
                                         </View>
                                     )}
                                 </View>
@@ -606,19 +546,15 @@ class AddTags extends Component {
         return this.props.images.map((image, index) => {
             return (
                 <LitterImage
+                    key={image.id}
                     category={this.props.category}
                     lang={this.props.lang}
-                    key={image.id}
                     photoSelected={image}
                     swiperIndex={this.props.swiperIndex}
                     navigation={this.props.navigation}
                     toggleFn={() => {
                         if (this.state.isCategoriesVisible) {
                             this.returnAnimation();
-                            // Move image to bottom position if Tags Sheet is closed
-                            // By clicking on the image
-                            this.state.imageViewPosition === 'BOTTOM' &&
-                                this.imageAnimation();
                         }
                     }}
                 />
@@ -641,10 +577,10 @@ const styles = StyleSheet.create({
     },
     buttonStyle: {
         height: 56,
-        width: SCREEN_WIDTH * 0.6,
+        flex: 1,
         backgroundColor: Colors.accent,
         marginBottom: Platform.OS === 'ios' ? 40 : 0,
-        marginLeft: 20,
+        marginHorizontal: 20,
         justifyContent: 'center',
         alignItems: 'center',
         borderRadius: 12
