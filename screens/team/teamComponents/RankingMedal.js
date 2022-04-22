@@ -44,5 +44,9 @@ const RankingMedal = ({ index }) => {
 export default RankingMedal;
 
 const styles = StyleSheet.create({
-    container: { height: 24, width: 24 }
+    container: {
+        height: 24,
+        width: 24,
+        alignSelf: 'center'
+    }
 });
