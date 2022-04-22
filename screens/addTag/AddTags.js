@@ -12,7 +12,7 @@ import {
     Pressable
 } from 'react-native';
 import Swiper from 'react-native-swiper';
-import GestureRecognizer from 'react-native-swipe-gestures';
+import { StackActions } from '@react-navigation/native';
 import { connect } from 'react-redux';
 import LottieView from 'lottie-react-native';
 import ActionSheet from 'react-native-actions-sheet';
@@ -42,12 +42,11 @@ class AddTags extends Component {
             categoryAnimation: new Animated.Value(100),
             sheetAnimation: new Animated.Value(0),
             opacityAnimation: new Animated.Value(1),
-            isCategoriesVisible: false,
+            isCategoriesVisible: true,
             isKeyboardOpen: false,
             keyboardHeight: 0,
             isOverlayDisplayed: false,
-            animation: new Animated.Value(0),
-            imageViewPosition: 'TOP'
+            animation: new Animated.Value(0)
         };
         this.actionSheetRef = createRef();
         this.swiper = createRef();
@@ -75,6 +74,9 @@ class AddTags extends Component {
                 this.startAnimation(-400);
             }
         );
+
+        // initially open tagging contaner
+        this.openTaggingContainer();
     }
 
     /**
@@ -154,32 +156,6 @@ class AddTags extends Component {
         }).start();
     };
 
-    imageAnimation = () => {
-        let toValue = -380;
-        // checking if image have tags
-        // if tags animate value to value -460
-        // else translate value to value -380
-        const tags = this.props.images[this.props.swiperIndex]?.tags;
-        if (tags !== undefined && Object.keys(tags).length !== 0) {
-            toValue = -460;
-        }
-
-        if (this.state.imageViewPosition === 'TOP') {
-            Animated.timing(this.state.animation, {
-                toValue,
-                duration: 500,
-                useNativeDriver: true,
-                easing: Easing.elastic(1)
-            }).start(() => this.setState({ imageViewPosition: 'BOTTOM' }));
-        } else {
-            Animated.timing(this.state.animation, {
-                toValue: 0,
-                duration: 500,
-                useNativeDriver: true,
-                easing: Easing.elastic(1)
-            }).start(() => this.setState({ imageViewPosition: 'TOP' }));
-        }
-    };
     /**
      * Fn for close animation
      * happen on backdrop click
@@ -221,6 +197,17 @@ class AddTags extends Component {
         }).start();
     };
 
+    /**
+     * fn to open tagging containers with animation
+     */
+
+    openTaggingContainer = () => {
+        this.startAnimation(-400);
+        this.setState({
+            isCategoriesVisible: true
+        });
+    };
+
     /** function for deleting image
      * currentIndex is current swiper index
      * if WEB image hit api and delete uploaded image and then delete from state
@@ -240,14 +227,14 @@ class AddTags extends Component {
         } else {
             this.props.deleteImage(id);
         }
-
         // close delete confirmation action sheet
         // if last image is deleted close AddTags modal
         // else hide delete modal
         // swiper index is changed by onIndexChanged fn of Swiper
 
         if (currentIndex === length - 1) {
-            this.props.toggleLitter();
+            this.actionSheetRef.current?.hide();
+            this.props.navigation.dispatch(StackActions.popToTop());
         } else if (currentIndex < length - 1) {
             this.actionSheetRef.current?.hide();
         }
@@ -273,7 +260,7 @@ class AddTags extends Component {
             opacity: this.state.opacityAnimation
         };
         return (
-            <View>
+            <View style={{ flex: 1 }}>
                 <View style={{ flex: 1 }}>
                     <View style={styles.container}>
                         {/* Hide status bar on this screen */}
@@ -339,16 +326,6 @@ class AddTags extends Component {
                             </Animated.View>
                         )}
 
-                        {/* Black overlay */}
-                        {this.state.isOverlayDisplayed && (
-                            <GestureRecognizer
-                                onSwipeDown={state => {
-                                    this.props.toggleLitter();
-                                }}>
-                                <View style={styles.overlayStyle} />
-                            </GestureRecognizer>
-                        )}
-
                         <View
                             style={{
                                 position: 'absolute',
@@ -365,7 +342,9 @@ class AddTags extends Component {
                                 </Body>
                             </View>
                             <Pressable
-                                onPress={this.props.toggleLitter}
+                                onPress={() =>
+                                    this.props.navigation.navigate('HOME')
+                                }
                                 style={styles.closeButton}>
                                 <Icon
                                     name="ios-close-outline"
@@ -421,16 +400,7 @@ class AddTags extends Component {
                                     this.props.images[this.props.swiperIndex]
                                         ?.picked_up
                                 }
-                                openTagSheet={() => {
-                                    if (this.state.isCategoriesVisible) {
-                                        this.returnAnimation();
-                                    } else {
-                                        this.startAnimation(-400);
-                                        this.setState({
-                                            isCategoriesVisible: true
-                                        });
-                                    }
-                                }}
+                                openTagSheet={this.openTaggingContainer}
                                 toggleOverlay={() => {
                                     this.setState(previousState => ({
                                         isOverlayDisplayed: !previousState.isOverlayDisplayed
@@ -481,6 +451,7 @@ class AddTags extends Component {
                                         isKeyboardOpen={
                                             this.state.isKeyboardOpen
                                         }
+                                        navigation={this.props.navigation}
                                     />
                                     {!this.state.isKeyboardOpen && (
                                         <LitterPickerWheels
@@ -500,39 +471,6 @@ class AddTags extends Component {
                                                     color="white"
                                                     dictionary={`${lang}.tag.add-tag`}
                                                 />
-                                            </TouchableOpacity>
-                                            <TouchableOpacity
-                                                onLongPress={() => {
-                                                    this.opacityAnmiation();
-                                                }}
-                                                onPress={() => {
-                                                    this.imageAnimation();
-                                                }}
-                                                onPressOut={() => {
-                                                    this.returnOpacityAnmiation();
-                                                }}
-                                                style={[
-                                                    styles.buttonStyle,
-                                                    {
-                                                        width:
-                                                            SCREEN_WIDTH * 0.25
-                                                    }
-                                                ]}>
-                                                {this.state
-                                                    .imageViewPosition ===
-                                                'TOP' ? (
-                                                    <Icon
-                                                        name="chevron-up-outline"
-                                                        size={32}
-                                                        color="white"
-                                                    />
-                                                ) : (
-                                                    <Icon
-                                                        name="chevron-down-outline"
-                                                        size={32}
-                                                        color="white"
-                                                    />
-                                                )}
                                             </TouchableOpacity>
                                         </View>
                                     )}
@@ -613,18 +551,15 @@ class AddTags extends Component {
         return this.props.images.map((image, index) => {
             return (
                 <LitterImage
+                    key={image.id}
                     category={this.props.category}
                     lang={this.props.lang}
-                    key={image.id}
                     photoSelected={image}
                     swiperIndex={this.props.swiperIndex}
+                    navigation={this.props.navigation}
                     toggleFn={() => {
                         if (this.state.isCategoriesVisible) {
                             this.returnAnimation();
-                            // Move image to bottom position if Tags Sheet is closed
-                            // By clicking on the image
-                            this.state.imageViewPosition === 'BOTTOM' &&
-                                this.imageAnimation();
                         }
                     }}
                 />
@@ -647,10 +582,10 @@ const styles = StyleSheet.create({
     },
     buttonStyle: {
         height: 56,
-        width: SCREEN_WIDTH * 0.6,
+        flex: 1,
         backgroundColor: Colors.accent,
         marginBottom: Platform.OS === 'ios' ? 40 : 0,
-        marginLeft: 20,
+        marginHorizontal: 20,
         justifyContent: 'center',
         alignItems: 'center',
         borderRadius: 12

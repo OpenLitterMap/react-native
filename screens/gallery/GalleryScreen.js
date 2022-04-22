@@ -21,6 +21,13 @@ import { checkCameraRollPermission } from '../../utils/permissions';
 
 const { width } = Dimensions.get('window');
 
+/**
+ * fn to check if arg date is "today", this "week", this "month"
+ * if older than current month but less than a year old then month number
+ * if older than current year then which year.
+ * @param {number} date - epoch date
+ *
+ */
 export const placeInTime = date => {
     let today = moment().startOf('day');
     let thisWeek = moment().startOf('week');
@@ -82,31 +89,46 @@ class GalleryScreen extends Component {
         }
     }
 
+    /**
+     * fn to split images array based on date groups which they belong
+     * date groups are determined by {@link placeInTime}
+     * groups are "today", this "week", this "month",
+     * month name (if older than current month but belongs to current year),
+     * year
+     * @param {Array} images
+     */
+
     async splitIntoRows(images) {
         let temp = {};
-        images.map(image => {
-            const dateOfImage = image.date * 1000;
-            const placeInTimeOfImage = placeInTime(dateOfImage);
+        // sort images based on date
+        const sortedImages = _.orderBy(images, ['date'], ['asc']);
 
+        sortedImages.map(image => {
+            const dateOfImage = image.date * 1000;
+
+            const placeInTimeOfImage = placeInTime(dateOfImage);
             if (temp[placeInTimeOfImage] === undefined) {
                 temp[placeInTimeOfImage] = [];
             }
-            temp[placeInTimeOfImage].push(image);
+            temp[placeInTimeOfImage].unshift(image);
         });
-
         let final = [];
         let order = ['today', 'week', 'month'];
+
         let allTimeTags = Object.keys(temp).map(prop => {
+            // converting temp object keys which are month numbers or years into number
             if (Number.isInteger(parseInt(prop))) {
                 return parseInt(prop);
             }
 
             return prop;
         });
+
         let allMonths = allTimeTags.filter(
             prop => Number.isInteger(prop) && prop < 12
         );
         allMonths = _.reverse(_.sortBy(allMonths));
+
         let allYears = allTimeTags.filter(
             prop => Number.isInteger(prop) && !allMonths.includes(prop)
         );

@@ -7,10 +7,10 @@ import * as actions from '../actions';
 import AuthStack from './authRoutes';
 import TabRoutes from './tabRoutes';
 import PermissionStack from './permissionRoutes';
-import { SettingScreen, NewUpdateScreen } from '../screens';
+import { SettingScreen, NewUpdateScreen, GalleryScreen } from '../screens';
 // import AlbumList from '../screens/pages/library/AlbumList';
 import GalleryStack from './galleryRoutes';
-
+import AddTags from '../screens/addTag/AddTags';
 const Stack = createStackNavigator();
 
 class MainRoutes extends Component {
@@ -74,6 +74,7 @@ class MainRoutes extends Component {
         } else {
             return (
                 <Stack.Navigator
+                    mode="modal"
                     screenOptions={{
                         headerShown: false
                     }}>
@@ -84,7 +85,7 @@ class MainRoutes extends Component {
                             <Stack.Screen name="APP" component={TabRoutes} />
                             <Stack.Screen
                                 name="ALBUM"
-                                component={GalleryStack}
+                                component={GalleryScreen}
                             />
                             <Stack.Screen
                                 name="SETTING"
@@ -98,7 +99,7 @@ class MainRoutes extends Component {
                                 name="UPDATE"
                                 component={NewUpdateScreen}
                             />
-                            {/* <Stack.Screen name="ADD_TAGS" component={AddTags} /> */}
+                            <Stack.Screen name="ADD_TAGS" component={AddTags} />
                         </>
                     )}
                 </Stack.Navigator>

@@ -76,7 +76,7 @@ class LitterImage extends PureComponent {
         return (
             <GestureRecognizer
                 onSwipeDown={state => {
-                    this.props.toggleLitter();
+                    this.props.navigation.navigate('HOME');
                 }}>
                 <PinchGestureHandler
                     onGestureEvent={this.onPinchGestureEvent}

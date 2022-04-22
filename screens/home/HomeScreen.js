@@ -154,13 +154,6 @@ class HomeScreen extends PureComponent {
                             </View>
                         )}
 
-                        {/* Tag Litter to Images */}
-                        {this.props.litterVisible && (
-                            <View style={styles.litterModal}>
-                                <AddTags />
-                            </View>
-                        )}
-
                         {/* Thank you modal */}
                         {this.props.thankYouVisible && (
                             <View style={styles.modal}>
@@ -608,7 +601,6 @@ const mapStateToProps = state => {
         selected: state.images.selected,
         modalVisible: state.shared.modalVisible,
         model: state.settings.model,
-        litterVisible: state.shared.litterVisible,
         token: state.auth.token,
         thankYouVisible: state.shared.thankYouVisible,
         totalImagesToUpload: state.shared.totalImagesToUpload,
