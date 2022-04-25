@@ -4,7 +4,7 @@ import { SECRET_CLIENT } from '@env';
 import { ID_CLIENT } from '@env';
 import { OLM_ENDPOINT } from '@env';
 
-export const IS_PRODUCTION = true; // change this when working locally to disable sentry
+export const IS_PRODUCTION = false; // change this when working locally to disable sentry
 
 export const CLIENT_ID = ID_CLIENT;
 export const CLIENT_SECRET = SECRET_CLIENT;
