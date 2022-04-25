@@ -50,6 +50,10 @@ class AddTags extends Component {
         };
         this.actionSheetRef = createRef();
         this.swiper = createRef();
+
+        // positions category and for tagging/bottom container
+        this.categoryContainerPosition = 300;
+        this.taggingContainerPosition = 400;
     }
 
     /**
@@ -63,20 +67,26 @@ class AddTags extends Component {
                     keyboardHeight: e.endCoordinates.height
                 });
 
-                // when keyboard opens animate sheet till the height of keyboard
-                this.keyboardStartAnimation(-this.state.keyboardHeight - 400);
+                // start keyboard animation
+                this.keyboardStartAnimation();
             }
         );
         this.keyboardDidHideSubscription = Keyboard.addListener(
             'keyboardDidHide',
             () => {
                 this.setState({ isKeyboardOpen: false, keyboardHeight: 0 });
-                this.startAnimation(-400);
+                this.startAnimation();
             }
         );
 
-        // initially open tagging contaner
-        this.openTaggingContainer();
+        // react navigation subscription to check if stack navigation animation transaction have ended
+        this.openModalTransitionSubscription = this.props.navigation.addListener(
+            'transitionEnd',
+            () => {
+                // initially open tagging contaner
+                this.openTaggingContainer();
+            }
+        );
     }
 
     /**
@@ -85,6 +95,7 @@ class AddTags extends Component {
     componentWillUnmount() {
         this.keyboardDidShowSubscription.remove();
         this.keyboardDidHideSubscription.remove();
+        this.openModalTransitionSubscription();
     }
 
     /**
@@ -117,13 +128,17 @@ class AddTags extends Component {
         this.props.changeQuantityStatus(false);
     }
 
-    keyboardStartAnimation = sheetValue => {
+    keyboardStartAnimation = () => {
         // Animate keyboard only for ios
         // TODO: need testing on other andrid devices
 
+        const sheetPosition = -(
+            this.state.keyboardHeight + this.taggingContainerPosition
+        );
+
         Platform.OS === 'ios' &&
             Animated.timing(this.state.sheetAnimation, {
-                toValue: sheetValue,
+                toValue: sheetPosition,
                 duration: 500,
                 useNativeDriver: true,
                 easing: Easing.elastic(1)
@@ -141,15 +156,16 @@ class AddTags extends Component {
      * animates categories from top
      * and Tags sheet with search box from bottom
      */
-    startAnimation = sheetToValue => {
+    startAnimation = () => {
         Animated.timing(this.state.categoryAnimation, {
-            toValue: 200,
+            // extra 50 for height of container
+            toValue: this.categoryContainerPosition + 50,
             duration: 500,
             useNativeDriver: true,
             easing: Easing.elastic(1)
         }).start();
         Animated.timing(this.state.sheetAnimation, {
-            toValue: sheetToValue,
+            toValue: -this.taggingContainerPosition,
             duration: 500,
             useNativeDriver: true,
             easing: Easing.elastic(1)
@@ -162,7 +178,7 @@ class AddTags extends Component {
      */
     returnAnimation = () => {
         Animated.timing(this.state.categoryAnimation, {
-            toValue: 0,
+            toValue: -this.categoryContainerPosition,
             duration: 500,
             useNativeDriver: true,
             easing: Easing.elastic(1)
@@ -202,7 +218,7 @@ class AddTags extends Component {
      */
 
     openTaggingContainer = () => {
-        this.startAnimation(-400);
+        this.startAnimation();
         this.setState({
             isCategoriesVisible: true
         });
@@ -312,7 +328,7 @@ class AddTags extends Component {
                                 style={[
                                     {
                                         position: 'absolute',
-                                        top: -150,
+                                        top: -this.categoryContainerPosition,
                                         zIndex: 2
                                     },
                                     categoryAnimatedStyle,
@@ -354,7 +370,7 @@ class AddTags extends Component {
                             </Pressable>
                         </View>
 
-                        {this.state.isOverlayDisplayed && (
+                        {!this.state.isCategoriesVisible && (
                             <View
                                 style={{
                                     position: 'absolute',
@@ -429,6 +445,7 @@ class AddTags extends Component {
                         {this.state.isCategoriesVisible && (
                             <Animated.View
                                 style={[
+                                    { bottom: -this.taggingContainerPosition },
                                     styles.bottomSheet,
                                     sheetAnimatedStyle,
                                     opacityStyle
@@ -494,7 +511,6 @@ class AddTags extends Component {
                 <ActionSheet ref={this.actionSheetRef}>
                     <View
                         style={{
-                            // height: 300,
                             padding: 40,
                             alignItems: 'center'
                         }}>
@@ -648,9 +664,7 @@ const styles = StyleSheet.create({
         alignItems: 'center'
     },
     bottomSheet: {
-        // backgroundColor: 'white',
         position: 'absolute',
-        bottom: -400,
         left: 0,
         paddingVertical: 20,
         borderTopLeftRadius: 8,
