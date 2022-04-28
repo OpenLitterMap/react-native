@@ -175,17 +175,20 @@ class AddTags extends Component {
     /**
      * Fn for close animation
      * happen on backdrop click
+     * @param pressType --> "LONG" | "REGULAR"
+     * if pressType === LONG hide categories and tag section but dont show Meta details
      */
-    returnAnimation = () => {
+    returnAnimation = (pressType = 'REGULAR') => {
         Animated.timing(this.state.categoryAnimation, {
             toValue: -this.categoryContainerPosition,
             duration: 500,
             useNativeDriver: true,
             easing: Easing.elastic(1)
         }).start(() => {
-            this.setState({
-                isCategoriesVisible: false
-            });
+            pressType === 'REGULAR' &&
+                this.setState({
+                    isCategoriesVisible: false
+                });
         });
         Animated.timing(this.state.sheetAnimation, {
             toValue: 100,
@@ -573,9 +576,14 @@ class AddTags extends Component {
                     photoSelected={image}
                     swiperIndex={this.props.swiperIndex}
                     navigation={this.props.navigation}
-                    toggleFn={() => {
+                    // hide all tagging containers
+                    onLongPressStart={() => this.returnAnimation('LONG')}
+                    // show all tagging containers
+                    onLongPressEnd={() => this.startAnimation()}
+                    // hide tagging containers and show meta containers
+                    onImageTap={() => {
                         if (this.state.isCategoriesVisible) {
-                            this.returnAnimation();
+                            this.returnAnimation('REGULAR');
                         }
                     }}
                 />
