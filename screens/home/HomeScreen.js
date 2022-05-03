@@ -391,7 +391,8 @@ class HomeScreen extends PureComponent {
                 if (
                     img.type !== 'WEB' &&
                     img.tags &&
-                    Object.keys(img.tags).length > 0 &&
+                    (Object.keys(img.tags).length > 0 ||
+                        (img.customTags && img.customTags.length > 0)) &&
                     isgeotagged
                 ) {
                     let ImageData = new FormData();
@@ -408,6 +409,10 @@ class HomeScreen extends PureComponent {
                     ImageData.append('picked_up', img.picked_up ? 1 : 0);
                     ImageData.append('model', model);
                     ImageData.append('tags', JSON.stringify(img.tags));
+                    ImageData.append(
+                        'custom_tags',
+                        JSON.stringify(img.customTags)
+                    );
 
                     // Upload image
                     const response = await this.props.uploadImage(

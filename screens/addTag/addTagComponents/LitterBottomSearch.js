@@ -39,7 +39,8 @@ class LitterBottomSearch extends PureComponent {
 
         this.props.addTagToImage({
             tag: newTag,
-            currentIndex
+            currentIndex,
+            quantityChanged: false
         });
 
         // clears text filed after one tag is selected
@@ -47,10 +48,32 @@ class LitterBottomSearch extends PureComponent {
     }
 
     /**
+     * Add custom tag to images
+     * only 3 custom tags can be added per image
+     */
+
+    addCustomTag = () => {
+        // currentGlobalIndex
+        const currentIndex = this.props.swiperIndex;
+
+        this.props.addCustomTagToImage({ tag: this.state.text, currentIndex });
+        this.updateText('');
+    };
+
+    /**
      *
      */
     clear() {
         this.setState({ text: '' });
+    }
+
+    /**
+     * Update text
+     */
+    updateText(text) {
+        this.setState({ text });
+
+        this.props.suggestTags(text, this.props.lang);
     }
 
     /**
@@ -87,15 +110,6 @@ class LitterBottomSearch extends PureComponent {
         );
     };
 
-    /**
-     * Update text
-     */
-    updateText(text) {
-        this.setState({ text });
-
-        this.props.suggestTags(text, this.props.lang);
-    }
-
     render() {
         const lang = this.props.lang;
         const suggest = getTranslation(`${lang}.tag.type-to-suggest`);
@@ -112,8 +126,9 @@ class LitterBottomSearch extends PureComponent {
                         clearButtonMode="always"
                         value={this.state.text}
                         onSubmitEditing={() => {
-                            this.updateText('');
-                            Keyboard.dismiss();
+                            this.addCustomTag();
+                            // this.updateText('');
+                            // Keyboard.dismiss();
                         }}
                     />
                 </View>

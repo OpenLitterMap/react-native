@@ -2,6 +2,7 @@ import axios from 'axios';
 import {
     ADD_IMAGES,
     ADD_TAG_TO_IMAGE,
+    ADD_CUSTOM_TAG_TO_IMAGE,
     CHANGE_LITTER_STATUS,
     DECREMENT_SELECTED,
     DELETE_IMAGE,
@@ -31,10 +32,20 @@ export const addImages = (images, type, picked_up) => {
 /**
  * Add tag to image
  */
-export const addTagToImage = payload => {
+export const addTagToImage = ({ tag, currentIndex, quantityChanged }) => {
     return {
         type: ADD_TAG_TO_IMAGE,
-        payload: payload
+        payload: { tag, currentIndex, quantityChanged }
+    };
+};
+
+/**
+ * Add tag to image
+ */
+export const addCustomTagToImage = ({ tag, currentIndex }) => {
+    return {
+        type: ADD_CUSTOM_TAG_TO_IMAGE,
+        payload: { tag, currentIndex }
     };
 };
 
