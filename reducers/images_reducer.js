@@ -277,7 +277,7 @@ export default function(state = INITIAL_STATE, action) {
             case REMOVE_CUSTOM_TAG_FROM_IMAGE:
                 draft.imagesArray[
                     action.payload.currentIndex
-                ].customTags.splice(action.payload.index, 1);
+                ].customTags.splice(action.payload.tagIndex, 1);
                 break;
             /**
              * toggles picked_up status on an image based on id

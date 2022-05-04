@@ -28,6 +28,7 @@ const SCREEN_HEIGHT = Dimensions.get('window').height;
 import { UploadImagesGrid, ActionButton, UploadButton } from './homeComponents';
 import AddTags from '../addTag/AddTags';
 import DeviceInfo from 'react-native-device-info';
+import { isTagged } from '../../utils/isTagged';
 
 class HomeScreen extends PureComponent {
     constructor(props) {
@@ -276,7 +277,9 @@ class HomeScreen extends PureComponent {
         } else {
             let tagged = 0;
             this.props.images.map(img => {
-                if (img.tags && Object.keys(img.tags)?.length > 0) {
+                const isImageTagged = isTagged(img);
+
+                if (isImageTagged) {
                     tagged++;
                 }
             });
@@ -372,7 +375,8 @@ class HomeScreen extends PureComponent {
         let imagesCount = 0;
 
         this.props.images.map(item => {
-            if (item.tags && Object.keys(item.tags)?.length > 0) {
+            const isItemTagged = isTagged(item);
+            if (isItemTagged) {
                 imagesCount++;
             }
         });
@@ -388,13 +392,9 @@ class HomeScreen extends PureComponent {
             // async loop
             for (const img of this.props.images) {
                 const isgeotagged = isGeotagged(img);
-                if (
-                    img.type !== 'WEB' &&
-                    img.tags &&
-                    (Object.keys(img.tags).length > 0 ||
-                        (img.customTags && img.customTags.length > 0)) &&
-                    isgeotagged
-                ) {
+                const isItemTagged = isTagged(img);
+
+                if (img.type !== 'WEB' && isItemTagged && isgeotagged) {
                     let ImageData = new FormData();
 
                     ImageData.append('photo', {
@@ -432,11 +432,7 @@ class HomeScreen extends PureComponent {
                             failedUpload: previousState.failedUpload + 1
                         }));
                     }
-                } else if (
-                    img.type === 'WEB' &&
-                    img.tags &&
-                    Object.keys(img.tags).length > 0
-                ) {
+                } else if (img.type === 'WEB' && isItemTagged) {
                     /**
                      * Upload tags
                      * Only need to upload tags and 'picked_up' value for WEB images

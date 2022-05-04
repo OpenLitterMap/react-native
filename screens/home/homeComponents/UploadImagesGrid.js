@@ -5,6 +5,7 @@ import { connect } from 'react-redux';
 import * as actions from '../../../actions';
 import { Body, Colors, SubTitle } from '../../components';
 import { isGeotagged } from '../../../utils/isGeotagged';
+import { isTagged } from '../../../utils/isTagged';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -32,6 +33,7 @@ class UploadImagesGrid extends PureComponent {
      */
     renderImage = ({ item, index }) => {
         const itemIsGeotagged = isGeotagged(item);
+        const isItemTagged = isTagged(item);
 
         return (
             <Pressable onPress={() => this.imagePressed(index)}>
@@ -50,7 +52,7 @@ class UploadImagesGrid extends PureComponent {
                             />
                         </View>
                     )}
-                    {item.tags && Object.keys(item.tags).length > 0 && (
+                    {isItemTagged && (
                         <View
                             style={{
                                 position: 'absolute',

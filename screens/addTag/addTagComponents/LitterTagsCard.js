@@ -13,10 +13,13 @@ const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
  */
 
 const LitterTagsCard = ({ tags, customTags, lang }) => {
+    const isTagged =
+        (customTags && customTags.length > 0) ||
+        (tags && Object.keys(tags)?.length !== 0);
     return (
         <>
-            {/* Only show if atleast one tag is present */}
-            {tags && Object.keys(tags)?.length !== 0 && (
+            {/* Only show if atleast one tag or one custom tag is present */}
+            {isTagged && (
                 <View style={[styles.card]}>
                     <Caption>Tags</Caption>
 
