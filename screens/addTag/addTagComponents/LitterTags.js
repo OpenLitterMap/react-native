@@ -78,11 +78,16 @@ class LitterTags extends Component {
 
     renderCustomTags() {
         if (this.props.customTags) {
-            return this.props.customTags.map(customTag => {
+            return this.props.customTags.map((customTag, index) => {
                 return (
                     <Pressable
                         key={customTag}
-                        // onPress={this.removeTag.bind(this, category, tag)}
+                        onPress={() =>
+                            this.props.removeCustomTagFromImage({
+                                tagIndex: index,
+                                currentIndex: this.props.swiperIndex
+                            })
+                        }
                         onLayout={event => this.scrollTo(event)}>
                         <View style={styles.card}>
                             <Caption>Custom Tag</Caption>

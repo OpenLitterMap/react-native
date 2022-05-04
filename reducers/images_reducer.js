@@ -13,7 +13,8 @@ import {
     TOGGLE_PICKED_UP,
     TOGGLE_SELECTING,
     TOGGLE_SELECTED_IMAGES,
-    ADD_CUSTOM_TAG_TO_IMAGE
+    ADD_CUSTOM_TAG_TO_IMAGE,
+    REMOVE_CUSTOM_TAG_FROM_IMAGE
 } from '../actions/types';
 
 const INITIAL_STATE = {
@@ -273,6 +274,11 @@ export default function(state = INITIAL_STATE, action) {
 
                 break;
 
+            case REMOVE_CUSTOM_TAG_FROM_IMAGE:
+                draft.imagesArray[
+                    action.payload.currentIndex
+                ].customTags.splice(action.payload.index, 1);
+                break;
             /**
              * toggles picked_up status on an image based on id
              */
