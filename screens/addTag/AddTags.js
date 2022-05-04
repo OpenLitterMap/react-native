@@ -386,6 +386,11 @@ class AddTags extends Component {
                                             this.props.swiperIndex
                                         ]?.tags
                                     }
+                                    customTags={
+                                        this.props.images[
+                                            this.props.swiperIndex
+                                        ]?.customTags
+                                    }
                                     lang={this.props.lang}
                                 />
                             </View>
@@ -438,6 +443,11 @@ class AddTags extends Component {
                                             this.props.images[
                                                 this.props.swiperIndex
                                             ]?.tags
+                                        }
+                                        customTags={
+                                            this.props.images[
+                                                this.props.swiperIndex
+                                            ]?.customTags
                                         }
                                         lang={this.props.lang}
                                         swiperIndex={this.props.swiperIndex}
