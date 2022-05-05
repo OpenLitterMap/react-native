@@ -181,8 +181,6 @@ export default function(state = INITIAL_STATE, action) {
                 } else {
                     currentImage.customTags = [customTags];
                 }
-                // currentImage.customTags = customTags;
-                console.log(draft.imagesArray[action.payload.currentIndex]);
                 break;
 
             /**
