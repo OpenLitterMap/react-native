@@ -94,28 +94,32 @@ class LitterBottomSearch extends PureComponent {
             return false;
         }
 
-        // check if tag already exist
-        if (
-            await customTagsArray.some(
-                tag => tag.toLowerCase() === inputText.toLowerCase()
-            )
-        ) {
-            this.setState({
-                customTagError: 'Tag already added'
-            });
-            return false;
-        } else {
-            result = true;
-        }
+        // below checks are only required if customTagsArray is defined
+        // on a new image it's undefined till atleast one custom tag is added
+        if (customTagsArray) {
+            // check if tag already exist
+            if (
+                await customTagsArray?.some(
+                    tag => tag.toLowerCase() === inputText.toLowerCase()
+                )
+            ) {
+                this.setState({
+                    customTagError: 'Tag already added'
+                });
+                return false;
+            } else {
+                result = true;
+            }
 
-        // check if only 3 custom tags are added
-        if (customTagsArray?.length <= 3) {
-            result = true;
-        } else {
-            this.setState({
-                customTagError: 'You can upload up to 3 custom tags'
-            });
-            return false;
+            // check if only 3 custom tags are added
+            if (customTagsArray?.length <= 3) {
+                result = true;
+            } else {
+                this.setState({
+                    customTagError: 'You can upload up to 3 custom tags'
+                });
+                return false;
+            }
         }
 
         return result;
@@ -178,6 +182,7 @@ class LitterBottomSearch extends PureComponent {
             <View>
                 <View style={{ paddingHorizontal: 20, paddingVertical: 10 }}>
                     <TextInput
+                        autoCorrect={false}
                         style={styles.textFieldStyle}
                         placeholder={suggest}
                         placeholderTextColor={Colors.muted}
