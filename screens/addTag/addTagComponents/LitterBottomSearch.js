@@ -21,7 +21,8 @@ class LitterBottomSearch extends PureComponent {
         super(props);
 
         this.state = {
-            text: ''
+            text: '',
+            customTagError: ''
         };
     }
 
@@ -52,12 +53,72 @@ class LitterBottomSearch extends PureComponent {
      * only 3 custom tags can be added per image
      */
 
-    addCustomTag = () => {
-        // currentGlobalIndex
-        const currentIndex = this.props.swiperIndex;
+    addCustomTag = async () => {
+        // reset tags error
+        this.setState({ customTagError: '' });
+        const isCustomTagValid = await this.validateCustomTag();
 
-        this.props.addCustomTagToImage({ tag: this.state.text, currentIndex });
-        this.updateText('');
+        if (isCustomTagValid) {
+            // currentGlobalIndex
+            const currentIndex = this.props.swiperIndex;
+
+            this.props.addCustomTagToImage({
+                tag: this.state.text,
+                currentIndex
+            });
+            this.updateText('');
+        }
+    };
+
+    /**
+     * fn to validate custom tags
+     *
+     * should be between 3-100 characters length
+     * should be unique (case insensitive)
+     * max 3 custom tags per image
+     *
+     */
+    validateCustomTag = async () => {
+        const inputText = this.state.text;
+        const customTagsArray = this.props.images[this.props.swiperIndex]
+            ?.customTags;
+        let result = false;
+
+        // check min 3 and max 100 characters
+        if (inputText.length >= 3 && inputText.length < 100) {
+            result = true;
+        } else {
+            this.setState({
+                customTagError: 'Tag should be 3 - 100 characters long'
+            });
+            return false;
+        }
+
+        // check if tag already exist
+        if (
+            await customTagsArray.some(
+                tag => tag.toLowerCase() === inputText.toLowerCase()
+            )
+        ) {
+            this.setState({
+                customTagError: 'Tag already added'
+            });
+            return false;
+        } else {
+            result = true;
+        }
+
+        // check if only 3 custom tags are added
+        if (customTagsArray?.length <= 3) {
+            result = true;
+        } else {
+            this.setState({
+                customTagError: 'You can upload up to 3 custom tags'
+            });
+            return false;
+        }
+
+        return result;
     };
 
     /**
@@ -125,12 +186,9 @@ class LitterBottomSearch extends PureComponent {
                         blurOnSubmit={false}
                         clearButtonMode="always"
                         value={this.state.text}
-                        onSubmitEditing={() => {
-                            this.addCustomTag();
-                            // this.updateText('');
-                            // Keyboard.dismiss();
-                        }}
+                        onSubmitEditing={this.addCustomTag}
                     />
+                    <Caption color="error">{this.state.customTagError}</Caption>
                 </View>
 
                 {this.props.isKeyboardOpen && (

@@ -568,7 +568,13 @@ class AddTags extends Component {
                     swiperIndex={this.props.swiperIndex}
                     navigation={this.props.navigation}
                     toggleFn={() => {
-                        if (this.state.isCategoriesVisible) {
+                        // if image is tapped when keyboard is open
+                        // don't show meta screen,  instead
+                        // dismiss keyboard and keep it at tagging screen
+
+                        if (this.state.isKeyboardOpen) {
+                            Keyboard.dismiss();
+                        } else if (this.state.isCategoriesVisible) {
                             this.returnAnimation();
                         }
                     }}
