@@ -11,7 +11,8 @@
         "other": "Outros",
         "sanitary": "Sanitária",
         "softdrinks": "Refrigerantes",
-        "smoking": "Fumo"
+        "smoking": "Fumo",
+        "custom-tag": "Etiquetas Personalizadas"
     },
     "smoking": {
         "butts": "Cigarro/Bitucas/Pontas",

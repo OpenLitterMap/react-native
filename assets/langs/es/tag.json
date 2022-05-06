@@ -11,5 +11,10 @@
     "not-picked-thumb": "No recogido 👎🏻",
     "delete-message": "Estás seguro de que deseas eliminar esta imagen?",
     "cancel": "Cancelar",
-    "delete": "Sí, eliminar"
+    "delete": "Sí, eliminar",
+    "custom-tags": "Etiquetas Personalizadas",
+    "custom-tags-min": "Debe tener al menos 3 caracteres.",
+    "custom-tags-max": "Debe tener como máximo 100 caracteres.",
+    "tag-already-added": "Etiqueta ya añadida.",
+    "tag-limit-reached": "Puede cargar hasta 3 etiquetas personalizadas."
 }

@@ -11,7 +11,8 @@
         "other": "Ander",
         "sanitary": "Hygiëne",
         "softdrinks": "Frisdrank",
-        "smoking": "Rookwaar"
+        "smoking": "Rookwaar",
+        "custom-tag": "Aangepaste Tag"
     },
     "smoking": {
         "butts": "Sigaretten/Peuken",

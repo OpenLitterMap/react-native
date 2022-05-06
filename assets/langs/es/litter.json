@@ -11,7 +11,8 @@
         "other": "Otro",
         "sanitary": "Sanitario",
         "softdrinks": "Refresco",
-        "smoking": "Fumar"
+        "smoking": "Fumar",
+        "custom-tag": "Etiquetas Personalizadas"
     },
     "smoking": {
         "butts": "Cigarrillo/Colilla",

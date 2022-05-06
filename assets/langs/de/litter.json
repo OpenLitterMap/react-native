@@ -12,7 +12,8 @@
         "other": "Andere",
         "sanitary": "Hygiene",
         "softdrinks": "Erfrischungsgetränk",
-        "smoking": "Rauchen"
+        "smoking": "Rauchen",
+        "custom-tag": "Benutzerdefiniertes Tag"
     },
     "smoking": {
         "butts": "Zigaretten(stummel)",

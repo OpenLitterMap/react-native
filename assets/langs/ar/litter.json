@@ -11,7 +11,8 @@
         "other": "أخرى",
         "sanitary": "صحي",
         "softdrinks": "مشروبات باردة",
-        "smoking": "تدخين"
+        "smoking": "تدخين",
+        "custom-tag": "علامة مخصصة"
     },
     "smoking": {
         "butts": "سجائر/أعقاب",

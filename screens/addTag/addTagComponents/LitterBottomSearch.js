@@ -79,6 +79,7 @@ class LitterBottomSearch extends PureComponent {
      *
      */
     validateCustomTag = async inputText => {
+        const lang = this.props.lang;
         const customTagsArray = this.props.images[this.props.swiperIndex]
             ?.customTags;
         let result = false;
@@ -87,9 +88,13 @@ class LitterBottomSearch extends PureComponent {
         if (inputText.length >= 3 && inputText.length < 100) {
             result = true;
         } else {
-            this.setState({
-                customTagError: 'Tag should be 3 - 100 characters long'
-            });
+            inputText.length < 3
+                ? this.setState({
+                      customTagError: `${lang}.tag.custom-tags-min`
+                  })
+                : this.setState({
+                      customTagError: `${lang}.tag.custom-tags-max`
+                  });
             return false;
         }
 
@@ -103,7 +108,7 @@ class LitterBottomSearch extends PureComponent {
                 )
             ) {
                 this.setState({
-                    customTagError: 'Tag already added'
+                    customTagError: `${lang}.tag.tag-already-added`
                 });
                 return false;
             } else {
@@ -115,7 +120,7 @@ class LitterBottomSearch extends PureComponent {
                 result = true;
             } else {
                 this.setState({
-                    customTagError: 'You can upload up to 3 custom tags'
+                    customTagError: `${lang}.tag.tag-limit-reached`
                 });
                 return false;
             }
@@ -202,7 +207,11 @@ class LitterBottomSearch extends PureComponent {
                             this.addCustomTag(this.state.text)
                         }
                     />
-                    <Caption color="error">{this.state.customTagError}</Caption>
+                    <Caption
+                        color="error"
+                        dictionary={this.state.customTagError}>
+                        {this.state.customTagError}
+                    </Caption>
                 </View>
 
                 {this.props.isKeyboardOpen && (

@@ -11,5 +11,10 @@
     "not-picked-thumb": "Niet opgehaald 👎🏻",
     "delete-message": "Weet je zeker dat je deze afbeelding wilt verwijderen?",
     "cancel": "Annuleren",
-    "delete": "Ja, verwijderen"
+    "delete": "Ja, verwijderen",
+    "custom-tags": "Aangepaste Tags",
+    "custom-tags-min": "Het moet minimaal 3 tekens lang zijn.",
+    "custom-tags-max": "Het mag maximaal 100 tekens lang zijn.",
+    "tag-already-added": "Tag al toegevoegd.",
+    "tag-limit-reached": "U kunt maximaal 3 aangepaste tags uploaden."
 }
