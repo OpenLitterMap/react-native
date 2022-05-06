@@ -53,17 +53,17 @@ class LitterBottomSearch extends PureComponent {
      * only 3 custom tags can be added per image
      */
 
-    addCustomTag = async () => {
+    addCustomTag = async tag => {
         // reset tags error
         this.setState({ customTagError: '' });
-        const isCustomTagValid = await this.validateCustomTag();
+        const isCustomTagValid = await this.validateCustomTag(tag);
 
         if (isCustomTagValid) {
             // currentGlobalIndex
             const currentIndex = this.props.swiperIndex;
 
             this.props.addCustomTagToImage({
-                tag: this.state.text,
+                tag: tag,
                 currentIndex
             });
             this.updateText('');
@@ -78,8 +78,7 @@ class LitterBottomSearch extends PureComponent {
      * max 3 custom tags per image
      *
      */
-    validateCustomTag = async () => {
-        const inputText = this.state.text;
+    validateCustomTag = async inputText => {
         const customTagsArray = this.props.images[this.props.swiperIndex]
             ?.customTags;
         let result = false;
@@ -112,7 +111,7 @@ class LitterBottomSearch extends PureComponent {
             }
 
             // check if only 3 custom tags are added
-            if (customTagsArray?.length <= 3) {
+            if (customTagsArray?.length < 3) {
                 result = true;
             } else {
                 this.setState({
@@ -155,22 +154,30 @@ class LitterBottomSearch extends PureComponent {
      * Render a suggested tag
      */
     renderTag = ({ item }) => {
+        const isCustomTag = item?.category === 'custom-tag';
         return (
             <Pressable
                 style={styles.tag}
-                onPress={this.addTag.bind(this, item)}>
+                onPress={() => {
+                    isCustomTag
+                        ? this.addCustomTag(item.key)
+                        : this.addTag(item);
+                }}>
                 <Caption
                     // style={styles.category}
                     dictionary={`${this.props.lang}.litter.categories.${
                         item.category
                     }`}
                 />
+                {/* show translated tag only if it's not a custom tag */}
                 <Body
                     style={styles.item}
-                    dictionary={`${this.props.lang}.litter.${item.category}.${
-                        item.key
-                    }`}
-                />
+                    dictionary={
+                        !isCustomTag &&
+                        `${this.props.lang}.litter.${item.category}.${item.key}`
+                    }>
+                    {item.key}
+                </Body>
             </Pressable>
         );
     };
@@ -191,7 +198,9 @@ class LitterBottomSearch extends PureComponent {
                         blurOnSubmit={false}
                         clearButtonMode="always"
                         value={this.state.text}
-                        onSubmitEditing={this.addCustomTag}
+                        onSubmitEditing={() =>
+                            this.addCustomTag(this.state.text)
+                        }
                     />
                     <Caption color="error">{this.state.customTagError}</Caption>
                 </View>

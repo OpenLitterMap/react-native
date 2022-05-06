@@ -102,7 +102,7 @@ export default function(state = INITIAL_STATE, action) {
              * max 10 tags in previousTags array remove old tags if it exceeds limits.
              */
 
-            case ADD_TAG_TO_IMAGE:
+            case ADD_TAG_TO_IMAGE: {
                 let image = draft.imagesArray[action.payload.currentIndex];
                 let newTags = image.tags;
 
@@ -149,7 +149,7 @@ export default function(state = INITIAL_STATE, action) {
                 // if item in array remove it and add to the start of array
 
                 if (prevImgIndex === -1) {
-                    if (draft.previousTags.length <= 10) {
+                    if (draft.previousTags.length < 10) {
                         draft.previousTags.unshift({
                             category: payloadCategory,
                             key: payloadTitle
@@ -168,10 +168,10 @@ export default function(state = INITIAL_STATE, action) {
                         key: payloadTitle
                     });
                 }
-                // draft.previousTags = [];
-                break;
 
-            case ADD_CUSTOM_TAG_TO_IMAGE:
+                break;
+            }
+            case ADD_CUSTOM_TAG_TO_IMAGE: {
                 let currentImage =
                     draft.imagesArray[action.payload.currentIndex];
                 let customTags = action.payload.tag;
@@ -181,8 +181,40 @@ export default function(state = INITIAL_STATE, action) {
                 } else {
                     currentImage.customTags = [customTags];
                 }
-                break;
 
+                // check if tag already exist in prev tags array
+                const prevImgIndex = draft.previousTags.findIndex(
+                    tag => tag.key === action.payload.tag
+                );
+
+                // if tag doesn't exist add tag to array
+                // if length < 10 then add at the start of array
+                // else remove the last element and add new tag to the start of array
+
+                // if item in array remove it and add to the start of array
+
+                if (prevImgIndex === -1) {
+                    if (draft.previousTags.length < 10) {
+                        draft.previousTags.unshift({
+                            category: 'custom-tag',
+                            key: action.payload.tag
+                        });
+                    } else {
+                        draft.previousTags.pop();
+                        draft.previousTags.unshift({
+                            category: 'custom-tag',
+                            key: action.payload.tag
+                        });
+                    }
+                } else {
+                    draft.previousTags.splice(prevImgIndex, 1);
+                    draft.previousTags.unshift({
+                        category: 'custom-tag',
+                        key: action.payload.tag
+                    });
+                }
+                break;
+            }
             /**
              * Changes litter picked up status of all images
              * to payload
