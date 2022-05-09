@@ -178,8 +178,11 @@ class LitterBottomSearch extends PureComponent {
                 <Body
                     style={styles.item}
                     dictionary={
-                        !isCustomTag &&
-                        `${this.props.lang}.litter.${item.category}.${item.key}`
+                        !isCustomTag
+                            ? `${this.props.lang}.litter.${item.category}.${
+                                  item.key
+                              }`
+                            : ''
                     }>
                     {item.key}
                 </Body>
