@@ -26,7 +26,7 @@ const SCREEN_HEIGHT = Dimensions.get('window').height;
 
 // Components
 import { UploadImagesGrid, ActionButton, UploadButton } from './homeComponents';
-import AddTags from '../pages/AddTags';
+import AddTags from '../addTag/AddTags';
 import DeviceInfo from 'react-native-device-info';
 
 class HomeScreen extends PureComponent {
@@ -63,6 +63,7 @@ class HomeScreen extends PureComponent {
 
         // if not in DEV mode check for new version
         !__DEV__ && this.checkNewVersion();
+
         this.checkGalleryPermission();
     }
 
@@ -153,13 +154,6 @@ class HomeScreen extends PureComponent {
                             </View>
                         )}
 
-                        {/* Tag Litter to Images */}
-                        {this.props.litterVisible && (
-                            <View style={styles.litterModal}>
-                                <AddTags />
-                            </View>
-                        )}
-
                         {/* Thank you modal */}
                         {this.props.thankYouVisible && (
                             <View style={styles.modal}>
@@ -242,7 +236,7 @@ class HomeScreen extends PureComponent {
      *
      */
     loadGallery = async () => {
-        this.props.navigation.navigate('ALBUM');
+        this.props.navigation.navigate('ALBUM', { screen: 'GALLERY' });
     };
 
     /**
@@ -607,7 +601,6 @@ const mapStateToProps = state => {
         selected: state.images.selected,
         modalVisible: state.shared.modalVisible,
         model: state.settings.model,
-        litterVisible: state.shared.litterVisible,
         token: state.auth.token,
         thankYouVisible: state.shared.thankYouVisible,
         totalImagesToUpload: state.shared.totalImagesToUpload,

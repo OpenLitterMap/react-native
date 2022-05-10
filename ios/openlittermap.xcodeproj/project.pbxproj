@@ -27,8 +27,17 @@
 		14BDF68724E7E82800071A8A /* File.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14BDF68524E7E82800071A8A /* File.swift */; };
 		14BDF68924E7E82800071A8A /* File.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14BDF68524E7E82800071A8A /* File.swift */; };
 		16EB09CCEADA414D82659826 /* check.png in Resources */ = {isa = PBXBuildFile; fileRef = E7CA2CBBB6914618B0262DF3 /* check.png */; };
+		19375AD56717DD9425994267 /* libPods-openlittermap-tvOSTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 117552A19774FC528440760E /* libPods-openlittermap-tvOSTests.a */; };
+		2B1A66EAC985F9CD99CB5BB2 /* libPods-openlittermap.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C6704504DC2C1CCA377E208F /* libPods-openlittermap.a */; };
+		2D02E4BC1E0B4A80006451C7 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.m */; };
+		2D02E4BD1E0B4A84006451C7 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
+		2D02E4BF1E0B4AB3006451C7 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		2DCD954D1E0B4F2C00145EB5 /* openlittermapTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E356F21AD99517003FC87E /* openlittermapTests.m */; };
+<<<<<<< HEAD
 		33844B385EBB0C20140888FE /* libPods-openlittermap.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C32B102B9E915B79DDB5C075 /* libPods-openlittermap.a */; };
+=======
+		2FE0F54C1E7844D39A769731 /* Feather.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 095FA57ADEF74FD6BE5A2369 /* Feather.ttf */; };
+>>>>>>> ca37ccff2071cad2b64d7c89a9816d9915368df9
 		387E994A295E4D5D8A34514D /* toilet.png in Resources */ = {isa = PBXBuildFile; fileRef = 45DA3B2A9C1841B9AFA40130 /* toilet.png */; };
 		5116B56237ED4F759E4F9460 /* dove.png in Resources */ = {isa = PBXBuildFile; fileRef = A8B66079AE0A49E6918494C9 /* dove.png */; };
 		518DD1C1E6514731A1835C05 /* coffee_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 7A43C68E2BA04E4F8A882F33 /* coffee_icon.png */; };
@@ -37,6 +46,10 @@
 		6FDDBBCC260F4BA884826484 /* rank.png in Resources */ = {isa = PBXBuildFile; fileRef = DF090B2E8F9D4F809CEC3495 /* rank.png */; };
 		726494C395154FBDB39BB5C4 /* art_icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 745030CA44954E0881E5C4E9 /* art_icon.png */; };
 		7484107FFAEE4B82A3FEE094 /* plastic-bottle.png in Resources */ = {isa = PBXBuildFile; fileRef = 62DFB88061E14D3D94EB2EFE /* plastic-bottle.png */; };
+<<<<<<< HEAD
+=======
+		78ABAE7C5ED9B8C3798E31D1 /* libPods-openlittermap-tvOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = AAB56451B5693FC003A49706 /* libPods-openlittermap-tvOS.a */; };
+>>>>>>> ca37ccff2071cad2b64d7c89a9816d9915368df9
 		9AA68387FB734FA8B8ED0E37 /* smoking2.png in Resources */ = {isa = PBXBuildFile; fileRef = AFE8FD4AAB3248AD9B98A9B1 /* smoking2.png */; };
 		9B6C1CB472AF4EFAA59AC1BE /* logo.png in Resources */ = {isa = PBXBuildFile; fileRef = AC6E5932C5C94060928A1BBE /* logo.png */; };
 		BD2DF322BF404692B08E6EFA /* ocean-transportation.png in Resources */ = {isa = PBXBuildFile; fileRef = B70868B6EED141858DADDA0A /* ocean-transportation.png */; };
@@ -45,7 +58,11 @@
 		E31828097BED41E4BC69588C /* dice2.png in Resources */ = {isa = PBXBuildFile; fileRef = F3F4C393E05E4A018705E7EE /* dice2.png */; };
 		E9D45CBC8C41429FB0B9A6C1 /* new-logo.png in Resources */ = {isa = PBXBuildFile; fileRef = 0B23CA850B6947128C23F8E2 /* new-logo.png */; };
 		EB7674F4703B4AA790A42000 /* briefcase.png in Resources */ = {isa = PBXBuildFile; fileRef = 729C7C139EFE4C3C88D965A8 /* briefcase.png */; };
+<<<<<<< HEAD
 		F96D46EE3F3E6FEFE835BE6C /* libPods-openlittermap-tvOS.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3CD19C441E0966FFE45A8814 /* libPods-openlittermap-tvOS.a */; };
+=======
+		F19D5CC4CDE704F4589C289A /* libPods-openlittermap-openlittermapTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 54948A7ACE364A8338CCA938 /* libPods-openlittermap-openlittermapTests.a */; };
+>>>>>>> ca37ccff2071cad2b64d7c89a9816d9915368df9
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -89,6 +106,8 @@
 		07D7553426AFF15B00E7BDE9 /* Poppins-Bold.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "Poppins-Bold.ttf"; path = "../assets/fonts/Poppins-Bold.ttf"; sourceTree = "<group>"; };
 		095FA57ADEF74FD6BE5A2369 /* Feather.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Feather.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Feather.ttf"; sourceTree = "<group>"; };
 		0B23CA850B6947128C23F8E2 /* new-logo.png */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "new-logo.png"; path = "../assets/logo/new-logo.png"; sourceTree = "<group>"; };
+		117552A19774FC528440760E /* libPods-openlittermap-tvOSTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-openlittermap-tvOSTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		1257C4EE092B334539E88C84 /* Pods-openlittermap-openlittermapTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-openlittermap-openlittermapTests.debug.xcconfig"; path = "Target Support Files/Pods-openlittermap-openlittermapTests/Pods-openlittermap-openlittermapTests.debug.xcconfig"; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* openlittermap.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = openlittermap.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FAF1A68108700A75B9A /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AppDelegate.h; path = openlittermap/AppDelegate.h; sourceTree = "<group>"; };
 		13B07FB01A68108700A75B9A /* AppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AppDelegate.m; path = openlittermap/AppDelegate.m; sourceTree = "<group>"; };
@@ -107,14 +126,21 @@
 		23DBF6426B3F4F268F076A09 /* smoking.png */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = smoking.png; path = ../assets/icons/smoking.png; sourceTree = "<group>"; };
 		23FE6CD2C06E3D5EB86FBB22 /* Pods-openlittermap.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-openlittermap.debug.xcconfig"; path = "Target Support Files/Pods-openlittermap/Pods-openlittermap.debug.xcconfig"; sourceTree = "<group>"; };
 		2605D2FACDCE4ADE8C45CB9A /* user.png */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = user.png; path = ../assets/icons/user.png; sourceTree = "<group>"; };
+		278DD5D3AA48C251640BB464 /* Pods-openlittermap-openlittermapTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-openlittermap-openlittermapTests.release.xcconfig"; path = "Target Support Files/Pods-openlittermap-openlittermapTests/Pods-openlittermap-openlittermapTests.release.xcconfig"; sourceTree = "<group>"; };
 		2D02E47B1E0B4A5D006451C7 /* openlittermap-tvOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "openlittermap-tvOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		2D02E4901E0B4A5D006451C7 /* openlittermap-tvOSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "openlittermap-tvOSTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		301F31B2F87F2695909E25E7 /* Pods-openlittermap.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-openlittermap.debug.xcconfig"; path = "Target Support Files/Pods-openlittermap/Pods-openlittermap.debug.xcconfig"; sourceTree = "<group>"; };
 		35482AE51D9548B28762E116 /* no-smoking.png */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "no-smoking.png"; path = "../assets/icons/no-smoking.png"; sourceTree = "<group>"; };
 		3CD19C441E0966FFE45A8814 /* libPods-openlittermap-tvOS.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-openlittermap-tvOS.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		41281E439BF4D107C7A90076 /* Pods-openlittermap-openlittermapTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-openlittermap-openlittermapTests.release.xcconfig"; path = "Target Support Files/Pods-openlittermap-openlittermapTests/Pods-openlittermap-openlittermapTests.release.xcconfig"; sourceTree = "<group>"; };
 		45DA3B2A9C1841B9AFA40130 /* toilet.png */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = toilet.png; path = ../assets/icons/toilet.png; sourceTree = "<group>"; };
 		4635644029F34B1B8BDF05B3 /* food_icon.png */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = food_icon.png; path = ../assets/icons/food_icon.png; sourceTree = "<group>"; };
+<<<<<<< HEAD
 		524DC0D324440EF901F857AD /* Pods-openlittermap-openlittermapTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-openlittermap-openlittermapTests.debug.xcconfig"; path = "Target Support Files/Pods-openlittermap-openlittermapTests/Pods-openlittermap-openlittermapTests.debug.xcconfig"; sourceTree = "<group>"; };
+=======
+		46C9B33A21EAC97CB2B03394 /* Pods-openlittermap-tvOS.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-openlittermap-tvOS.release.xcconfig"; path = "Target Support Files/Pods-openlittermap-tvOS/Pods-openlittermap-tvOS.release.xcconfig"; sourceTree = "<group>"; };
+		54948A7ACE364A8338CCA938 /* libPods-openlittermap-openlittermapTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-openlittermap-openlittermapTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+>>>>>>> ca37ccff2071cad2b64d7c89a9816d9915368df9
 		591D94720D83437A93DB8401 /* sanitary.png */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = sanitary.png; path = ../assets/icons/sanitary.png; sourceTree = "<group>"; };
 		5A01C16B02724A00BC775DDD /* coffee.png */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = coffee.png; path = ../assets/icons/coffee.png; sourceTree = "<group>"; };
 		62DFB88061E14D3D94EB2EFE /* plastic-bottle.png */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "plastic-bottle.png"; path = "../assets/icons/plastic-bottle.png"; sourceTree = "<group>"; };
@@ -125,19 +151,32 @@
 		745030CA44954E0881E5C4E9 /* art_icon.png */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = art_icon.png; path = ../assets/icons/art_icon.png; sourceTree = "<group>"; };
 		7A43C68E2BA04E4F8A882F33 /* coffee_icon.png */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = coffee_icon.png; path = ../assets/icons/coffee_icon.png; sourceTree = "<group>"; };
 		80416887413743F48F7E2BB4 /* Avenir-Black.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Avenir-Black.ttf"; path = "../assets/fonts/Avenir-Black.ttf"; sourceTree = "<group>"; };
+<<<<<<< HEAD
 		8669AF5433BB0C32CFFAFFA4 /* Pods-openlittermap-tvOSTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-openlittermap-tvOSTests.release.xcconfig"; path = "Target Support Files/Pods-openlittermap-tvOSTests/Pods-openlittermap-tvOSTests.release.xcconfig"; sourceTree = "<group>"; };
 		8C8C628C0DD04F2E9DB3BF5D /* mobile.png */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = mobile.png; path = ../assets/icons/mobile.png; sourceTree = "<group>"; };
 		8D8F0F2381604218A95E49B4 /* happiness.png */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = happiness.png; path = ../assets/icons/happiness.png; sourceTree = "<group>"; };
 		9C0D0E9330311163AA1AF933 /* libPods-openlittermap-tvOSTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-openlittermap-tvOSTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+=======
+		81C26A194728F543C5A7891E /* Pods-openlittermap-tvOSTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-openlittermap-tvOSTests.release.xcconfig"; path = "Target Support Files/Pods-openlittermap-tvOSTests/Pods-openlittermap-tvOSTests.release.xcconfig"; sourceTree = "<group>"; };
+		8C8C628C0DD04F2E9DB3BF5D /* mobile.png */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = mobile.png; path = ../assets/icons/mobile.png; sourceTree = "<group>"; };
+		8D8F0F2381604218A95E49B4 /* happiness.png */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = happiness.png; path = ../assets/icons/happiness.png; sourceTree = "<group>"; };
+>>>>>>> ca37ccff2071cad2b64d7c89a9816d9915368df9
 		9E14662074524E829DD6D39F /* ios_app_store_icon_1024pxBy1024px.png */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = ios_app_store_icon_1024pxBy1024px.png; path = ../assets/ios_app_store_icon_1024pxBy1024px.png; sourceTree = "<group>"; };
 		A8B66079AE0A49E6918494C9 /* dove.png */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = dove.png; path = ../assets/icons/dove.png; sourceTree = "<group>"; };
+		AAB56451B5693FC003A49706 /* libPods-openlittermap-tvOS.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-openlittermap-tvOS.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		AC6E5932C5C94060928A1BBE /* logo.png */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = logo.png; path = ../assets/logo/logo.png; sourceTree = "<group>"; };
+		AD1A6237869C13616A815B6B /* Pods-openlittermap-tvOSTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-openlittermap-tvOSTests.debug.xcconfig"; path = "Target Support Files/Pods-openlittermap-tvOSTests/Pods-openlittermap-tvOSTests.debug.xcconfig"; sourceTree = "<group>"; };
 		AFE8FD4AAB3248AD9B98A9B1 /* smoking2.png */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = smoking2.png; path = ../assets/icons/smoking2.png; sourceTree = "<group>"; };
 		B70868B6EED141858DADDA0A /* ocean-transportation.png */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "ocean-transportation.png"; path = "../assets/icons/ocean-transportation.png"; sourceTree = "<group>"; };
+<<<<<<< HEAD
 		C32B102B9E915B79DDB5C075 /* libPods-openlittermap.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-openlittermap.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		CA57C0EC354708F62F6C572F /* Pods-openlittermap-tvOS.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-openlittermap-tvOS.debug.xcconfig"; path = "Target Support Files/Pods-openlittermap-tvOS/Pods-openlittermap-tvOS.debug.xcconfig"; sourceTree = "<group>"; };
 		CDA5D5BFD3B72E410AAC56FE /* Pods-openlittermap.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-openlittermap.release.xcconfig"; path = "Target Support Files/Pods-openlittermap/Pods-openlittermap.release.xcconfig"; sourceTree = "<group>"; };
 		D2D9F5EA3DF2E048C32499CE /* libPods-openlittermap-openlittermapTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-openlittermap-openlittermapTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+=======
+		B8C17F49517400F404CAB824 /* Pods-openlittermap.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-openlittermap.release.xcconfig"; path = "Target Support Files/Pods-openlittermap/Pods-openlittermap.release.xcconfig"; sourceTree = "<group>"; };
+		C6704504DC2C1CCA377E208F /* libPods-openlittermap.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-openlittermap.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+>>>>>>> ca37ccff2071cad2b64d7c89a9816d9915368df9
 		D54EEA11C8BA48C6B77B7F13 /* bitcoin.png */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = bitcoin.png; path = ../assets/icons/bitcoin.png; sourceTree = "<group>"; };
 		D97AC6F7A23A495ABD2C02BB /* drugs.png */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = drugs.png; path = ../assets/icons/drugs.png; sourceTree = "<group>"; };
 		DF090B2E8F9D4F809CEC3495 /* rank.png */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = rank.png; path = ../assets/rank.png; sourceTree = "<group>"; };
@@ -151,6 +190,7 @@
 		F3F4C393E05E4A018705E7EE /* dice2.png */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = dice2.png; path = ../assets/icons/dice2.png; sourceTree = "<group>"; };
 		F892184894DC4ABD82174289 /* softdrinks.png */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = softdrinks.png; path = ../assets/icons/softdrinks.png; sourceTree = "<group>"; };
 		F98DBEAD521B4144ADDE71AB /* MaterialCommunityIcons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = MaterialCommunityIcons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/MaterialCommunityIcons.ttf"; sourceTree = "<group>"; };
+		FF0FD8AC39BEB67CA4986DE1 /* Pods-openlittermap-tvOS.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-openlittermap-tvOS.debug.xcconfig"; path = "Target Support Files/Pods-openlittermap-tvOS/Pods-openlittermap-tvOS.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -158,7 +198,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+<<<<<<< HEAD
 				59600BF8E566076270AD32BB /* libPods-openlittermap-openlittermapTests.a in Frameworks */,
+=======
+				F19D5CC4CDE704F4589C289A /* libPods-openlittermap-openlittermapTests.a in Frameworks */,
+>>>>>>> ca37ccff2071cad2b64d7c89a9816d9915368df9
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -166,7 +210,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+<<<<<<< HEAD
 				33844B385EBB0C20140888FE /* libPods-openlittermap.a in Frameworks */,
+=======
+				2B1A66EAC985F9CD99CB5BB2 /* libPods-openlittermap.a in Frameworks */,
+>>>>>>> ca37ccff2071cad2b64d7c89a9816d9915368df9
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -174,7 +222,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+<<<<<<< HEAD
 				0987E47459361A3FB0CEEEF9 /* libPods-openlittermap-tvOSTests.a in Frameworks */,
+=======
+				78ABAE7C5ED9B8C3798E31D1 /* libPods-openlittermap-tvOS.a in Frameworks */,
+>>>>>>> ca37ccff2071cad2b64d7c89a9816d9915368df9
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -182,7 +234,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+<<<<<<< HEAD
 				F96D46EE3F3E6FEFE835BE6C /* libPods-openlittermap-tvOS.a in Frameworks */,
+=======
+				19375AD56717DD9425994267 /* libPods-openlittermap-tvOSTests.a in Frameworks */,
+>>>>>>> ca37ccff2071cad2b64d7c89a9816d9915368df9
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -232,10 +288,17 @@
 				14D495A32745AF4F00FB646E /* libYoga.a */,
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
 				ED2971642150620600B7C4FE /* JavaScriptCore.framework */,
+<<<<<<< HEAD
 				C32B102B9E915B79DDB5C075 /* libPods-openlittermap.a */,
 				D2D9F5EA3DF2E048C32499CE /* libPods-openlittermap-openlittermapTests.a */,
 				3CD19C441E0966FFE45A8814 /* libPods-openlittermap-tvOS.a */,
 				9C0D0E9330311163AA1AF933 /* libPods-openlittermap-tvOSTests.a */,
+=======
+				C6704504DC2C1CCA377E208F /* libPods-openlittermap.a */,
+				54948A7ACE364A8338CCA938 /* libPods-openlittermap-openlittermapTests.a */,
+				AAB56451B5693FC003A49706 /* libPods-openlittermap-tvOS.a */,
+				117552A19774FC528440760E /* libPods-openlittermap-tvOSTests.a */,
+>>>>>>> ca37ccff2071cad2b64d7c89a9816d9915368df9
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -277,6 +340,7 @@
 		EA6EE688DC4091D1613CAD80 /* Pods */ = {
 			isa = PBXGroup;
 			children = (
+<<<<<<< HEAD
 				23FE6CD2C06E3D5EB86FBB22 /* Pods-openlittermap.debug.xcconfig */,
 				CDA5D5BFD3B72E410AAC56FE /* Pods-openlittermap.release.xcconfig */,
 				524DC0D324440EF901F857AD /* Pods-openlittermap-openlittermapTests.debug.xcconfig */,
@@ -285,6 +349,16 @@
 				6D33751B8D943878345B2524 /* Pods-openlittermap-tvOS.release.xcconfig */,
 				E0031DCB300BD298E0413609 /* Pods-openlittermap-tvOSTests.debug.xcconfig */,
 				8669AF5433BB0C32CFFAFFA4 /* Pods-openlittermap-tvOSTests.release.xcconfig */,
+=======
+				301F31B2F87F2695909E25E7 /* Pods-openlittermap.debug.xcconfig */,
+				B8C17F49517400F404CAB824 /* Pods-openlittermap.release.xcconfig */,
+				1257C4EE092B334539E88C84 /* Pods-openlittermap-openlittermapTests.debug.xcconfig */,
+				278DD5D3AA48C251640BB464 /* Pods-openlittermap-openlittermapTests.release.xcconfig */,
+				FF0FD8AC39BEB67CA4986DE1 /* Pods-openlittermap-tvOS.debug.xcconfig */,
+				46C9B33A21EAC97CB2B03394 /* Pods-openlittermap-tvOS.release.xcconfig */,
+				AD1A6237869C13616A815B6B /* Pods-openlittermap-tvOSTests.debug.xcconfig */,
+				81C26A194728F543C5A7891E /* Pods-openlittermap-tvOSTests.release.xcconfig */,
+>>>>>>> ca37ccff2071cad2b64d7c89a9816d9915368df9
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -347,12 +421,21 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 00E357021AD99517003FC87E /* Build configuration list for PBXNativeTarget "openlittermapTests" */;
 			buildPhases = (
+<<<<<<< HEAD
 				5EA44535CEE28B3BAD97F012 /* [CP] Check Pods Manifest.lock */,
 				00E356EA1AD99517003FC87E /* Sources */,
 				00E356EB1AD99517003FC87E /* Frameworks */,
 				00E356EC1AD99517003FC87E /* Resources */,
 				BE544C7EDC38E9E7A78DE8DD /* [CP] Embed Pods Frameworks */,
 				BF989D6A45C7F018DD4A53B8 /* [CP] Copy Pods Resources */,
+=======
+				0CCBB1446AE15514A87475BE /* [CP] Check Pods Manifest.lock */,
+				00E356EA1AD99517003FC87E /* Sources */,
+				00E356EB1AD99517003FC87E /* Frameworks */,
+				00E356EC1AD99517003FC87E /* Resources */,
+				AB837BA14A344AC3E73FD696 /* [CP] Embed Pods Frameworks */,
+				FE81E83A916B0EC9E2284631 /* [CP] Copy Pods Resources */,
+>>>>>>> ca37ccff2071cad2b64d7c89a9816d9915368df9
 			);
 			buildRules = (
 			);
@@ -368,15 +451,24 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "openlittermap" */;
 			buildPhases = (
+<<<<<<< HEAD
 				DE55C0CD22B968FDC3922651 /* [CP] Check Pods Manifest.lock */,
+=======
+				3B5116C76E483ADD4C3EFFFD /* [CP] Check Pods Manifest.lock */,
+>>>>>>> ca37ccff2071cad2b64d7c89a9816d9915368df9
 				FD10A7F022414F080027D42C /* Start Packager */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				FA8BA7FF793646A8B08C079F /* Upload Debug Symbols to Sentry */,
+<<<<<<< HEAD
 				59FEF942B8BC3C73D209BA52 /* [CP] Embed Pods Frameworks */,
 				84A631C450AADA5288166A6B /* [CP] Copy Pods Resources */,
+=======
+				AE88554192463D1DB60E2985 /* [CP] Embed Pods Frameworks */,
+				E1C0ADB0AB7BB134BA6F7A5D /* [CP] Copy Pods Resources */,
+>>>>>>> ca37ccff2071cad2b64d7c89a9816d9915368df9
 			);
 			buildRules = (
 			);
@@ -391,8 +483,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 2D02E4BA1E0B4A5E006451C7 /* Build configuration list for PBXNativeTarget "openlittermap-tvOS" */;
 			buildPhases = (
+<<<<<<< HEAD
 				BA9C16B076969067C266DC94 /* [CP] Check Pods Manifest.lock */,
 				61E8DAB761D9E7AF8F365ECF /* Bundle React Native Code And Images */,
+=======
+				76F47732A53716616FAE7D66 /* [CP] Check Pods Manifest.lock */,
+>>>>>>> ca37ccff2071cad2b64d7c89a9816d9915368df9
 				FD10A7F122414F3F0027D42C /* Start Packager */,
 				6DC52CB6488284B5D8B5753C /* Frameworks */,
 			);
@@ -409,7 +505,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 2D02E4BB1E0B4A5E006451C7 /* Build configuration list for PBXNativeTarget "openlittermap-tvOSTests" */;
 			buildPhases = (
+<<<<<<< HEAD
 				A15732BB1D90C0BD22CF676D /* [CP] Check Pods Manifest.lock */,
+=======
+				8F1F1E02DBD4551F9D3D3F6D /* [CP] Check Pods Manifest.lock */,
+>>>>>>> ca37ccff2071cad2b64d7c89a9816d9915368df9
 				2D02E48C1E0B4A5D006451C7 /* Sources */,
 				2D02E48D1E0B4A5D006451C7 /* Frameworks */,
 				2D02E48E1E0B4A5D006451C7 /* Resources */,
@@ -548,6 +648,7 @@
 			shellPath = /bin/sh;
 			shellScript = "export SENTRY_PROPERTIES=sentry.properties\nexport EXTRA_PACKAGER_ARGS=\"--sourcemap-output $DERIVED_FILE_DIR/main.jsbundle.map\"\nexport NODE_BINARY=node\n../node_modules/@sentry/cli/bin/sentry-cli react-native xcode ../node_modules/react-native/scripts/react-native-xcode.sh\n";
 		};
+<<<<<<< HEAD
 		59FEF942B8BC3C73D209BA52 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -566,6 +667,9 @@
 			showEnvVarsInLog = 0;
 		};
 		5EA44535CEE28B3BAD97F012 /* [CP] Check Pods Manifest.lock */ = {
+=======
+		0CCBB1446AE15514A87475BE /* [CP] Check Pods Manifest.lock */ = {
+>>>>>>> ca37ccff2071cad2b64d7c89a9816d9915368df9
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -587,7 +691,11 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
+<<<<<<< HEAD
 		61E8DAB761D9E7AF8F365ECF /* Bundle React Native Code And Images */ = {
+=======
+		2D02E4CB1E0B4B27006451C7 /* Bundle React Native Code And Images */ = {
+>>>>>>> ca37ccff2071cad2b64d7c89a9816d9915368df9
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -602,12 +710,17 @@
 			shellPath = /bin/sh;
 			shellScript = "export SENTRY_PROPERTIES=sentry.properties\nexport EXTRA_PACKAGER_ARGS=\"--sourcemap-output $DERIVED_FILE_DIR/main.jsbundle.map\"\nexport NODE_BINARY=node\n../node_modules/@sentry/cli/bin/sentry-cli react-native xcode ../node_modules/react-native/scripts/react-native-xcode.sh";
 		};
+<<<<<<< HEAD
 		84A631C450AADA5288166A6B /* [CP] Copy Pods Resources */ = {
+=======
+		3B5116C76E483ADD4C3EFFFD /* [CP] Check Pods Manifest.lock */ = {
+>>>>>>> ca37ccff2071cad2b64d7c89a9816d9915368df9
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputFileListPaths = (
+<<<<<<< HEAD
 				"${PODS_ROOT}/Target Support Files/Pods-openlittermap/Pods-openlittermap-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
 			name = "[CP] Copy Pods Resources";
@@ -623,6 +736,8 @@
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+=======
+>>>>>>> ca37ccff2071cad2b64d7c89a9816d9915368df9
 			);
 			inputFileListPaths = (
 			);
@@ -634,6 +749,7 @@
 			outputFileListPaths = (
 			);
 			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-openlittermap-checkManifestLockResult.txt",
 				"$(DERIVED_FILE_DIR)/Pods-openlittermap-tvOSTests-checkManifestLockResult.txt",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -641,7 +757,26 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
+<<<<<<< HEAD
 		BA9C16B076969067C266DC94 /* [CP] Check Pods Manifest.lock */ = {
+=======
+		76F47732A53716616FAE7D66 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Bundle React Native Code And Images";
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-openlittermap-tvOS-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "export SENTRY_PROPERTIES=sentry.properties\nexport EXTRA_PACKAGER_ARGS=\"--sourcemap-output $DERIVED_FILE_DIR/main.jsbundle.map\"\nexport NODE_BINARY=node\n../node_modules/@sentry/cli/bin/sentry-cli react-native xcode ../node_modules/react-native/scripts/react-native-xcode.sh";
+		};
+		8F1F1E02DBD4551F9D3D3F6D /* [CP] Check Pods Manifest.lock */ = {
+>>>>>>> ca37ccff2071cad2b64d7c89a9816d9915368df9
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -656,14 +791,22 @@
 			outputFileListPaths = (
 			);
 			outputPaths = (
+<<<<<<< HEAD
 				"$(DERIVED_FILE_DIR)/Pods-openlittermap-tvOS-checkManifestLockResult.txt",
+=======
+				"$(DERIVED_FILE_DIR)/Pods-openlittermap-tvOSTests-checkManifestLockResult.txt",
+>>>>>>> ca37ccff2071cad2b64d7c89a9816d9915368df9
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
+<<<<<<< HEAD
 		BE544C7EDC38E9E7A78DE8DD /* [CP] Embed Pods Frameworks */ = {
+=======
+		AB837BA14A344AC3E73FD696 /* [CP] Embed Pods Frameworks */ = {
+>>>>>>> ca37ccff2071cad2b64d7c89a9816d9915368df9
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -680,12 +823,17 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-openlittermap-openlittermapTests/Pods-openlittermap-openlittermapTests-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
+<<<<<<< HEAD
 		BF989D6A45C7F018DD4A53B8 /* [CP] Copy Pods Resources */ = {
+=======
+		AE88554192463D1DB60E2985 /* [CP] Embed Pods Frameworks */ = {
+>>>>>>> ca37ccff2071cad2b64d7c89a9816d9915368df9
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputFileListPaths = (
+<<<<<<< HEAD
 				"${PODS_ROOT}/Target Support Files/Pods-openlittermap-openlittermapTests/Pods-openlittermap-openlittermapTests-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
 			name = "[CP] Copy Pods Resources";
@@ -698,11 +846,26 @@
 			showEnvVarsInLog = 0;
 		};
 		DE55C0CD22B968FDC3922651 /* [CP] Check Pods Manifest.lock */ = {
+=======
+				"${PODS_ROOT}/Target Support Files/Pods-openlittermap/Pods-openlittermap-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-openlittermap/Pods-openlittermap-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-openlittermap/Pods-openlittermap-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		E1C0ADB0AB7BB134BA6F7A5D /* [CP] Copy Pods Resources */ = {
+>>>>>>> ca37ccff2071cad2b64d7c89a9816d9915368df9
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputFileListPaths = (
+<<<<<<< HEAD
 			);
 			inputPaths = (
 				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
@@ -717,6 +880,17 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+=======
+				"${PODS_ROOT}/Target Support Files/Pods-openlittermap/Pods-openlittermap-resources-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-openlittermap/Pods-openlittermap-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-openlittermap/Pods-openlittermap-resources.sh\"\n";
+>>>>>>> ca37ccff2071cad2b64d7c89a9816d9915368df9
 			showEnvVarsInLog = 0;
 		};
 		FA8BA7FF793646A8B08C079F /* Upload Debug Symbols to Sentry */ = {
@@ -771,6 +945,26 @@
 			shellScript = "export RCT_METRO_PORT=\"${RCT_METRO_PORT:=8081}\"\necho \"export RCT_METRO_PORT=${RCT_METRO_PORT}\" > \"${SRCROOT}/../node_modules/react-native/scripts/.packager.env\"\nif [ -z \"${RCT_NO_LAUNCH_PACKAGER+xxx}\" ] ; then\n  if nc -w 5 -z localhost ${RCT_METRO_PORT} ; then\n    if ! curl -s \"http://localhost:${RCT_METRO_PORT}/status\" | grep -q \"packager-status:running\" ; then\n      echo \"Port ${RCT_METRO_PORT} already in use, packager is either not running or not running correctly\"\n      exit 2\n    fi\n  else\n    open \"$SRCROOT/../node_modules/react-native/scripts/launchPackager.command\" || echo \"Can't start packager automatically\"\n  fi\nfi\n";
 			showEnvVarsInLog = 0;
 		};
+<<<<<<< HEAD
+=======
+		FE81E83A916B0EC9E2284631 /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-openlittermap-openlittermapTests/Pods-openlittermap-openlittermapTests-resources-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-openlittermap-openlittermapTests/Pods-openlittermap-openlittermapTests-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-openlittermap-openlittermapTests/Pods-openlittermap-openlittermapTests-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+>>>>>>> ca37ccff2071cad2b64d7c89a9816d9915368df9
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -837,7 +1031,11 @@
 /* Begin XCBuildConfiguration section */
 		00E356F61AD99517003FC87E /* Debug */ = {
 			isa = XCBuildConfiguration;
+<<<<<<< HEAD
 			baseConfigurationReference = 524DC0D324440EF901F857AD /* Pods-openlittermap-openlittermapTests.debug.xcconfig */;
+=======
+			baseConfigurationReference = 1257C4EE092B334539E88C84 /* Pods-openlittermap-openlittermapTests.debug.xcconfig */;
+>>>>>>> ca37ccff2071cad2b64d7c89a9816d9915368df9
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CLANG_ENABLE_MODULES = YES;
@@ -869,7 +1067,11 @@
 		};
 		00E356F71AD99517003FC87E /* Release */ = {
 			isa = XCBuildConfiguration;
+<<<<<<< HEAD
 			baseConfigurationReference = 41281E439BF4D107C7A90076 /* Pods-openlittermap-openlittermapTests.release.xcconfig */;
+=======
+			baseConfigurationReference = 278DD5D3AA48C251640BB464 /* Pods-openlittermap-openlittermapTests.release.xcconfig */;
+>>>>>>> ca37ccff2071cad2b64d7c89a9816d9915368df9
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CLANG_ENABLE_MODULES = YES;
@@ -897,23 +1099,27 @@
 		};
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
+<<<<<<< HEAD
 			baseConfigurationReference = 23FE6CD2C06E3D5EB86FBB22 /* Pods-openlittermap.debug.xcconfig */;
+=======
+			baseConfigurationReference = 301F31B2F87F2695909E25E7 /* Pods-openlittermap.debug.xcconfig */;
+>>>>>>> ca37ccff2071cad2b64d7c89a9816d9915368df9
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 39;
+				CURRENT_PROJECT_VERSION = 43;
 				DEAD_CODE_STRIPPING = NO;
 				DEVELOPMENT_TEAM = QWDQLVZP87;
 				INFOPLIST_FILE = openlittermap/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 3.0.3;
+				MARKETING_VERSION = 3.2.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -931,22 +1137,26 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
+<<<<<<< HEAD
 			baseConfigurationReference = CDA5D5BFD3B72E410AAC56FE /* Pods-openlittermap.release.xcconfig */;
+=======
+			baseConfigurationReference = B8C17F49517400F404CAB824 /* Pods-openlittermap.release.xcconfig */;
+>>>>>>> ca37ccff2071cad2b64d7c89a9816d9915368df9
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 39;
+				CURRENT_PROJECT_VERSION = 43;
 				DEVELOPMENT_TEAM = QWDQLVZP87;
 				INFOPLIST_FILE = openlittermap/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 10.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 3.0.3;
+				MARKETING_VERSION = 3.2.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -963,7 +1173,11 @@
 		};
 		2D02E4971E0B4A5E006451C7 /* Debug */ = {
 			isa = XCBuildConfiguration;
+<<<<<<< HEAD
 			baseConfigurationReference = CA57C0EC354708F62F6C572F /* Pods-openlittermap-tvOS.debug.xcconfig */;
+=======
+			baseConfigurationReference = FF0FD8AC39BEB67CA4986DE1 /* Pods-openlittermap-tvOS.debug.xcconfig */;
+>>>>>>> ca37ccff2071cad2b64d7c89a9816d9915368df9
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = "App Icon & Top Shelf Image";
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
@@ -999,7 +1213,11 @@
 		};
 		2D02E4981E0B4A5E006451C7 /* Release */ = {
 			isa = XCBuildConfiguration;
+<<<<<<< HEAD
 			baseConfigurationReference = 6D33751B8D943878345B2524 /* Pods-openlittermap-tvOS.release.xcconfig */;
+=======
+			baseConfigurationReference = 46C9B33A21EAC97CB2B03394 /* Pods-openlittermap-tvOS.release.xcconfig */;
+>>>>>>> ca37ccff2071cad2b64d7c89a9816d9915368df9
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = "App Icon & Top Shelf Image";
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
@@ -1034,7 +1252,11 @@
 		};
 		2D02E4991E0B4A5E006451C7 /* Debug */ = {
 			isa = XCBuildConfiguration;
+<<<<<<< HEAD
 			baseConfigurationReference = E0031DCB300BD298E0413609 /* Pods-openlittermap-tvOSTests.debug.xcconfig */;
+=======
+			baseConfigurationReference = AD1A6237869C13616A815B6B /* Pods-openlittermap-tvOSTests.debug.xcconfig */;
+>>>>>>> ca37ccff2071cad2b64d7c89a9816d9915368df9
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CLANG_ANALYZER_NONNULL = YES;
@@ -1070,7 +1292,11 @@
 		};
 		2D02E49A1E0B4A5E006451C7 /* Release */ = {
 			isa = XCBuildConfiguration;
+<<<<<<< HEAD
 			baseConfigurationReference = 8669AF5433BB0C32CFFAFFA4 /* Pods-openlittermap-tvOSTests.release.xcconfig */;
+=======
+			baseConfigurationReference = 81C26A194728F543C5A7891E /* Pods-openlittermap-tvOSTests.release.xcconfig */;
+>>>>>>> ca37ccff2071cad2b64d7c89a9816d9915368df9
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CLANG_ANALYZER_NONNULL = YES;

@@ -13,9 +13,9 @@ import {
 import { getTranslation, TransText } from 'react-native-translation';
 import { Icon as ElementIcon } from 'react-native-elements';
 import { connect } from 'react-redux';
-import { Header, SubTitle, Body } from '../components';
+import { Header, SubTitle, Body } from '../../components';
 import Icon from 'react-native-vector-icons/Ionicons';
-import * as actions from '../../actions';
+import * as actions from '../../../actions';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;

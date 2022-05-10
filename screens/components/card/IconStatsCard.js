@@ -31,20 +31,21 @@ const IconStatsCard = ({
     imageContent,
     contentCenter,
     ordinal,
-    backgroundColor = Colors.accentLight
+    backgroundColor = Colors.accentLight,
+    width
 }) => {
     return (
         <View
             style={[
                 styles.container,
-                contentCenter && { alignItems: 'center' },
+                contentCenter && { alignItems: 'center', width: width },
                 {
                     backgroundColor
                 },
                 style
             ]}>
             {imageContent && (
-                <View style={{ marginBottom: 10 }}>{imageContent}</View>
+                <View style={{ marginBottom: 6 }}>{imageContent}</View>
             )}
 
             <Title
@@ -88,17 +89,18 @@ IconStatsCard.propTypes = {
     backgroundColor: PropTypes.string,
     contentCenter: PropTypes.bool,
     ordinal: PropTypes.bool,
-    imageContent: PropTypes.element
+    imageContent: PropTypes.element,
+    width: PropTypes.number
 };
 
 const styles = StyleSheet.create({
     container: {
         justifyContent: 'center',
-        padding: 20,
+        padding: 10,
         borderRadius: 12,
-        margin: 10,
-        width: width / 2 - 30,
-        height: 140
+        margin: 10
+        // width: width / 2 - 30,
+        // height: width / 3
         // flex: 1
     }
 });

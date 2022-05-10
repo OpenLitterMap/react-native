@@ -2,7 +2,7 @@
     "add-tag": "Ajouter une étiquette",
     "confirm": "Confirmer",
     "type-to-suggest": "Tapez pour suggérer des étiquette",
-    "suggested-tags": "Etiquettes suggérées",
+    "suggested-tags": "Etiquettes suggérées {count}",
     "alert": "Alerte",
     "still-there": "Les déchets sont toujours là",
     "picked-up": "Les déchets ont été collectés",
