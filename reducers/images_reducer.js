@@ -12,7 +12,9 @@ import {
     REMOVE_TAG_FROM_IMAGE,
     TOGGLE_PICKED_UP,
     TOGGLE_SELECTING,
-    TOGGLE_SELECTED_IMAGES
+    TOGGLE_SELECTED_IMAGES,
+    ADD_CUSTOM_TAG_TO_IMAGE,
+    REMOVE_CUSTOM_TAG_FROM_IMAGE
 } from '../actions/types';
 
 const INITIAL_STATE = {
@@ -84,9 +86,23 @@ export default function(state = INITIAL_STATE, action) {
 
             /**
              * Add or update tags object on a gallery image
+             *
+             * payload = {tag, currentIndex, quantityChanged}
+             * quantityChanged = true if quantity is changed from picker wheel
+             *
+             * check if tag `category` already exist on image index
+             * if false --> add tag to image
+             * if true --> check if title is already present
+             * title if false --> add tag title to the category with quantity: 1
+             * title is true (already present) -->
+             * if quantityChanged change the quantity to that number
+             * else add 1 to quantity
+             *
+             * after adding tag save tag to previousTags array.
+             * max 10 tags in previousTags array remove old tags if it exceeds limits.
              */
 
-            case ADD_TAG_TO_IMAGE:
+            case ADD_TAG_TO_IMAGE: {
                 let image = draft.imagesArray[action.payload.currentIndex];
                 let newTags = image.tags;
 
@@ -133,7 +149,7 @@ export default function(state = INITIAL_STATE, action) {
                 // if item in array remove it and add to the start of array
 
                 if (prevImgIndex === -1) {
-                    if (draft.previousTags.length <= 10) {
+                    if (draft.previousTags.length < 10) {
                         draft.previousTags.unshift({
                             category: payloadCategory,
                             key: payloadTitle
@@ -152,9 +168,53 @@ export default function(state = INITIAL_STATE, action) {
                         key: payloadTitle
                     });
                 }
-                // draft.previousTags = [];
-                break;
 
+                break;
+            }
+            case ADD_CUSTOM_TAG_TO_IMAGE: {
+                let currentImage =
+                    draft.imagesArray[action.payload.currentIndex];
+                let customTags = action.payload.tag;
+
+                if (currentImage.customTags) {
+                    currentImage.customTags.push(customTags);
+                } else {
+                    currentImage.customTags = [customTags];
+                }
+
+                // check if tag already exist in prev tags array
+                const prevImgIndex = draft.previousTags.findIndex(
+                    tag => tag.key === action.payload.tag
+                );
+
+                // if tag doesn't exist add tag to array
+                // if length < 10 then add at the start of array
+                // else remove the last element and add new tag to the start of array
+
+                // if item in array remove it and add to the start of array
+
+                if (prevImgIndex === -1) {
+                    if (draft.previousTags.length < 10) {
+                        draft.previousTags.unshift({
+                            category: 'custom-tag',
+                            key: action.payload.tag
+                        });
+                    } else {
+                        draft.previousTags.pop();
+                        draft.previousTags.unshift({
+                            category: 'custom-tag',
+                            key: action.payload.tag
+                        });
+                    }
+                } else {
+                    draft.previousTags.splice(prevImgIndex, 1);
+                    draft.previousTags.unshift({
+                        category: 'custom-tag',
+                        key: action.payload.tag
+                    });
+                }
+                break;
+            }
             /**
              * Changes litter picked up status of all images
              * to payload
@@ -244,6 +304,11 @@ export default function(state = INITIAL_STATE, action) {
 
                 break;
 
+            case REMOVE_CUSTOM_TAG_FROM_IMAGE:
+                draft.imagesArray[
+                    action.payload.currentIndex
+                ].customTags.splice(action.payload.tagIndex, 1);
+                break;
             /**
              * toggles picked_up status on an image based on id
              */
