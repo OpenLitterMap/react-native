@@ -21,7 +21,8 @@ class LitterBottomSearch extends PureComponent {
         super(props);
 
         this.state = {
-            text: ''
+            text: '',
+            customTagError: ''
         };
     }
 
@@ -39,7 +40,8 @@ class LitterBottomSearch extends PureComponent {
 
         this.props.addTagToImage({
             tag: newTag,
-            currentIndex
+            currentIndex,
+            quantityChanged: false
         });
 
         // clears text filed after one tag is selected
@@ -47,10 +49,100 @@ class LitterBottomSearch extends PureComponent {
     }
 
     /**
+     * Add custom tag to images
+     * only 3 custom tags can be added per image
+     */
+
+    addCustomTag = async tag => {
+        // reset tags error
+        this.setState({ customTagError: '' });
+        const isCustomTagValid = await this.validateCustomTag(tag);
+
+        if (isCustomTagValid) {
+            // currentGlobalIndex
+            const currentIndex = this.props.swiperIndex;
+
+            this.props.addCustomTagToImage({
+                tag: tag,
+                currentIndex
+            });
+            this.updateText('');
+        }
+    };
+
+    /**
+     * fn to validate custom tags
+     *
+     * should be between 3-100 characters length
+     * should be unique (case insensitive)
+     * max 3 custom tags per image
+     *
+     */
+    validateCustomTag = async inputText => {
+        const lang = this.props.lang;
+        const customTagsArray = this.props.images[this.props.swiperIndex]
+            ?.customTags;
+        let result = false;
+
+        // check min 3 and max 100 characters
+        if (inputText.length >= 3 && inputText.length < 100) {
+            result = true;
+        } else {
+            inputText.length < 3
+                ? this.setState({
+                      customTagError: `${lang}.tag.custom-tags-min`
+                  })
+                : this.setState({
+                      customTagError: `${lang}.tag.custom-tags-max`
+                  });
+            return false;
+        }
+
+        // below checks are only required if customTagsArray is defined
+        // on a new image it's undefined till atleast one custom tag is added
+        if (customTagsArray) {
+            // check if tag already exist
+            if (
+                await customTagsArray?.some(
+                    tag => tag.toLowerCase() === inputText.toLowerCase()
+                )
+            ) {
+                this.setState({
+                    customTagError: `${lang}.tag.tag-already-added`
+                });
+                return false;
+            } else {
+                result = true;
+            }
+
+            // check if only 3 custom tags are added
+            if (customTagsArray?.length < 3) {
+                result = true;
+            } else {
+                this.setState({
+                    customTagError: `${lang}.tag.tag-limit-reached`
+                });
+                return false;
+            }
+        }
+
+        return result;
+    };
+
+    /**
      *
      */
     clear() {
         this.setState({ text: '' });
+    }
+
+    /**
+     * Update text
+     */
+    updateText(text) {
+        this.setState({ text });
+
+        this.props.suggestTags(text, this.props.lang);
     }
 
     /**
@@ -67,34 +159,36 @@ class LitterBottomSearch extends PureComponent {
      * Render a suggested tag
      */
     renderTag = ({ item }) => {
+        const isCustomTag = item?.category === 'custom-tag';
         return (
             <Pressable
                 style={styles.tag}
-                onPress={this.addTag.bind(this, item)}>
+                onPress={() => {
+                    isCustomTag
+                        ? this.addCustomTag(item.key)
+                        : this.addTag(item);
+                }}>
                 <Caption
                     // style={styles.category}
                     dictionary={`${this.props.lang}.litter.categories.${
                         item.category
                     }`}
                 />
+                {/* show translated tag only if it's not a custom tag */}
                 <Body
                     style={styles.item}
-                    dictionary={`${this.props.lang}.litter.${item.category}.${
-                        item.key
-                    }`}
-                />
+                    dictionary={
+                        !isCustomTag
+                            ? `${this.props.lang}.litter.${item.category}.${
+                                  item.key
+                              }`
+                            : ''
+                    }>
+                    {item.key}
+                </Body>
             </Pressable>
         );
     };
-
-    /**
-     * Update text
-     */
-    updateText(text) {
-        this.setState({ text });
-
-        this.props.suggestTags(text, this.props.lang);
-    }
 
     render() {
         const lang = this.props.lang;
@@ -103,6 +197,7 @@ class LitterBottomSearch extends PureComponent {
             <View>
                 <View style={{ paddingHorizontal: 20, paddingVertical: 10 }}>
                     <TextInput
+                        autoCorrect={false}
                         style={styles.textFieldStyle}
                         placeholder={suggest}
                         placeholderTextColor={Colors.muted}
@@ -111,11 +206,15 @@ class LitterBottomSearch extends PureComponent {
                         blurOnSubmit={false}
                         clearButtonMode="always"
                         value={this.state.text}
-                        onSubmitEditing={() => {
-                            this.updateText('');
-                            Keyboard.dismiss();
-                        }}
+                        onSubmitEditing={() =>
+                            this.addCustomTag(this.state.text)
+                        }
                     />
+                    <Caption
+                        color="error"
+                        dictionary={this.state.customTagError}>
+                        {this.state.customTagError}
+                    </Caption>
                 </View>
 
                 {this.props.isKeyboardOpen && (

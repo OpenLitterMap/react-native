@@ -11,7 +11,8 @@
         "other": "Autre",
         "sanitary": "Sanitaire",
         "softdrinks": "Boissons non alcoolisées",
-        "smoking": "Fumeur"
+        "smoking": "Fumeur",
+        "custom-tag": "Balise personnalisée"
     },
     "smoking": {
         "butts": "Cigarettes / mégots",

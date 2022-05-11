@@ -12,7 +12,8 @@
         "other": "Other",
         "sanitary": "Sanitary",
         "softdrinks": "Soft Drinks",
-        "smoking": "Smoking"
+        "smoking": "Smoking",
+        "custom-tag": "Custom Tag"
     },
     "smoking": {
         "butts": "Cigarettes/Butts",

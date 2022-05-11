@@ -11,5 +11,10 @@
     "not-picked-thumb": "Nicht abgeholt 👎🏻",
     "delete-message": "Möchten Sie dieses Bild wirklich löschen?",
     "cancel": "Abbrechen",
-    "delete": "Ja, löschen"
+    "delete": "Ja, löschen",
+    "custom-tags": "Custom Tags",
+    "custom-tags-min": "Es muss mindestens 3 Zeichen lang sein",
+    "custom-tags-max": "Es darf höchstens 100 Zeichen lang sein",
+    "tag-already-added": "Tag bereits hinzugefügt",
+    "tag-limit-reached": "Sie können bis zu 3 benutzerdefinierte Tags hochladen"
 }

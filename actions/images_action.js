@@ -2,6 +2,7 @@ import axios from 'axios';
 import {
     ADD_IMAGES,
     ADD_TAG_TO_IMAGE,
+    ADD_CUSTOM_TAG_TO_IMAGE,
     CHANGE_LITTER_STATUS,
     DECREMENT_SELECTED,
     DELETE_IMAGE,
@@ -9,6 +10,7 @@ import {
     DESELECT_ALL_IMAGES,
     INCREMENT_SELECTED,
     REMOVE_TAG_FROM_IMAGE,
+    REMOVE_CUSTOM_TAG_FROM_IMAGE,
     TOGGLE_PICKED_UP,
     TOGGLE_SELECTING,
     TOGGLE_SELECTED_IMAGES,
@@ -31,10 +33,20 @@ export const addImages = (images, type, picked_up) => {
 /**
  * Add tag to image
  */
-export const addTagToImage = payload => {
+export const addTagToImage = ({ tag, currentIndex, quantityChanged }) => {
     return {
         type: ADD_TAG_TO_IMAGE,
-        payload: payload
+        payload: { tag, currentIndex, quantityChanged }
+    };
+};
+
+/**
+ * Add tag to image
+ */
+export const addCustomTagToImage = ({ tag, currentIndex }) => {
+    return {
+        type: ADD_CUSTOM_TAG_TO_IMAGE,
+        payload: { tag, currentIndex }
     };
 };
 
@@ -173,6 +185,18 @@ export const removeTagFromImage = data => {
     return {
         type: REMOVE_TAG_FROM_IMAGE,
         payload: data
+    };
+};
+
+/**
+ * remove custom tag from image
+ * @param {number} tagIndex --> index of tag in customTags array.
+ * @param {number} currentIndex --> current index of image
+ */
+export const removeCustomTagFromImage = ({ tagIndex, currentIndex }) => {
+    return {
+        type: REMOVE_CUSTOM_TAG_FROM_IMAGE,
+        payload: { tagIndex, currentIndex }
     };
 };
 

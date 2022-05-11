@@ -5,8 +5,42 @@ import { Colors, Body, Caption } from '../../components';
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 /**
- * component to show added tags on image when AddTags screen is opened
+ * Card component to show added tags on image when AddTags screen is opened
  * shown below Litter Status card
+ *
+ * @param {Object} tag -- > Object of tags
+ * @param {String} lang --> Selected Global Language
+ */
+
+const LitterTagsCard = ({ tags, customTags, lang }) => {
+    const isTagged =
+        (customTags && customTags.length > 0) ||
+        (tags && Object.keys(tags)?.length !== 0);
+    return (
+        <>
+            {/* Only show if atleast one tag or one custom tag is present */}
+            {isTagged && (
+                <View style={[styles.card]}>
+                    <Caption>Tags</Caption>
+
+                    <ScrollView
+                        showsVerticalScrollIndicator={false}
+                        alwaysBounceVertical={false}
+                        style={{ marginTop: 8 }}>
+                        {customTags && (
+                            <RenderCustomTags customTags={customTags} />
+                        )}
+
+                        <RenderTags tags={tags} lang={lang} />
+                    </ScrollView>
+                </View>
+            )}
+        </>
+    );
+};
+
+/**
+ * Component to render tags
  *
  * Loop over Array of keys of tag Object to get Categories
  * Then loop again Key of categories Object to get individual tag and its quantity
@@ -18,59 +52,67 @@ const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
  * }
  * @param {Object} tag -- > Object of tags
  * @param {String} lang --> Selected Global Language
- * @returns
  */
-const LitterTagsCard = ({ tags, lang }) => {
+
+const RenderTags = ({ tags, lang }) => {
     return (
         <>
-            {/* Only show if atleast one tag is present */}
-            {tags && Object.keys(tags)?.length !== 0 && (
-                <View style={[styles.card]}>
-                    <Caption>Tags</Caption>
-
-                    <ScrollView
-                        showsVerticalScrollIndicator={false}
-                        alwaysBounceVertical={false}
-                        style={{ marginTop: 8 }}>
-                        {Object?.keys(tags)?.map(category => {
-                            return (
-                                <View key={category}>
-                                    <Body
-                                        dictionary={`${lang}.litter.categories.${category}`}
-                                    />
-                                    <View
-                                        style={{
-                                            flexDirection: 'row',
-                                            flexWrap: 'wrap'
-                                        }}>
-                                        {Object?.keys(tags[category])?.map(
-                                            tag => {
-                                                const value =
-                                                    tags[category][tag];
-                                                return (
-                                                    <View
-                                                        key={tag}
-                                                        style={
-                                                            styles.tagBadges
-                                                        }>
-                                                        <Caption
-                                                            color="text"
-                                                            dictionary={`${lang}.litter.${category}.${tag}`}
-                                                        />
-                                                        <Caption color="text">
-                                                            : {value} &nbsp;
-                                                        </Caption>
-                                                    </View>
-                                                );
-                                            }
-                                        )}
+            {Object?.keys(tags)?.map(category => {
+                return (
+                    <View key={category}>
+                        <Body
+                            dictionary={`${lang}.litter.categories.${category}`}
+                        />
+                        <View
+                            style={{
+                                flexDirection: 'row',
+                                flexWrap: 'wrap'
+                            }}>
+                            {Object?.keys(tags[category])?.map(tag => {
+                                const value = tags[category][tag];
+                                return (
+                                    <View key={tag} style={styles.tagBadges}>
+                                        <Caption
+                                            color="text"
+                                            dictionary={`${lang}.litter.${category}.${tag}`}
+                                        />
+                                        <Caption color="text">
+                                            : {value} &nbsp;
+                                        </Caption>
                                     </View>
-                                </View>
-                            );
-                        })}
-                    </ScrollView>
+                                );
+                            })}
+                        </View>
+                    </View>
+                );
+            })}
+        </>
+    );
+};
+
+/**
+ * component to render custom tags
+ * @param {Array<string>} customTags
+ */
+const RenderCustomTags = ({ customTags }) => {
+    return (
+        <>
+            <View>
+                <Body>Custom Tags</Body>
+                <View
+                    style={{
+                        flexDirection: 'row',
+                        flexWrap: 'wrap'
+                    }}>
+                    {customTags?.map(tag => {
+                        return (
+                            <View key={tag} style={styles.tagBadges}>
+                                <Caption color="text">{tag}</Caption>
+                            </View>
+                        );
+                    })}
                 </View>
-            )}
+            </View>
         </>
     );
 };

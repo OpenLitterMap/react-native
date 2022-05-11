@@ -34,15 +34,7 @@ class LitterTags extends Component {
                         <Pressable
                             key={tag}
                             onPress={this.removeTag.bind(this, category, tag)}
-                            onLayout={event => {
-                                const layout = event.nativeEvent.layout;
-
-                                this.scrollRef.current.scrollTo({
-                                    x: layout.x,
-                                    y: layout.y,
-                                    animated: true
-                                });
-                            }}>
+                            onLayout={event => this.scrollTo(event)}>
                             <View style={styles.card}>
                                 <Caption
                                     dictionary={`${
@@ -80,6 +72,48 @@ class LitterTags extends Component {
     }
 
     /**
+     * fn to render custom tags
+     * Array<string> customTags is present in image object
+     */
+
+    renderCustomTags() {
+        if (this.props.customTags) {
+            return this.props.customTags.map((customTag, index) => {
+                return (
+                    <Pressable
+                        key={customTag}
+                        onPress={() =>
+                            this.props.removeCustomTagFromImage({
+                                tagIndex: index,
+                                currentIndex: this.props.swiperIndex
+                            })
+                        }
+                        onLayout={event => this.scrollTo(event)}>
+                        <View style={styles.card}>
+                            <Caption>Custom Tag</Caption>
+
+                            <Body>{customTag}</Body>
+                        </View>
+                    </Pressable>
+                );
+            });
+        }
+    }
+
+    /**
+     * fn to scroll scrollview to location of the new tag
+     */
+    scrollTo(event) {
+        const layout = event.nativeEvent.layout;
+
+        this.scrollRef.current.scrollTo({
+            x: layout.x,
+            y: layout.y,
+            animated: true
+        });
+    }
+
+    /**
      * Loop over each category, and loop over each item in each category
      */
     render() {
@@ -94,6 +128,7 @@ class LitterTags extends Component {
                     bounces={false}
                     horizontal={true}
                     showsHorizontalScrollIndicator={false}>
+                    {this.renderCustomTags()}
                     {this.renderTags()}
                 </ScrollView>
             </View>
