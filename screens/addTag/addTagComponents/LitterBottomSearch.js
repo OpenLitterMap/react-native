@@ -11,7 +11,7 @@ import {
 import { getTranslation } from 'react-native-translation';
 import { connect } from 'react-redux';
 import * as actions from '../../../actions';
-import { Body, Caption, Colors } from '../../components';
+import { Body, Caption, Colors, CustomTextInput } from '../../components';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -30,6 +30,8 @@ class LitterBottomSearch extends PureComponent {
      * A tag has been selected
      */
     addTag(tag) {
+        // reset tags error
+        this.setState({ customTagError: '' });
         const newTag = {
             category: tag.category,
             title: tag.key
@@ -196,25 +198,21 @@ class LitterBottomSearch extends PureComponent {
         return (
             <View>
                 <View style={{ paddingHorizontal: 20, paddingVertical: 10 }}>
-                    <TextInput
+                    <CustomTextInput
                         autoCorrect={false}
                         style={styles.textFieldStyle}
                         placeholder={suggest}
                         placeholderTextColor={Colors.muted}
                         onChangeText={text => this.updateText(text)}
-                        selectionColor="black"
                         blurOnSubmit={false}
                         clearButtonMode="always"
                         value={this.state.text}
                         onSubmitEditing={() =>
                             this.addCustomTag(this.state.text)
                         }
+                        touched={this.state.customTagError ? true : false}
+                        error={this.state.customTagError}
                     />
-                    <Caption
-                        color="error"
-                        dictionary={this.state.customTagError}>
-                        {this.state.customTagError}
-                    </Caption>
                 </View>
 
                 {this.props.isKeyboardOpen && (
@@ -253,13 +251,7 @@ class LitterBottomSearch extends PureComponent {
 
 const styles = StyleSheet.create({
     textFieldStyle: {
-        width: SCREEN_WIDTH - 40,
-        height: 60,
-        backgroundColor: '#fafafa',
-        borderRadius: 12,
-        padding: 10,
-        borderColor: Colors.muted,
-        borderWidth: 0.5
+        padding: 10
     },
 
     category: {
