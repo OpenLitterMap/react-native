@@ -13,8 +13,8 @@
     "cancel": "Annuler",
     "delete": "Oui, supprimer",
     "custom-tags": "Custom Tags",
-    "custom-tags-min": "Il doit comporter au moins 3 caractères",
-    "custom-tags-max": "Il doit comporter au maximum 100 caractères",
+    "custom-tags-min": "Le tag doit comporter au moins 3 caractères",
+    "custom-tags-max": "Le tag peut être un maximum de 100 caractères",
     "tag-already-added": "Balise déjà ajoutée",
     "tag-limit-reached": "Vous pouvez télécharger jusqu'à 3 balises personnalisées"
 }
