@@ -13,8 +13,8 @@
     "cancel": "Annuleren",
     "delete": "Ja, verwijderen",
     "custom-tags": "Aangepaste Tags",
-    "custom-tags-min": "Het moet minimaal 3 tekens lang zijn.",
-    "custom-tags-max": "Het mag maximaal 100 tekens lang zijn.",
+    "custom-tags-min": "Tag moet minimaal 3 tekens lang zijn",
+    "custom-tags-max": "Tag mag maximaal 100 tekens bevatten",
     "tag-already-added": "Tag al toegevoegd.",
     "tag-limit-reached": "U kunt maximaal 3 aangepaste tags uploaden."
 }

@@ -13,8 +13,8 @@
     "cancel": "Cancelar",
     "delete": "Sim, Excluir",
     "custom-tags": "Etiquetas Personalizadas",
-    "custom-tags-min": "Ele precisa ter pelo menos 3 caracteres.",
-    "custom-tags-max": "Ele precisa ter no máximo 100 caracteres.",
+    "custom-tags-min": "A tag precisa ter pelo menos 3 caracteres",
+    "custom-tags-max": "A tag pode ter no máximo 100 caracteres",
     "tag-already-added": "Etiqueta já adicionada.",
     "tag-limit-reached": "Você pode fazer upload de até 3 etiquetas personalizadas."
 }
