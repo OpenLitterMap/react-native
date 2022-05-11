@@ -13,7 +13,7 @@
     "cancel": "Cancel",
     "delete": "Yes, Delete",
     "custom-tags": "Custom Tags",
-    "custom-tags-min": "يجب أن تتكون العلامة من 3 أحرف على الأقل",
+    "custom-tags-min": "Tag needs to be at least 3 characters long",
     "custom-tags-max": "Tag can be a maximum of 100 characters",
     "tag-already-added": "Tag already added",
     "tag-limit-reached": "You can upload up to 3 custom tags."
