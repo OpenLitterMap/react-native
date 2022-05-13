@@ -1,4 +1,5 @@
 import axios from 'axios';
+import * as Sentry from '@sentry/react-native';
 import {
     ADD_IMAGES,
     ADD_TAG_TO_IMAGE,
@@ -252,9 +253,15 @@ export const uploadImage = (token, image, imageId) => {
             });
         } catch (error) {
             if (error.response) {
-                console.log(
-                    'ERROR: shared_actions.upload_photo',
-                    JSON.stringify(error?.response?.data, null, 2)
+                // log error in sentry
+                Sentry.captureException(
+                    JSON.stringify(error?.response?.data, null, 2),
+                    {
+                        level: 'error',
+                        tags: {
+                            section: 'image_upload'
+                        }
+                    }
                 );
             } else {
                 // Other errors -- NETWORK ERROR
@@ -265,7 +272,6 @@ export const uploadImage = (token, image, imageId) => {
                 success: false
             };
         }
-        console.log('Response: shared_actions.uploadPhoto', response?.data);
 
         if (response && response.data?.success) {
             dispatch({
