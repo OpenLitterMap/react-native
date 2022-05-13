@@ -15,6 +15,7 @@ import {
     URL
 } from './types';
 import axios from 'axios';
+import * as Sentry from '@sentry/react-native';
 
 export const changeLang = lang => {
     return {
@@ -359,6 +360,10 @@ export const fetchUser = token => {
         }
         if (response && response.status === 200 && response.data) {
             const userObj = response.data;
+            // Adding context -- user to Sentry
+            // will be able to identify the user who faced the errors.
+            Sentry.setUser({ email: userObj?.email, id: userObj?.id });
+
             dispatch({
                 type: USER_FOUND,
                 payload: { userObj, token }
