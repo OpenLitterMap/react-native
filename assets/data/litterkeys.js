@@ -237,9 +237,11 @@ const LITTERKEYS = {
         'tayto', // Tayto
         'tesco', // Tesco
         'thins', // Thins
+        'tim_hortons',
         'volvic', // Volvic
         'waitrose', // Waitrose
         'walkers', // Walkers
+        'wendys',
         'wilde_and_greene', // Wilde-and-Greene
         'woolworths', // Woolworths
         'wrigleys' // Wrigley

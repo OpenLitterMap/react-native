@@ -33,7 +33,8 @@ class LitterImage extends PureComponent {
         super(props);
 
         this.state = {
-            imageLoaded: false
+            imageLoaded: false,
+            isLongPress: false
         };
     }
 
@@ -82,8 +83,21 @@ class LitterImage extends PureComponent {
                     onGestureEvent={this.onPinchGestureEvent}
                     onHandlerStateChange={this.onPinchHandlerStateChange}>
                     <AnimatedPressable
+                        // if image is taped/ pressed once hide containers and show meta containers
                         onPress={() => {
-                            this.props.toggleFn();
+                            this.setState({ isLongPress: false });
+                            this.props.onImageTap();
+                        }}
+                        // if image is long pressed and  hold hide all containers
+                        onLongPress={() => {
+                            this.setState({ isLongPress: true });
+                            this.props.onLongPressStart();
+                        }}
+                        // if image is long pressed bring back all containers on pressOut
+                        // if image is not long pressed don't do anything and let onPress handle it
+                        onPressOut={() => {
+                            this.state.isLongPress &&
+                                this.props.onLongPressEnd();
                         }}
                         style={{ backgroundColor: 'black' }}>
                         <Animated.Image
