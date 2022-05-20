@@ -171,7 +171,6 @@ class LitterBottomSearch extends PureComponent {
                         : this.addTag(item);
                 }}>
                 <Caption
-                    // style={styles.category}
                     dictionary={`${this.props.lang}.litter.categories.${
                         item.category
                     }`}
@@ -197,7 +196,7 @@ class LitterBottomSearch extends PureComponent {
         const suggest = getTranslation(`${lang}.tag.type-to-suggest`);
         return (
             <View>
-                <View style={{ paddingHorizontal: 20, paddingVertical: 10 }}>
+                <View style={{ paddingHorizontal: 20 }}>
                     <CustomTextInput
                         autoCorrect={false}
                         style={styles.textFieldStyle}
@@ -252,10 +251,6 @@ class LitterBottomSearch extends PureComponent {
 const styles = StyleSheet.create({
     textFieldStyle: {
         padding: 10
-    },
-
-    category: {
-        marginBottom: SCREEN_HEIGHT * 0.01
     },
 
     item: {

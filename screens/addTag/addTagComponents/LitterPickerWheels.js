@@ -19,7 +19,8 @@ class LitterPickerWheels extends PureComponent {
         return (
             <View
                 style={{
-                    margin: 20,
+                    marginHorizontal: 20,
+                    marginBottom: 20,
                     flexDirection: 'row',
                     backgroundColor: '#fafafa',
                     borderRadius: 8
