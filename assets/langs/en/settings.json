@@ -4,6 +4,7 @@
     "name": "Name",
     "username": "Username",
     "email": "Email",
+    "social": "Social Accounts",
     "privacy": "PRIVACY",
     "show-name-maps": "Show Name on Maps",
     "show-username-maps": "Show Username on Maps",

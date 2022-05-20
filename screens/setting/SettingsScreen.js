@@ -30,6 +30,7 @@ class SettingsScreen extends Component {
         super(props);
 
         this.actionSheetRef = createRef();
+        console.log(JSON.stringify(this.props.user, null, 2));
     }
 
     render() {
@@ -109,6 +110,11 @@ class SettingsScreen extends Component {
                                             id: 3,
                                             key: 'email',
                                             title: 'settings.email'
+                                        },
+                                        {
+                                            id: 4,
+                                            key: 'social',
+                                            title: 'settings.social'
                                         }
                                     ]
                                 },
@@ -117,29 +123,35 @@ class SettingsScreen extends Component {
                                     data: [
                                         {
                                             id: 4,
+                                            key: 'name-maps',
                                             title: 'settings.show-name-maps'
                                         },
                                         {
                                             id: 5,
+                                            key: 'username-maps',
                                             title: 'settings.show-username-maps'
                                         },
                                         {
                                             id: 6,
+                                            key: 'name-leaderboard',
                                             title:
                                                 'settings.show-name-leaderboards'
                                         },
                                         {
                                             id: 7,
+                                            key: 'username-leaderboard',
                                             title:
                                                 'settings.show-username-leaderboards'
                                         },
                                         {
                                             id: 8,
+                                            key: 'name-createdby',
                                             title:
                                                 'settings.show-name-createdby'
                                         },
                                         {
                                             id: 9,
+                                            key: 'username-createdby',
                                             title:
                                                 'settings.show-username-createdby'
                                         }
@@ -150,6 +162,7 @@ class SettingsScreen extends Component {
                                     data: [
                                         {
                                             id: 11,
+                                            key: 'picked-up',
                                             title: 'settings.litter-picked-up'
                                         }
                                     ]
@@ -229,11 +242,14 @@ class SettingsScreen extends Component {
     }
 
     /**
-     * Custom Functions
+     * fn to render setting rows
+     * if item.key is "name", "username", "email"
+     * show values else show toggle switch
      */
     _renderRow(item) {
-        // name, username, email
-        if (item.id <= 3) {
+        const dataKeys = ['name', 'username', 'email'];
+
+        if (dataKeys.includes(item?.key)) {
             return (
                 <TouchableHighlight
                     underlayColor={'#95a5a6'}
