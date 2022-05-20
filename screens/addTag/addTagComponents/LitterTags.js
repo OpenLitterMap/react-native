@@ -123,7 +123,7 @@ class LitterTags extends Component {
                     width: SCREEN_WIDTH
                 }}>
                 <ScrollView
-                    contentContainerStyle={{ paddingHorizontal: 10 }}
+                    contentContainerStyle={{ padding: 10 }}
                     ref={this.scrollRef}
                     bounces={false}
                     horizontal={true}
