@@ -247,12 +247,11 @@ class SettingsScreen extends Component {
      * show values else show toggle switch
      */
     _renderRow(item) {
-        const dataKeys = ['name', 'username', 'email'];
+        const dataKeys = ['name', 'username', 'email', 'social'];
 
         if (dataKeys.includes(item?.key)) {
             return (
-                <TouchableHighlight
-                    underlayColor={'#95a5a6'}
+                <Pressable
                     style={{ flex: 1, padding: 10 }}
                     onPress={() =>
                         this._rowPressed(item.id, item.title, item.key)
@@ -263,16 +262,21 @@ class SettingsScreen extends Component {
                             justifyContent: 'space-between'
                         }}>
                         <Body dictionary={`${this.props.lang}.${item.title}`} />
-                        <Body>{this._getRowData(item.id)}</Body>
+                        {/* dont show any data if key is social
+                            we dont have any particular data to show now
+                        */}
+                        {item?.key !== 'social' && (
+                            <Body>{this._getRowData(item.id, item?.key)}</Body>
+                        )}
                     </View>
-                </TouchableHighlight>
+                </Pressable>
             );
         } else {
             return (
                 <View style={styles.switchRow}>
                     <Body dictionary={`${this.props.lang}.${item.title}`} />
 
-                    {this._getRowData(item.id)}
+                    {this._getRowData(item.id, item.key)}
                 </View>
             );
         }
@@ -281,22 +285,23 @@ class SettingsScreen extends Component {
     /**
      * Return the value for each row
      */
-    _getRowData(id) {
-        if (this.props.user) {
-            if (id === 1) {
+    _getRowData(id, key) {
+        switch (key) {
+            case 'name':
                 return this.props.user.name;
-            } else if (id === 2) {
+            case 'username':
                 return this.props.user.username;
-            } else if (id === 3) {
+            case 'email':
                 return this.props.user.email;
-            } else {
+            default:
                 return (
                     <Switch
                         onValueChange={() => this._toggleSwitch(id)}
-                        value={this._getSwitchValue(id) === 0 ? false : true}
+                        value={
+                            this._getSwitchValue(id, key) === 0 ? false : true
+                        }
                     />
                 );
-            }
         }
     }
 
@@ -359,32 +364,25 @@ class SettingsScreen extends Component {
      * INFO: show_name , show_username and picked_up have boolean values
      * rest have 0 & 1
      */
-    _getSwitchValue(id) {
-        switch (id) {
-            case 4:
+    _getSwitchValue(id, key) {
+        switch (key) {
+            case 'name-maps':
                 return this.props.user.show_name_maps;
-                break;
-            case 5:
+            case 'username-maps':
                 return this.props.user.show_username_maps;
-                break;
-            case 6:
+            case 'name-leaderboard':
                 return this.props.user.show_name === false ? 0 : 1;
-                break;
-            case 7:
+            case 'username-leaderboard':
                 return this.props.user.show_username === false ? 0 : 1;
-                break;
-            case 8:
+            case 'name-createdby':
                 return this.props.user.show_name_createdby;
-                break;
-            case 9:
+            case 'username-createdby':
                 return this.props.user.show_username_createdby;
-                break;
-            case 10:
-                return this.props.user.previous_tag;
-                break;
-            case 11:
+            // case 10:
+            //     return this.props.user.previous_tag;
+            //     break;
+            case 'settings.picked-up':
                 return this.props.user.picked_up === false ? 0 : 1;
-                break;
             default:
                 break;
         }
