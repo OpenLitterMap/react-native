@@ -4,11 +4,8 @@ import {
     Alert,
     Dimensions,
     Modal,
-    SafeAreaView,
     SectionList,
     Switch,
-    Text,
-    TouchableHighlight,
     View,
     Pressable,
     StyleSheet

@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, createRef } from 'react';
 import {
     ActivityIndicator,
     Dimensions,
@@ -8,12 +8,21 @@ import {
     TextInput,
     TouchableHighlight,
     Pressable,
-    View
+    View,
+    StyleSheet
 } from 'react-native';
+import { Formik } from 'formik';
+import * as Yup from 'yup';
 import { getTranslation, TransText } from 'react-native-translation';
 import { Icon as ElementIcon } from 'react-native-elements';
 import { connect } from 'react-redux';
-import { Header, SubTitle, Body } from '../../components';
+import {
+    Header,
+    SubTitle,
+    Body,
+    Caption,
+    CustomTextInput
+} from '../../components';
 import Icon from 'react-native-vector-icons/Ionicons';
 import * as actions from '../../../actions';
 
@@ -25,11 +34,15 @@ class SettingsComponent extends Component {
         super(props);
 
         this._getTextInputValue();
+        this.formikRef = createRef();
     }
 
     render() {
-        const { lang } = this.props;
-
+        const { lang, dataToEdit } = this.props;
+        // get conditional validation schema
+        const validationSchema = Yup.object().shape(
+            this.getSchema(dataToEdit.key)
+        );
         return (
             <>
                 <Header
@@ -43,7 +56,7 @@ class SettingsComponent extends Component {
                         </Pressable>
                     }
                     centerContent={
-                        <SubTitle color="white">
+                        <SubTitle color="white" style={{ textAlign: 'center' }}>
                             {this._getHeaderName()}
                         </SubTitle>
                     }
@@ -56,47 +69,118 @@ class SettingsComponent extends Component {
                         </Pressable>
                     }
                 />
-                <SafeAreaView style={{ flex: 1, backgroundColor: '#f7f7f7' }}>
-                    <Modal
-                        animationType="slide"
-                        transparent={true}
-                        visible={this.props.secondSettingsModalVisible}>
-                        <View style={styles.modalContainer}>
-                            {this.renderStatusMessage(
-                                this.props.updateSettingsStatusMessage,
-                                lang
-                            )}
-                            {this.props.updatingSettings &&
-                                this.props.updateSettingsStatusMessage ===
-                                    '' && <ActivityIndicator />}
-                        </View>
-                    </Modal>
+                <Formik
+                    initialValues={{
+                        [dataToEdit.key]: this.props.settingsEditProp
+                    }}
+                    innerRef={this.formikRef}
+                    validationSchema={validationSchema}
+                    onSubmit={values => {
+                        console.log('values');
+                        console.log(values);
 
-                    {/* outerContainerStyles={{ height: SCREEN_HEIGHT * 0.1 }} */}
-
-                    <View style={styles.container}>
-                        <View style={styles.row}>
-                            <TransText
-                                style={styles.title}
+                        this.props.saveSettings(
+                            this.props.dataToEdit,
+                            this.props.settingsEditProp,
+                            this.props.token
+                        );
+                    }}>
+                    {({
+                        handleChange,
+                        handleBlur,
+                        setFieldValue,
+                        handleSubmit,
+                        values,
+                        errors,
+                        touched
+                    }) => (
+                        <View style={styles.container}>
+                            <Body
                                 dictionary={`${lang}.${
                                     this.props.dataToEdit.title
                                 }`}
                             />
-                            <TextInput
-                                onChangeText={text =>
-                                    this.props.updateSettingsProp({ text })
-                                }
+
+                            <CustomTextInput
                                 style={styles.content}
+                                // ref={this.usernameRef}
+                                onChangeText={text => {
+                                    setFieldValue(`${dataToEdit.key}`, text);
+                                    this.props.updateSettingsProp({ text });
+                                }}
                                 value={this.props.settingsEditProp}
+                                name={`${dataToEdit.key}`}
                                 autoCapitalize="none"
+                                error={
+                                    errors[`${dataToEdit.key}`] &&
+                                    `${this.props.lang}.auth.${
+                                        errors[`${dataToEdit.key}`]
+                                    }`
+                                }
+                                touched={touched[`${dataToEdit.key}`]}
                             />
                         </View>
+                    )}
+                </Formik>
+
+                <Modal
+                    animationType="slide"
+                    transparent={true}
+                    visible={this.props.secondSettingsModalVisible}>
+                    <View style={styles.modalContainer}>
+                        {this.renderStatusMessage(
+                            this.props.updateSettingsStatusMessage,
+                            lang
+                        )}
+                        {this.props.updatingSettings &&
+                            this.props.updateSettingsStatusMessage === '' && (
+                                <ActivityIndicator />
+                            )}
                     </View>
-                </SafeAreaView>
+                </Modal>
             </>
         );
     }
 
+    /**
+     * Fn to return Validation schema
+     */
+
+    getSchema = key => {
+        // const key = this.props.dataToEdit.key;
+        /**
+         * Form field validation with keys for translation
+         * using Yup for validation
+         */
+        const NameSchema = {
+            name: Yup.string()
+                .min(3, 'username-min-max')
+                .max(20, 'username-min-max')
+                .required('enter-username')
+        };
+
+        const UsernameSchema = {
+            username: Yup.string()
+                .min(3, 'username-min-max')
+                .max(20, 'username-min-max')
+                .required('enter-username')
+        };
+
+        const EmailSchema = {
+            email: Yup.string()
+                .email('email-not-valid')
+                .required('enter-email')
+        };
+
+        switch (key) {
+            case 'name':
+                return NameSchema;
+            case 'username':
+                return UsernameSchema;
+            case 'email':
+                return EmailSchema;
+        }
+    };
     /**
      * render modal messages based on vale of updateSettingsStatusMessage
      * ERROR || SUCCESS
@@ -174,11 +258,16 @@ class SettingsComponent extends Component {
      * settings_actions.js
      */
     _saveSettings() {
-        this.props.saveSettings(
-            this.props.dataToEdit,
-            this.props.settingsEditProp,
-            this.props.token
-        );
+        console.log('first');
+        if (this.formikRef.current) {
+            console.log('second');
+            this.formikRef.current.handleSubmit();
+        }
+        // this.props.saveSettings(
+        //     this.props.dataToEdit,
+        //     this.props.settingsEditProp,
+        //     this.props.token
+        // );
 
         // this._goBack();
     }
@@ -196,17 +285,29 @@ class SettingsComponent extends Component {
      * Initialize Settings Value to edit / update
      */
     _getTextInputValue() {
-        if (this.props.dataToEdit.id === 1) {
-            return this.props.initalizeSettingsValue(this.props.user.name);
-        } else if (this.props.dataToEdit.id === 2) {
-            return this.props.initalizeSettingsValue(this.props.user.username);
-        }
+        const key = this.props.dataToEdit.key;
+        // if (this.props.dataToEdit.id === 1) {
+        //     return this.props.initalizeSettingsValue(this.props.user.name);
+        // } else if (this.props.dataToEdit.id === 2) {
+        //     return this.props.initalizeSettingsValue(this.props.user.username);
+        // }
 
-        return this.props.initalizeSettingsValue(this.props.user.email);
+        // return this.props.initalizeSettingsValue(this.props.user.email);
+
+        switch (key) {
+            case 'name':
+                return this.props.initalizeSettingsValue(this.props.user.name);
+            case 'username':
+                return this.props.initalizeSettingsValue(
+                    this.props.user.username
+                );
+            case 'email':
+                return this.props.initalizeSettingsValue(this.props.user.email);
+        }
     }
 }
 
-const styles = {
+const styles = StyleSheet.create({
     buttonText: {
         alignItems: 'center',
         justifyContent: 'center',
@@ -214,17 +315,19 @@ const styles = {
     },
     container: {
         flex: 1,
-        paddingTop: SCREEN_HEIGHT * 0.02,
+        flexDirection: 'column',
+        padding: 20,
         backgroundColor: '#f7f7f7'
     },
     content: {
-        paddingRight: 10,
-        flex: 1,
-        fontSize: SCREEN_HEIGHT * 0.02
+        marginTop: 10,
+        paddingLeft: 10,
+        height: 60,
+        maxHeight: 60
     },
     row: {
         alignItems: 'center',
-        flexDirection: 'row',
+        // flexDirection: 'row',
         justifyContent: 'center',
         backgroundColor: 'white',
         height: SCREEN_HEIGHT * 0.06
@@ -266,7 +369,7 @@ const styles = {
         fontSize: SCREEN_HEIGHT * 0.02,
         width: SCREEN_WIDTH * 0.25
     }
-};
+});
 
 const mapStateToProps = state => {
     return {
