@@ -39,10 +39,7 @@ class SettingsComponent extends Component {
 
     render() {
         const { lang, dataToEdit } = this.props;
-        // get conditional validation schema
-        const validationSchema = Yup.object().shape(
-            this.getSchema(dataToEdit.key)
-        );
+
         return (
             <>
                 <Header
@@ -69,6 +66,40 @@ class SettingsComponent extends Component {
                         </Pressable>
                     }
                 />
+                {/* <Body>
+                    {JSON.stringify(dataToEdit, null, 2)}
+                    {JSON.stringify(this.props.settingsEditProp, null, 2)}
+                </Body> */}
+                {this.getForm(dataToEdit, lang)}
+                <Modal
+                    animationType="slide"
+                    transparent={true}
+                    visible={this.props.secondSettingsModalVisible}>
+                    <View style={styles.modalContainer}>
+                        {this.renderStatusMessage(
+                            this.props.updateSettingsStatusMessage,
+                            lang
+                        )}
+                        {this.props.updatingSettings &&
+                            this.props.updateSettingsStatusMessage === '' && (
+                                <ActivityIndicator />
+                            )}
+                    </View>
+                </Modal>
+            </>
+        );
+    }
+
+    getForm = (dataToEdit, lang) => {
+        const key = ['name', 'username', 'email'];
+
+        // get conditional validation schema
+        const validationSchema = Yup.object().shape(
+            this.getSchema(dataToEdit.key)
+        );
+        // form for name, username, email
+        if (key.includes(dataToEdit.key)) {
+            return (
                 <Formik
                     initialValues={{
                         [dataToEdit.key]: this.props.settingsEditProp
@@ -122,25 +153,89 @@ class SettingsComponent extends Component {
                         </View>
                     )}
                 </Formik>
+            );
+        } else if (dataToEdit.key === 'social') {
+            const formFields = [
+                'twitter',
+                'facebook',
+                'instagram',
+                'linkedin',
+                'reddit',
+                'personal'
+            ];
+            return (
+                <Formik
+                    initialValues={{
+                        twitter: this.props.settingsEditProp?.social_twitter,
+                        facebook: this.props.settingsEditProp?.social_facebook,
+                        instagram: this.props.settingsEditProp
+                            ?.social_instagram,
+                        linkedin: this.props.settingsEditProp?.social_linkedin,
+                        reddit: this.props.settingsEditProp?.social_reddit,
+                        personal: this.props.settingsEditProp?.social_personal
+                    }}
+                    innerRef={this.formikRef}
+                    validationSchema={validationSchema}
+                    onSubmit={values => {
+                        console.log('values');
+                        console.log(values);
 
-                <Modal
-                    animationType="slide"
-                    transparent={true}
-                    visible={this.props.secondSettingsModalVisible}>
-                    <View style={styles.modalContainer}>
-                        {this.renderStatusMessage(
-                            this.props.updateSettingsStatusMessage,
-                            lang
-                        )}
-                        {this.props.updatingSettings &&
-                            this.props.updateSettingsStatusMessage === '' && (
-                                <ActivityIndicator />
-                            )}
-                    </View>
-                </Modal>
-            </>
-        );
-    }
+                        this.props.saveSocialAccounts(
+                            this.props.dataToEdit,
+                            this.props.settingsEditProp,
+                            this.props.token
+                        );
+                    }}>
+                    {({
+                        handleChange,
+                        handleBlur,
+                        setFieldValue,
+                        handleSubmit,
+                        values,
+                        errors,
+                        touched
+                    }) => (
+                        <View style={styles.container}>
+                            {formFields.map(field => (
+                                <View style={{ flex: 1 }} key={field}>
+                                    <Body>{field.toLocaleUpperCase()}</Body>
+                                    <CustomTextInput
+                                        style={styles.content}
+                                        onChangeText={text => {
+                                            setFieldValue(`${field}`, text);
+
+                                            this.props.updateSettingsProp(
+                                                {
+                                                    ...this.props
+                                                        .settingsEditProp,
+                                                    [`social_${field}`]: text
+                                                },
+                                                'social'
+                                            );
+                                        }}
+                                        value={
+                                            this.props.settingsEditProp[
+                                                `social_${field}`
+                                            ]
+                                        }
+                                        name={`${field}`}
+                                        autoCapitalize="none"
+                                        error={
+                                            errors[`${field}`] &&
+                                            `${this.props.lang}.auth.${
+                                                errors[`${field}`]
+                                            }`
+                                        }
+                                        touched={touched[`${dataToEdit.key}`]}
+                                    />
+                                </View>
+                            ))}
+                        </View>
+                    )}
+                </Formik>
+            );
+        }
+    };
 
     /**
      * Fn to return Validation schema
@@ -172,6 +267,15 @@ class SettingsComponent extends Component {
                 .required('enter-email')
         };
 
+        const SocialSchema = {
+            twitter: Yup.string().url('url-not-valid'),
+            facebook: Yup.string().url('url-not-valid'),
+            instagram: Yup.string().url('url-not-valid'),
+            linkedin: Yup.string().url('url-not-valid'),
+            reddit: Yup.string().url('url-not-valid'),
+            personal: Yup.string().url('url-not-valid')
+        };
+
         switch (key) {
             case 'name':
                 return NameSchema;
@@ -179,6 +283,8 @@ class SettingsComponent extends Component {
                 return UsernameSchema;
             case 'email':
                 return EmailSchema;
+            case 'social':
+                return SocialSchema;
         }
     };
     /**
@@ -286,13 +392,6 @@ class SettingsComponent extends Component {
      */
     _getTextInputValue() {
         const key = this.props.dataToEdit.key;
-        // if (this.props.dataToEdit.id === 1) {
-        //     return this.props.initalizeSettingsValue(this.props.user.name);
-        // } else if (this.props.dataToEdit.id === 2) {
-        //     return this.props.initalizeSettingsValue(this.props.user.username);
-        // }
-
-        // return this.props.initalizeSettingsValue(this.props.user.email);
 
         switch (key) {
             case 'name':
@@ -303,6 +402,10 @@ class SettingsComponent extends Component {
                 );
             case 'email':
                 return this.props.initalizeSettingsValue(this.props.user.email);
+            case 'social':
+                return this.props.initalizeSettingsValue(
+                    this.props.user.settings
+                );
         }
     }
 }
