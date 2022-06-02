@@ -26,5 +26,11 @@
     "ok": "OK",
     "cancel": "Cancelar",
     "picked-up": "Pegou",
-    "litter-picked-up": "O lixo é recolhido"
+    "litter-picked-up": "O lixo é recolhido",
+    "enter-email": "Please enter an email address",
+    "enter-username": "Please enter a username",
+    "enter-name": "Please enter a name",
+    "name-min-max": "Name should be between 3-20 characters",
+    "username-min-max": "Username should be between 3-20 characters",
+    "url-not-valid": "Please enter a valid url"
 }

@@ -230,7 +230,7 @@ class SettingsComponent extends Component {
                                         autoCapitalize="none"
                                         error={
                                             errors[`${field}`] &&
-                                            `${this.props.lang}.auth.${
+                                            `${this.props.lang}.settings.${
                                                 errors[`${field}`]
                                             }`
                                         }
@@ -256,9 +256,9 @@ class SettingsComponent extends Component {
          */
         const NameSchema = {
             name: Yup.string()
-                .min(3, 'username-min-max')
-                .max(20, 'username-min-max')
-                .required('enter-username')
+                .min(3, 'name-min-max')
+                .max(20, 'name-min-max')
+                .required('enter-name')
         };
 
         const UsernameSchema = {

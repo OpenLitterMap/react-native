@@ -209,7 +209,7 @@ class SettingsScreen extends Component {
                             <Pressable
                                 onPress={() => {
                                     this.props.changeLitterStatus(
-                                        this.props.user.picked_up
+                                        this.props?.user?.picked_up
                                     );
 
                                     this.actionSheetRef.current?.hide();
@@ -284,11 +284,11 @@ class SettingsScreen extends Component {
     _getRowData(id, key) {
         switch (key) {
             case 'name':
-                return this.props.user.name;
+                return this.props?.user?.name;
             case 'username':
-                return this.props.user.username;
+                return this.props?.user?.username;
             case 'email':
-                return this.props.user.email;
+                return this.props?.user?.email;
             default:
                 return (
                     <Switch
@@ -326,12 +326,12 @@ class SettingsScreen extends Component {
                             // sending opposite of current value to api
                             await this.props.saveSettings(
                                 { id: 11, key: 'picked_up' },
-                                !this.props.user.picked_up,
+                                !this.props?.user?.picked_up,
                                 this.props.token
                             );
                             this.actionSheetRef.current?.setModalVisible();
                             // this.props.changeLitterStatus(
-                            //     this.props.user.picked_up
+                            //     this.props?.user?.picked_up
                             // );
                         } else {
                             this.props.toggleSettingsSwitch(
@@ -363,22 +363,22 @@ class SettingsScreen extends Component {
     _getSwitchValue(id, key) {
         switch (key) {
             case 'name-maps':
-                return this.props.user.show_name_maps;
+                return this.props?.user?.show_name_maps;
             case 'username-maps':
-                return this.props.user.show_username_maps;
+                return this.props?.user?.show_username_maps;
             case 'name-leaderboard':
-                return this.props.user.show_name === false ? 0 : 1;
+                return this.props?.user?.show_name === false ? 0 : 1;
             case 'username-leaderboard':
-                return this.props.user.show_username === false ? 0 : 1;
+                return this.props?.user?.show_username === false ? 0 : 1;
             case 'name-createdby':
-                return this.props.user.show_name_createdby;
+                return this.props?.user?.show_name_createdby;
             case 'username-createdby':
-                return this.props.user.show_username_createdby;
+                return this.props?.user?.show_username_createdby;
             // case 10:
-            //     return this.props.user.previous_tag;
+            //     return this.props?.user?.previous_tag;
             //     break;
             case 'settings.picked-up':
-                return this.props.user.picked_up === false ? 0 : 1;
+                return this.props?.user?.picked_up === false ? 0 : 1;
             default:
                 break;
         }
