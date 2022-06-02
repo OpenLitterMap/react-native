@@ -9,7 +9,8 @@ import {
     TouchableHighlight,
     Pressable,
     View,
-    StyleSheet
+    StyleSheet,
+    ScrollView
 } from 'react-native';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
@@ -190,17 +191,24 @@ class SettingsComponent extends Component {
                         handleChange,
                         handleBlur,
                         setFieldValue,
+                        setFieldTouched,
                         handleSubmit,
                         values,
                         errors,
                         touched
                     }) => (
-                        <View style={styles.container}>
+                        <ScrollView
+                            alwaysBounceVertical={false}
+                            showsVerticalScrollIndicator={false}
+                            style={styles.container}>
                             {formFields.map(field => (
-                                <View style={{ flex: 1 }} key={field}>
+                                <View key={field}>
                                     <Body>{field.toLocaleUpperCase()}</Body>
                                     <CustomTextInput
                                         style={styles.content}
+                                        onEndEditing={() =>
+                                            setFieldTouched(`${field}`, true)
+                                        }
                                         onChangeText={text => {
                                             setFieldValue(`${field}`, text);
 
@@ -226,11 +234,11 @@ class SettingsComponent extends Component {
                                                 errors[`${field}`]
                                             }`
                                         }
-                                        touched={touched[`${dataToEdit.key}`]}
+                                        touched={touched[`${field}`]}
                                     />
                                 </View>
                             ))}
-                        </View>
+                        </ScrollView>
                     )}
                 </Formik>
             );
@@ -242,7 +250,6 @@ class SettingsComponent extends Component {
      */
 
     getSchema = key => {
-        // const key = this.props.dataToEdit.key;
         /**
          * Form field validation with keys for translation
          * using Yup for validation
@@ -419,14 +426,15 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         flexDirection: 'column',
-        padding: 20,
+        paddingHorizontal: 20,
+        paddingTop: 10,
         backgroundColor: '#f7f7f7'
     },
     content: {
         marginTop: 10,
         paddingLeft: 10,
-        height: 60,
-        maxHeight: 60
+        height: 48,
+        maxHeight: 48
     },
     row: {
         alignItems: 'center',

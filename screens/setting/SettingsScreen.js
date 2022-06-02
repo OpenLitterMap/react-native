@@ -27,7 +27,6 @@ class SettingsScreen extends Component {
         super(props);
 
         this.actionSheetRef = createRef();
-        console.log(JSON.stringify(this.props.user, null, 2));
     }
 
     render() {
