@@ -16,7 +16,6 @@ import { ProgressCircleCard } from './userComponents';
 class UserStatsScreen extends Component {
     constructor(props) {
         super(props);
-
         this.state = {
             xpStart: 0,
             positionStart: 0,
@@ -68,7 +67,7 @@ class UserStatsScreen extends Component {
         await this.props.fetchUser(this.props.token);
         const user = this.props.user;
         const statsObj = {
-            xp: user?.xp,
+            xp: user?.xp_redis,
             position: user?.position,
             totalImages: user?.total_images || 0,
             totalTags: user?.totalTags,
@@ -88,7 +87,7 @@ class UserStatsScreen extends Component {
 
         const statsData = [
             {
-                value: user?.xp || this.state.xpStart,
+                value: user?.xp_redis || this.state.xpStart,
                 startValue: this.state.xpStart,
                 title: `${lang}.user.XP`,
                 icon: 'ios-medal-outline',
@@ -202,7 +201,7 @@ const styles = StyleSheet.create({
     }
 });
 
-const mapStateToProps = (state) => {
+const mapStateToProps = state => {
     return {
         lang: state.auth.lang,
         token: state.auth.token,
@@ -210,4 +209,7 @@ const mapStateToProps = (state) => {
     };
 };
 
-export default connect(mapStateToProps, actions)(UserStatsScreen);
+export default connect(
+    mapStateToProps,
+    actions
+)(UserStatsScreen);
