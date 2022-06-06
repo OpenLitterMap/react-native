@@ -13,6 +13,7 @@ import {
     Pressable,
     StyleSheet
 } from 'react-native';
+import DeviceInfo from 'react-native-device-info';
 import { getTranslation, TransText } from 'react-native-translation';
 import Icon from 'react-native-vector-icons/Ionicons';
 import * as actions from '../../actions';
@@ -83,6 +84,7 @@ class SettingsScreen extends Component {
 
                     <View style={styles.container}>
                         <SectionList
+                            alwaysBounceVertical={false}
                             stickySectionHeadersEnabled={false}
                             renderSectionHeader={({ section: { title } }) => (
                                 <SubTitle
@@ -171,9 +173,20 @@ class SettingsScreen extends Component {
                                 </View>
                             )}
                             keyExtractor={(item, index) => item + index}
+                            showsVerticalScrollIndicator={false}
+                            ListFooterComponent={
+                                <Caption
+                                    style={{
+                                        textAlign: 'center',
+                                        marginVertical: 20
+                                    }}>
+                                    Version {DeviceInfo.getVersion()}
+                                </Caption>
+                            }
                         />
                     </View>
                 </View>
+
                 <ActionSheet
                     closeOnTouchBackdrop={false}
                     ref={this.actionSheetRef}>
