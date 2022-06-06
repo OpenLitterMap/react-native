@@ -144,11 +144,11 @@ export default function(state = INITIAL_STATE, action) {
             case USER_FOUND:
                 let user = action.payload.userObj;
 
-                const level = XPLEVEL.findIndex(xp => xp > user.xp);
-                const xpRequired = XPLEVEL[level] - user.xp;
+                const level = XPLEVEL.findIndex(xp => xp > user.xp_redis);
+                const xpRequired = XPLEVEL[level] - user.xp_redis;
                 const previousTarget = level > 0 ? XPLEVEL[level - 1] : 0;
                 const targetPercentage =
-                    ((user.xp - previousTarget) /
+                    ((user.xp_redis - previousTarget) /
                         (XPLEVEL[level] - previousTarget)) *
                     100;
 
