@@ -33,7 +33,6 @@ const SCREEN_HEIGHT = Dimensions.get('window').height;
 class SettingsComponent extends Component {
     constructor(props) {
         super(props);
-
         this._getTextInputValue();
         this.formikRef = createRef();
     }
@@ -67,10 +66,7 @@ class SettingsComponent extends Component {
                         </Pressable>
                     }
                 />
-                {/* <Body>
-                    {JSON.stringify(dataToEdit, null, 2)}
-                    {JSON.stringify(this.props.settingsEditProp, null, 2)}
-                </Body> */}
+
                 {this.getForm(dataToEdit, lang)}
                 <Modal
                     animationType="slide"
@@ -108,9 +104,6 @@ class SettingsComponent extends Component {
                     innerRef={this.formikRef}
                     validationSchema={validationSchema}
                     onSubmit={values => {
-                        console.log('values');
-                        console.log(values);
-
                         this.props.saveSettings(
                             this.props.dataToEdit,
                             this.props.settingsEditProp,
@@ -164,6 +157,14 @@ class SettingsComponent extends Component {
                 'reddit',
                 'personal'
             ];
+            const placeholders = [
+                'https://twitter.com/olm',
+                'https://www.facebook.com/olm',
+                'https://www.instagram.com/olm',
+                'https://www.linkedin.com/olm',
+                'https://www.reddit.com/user/olm/',
+                'https://www.openlittermap.com'
+            ];
             return (
                 <Formik
                     initialValues={{
@@ -178,30 +179,18 @@ class SettingsComponent extends Component {
                     innerRef={this.formikRef}
                     validationSchema={validationSchema}
                     onSubmit={values => {
-                        console.log('values');
-                        console.log(values);
-
                         this.props.saveSocialAccounts(
                             this.props.dataToEdit,
                             this.props.settingsEditProp,
                             this.props.token
                         );
                     }}>
-                    {({
-                        handleChange,
-                        handleBlur,
-                        setFieldValue,
-                        setFieldTouched,
-                        handleSubmit,
-                        values,
-                        errors,
-                        touched
-                    }) => (
+                    {({ setFieldValue, setFieldTouched, errors, touched }) => (
                         <ScrollView
                             alwaysBounceVertical={false}
                             showsVerticalScrollIndicator={false}
                             style={styles.container}>
-                            {formFields.map(field => (
+                            {formFields.map((field, index) => (
                                 <View key={field}>
                                     <Body>{field.toLocaleUpperCase()}</Body>
                                     <CustomTextInput
@@ -222,6 +211,7 @@ class SettingsComponent extends Component {
                                             );
                                         }}
                                         value={
+                                            this.props.settingsEditProp &&
                                             this.props.settingsEditProp[
                                                 `social_${field}`
                                             ]
@@ -235,6 +225,7 @@ class SettingsComponent extends Component {
                                             }`
                                         }
                                         touched={touched[`${field}`]}
+                                        placeholder={`${placeholders[index]}`}
                                     />
                                 </View>
                             ))}
@@ -371,18 +362,9 @@ class SettingsComponent extends Component {
      * settings_actions.js
      */
     _saveSettings() {
-        console.log('first');
         if (this.formikRef.current) {
-            console.log('second');
             this.formikRef.current.handleSubmit();
         }
-        // this.props.saveSettings(
-        //     this.props.dataToEdit,
-        //     this.props.settingsEditProp,
-        //     this.props.token
-        // );
-
-        // this._goBack();
     }
 
     _goBack() {
