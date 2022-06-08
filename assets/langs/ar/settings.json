@@ -26,5 +26,11 @@
     "ok": "حسنا",
     "cancel": "إلغاء",
     "picked-up": "التقط",
-    "litter-picked-up": "يتم التقاط القمامة"
+    "litter-picked-up": "يتم التقاط القمامة",
+    "enter-email": "الرجاء إدخال بريد إلكتروني",
+    "enter-username": "أدخل اسم المستخدم",
+    "enter-name": "Please enter a name",
+    "name-min-max": "Name should be between 3-20 characters",
+    "username-min-max": "Username should be between 3-20 characters",
+    "url-not-valid": "Please enter a valid url"
 }

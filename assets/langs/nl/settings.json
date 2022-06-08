@@ -26,5 +26,11 @@
     "ok": "OK",
     "cancel": "Annuleren",
     "picked-up": "Opgehaald",
-    "litter-picked-up": "Zwerfvuil wordt opgehaald"
+    "litter-picked-up": "Zwerfvuil wordt opgehaald",
+    "enter-email": "Please enter an email address",
+    "enter-username": "Please enter a username",
+    "enter-name": "Please enter a name",
+    "name-min-max": "Name should be between 3-20 characters",
+    "username-min-max": "Username should be between 3-20 characters",
+    "url-not-valid": "Please enter a valid url"
 }

@@ -28,7 +28,7 @@ export const closeSecondSettingModal = () => {
  * when user selects a field to edit current value of that field is set in settingsEditProp
  * to be used as initial value in textfield in edit modal
  */
-export const initalizeSettingsValue = (prop) => {
+export const initalizeSettingsValue = prop => {
     return {
         type: SETTINGS_INIT,
         payload: prop
@@ -38,7 +38,7 @@ export const initalizeSettingsValue = (prop) => {
 /**
  * fn to set device modal
  */
-export const setModel = (model) => {
+export const setModel = model => {
     return {
         type: SET_MODEL,
         payload: model
@@ -49,7 +49,7 @@ export const setModel = (model) => {
  * Update a specific setting (Name, Username or Email)
  */
 export const saveSettings = (data, value, token) => {
-    return async (dispatch) => {
+    return async dispatch => {
         dispatch({
             type: START_UPDATING_SETTINGS
         });
@@ -80,7 +80,7 @@ export const saveSettings = (data, value, token) => {
                 value
             }
         })
-            .then(async (response) => {
+            .then(async response => {
                 console.log('saveSettings', response.data);
 
                 if (response.data.success) {
@@ -117,7 +117,7 @@ export const saveSettings = (data, value, token) => {
                     });
                 }
             })
-            .catch((error) => {
+            .catch(error => {
                 console.log('saveSettings', error);
                 // show error message
                 dispatch({
@@ -128,6 +128,68 @@ export const saveSettings = (data, value, token) => {
     };
 };
 
+export const saveSocialAccounts = (data, value, token) => {
+    let response = {};
+    return async dispatch => {
+        dispatch({
+            type: START_UPDATING_SETTINGS
+        });
+        console.log({ data, value });
+        try {
+            response = await axios(URL + '/api/settings', {
+                method: 'PATCH',
+                headers: {
+                    Authorization: 'Bearer ' + token,
+                    'content-type': 'application/json'
+                },
+                data: {
+                    ...value
+                }
+            });
+        } catch (error) {
+            console.log('saveSettings', error);
+            // show error message
+            dispatch({
+                type: SETTINGS_UPDATE_STATUS_MESSAGE,
+                payload: 'ERROR'
+            });
+        }
+
+        console.log('saveSettings', response.data);
+
+        if (response?.data?.message === 'success') {
+            // Get user and parse json to Object
+            let user = await AsyncStorage.getItem('user');
+            user = JSON.parse(user);
+
+            // update user object
+            user.settings = value;
+            // save updated user data
+            AsyncStorage.setItem('user', JSON.stringify(user));
+
+            dispatch({
+                type: UPDATE_USER_OBJECT,
+                payload: user
+            });
+            // then show success message
+
+            dispatch({
+                type: SETTINGS_UPDATE_STATUS_MESSAGE,
+                payload: 'SUCCESS'
+            });
+
+            // close modals - done from settings update success
+        } else {
+            console.log('ERROR updating settings. Todo - inform the user');
+
+            // show error message
+            dispatch({
+                type: SETTINGS_UPDATE_STATUS_MESSAGE,
+                payload: 'ERROR'
+            });
+        }
+    };
+};
 /**
  * Toggle the modal and turn one of these options for updating
  */
@@ -152,7 +214,7 @@ export const toggleSettingsSwitch = (id, token) => {
     if (id === 9) endUrl = 'createdby/username';
     if (id === 10) endUrl = 'toggle-previous-tags';
 
-    return async (dispatch) => {
+    return async dispatch => {
         dispatch({
             type: TOGGLE_SETTINGS_WAIT
         });
@@ -164,7 +226,7 @@ export const toggleSettingsSwitch = (id, token) => {
                 'content-type': 'application/json'
             }
         })
-            .then(async (response) => {
+            .then(async response => {
                 console.log('Response: toggleSettingsSwitch', response.data);
 
                 if (response.status === 200) {
@@ -197,7 +259,7 @@ export const toggleSettingsSwitch = (id, token) => {
                     });
                 }
             })
-            .catch((error) => {
+            .catch(error => {
                 console.log('Error: toggleSettingsSwitch', error);
             });
     };
@@ -206,9 +268,9 @@ export const toggleSettingsSwitch = (id, token) => {
 /**
  * User wants to change text of name, email or username
  */
-export const updateSettingsProp = (value) => {
+export const updateSettingsProp = (value, key) => {
     return {
         type: UPDATE_SETTINGS_PROP,
-        payload: value.text
+        payload: key === 'social' ? value : value.text
     };
 };
