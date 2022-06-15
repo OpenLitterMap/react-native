@@ -5,7 +5,6 @@ import {
     Pressable,
     FlatList,
     Dimensions,
-    Image,
     SafeAreaView,
     ActivityIndicator
 } from 'react-native';
@@ -18,6 +17,7 @@ import * as actions from '../../actions';
 import { Header, SubTitle, Body, Caption, Colors } from '../components';
 import { isGeotagged } from '../../utils/isGeotagged';
 import { checkCameraRollPermission } from '../../utils/permissions';
+import AnimatedImage from './galleryComponents/AnimatedImage';
 
 const { width } = Dimensions.get('window');
 
@@ -224,60 +224,15 @@ class GalleryScreen extends Component {
 
                         const isImageGeotagged = isGeotagged(image);
                         return (
-                            <Pressable
+                            <AnimatedImage
                                 key={image.uri}
                                 onPress={() =>
                                     isImageGeotagged && this.selectImage(image)
-                                }>
-                                <Image
-                                    source={{ uri: image.uri }}
-                                    style={{
-                                        width: width / 3 - 2,
-                                        height: width / 3 - 2,
-                                        margin: 1
-                                    }}
-                                />
-                                {selected && (
-                                    <View
-                                        style={{
-                                            position: 'absolute',
-                                            width: 24,
-                                            height: 24,
-                                            backgroundColor: '#0984e3',
-                                            right: 10,
-                                            bottom: 10,
-                                            borderRadius: 100,
-                                            justifyContent: 'center',
-                                            alignItems: 'center'
-                                        }}>
-                                        <Icon
-                                            name="ios-checkmark-outline"
-                                            size={20}
-                                            color="white"
-                                        />
-                                    </View>
-                                )}
-                                {isImageGeotagged && (
-                                    <View
-                                        style={{
-                                            position: 'absolute',
-                                            width: 24,
-                                            height: 24,
-                                            backgroundColor: '#0984e3',
-                                            right: 10,
-                                            top: 10,
-                                            borderRadius: 100,
-                                            justifyContent: 'center',
-                                            alignItems: 'center'
-                                        }}>
-                                        <Icon
-                                            name="ios-location-outline"
-                                            size={16}
-                                            color="white"
-                                        />
-                                    </View>
-                                )}
-                            </Pressable>
+                                }
+                                image={image}
+                                isImageGeotagged={isImageGeotagged}
+                                selected={selected}
+                            />
                         );
                     })}
                 </View>
