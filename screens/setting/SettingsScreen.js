@@ -16,6 +16,10 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import * as actions from '../../actions';
 import { connect } from 'react-redux';
 import ActionSheet from 'react-native-actions-sheet';
+import CountryPicker, {
+    FlagButton,
+    Flag
+} from 'react-native-country-picker-modal';
 import { Body, SubTitle, Title, Header, Colors, Caption } from '../components';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -28,6 +32,11 @@ class SettingsScreen extends Component {
         super(props);
 
         this.actionSheetRef = createRef();
+
+        this.state = {
+            isCountryPickerVisible: false,
+            countryCode: 'IN'
+        };
     }
 
     render() {
@@ -112,6 +121,11 @@ class SettingsScreen extends Component {
                                         {
                                             id: 4,
                                             key: 'social',
+                                            title: 'settings.social'
+                                        },
+                                        {
+                                            id: 5,
+                                            key: 'country',
                                             title: 'settings.social'
                                         }
                                     ]
@@ -279,6 +293,55 @@ class SettingsScreen extends Component {
                         )}
                     </View>
                 </Pressable>
+            );
+        }
+        if (item?.key === 'country') {
+            return (
+                <View style={{ padding: 10, flex: 1 }}>
+                    <CountryPicker
+                        // withFlagButton={true}
+                        // withFlag={true}
+                        // withCountryNameButton={true}
+                        {...{
+                            containerButtonStyle: {
+                                height: 60,
+                                justifyContent: 'center',
+                                padding: 10
+                            },
+                            countryCode: this.state.countryCode,
+                            withCountryNameButton: true,
+                            onSelect: country =>
+                                this.setState({ countryCode: country.cca2 }),
+                            withAlphaFilter: true
+                        }}
+                        visible={this.state.isCountryPickerVisible}
+                        onClose={() =>
+                            this.setState({ isCountryPickerVisible: false })
+                        }
+                        // onSelect={country => console.log(country)}
+                        renderFlagButton={() => {
+                            return (
+                                <Pressable
+                                    style={{
+                                        flexDirection: 'row',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'center'
+                                    }}
+                                    onPress={() =>
+                                        this.setState({
+                                            isCountryPickerVisible: true
+                                        })
+                                    }>
+                                    <Body>Select Country</Body>
+                                    <Flag
+                                        flagSize={24}
+                                        countryCode={this.state.countryCode}
+                                    />
+                                </Pressable>
+                            );
+                        }}
+                    />
+                </View>
             );
         } else {
             return (
