@@ -53,6 +53,7 @@ export const saveSettings = (data, value, token) => {
         dispatch({
             type: START_UPDATING_SETTINGS
         });
+
         let key = '';
         switch (data.key) {
             case 'name':
@@ -66,6 +67,9 @@ export const saveSettings = (data, value, token) => {
                 break;
             case 'picked_up':
                 key = 'picked_up';
+                break;
+            case 'global_flag':
+                key = 'global_flag';
                 break;
         }
 

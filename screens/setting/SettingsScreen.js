@@ -16,6 +16,10 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import * as actions from '../../actions';
 import { connect } from 'react-redux';
 import ActionSheet from 'react-native-actions-sheet';
+import CountryPicker, {
+    FlagButton,
+    Flag
+} from 'react-native-country-picker-modal';
 import { Body, SubTitle, Title, Header, Colors, Caption } from '../components';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -26,8 +30,15 @@ import SettingsComponent from './settingComponents/SettingsComponent';
 class SettingsScreen extends Component {
     constructor(props) {
         super(props);
-
         this.actionSheetRef = createRef();
+
+        this.state = {
+            isCountryPickerVisible: false,
+            countryCode:
+                this.props.user?.global_flag &&
+                this.props.user?.global_flag?.toUpperCase(),
+            isFlagVisible: false
+        };
     }
 
     render() {
@@ -112,6 +123,11 @@ class SettingsScreen extends Component {
                                         {
                                             id: 4,
                                             key: 'social',
+                                            title: 'settings.social'
+                                        },
+                                        {
+                                            id: 5,
+                                            key: 'country',
                                             title: 'settings.social'
                                         }
                                     ]
@@ -280,6 +296,56 @@ class SettingsScreen extends Component {
                     </View>
                 </Pressable>
             );
+        }
+        if (item?.key === 'country') {
+            return (
+                <View style={{ padding: 10, flex: 1 }}>
+                    <CountryPicker
+                        {...{
+                            containerButtonStyle: {
+                                height: 60,
+                                justifyContent: 'center',
+                                padding: 10
+                            },
+                            countryCode: this.state.countryCode,
+                            withCountryNameButton: true,
+                            onSelect: async country => {
+                                this.setState({ countryCode: country.cca2 });
+                                this._toggleSwitch(5, 'global_flag');
+                            },
+                            withAlphaFilter: true
+                        }}
+                        visible={this.state.isCountryPickerVisible}
+                        onClose={() =>
+                            this.setState({ isCountryPickerVisible: false })
+                        }
+                        // onSelect={country => console.log(country)}
+                        renderFlagButton={() => {
+                            return (
+                                <Pressable
+                                    style={{
+                                        flexDirection: 'row',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'center'
+                                    }}
+                                    onPress={() =>
+                                        this.setState({
+                                            isCountryPickerVisible: true
+                                        })
+                                    }>
+                                    <Body>Select Country</Body>
+                                    {this.state.countryCode && (
+                                        <Flag
+                                            flagSize={24}
+                                            countryCode={this.state.countryCode}
+                                        />
+                                    )}
+                                </Pressable>
+                            );
+                        }}
+                    />
+                </View>
+            );
         } else {
             return (
                 <View style={styles.switchRow}>
@@ -305,7 +371,7 @@ class SettingsScreen extends Component {
             default:
                 return (
                     <Switch
-                        onValueChange={() => this._toggleSwitch(id)}
+                        onValueChange={() => this._toggleSwitch(id, key)}
                         value={
                             this._getSwitchValue(id, key) === 0 ? false : true
                         }
@@ -317,7 +383,7 @@ class SettingsScreen extends Component {
     /**
      * Toggle the Switch - Send post request to database
      */
-    _toggleSwitch(id) {
+    _toggleSwitch(id, key) {
         const lang = this.props.lang;
 
         const alert = getTranslation(`${lang}.settings.alert`);
@@ -334,7 +400,7 @@ class SettingsScreen extends Component {
                 {
                     text: ok,
                     onPress: async () => {
-                        if (id === 11) {
+                        if (key === 'picked_up') {
                             // Toggle picked_up value
                             // sending opposite of current value to api
                             await this.props.saveSettings(
@@ -346,6 +412,12 @@ class SettingsScreen extends Component {
                             // this.props.changeLitterStatus(
                             //     this.props?.user?.picked_up
                             // );
+                        } else if (key === 'global_flag') {
+                            this.props.saveSettings(
+                                { key: 'global_flag' },
+                                this.state.countryCode.toLowerCase(),
+                                this.props.token
+                            );
                         } else {
                             this.props.toggleSettingsSwitch(
                                 id,
