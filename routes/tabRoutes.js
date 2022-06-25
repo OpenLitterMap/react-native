@@ -101,11 +101,11 @@ const TabRoutes = ({ navigation }) => (
                 }
             }}>
             <Tab.Screen name="HOME" component={HomeScreen} />
-            <Tab.Screen
-                name="CAMERA"
-                component={CameraScreen}
-                options={{ unmountOnBlur: true }}
-            />
+            {/*<Tab.Screen*/}
+            {/*    name="CAMERA"*/}
+            {/*    component={CameraScreen}*/}
+            {/*    options={{ unmountOnBlur: true }}*/}
+            {/*/>*/}
             <Tab.Screen name="TEAM" component={TeamStack} />
             <Tab.Screen name="GLOBAL_DATA" component={GlobalDataScreen} />
 

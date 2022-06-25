@@ -133,6 +133,16 @@ class SettingsScreen extends Component {
                                     ]
                                 },
                                 {
+                                    title: 'settings.picked-up',
+                                    data: [
+                                        {
+                                            id: 11,
+                                            key: 'picked-up',
+                                            title: 'settings.litter-picked-up'
+                                        }
+                                    ]
+                                },
+                                {
                                     title: 'settings.privacy',
                                     data: [
                                         {
@@ -168,16 +178,6 @@ class SettingsScreen extends Component {
                                             key: 'username-createdby',
                                             title:
                                                 'settings.show-username-createdby'
-                                        }
-                                    ]
-                                },
-                                {
-                                    title: 'settings.picked-up',
-                                    data: [
-                                        {
-                                            id: 11,
-                                            key: 'picked-up',
-                                            title: 'settings.litter-picked-up'
                                         }
                                     ]
                                 }
