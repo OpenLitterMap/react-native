@@ -19,7 +19,7 @@ import { isGeotagged } from '../../utils/isGeotagged';
 import { checkCameraRollPermission } from '../../utils/permissions';
 import AnimatedImage from './galleryComponents/AnimatedImage';
 
-const { width } = Dimensions.get('window');
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 /**
  * fn to check if arg date is "today", this "week", this "month"
@@ -314,6 +314,13 @@ class GalleryScreen extends Component {
                                 flex: 1
                             }}>
                             <FlatList
+                                windowSize={9}
+                                getItemLayout={(data, index) => ({
+                                    length: SCREEN_WIDTH / 3 - 2,
+                                    offset: (SCREEN_WIDTH / 3 - 2) * index,
+                                    index
+                                })}
+                                removeClippedSubviews={true}
                                 contentContainerStyle={{ paddingBottom: 40 }}
                                 style={{ flexDirection: 'column' }}
                                 alwaysBounceVertical={false}
