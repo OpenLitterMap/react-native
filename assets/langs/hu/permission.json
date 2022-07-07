@@ -1,0 +1,14 @@
+{
+    "allow-gallery-access": "Galériahozzáférés engedélyezése",
+    "allow-permission": "Engedélyek engedélyezése",
+    "camera-access": "Kamera hozzáférés",
+    "camera-access-body": "A hulladék rögzítéséhez a kameráról",
+    "gallery-body": "Kérjük, biztosítson hozzáférést galériájához, amely szükséges, ha címkével ellátott képeket szeretne feltölteni a galériából",
+    "location-access": "Helyhozzáférés",
+    "location-body": "Az hulladék pontos földrajzi elhelyezkedése érdekében",
+    "new-version": "Új verzió érhető el",
+    "not-now": "Nem most, később",
+    "please-give-permissions": "Kérjük, adjon engedélyt",
+    "please-update-app": "Kérjük, frissítse az alkalmazást a jobb élmény érdekében",
+    "update-now": "Frissítse most"
+}
