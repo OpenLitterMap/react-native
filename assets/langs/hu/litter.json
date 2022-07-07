@@ -247,9 +247,9 @@
         "wrigleys": "Wrigleys"
     },
     "trashdog": {
-        "trashdog": "TrashDog", //
-        "littercat": "LitterCat", //
-        "duck": "LitterDuck" //
+        "trashdog": "TrashDog",
+        "littercat": "LitterCat",
+        "duck": "LitterDuck"
     },
     "other": {
         "dogshit": "Kutya Kaki",
