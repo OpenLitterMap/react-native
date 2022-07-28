@@ -37,7 +37,8 @@ class HomeScreen extends PureComponent {
         this.state = {
             total: 0, // total number of images with tags to upload
             uploaded: 0, // total number of tagged images uploaded
-            failedUpload: 0
+            failedUpload: 0,
+            isUploadCancelled: false
         };
 
         // Bind any functions that call props
@@ -110,6 +111,7 @@ class HomeScreen extends PureComponent {
         this.props.toggleUpload();
 
         // cancel pending uploads
+        this.setState({ isUploadCancelled: true });
     }
 
     render() {
@@ -356,6 +358,16 @@ class HomeScreen extends PureComponent {
         this.props.toggleSelecting();
     }
 
+    // reset state after cancel button pressed
+
+    resetAfterUploadCancelled = () => {
+        this.setState({
+            total: 0,
+            uploaded: 0,
+            failedUpload: 0,
+            isUploadCancelled: false
+        });
+    };
     /**
      * Upload photos, 1 photo per request
      *
@@ -391,6 +403,11 @@ class HomeScreen extends PureComponent {
         if (imagesCount > 0) {
             // async loop
             for (const img of this.props.images) {
+                // break loop if cancel button is pressed
+                if (this.state.isUploadCancelled) {
+                    this.resetAfterUploadCancelled();
+                    return;
+                }
                 const isgeotagged = isGeotagged(img);
                 const isItemTagged = isTagged(img);
 
