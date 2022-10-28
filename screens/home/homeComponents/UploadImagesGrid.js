@@ -120,6 +120,14 @@ class UploadImagesGrid extends PureComponent {
                 }}>
                 {this.props.photos && (
                     <FlatList
+                        alwaysBounceVertical={false}
+                        windowSize={9}
+                        getItemLayout={(data, index) => ({
+                            length: SCREEN_WIDTH / 3 - 2,
+                            offset: (SCREEN_WIDTH / 3 - 2) * index,
+                            index
+                        })}
+                        removeClippedSubviews={true}
                         contentContainerStyle={{ paddingBottom: 100 }}
                         data={this.props.photos}
                         extraData={this.props.uniqueValue}
