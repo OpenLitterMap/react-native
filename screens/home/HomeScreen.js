@@ -273,25 +273,11 @@ class HomeScreen extends PureComponent {
     renderUploadButton() {
         if (this.props.images?.length === 0 || this.props.isSelecting) {
             return;
-        } else {
-            let tagged = 0;
-            this.props.images.map(img => {
-                if (img.tags && Object.keys(img.tags)?.length > 0) {
-                    tagged++;
-                }
-            });
-
-            if (tagged === 0) {
-                return;
-            } else {
-                return (
-                    <UploadButton
-                        lang={this.props.lang}
-                        onPress={this.uploadPhotos}
-                    />
-                );
-            }
         }
+
+        return (
+            <UploadButton lang={this.props.lang} onPress={this.uploadPhotos} />
+        );
     }
 
     /**
@@ -388,12 +374,8 @@ class HomeScreen extends PureComponent {
             // async loop
             for (const img of this.props.images) {
                 const isgeotagged = isGeotagged(img);
-                if (
-                    img.type !== 'WEB' &&
-                    img.tags &&
-                    Object.keys(img.tags).length > 0 &&
-                    isgeotagged
-                ) {
+
+                if (img.type !== 'WEB' && isgeotagged) {
                     let ImageData = new FormData();
 
                     ImageData.append('photo', {
