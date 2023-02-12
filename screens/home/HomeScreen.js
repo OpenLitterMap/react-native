@@ -276,27 +276,11 @@ class HomeScreen extends PureComponent {
     renderUploadButton() {
         if (this.props.images?.length === 0 || this.props.isSelecting) {
             return;
-        } else {
-            let tagged = 0;
-            this.props.images.map(img => {
-                const isImageTagged = isTagged(img);
-
-                if (isImageTagged) {
-                    tagged++;
-                }
-            });
-
-            if (tagged === 0) {
-                return;
-            } else {
-                return (
-                    <UploadButton
-                        lang={this.props.lang}
-                        onPress={this.uploadPhotos}
-                    />
-                );
-            }
         }
+
+        return (
+            <UploadButton lang={this.props.lang} onPress={this.uploadPhotos} />
+        );
     }
 
     /**
@@ -388,6 +372,7 @@ class HomeScreen extends PureComponent {
 
         this.props.images.map(item => {
             const isItemTagged = isTagged(item);
+
             if (isItemTagged) {
                 imagesCount++;
             }
@@ -411,7 +396,8 @@ class HomeScreen extends PureComponent {
                 const isgeotagged = isGeotagged(img);
                 const isItemTagged = isTagged(img);
 
-                if (img.type !== 'WEB' && isItemTagged && isgeotagged) {
+                // Upload any new image that is tagged or not
+                if (img.type !== 'WEB' && isgeotagged) {
                     let ImageData = new FormData();
 
                     ImageData.append('photo', {
@@ -425,6 +411,7 @@ class HomeScreen extends PureComponent {
                     ImageData.append('date', parseInt(img.date));
                     ImageData.append('picked_up', img.picked_up ? 1 : 0);
                     ImageData.append('model', model);
+                    // Tags and custom_tags may not exist
                     ImageData.append('tags', JSON.stringify(img.tags));
                     ImageData.append(
                         'custom_tags',
@@ -451,8 +438,13 @@ class HomeScreen extends PureComponent {
                     }
                 } else if (img.type === 'WEB' && isItemTagged) {
                     /**
-                     * Upload tags
-                     * Only need to upload tags and 'picked_up' value for WEB images
+                     * Upload tags for already uploaded image
+                     *
+                     * Previously these were images uploaded to web,
+                     * But now untagged images can also be uploaded from mobile.
+                     * These should be re-classified as Uploaded, Not tagged.
+                     *
+                     * We might have to update 'picked_up' value.
                      */
                     const response = await this.props.uploadTagsToWebImage(
                         this.props.token,

@@ -233,7 +233,10 @@ export const toggleSelectedImage = id => {
 };
 
 /**
- * fn to upload images along with tags
+ * Upload images with or without tags
+ *
+ * image.tags & image.custom_tags may or may not have values
+ *
  * @param {string} token
  * @param  image form data
  * @param imageId
@@ -243,14 +246,17 @@ export const uploadImage = (token, image, imageId) => {
     let response;
     return async dispatch => {
         try {
-            response = await axios(URL + '/api/photos/upload-with-tags', {
-                method: 'POST',
-                headers: {
-                    Authorization: 'Bearer ' + token,
-                    'Content-Type': 'multipart/form-data'
-                },
-                data: image
-            });
+            response = await axios(
+                URL + '/api/photos/upload-with-or-without-tags',
+                {
+                    method: 'POST',
+                    headers: {
+                        Authorization: 'Bearer ' + token,
+                        'Content-Type': 'multipart/form-data'
+                    },
+                    data: image
+                }
+            );
         } catch (error) {
             if (error.response) {
                 // log error in sentry
@@ -290,6 +296,7 @@ export const uploadImage = (token, image, imageId) => {
 /**
  * Upload the tags that were applied to a WEB image
  * This fn is used only for WEB images as those images are already uploaded from website.
+ * These can now include images uploaded from the app.
  *
  * @param {string} token
  * @param  image - the image object
@@ -310,6 +317,7 @@ export const uploadTagsToWebImage = (token, image) => {
                 }
             });
         } catch (error) {
+            // Better error handling needed here
             console.log(error);
             return {
                 success: false
