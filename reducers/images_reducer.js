@@ -34,7 +34,7 @@ export default function(state = INITIAL_STATE, action) {
              * Three type of images --
              * "CAMERA" --> Image taken from OLM App camera
              * "GALLERY" --> Selected from phone gallery
-             * "WEB" --> Uploaded from web app but not yet tagged
+             * "WEB" --> Uploaded from web app but may or may not be tagged
              *
              * CAMERA & GALLERY image have same shape object
              *
@@ -61,8 +61,8 @@ export default function(state = INITIAL_STATE, action) {
                                     filename: image.filename,
                                     type: action.payload.type,
                                     selected: false,
-                                    tags: {},
-                                    picked_up: action.payload.picked_up,
+                                    tags: {}, // might exist
+                                    picked_up: !action.payload.remaining,
                                     photoId: image.id
                                 });
                             }

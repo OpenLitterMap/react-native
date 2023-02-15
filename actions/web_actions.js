@@ -9,7 +9,7 @@ import axios from 'axios';
  * and executed when the user swipes to their last image on swiper
  */
 export const loadMoreWebImages = (token, photo_id) => {
-    return (dispatch) => {
+    return dispatch => {
         return axios({
             url: URL + '/api/v2/photos/web/load-more',
             method: 'GET',
@@ -18,13 +18,13 @@ export const loadMoreWebImages = (token, photo_id) => {
             },
             params: { photo_id }
         })
-            .then((resp) => {
+            .then(resp => {
                 console.log('load_more_web_images', resp.data);
 
                 if (resp.data) {
                     let photos = resp.data;
 
-                    photos = photos.map((photo) => {
+                    photos = photos.map(photo => {
                         photo.tags = null;
                         return photo;
                     });
@@ -37,9 +37,8 @@ export const loadMoreWebImages = (token, photo_id) => {
                     });
                 }
             })
-            .catch((err) => {
+            .catch(err => {
                 console.log('load_more_web_images', err.response.data);
             });
     };
 };
-

@@ -1,14 +1,14 @@
 // Import keys to authenticate with your Laravel backend
 // See https://laravel.com/docs/8.x/passport#the-passportclient-command
-import { SECRET_CLIENT } from '@env';
-import { ID_CLIENT } from '@env';
-import { OLM_ENDPOINT } from '@env';
+import { STAGING_SECRET_CLIENT } from '@env';
+import { STAGING_ID_CLIENT } from '@env';
+import { STAGING_OLM_ENDPOINT } from '@env';
 
 export const IS_PRODUCTION = false; // change this when working locally to disable sentry
 
-export const CLIENT_ID = ID_CLIENT;
-export const CLIENT_SECRET = SECRET_CLIENT;
-export const URL = OLM_ENDPOINT;
+export const CLIENT_ID = STAGING_ID_CLIENT;
+export const CLIENT_SECRET = STAGING_SECRET_CLIENT;
+export const URL = STAGING_OLM_ENDPOINT;
 
 export const TOGGLE_ACTIVITY_INDICATOR = 'TOGGLE_ACTIVITY_INDICATOR';
 
@@ -58,6 +58,7 @@ export const CHECK_APP_VERSION = 'CHECK_APP_VERSION';
 export const TOGGLE_MODAL = 'TOGGLE_MODAL';
 export const TOGGLE_THANK_YOU = 'TOGGLE_THANK_YOU';
 export const TOGGLE_UPLOAD = 'TOGGLE_UPLOAD';
+export const WEB_NOT_TAGGED = 'WEB_NOT_TAGGED';
 
 export const INCREMENT = 'INCREMENT';
 

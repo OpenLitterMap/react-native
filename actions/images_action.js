@@ -15,7 +15,8 @@ import {
     TOGGLE_PICKED_UP,
     TOGGLE_SELECTING,
     TOGGLE_SELECTED_IMAGES,
-    URL
+    URL,
+    WEB_NOT_TAGGED
 } from './types';
 
 /**
@@ -63,13 +64,12 @@ export const changeLitterStatus = value => {
 };
 
 /**
- * Get images uploaded from website but not yet tagged
+ * Get images uploaded but not yet tagged
  *
  * @param token - jwt
- * @param picked_up - default user setting if litter is picked_up or not
  *
  */
-export const checkForImagesOnWeb = (token, picked_up) => {
+export const checkForImagesOnWeb = token => {
     return async dispatch => {
         let response;
 
@@ -88,14 +88,14 @@ export const checkForImagesOnWeb = (token, picked_up) => {
                 console.log('checkForImagesOnWeb -- Network Error');
             }
         }
-        if (response && response?.data?.photos) {
-            let photos = response.data.photos;
+        console.log({ response });
+
+        if (response && response?.data?.photos?.length) {
             dispatch({
                 type: ADD_IMAGES,
                 payload: {
-                    images: photos,
-                    type: 'WEB',
-                    picked_up
+                    images: response.data.photos,
+                    type: 'WEB'
                 }
             });
         }
@@ -247,7 +247,7 @@ export const uploadImage = (token, image, imageId) => {
     return async dispatch => {
         try {
             response = await axios(
-                URL + '/api/photos/upload-with-or-without-tags',
+                URL + '/api/photos/upload/with-or-without-tags',
                 {
                     method: 'POST',
                     headers: {

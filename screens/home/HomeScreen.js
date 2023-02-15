@@ -29,6 +29,7 @@ import { UploadImagesGrid, ActionButton, UploadButton } from './homeComponents';
 import AddTags from '../addTag/AddTags';
 import DeviceInfo from 'react-native-device-info';
 import { isTagged } from '../../utils/isTagged';
+import { toggleWebImagesNotTagged } from '../../actions';
 
 class HomeScreen extends PureComponent {
     constructor(props) {
@@ -58,10 +59,7 @@ class HomeScreen extends PureComponent {
      */
     async componentDidMount() {
         // web_actions, web_reducer
-        await this.props.checkForImagesOnWeb(
-            this.props.token,
-            this.props.user.picked_up
-        );
+        await this.props.checkForImagesOnWeb(this.props.token);
 
         // if not in DEV mode check for new version
         !__DEV__ && this.checkNewVersion();
@@ -154,6 +152,14 @@ class HomeScreen extends PureComponent {
                                     onPress={this._toggleUpload.bind(this)}
                                     title="Cancel"
                                 />
+                            </View>
+                        )}
+
+                        {this.props.webNotTagged && (
+                            <View style={styles.modal}>
+                                <View style={styles.thankYouModalInner}>
+                                    <Title>Tag images to upload</Title>
+                                </View>
                             </View>
                         )}
 
@@ -368,15 +374,7 @@ class HomeScreen extends PureComponent {
 
         const model = this.props.model;
 
-        let imagesCount = 0;
-
-        this.props.images.map(item => {
-            const isItemTagged = isTagged(item);
-
-            if (isItemTagged) {
-                imagesCount++;
-            }
-        });
+        let imagesCount = this.props.images.length;
 
         this.setState({
             total: imagesCount
@@ -411,12 +409,16 @@ class HomeScreen extends PureComponent {
                     ImageData.append('date', parseInt(img.date));
                     ImageData.append('picked_up', img.picked_up ? 1 : 0);
                     ImageData.append('model', model);
-                    // Tags and custom_tags may not exist
+
+                    // Tags and custom_tags may or may not exist
                     ImageData.append('tags', JSON.stringify(img.tags));
-                    ImageData.append(
-                        'custom_tags',
-                        JSON.stringify(img.customTags)
-                    );
+
+                    if (img.hasOwnProperty('custom_tags')) {
+                        ImageData.append(
+                            'custom_tags',
+                            JSON.stringify(img.customTags)
+                        );
+                    }
 
                     // Upload image
                     const response = await this.props.uploadImage(
@@ -464,6 +466,10 @@ class HomeScreen extends PureComponent {
                     this.setState(previousState => ({
                         failedUpload: previousState.failedUpload + 1
                     }));
+                } else {
+                    console.log('web image not tagged');
+
+                    this.props.toggleWebImagesNotTagged();
                 }
             }
         }
@@ -617,6 +623,7 @@ const mapStateToProps = state => {
         uploadVisible: state.shared.uploadVisible,
         uniqueValue: state.shared.uniqueValue,
         user: state.auth.user,
+        webNotTagged: state.shared.webNotTagged,
         appVersion: state.shared.appVersion,
         // new image reducer
         images: state.images.imagesArray
