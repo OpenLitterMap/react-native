@@ -69,13 +69,13 @@ export const changeLitterStatus = value => {
  * @param token - jwt
  *
  */
-export const checkForImagesOnWeb = token => {
+export const getUntaggedImages = token => {
     return async dispatch => {
         let response;
 
         try {
             response = await axios({
-                url: URL + '/api/v2/photos/web/index',
+                url: URL + '/api/v2/photos/get-untagged-uploads',
                 method: 'GET',
                 headers: {
                     Authorization: 'Bearer ' + token

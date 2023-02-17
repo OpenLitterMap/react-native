@@ -5,6 +5,8 @@
     "username": "Nome de usuário",
     "email": "Email",
     "privacy": "PRIVACIDADE",
+    "tagging": "TAGGING",
+    "tag_my_uploaded_images": "I want to tag my uploaded images",
     "show-name-maps": "Mostrar nome no Maps",
     "show-username-maps": "Mostrar nome de usuário no Maps",
     "show-name-leaderboards": "Mostrar meu nome no placar",

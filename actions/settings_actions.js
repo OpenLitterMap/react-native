@@ -54,6 +54,10 @@ export const saveSettings = (data, value, token) => {
             type: START_UPDATING_SETTINGS
         });
 
+        console.log({ data });
+        console.log({ value });
+        console.log({ token });
+
         let key = '';
         switch (data.key) {
             case 'name':
@@ -70,6 +74,9 @@ export const saveSettings = (data, value, token) => {
                 break;
             case 'global_flag':
                 key = 'global_flag';
+                break;
+            case 'tag_my_uploaded_images':
+                key = 'tag_my_uploaded_images';
                 break;
         }
 
@@ -206,6 +213,8 @@ export const toggleSettingsModal = (id, title, key) => {
 
 /**
  * The user wants to change one of these settings (<Switch />)
+ *
+ * Privacy settings
  */
 export const toggleSettingsSwitch = (id, token) => {
     let endUrl = '';

@@ -38,6 +38,9 @@ export default function(state = INITIAL_STATE, action) {
              *
              * CAMERA & GALLERY image have same shape object
              *
+             * "WEB" images can be uploaded via web and not tagged
+             * or uploaded via mobile and not tagged.
+             *
              * if WEB --> check if image with same photoId already exist in state
              * if not add it to images array
              *
@@ -59,7 +62,7 @@ export default function(state = INITIAL_STATE, action) {
                                     id: draft.imagesArray.length,
                                     uri: image.filename,
                                     filename: image.filename,
-                                    type: action.payload.type,
+                                    type: action.payload.platform, // can be web or mobile!
                                     selected: false,
                                     tags: {}, // might exist
                                     picked_up: !action.payload.remaining,

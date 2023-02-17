@@ -1,5 +1,12 @@
 import React, { PureComponent } from 'react';
-import { Dimensions, FlatList, Image, View, Pressable } from 'react-native';
+import {
+    Dimensions,
+    FlatList,
+    Image,
+    View,
+    Pressable,
+    Text
+} from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { connect } from 'react-redux';
 import * as actions from '../../../actions';
@@ -29,11 +36,22 @@ class UploadImagesGrid extends PureComponent {
     }
 
     /**
-     * Render images
+     * Render images for uploading & tagging
+     *
+     * - Show each image in the grid
+     * - Show icons for each image
+     *   - isGeotagged
+     *   - isTagged
+     *   - isPickedUp
+     *   - isSelected: for deletion
      */
     renderImage = ({ item, index }) => {
         const itemIsGeotagged = isGeotagged(item);
         const isItemTagged = isTagged(item);
+        const itemIsPickedUp = item.picked_up ?? null;
+        const pickedUpIcon = itemIsPickedUp ? '👍🏻' : '👎🏻';
+
+        const isItemUploaded = item.type === 'web';
 
         return (
             <Pressable onPress={() => this.imagePressed(index)}>
@@ -45,11 +63,7 @@ class UploadImagesGrid extends PureComponent {
                     />
                     {item.selected && (
                         <View style={styles.checkCircleContainer}>
-                            <Icon
-                                name="ios-checkmark-outline"
-                                size={18}
-                                color="white"
-                            />
+                            <Text>🚮</Text>
                         </View>
                     )}
                     {isItemTagged && (
@@ -57,27 +71,19 @@ class UploadImagesGrid extends PureComponent {
                             style={{
                                 position: 'absolute',
                                 right: 30,
-                                top: 5
+                                top: 6
                             }}>
-                            <Icon
-                                name="ios-pricetags-sharp"
-                                size={20}
-                                color={Colors.accentLight}
-                            />
+                            <Text>🏷</Text>
                         </View>
                     )}
-                    {itemIsGeotagged && (
+                    {itemIsPickedUp !== null && (
                         <View
                             style={{
                                 position: 'absolute',
                                 top: 5,
                                 right: 5
                             }}>
-                            <Icon
-                                name="ios-location"
-                                size={20}
-                                color={Colors.accentLight}
-                            />
+                            <Text>{pickedUpIcon}</Text>
                         </View>
                     )}
                 </View>
@@ -158,7 +164,6 @@ const styles = {
         position: 'absolute',
         width: 24,
         height: 24,
-        backgroundColor: '#0984e3',
         right: 10,
         bottom: 10,
         borderRadius: 100,

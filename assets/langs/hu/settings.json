@@ -5,6 +5,8 @@
     "username": "Felhasználónév",
     "email": "Email",
     "privacy": "ADATVÉDELEM",
+    "tagging": "TAGGING",
+    "tag_my_uploaded_images": "I want to tag my uploaded images",
     "show-name-maps": "Név megjelenítése a Térképen",
     "show-username-maps": "Felhasználónév megjelenítése a Térképen",
     "show-name-leaderboards": "Név megjelenítése a ranglistákon",

@@ -29,7 +29,7 @@ import { UploadImagesGrid, ActionButton, UploadButton } from './homeComponents';
 import AddTags from '../addTag/AddTags';
 import DeviceInfo from 'react-native-device-info';
 import { isTagged } from '../../utils/isTagged';
-import { toggleWebImagesNotTagged } from '../../actions';
+import { getUntaggedImages, toggleWebImagesNotTagged } from '../../actions';
 
 class HomeScreen extends PureComponent {
     constructor(props) {
@@ -58,8 +58,8 @@ class HomeScreen extends PureComponent {
      * but were not tagged and submitted
      */
     async componentDidMount() {
-        // web_actions, web_reducer
-        await this.props.checkForImagesOnWeb(this.props.token);
+        // images_actions, images_reducer
+        await this.props.getUntaggedImages(this.props.token);
 
         // if not in DEV mode check for new version
         !__DEV__ && this.checkNewVersion();

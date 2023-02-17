@@ -6,6 +6,8 @@
     "email": "Email",
     "social": "Social Accounts",
     "privacy": "PRIVACY",
+    "tagging": "TAGGING",
+    "tag_my_uploaded_images": "I want to tag my uploaded images",
     "show-name-maps": "Show Name on Maps",
     "show-username-maps": "Show Username on Maps",
     "show-name-leaderboards": "Show Name on Leaderboards",
