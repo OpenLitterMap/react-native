@@ -73,10 +73,12 @@ export const saveSettings = (data, value, token) => {
                 key = 'global_flag';
                 break;
 
-            case 'tag_my_uploaded_images':
-                key = 'tag_my_uploaded_images';
+            case 'enable_admin_tagging':
+                key = 'enable_admin_tagging';
                 break;
         }
+
+        console.log('beforeSaveSettings');
 
         await axios(URL + '/api/settings/update/', {
             method: 'POST',
@@ -114,8 +116,11 @@ export const saveSettings = (data, value, token) => {
                         payload: 'SUCCESS'
                     });
 
-                    if (key === 'tag_my_uploaded_images') {
-                        if (!value) {
+                    if (key === 'enable_admin_tagging') {
+                        // value is what we just applied
+                        console.log('clear untagged uploaded photos', value);
+
+                        if (value) {
                             dispatch({
                                 type: 'CLEAR_UPLOADED_WEB_IMAGES'
                             });

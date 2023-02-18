@@ -53,6 +53,8 @@ export default function(state = INITIAL_STATE, action) {
 
                 images &&
                     images.map(image => {
+                        // Web images are uploaded by web or mobile
+                        // They are untagged
                         if (action.payload.type === 'WEB') {
                             const index = draft.imagesArray.findIndex(
                                 webimg => webimg.photoId === image.id
@@ -64,9 +66,10 @@ export default function(state = INITIAL_STATE, action) {
                                     filename: image.filename,
                                     type: action.payload.platform, // can be web or mobile!
                                     selected: false,
-                                    tags: {}, // might exist
+                                    tags: {}, // might exist?
                                     picked_up: !action.payload.remaining,
-                                    photoId: image.id
+                                    photoId: image.id,
+                                    uploaded: true
                                 });
                             }
                         } else {
@@ -80,7 +83,8 @@ export default function(state = INITIAL_STATE, action) {
                                 type: action.payload.type,
                                 selected: false,
                                 tags: {},
-                                picked_up: action.payload.picked_up
+                                picked_up: action.payload.picked_up,
+                                uploaded: false
                             });
                         }
                     });
@@ -233,7 +237,7 @@ export default function(state = INITIAL_STATE, action) {
                 break;
 
             /**
-             * After setting tag_my_uploaded_images changes to False,
+             * After setting enable_admin_tagging changes to False,
              *
              * We want to clear the users uploaded un-tagged images.
              */

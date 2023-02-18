@@ -6,7 +6,7 @@
     "email": "Email",
     "privacy": "ADATVÉDELEM",
     "tagging": "TAGGING",
-    "tag_my_uploaded_images": "Enable crowdsourced tagging",
+    "enable_admin_tagging": "Enable crowdsourced tagging",
     "show-name-maps": "Név megjelenítése a Térképen",
     "show-username-maps": "Felhasználónév megjelenítése a Térképen",
     "show-name-leaderboards": "Név megjelenítése a ranglistákon",

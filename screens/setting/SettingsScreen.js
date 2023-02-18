@@ -149,9 +149,9 @@ class SettingsScreen extends Component {
                                     data: [
                                         {
                                             id: 12,
-                                            key: 'tag_my_uploaded_images',
+                                            key: 'enable_admin_tagging',
                                             title:
-                                                'settings.tag_my_uploaded_images'
+                                                'settings.enable_admin_tagging'
                                         }
                                     ]
                                 },
@@ -397,28 +397,29 @@ class SettingsScreen extends Component {
     _toggleSwitch(id, key) {
         const lang = this.props.lang;
 
-        const alert = getTranslation(`${lang}.settings.alert`);
-        let info = getTranslation(
-            `${lang}.settings.do-you-really-want-to-change`
-        );
+        // const alert = getTranslation(`${lang}.settings.alert`);
+        let title = '';
+        let subtitle = '';
+
         const ok = getTranslation(`${lang}.settings.ok`);
         const cancel = getTranslation(`${lang}.settings.cancel`);
 
         // Needs translation
-        if (key === 'tag_my_uploaded_images') {
-            info += this.props.user.tag_my_uploaded_images
-                ? ' \n \n' +
-                  'If you enable this setting, all you need to do is upload ' +
-                  'and our admins will add the tags to your images. When this setting is turned on ' +
-                  'your untagged uploads will disappear.'
-                : ' \n \n' +
-                  'If you disable this setting, our admins will not be able to help with your tagging.' +
-                  ' You should leave this setting turned off if you want to tag your images yourself.';
+        if (key === 'enable_admin_tagging') {
+            title = this.props.user.enable_admin_tagging
+                ? 'Turn off'
+                : 'Turn on';
+
+            subtitle += this.props.user.enable_admin_tagging
+                ? ' \n' + 'Only you will be able to tag your uploads'
+                : ' \n' + 'Our volunteers will tag your uploads';
+        } else {
+            title = 'Change setting?';
         }
 
         Alert.alert(
-            alert,
-            info,
+            title,
+            subtitle,
             [
                 {
                     text: ok,
@@ -441,20 +442,17 @@ class SettingsScreen extends Component {
                                 this.state.countryCode.toLowerCase(),
                                 this.props.token
                             );
-                        } else if (key === 'tag_my_uploaded_images') {
-                            // if value is true, first clear the images
-                            // then apply the new value
-
-                            if (
-                                this.props.user.tag_my_uploaded_images === false
-                            ) {
-                                // get the images
+                        } else if (key === 'enable_admin_tagging') {
+                            if (this.props.user.enable_admin_tagging) {
+                                console.log(
+                                    'settings screen - getUntaggedImages'
+                                );
                                 this.props.getUntaggedImages(this.props.token);
                             }
 
                             this.props.saveSettings(
-                                { key: 'tag_my_uploaded_images' },
-                                !this.props?.user?.tag_my_uploaded_images,
+                                { key: 'enable_admin_tagging' },
+                                !this.props?.user?.enable_admin_tagging,
                                 this.props.token
                             );
                         } else {
@@ -482,7 +480,7 @@ class SettingsScreen extends Component {
     /**
      * Get the 0 or 1 value for a Switch
      *
-     * INFO: show_name, show_username, picked_up and tag_my_uploaded_images have boolean values
+     * INFO: show_name, show_username, picked_up and enable_admin_tagging have boolean values
      * We need to cast these to integers
      *
      * rest have 0 & 1
@@ -506,8 +504,8 @@ class SettingsScreen extends Component {
             //     break;
             case 'settings.picked-up':
                 return this.props?.user?.picked_up === false ? 0 : 1;
-            case 'tag_my_uploaded_images':
-                return Number(!this.props?.user?.tag_my_uploaded_images);
+            case 'enable_admin_tagging':
+                return Number(this.props?.user?.enable_admin_tagging);
             default:
                 break;
         }

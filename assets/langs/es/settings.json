@@ -6,7 +6,7 @@
     "email": "Correos",
     "privacy": "PRIVACIDAD",
     "tagging": "TAGGING",
-    "tag_my_uploaded_images": "Enable crowdsourced tagging",
+    "enable_admin_tagging": "Enable crowdsourced tagging",
     "show-name-maps": "Mostrar nombre en mapass",
     "show-username-maps": "mostrar nombre de usuario en mapas",
     "show-name-leaderboards": "Mostrar nombre en el marcador",

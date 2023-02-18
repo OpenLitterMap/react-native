@@ -58,8 +58,8 @@ class HomeScreen extends PureComponent {
      * but were not tagged and submitted
      */
     async componentDidMount() {
-        // Only get untagged images for Users with this setting turned on.
-        if (this.props.user?.tag_my_uploaded_images) {
+        // If enable_admin_tagging is False, the user wants to get and tag their uploads
+        if (!this.props.user?.enable_admin_tagging) {
             // images_actions, images_reducer
             await this.props.getUntaggedImages(this.props.token);
         }

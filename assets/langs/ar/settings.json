@@ -6,7 +6,7 @@
     "email": "البريد الإلكتروني",
     "privacy": "الخصوصية",
     "tagging": "TAGGING",
-    "tag_my_uploaded_images": "Enable crowdsourced tagging",
+    "enable_admin_tagging": "Enable crowdsourced tagging",
     "show-name-maps": "أظهر الاسم على الخرائط",
     "show-username-maps": "أظهر اسم المستخدم على الخرائط",
     "show-name-leaderboards": "أظهر الاسم في لوحة المتصدرين",
