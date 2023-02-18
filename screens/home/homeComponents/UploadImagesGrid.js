@@ -11,7 +11,6 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { connect } from 'react-redux';
 import * as actions from '../../../actions';
 import { Body, Colors, SubTitle } from '../../components';
-import { isGeotagged } from '../../../utils/isGeotagged';
 import { isTagged } from '../../../utils/isTagged';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -40,18 +39,15 @@ class UploadImagesGrid extends PureComponent {
      *
      * - Show each image in the grid
      * - Show icons for each image
-     *   - isGeotagged
      *   - isTagged
      *   - isPickedUp
      *   - isSelected: for deletion
      */
     renderImage = ({ item, index }) => {
-        const itemIsGeotagged = isGeotagged(item);
         const isItemTagged = isTagged(item);
         const itemIsPickedUp = item.picked_up ?? null;
         const pickedUpIcon = itemIsPickedUp ? '👍🏻' : '👎🏻';
-
-        const isItemUploaded = item.type === 'web';
+        const isItemUploaded = item.hasOwnProperty('uploaded') && item.uploaded;
 
         return (
             <Pressable onPress={() => this.imagePressed(index)}>
@@ -61,6 +57,16 @@ class UploadImagesGrid extends PureComponent {
                         source={{ uri: item.uri }}
                         resizeMode="cover"
                     />
+                    {isItemUploaded && (
+                        <View
+                            style={{
+                                position: 'absolute',
+                                top: 5,
+                                left: 5
+                            }}>
+                            <Text>🌩</Text>
+                        </View>
+                    )}
                     {item.selected && (
                         <View style={styles.checkCircleContainer}>
                             <Text>🚮</Text>

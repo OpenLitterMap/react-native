@@ -64,7 +64,7 @@ export default function(state = INITIAL_STATE, action) {
                                     id: draft.imagesArray.length,
                                     uri: image.filename,
                                     filename: image.filename,
-                                    type: action.payload.platform, // can be web or mobile!
+                                    platform: action.payload.platform, // can be web or mobile!
                                     selected: false,
                                     tags: {}, // might exist?
                                     picked_up: !action.payload.remaining,
@@ -81,6 +81,7 @@ export default function(state = INITIAL_STATE, action) {
                                 filename: image.filename,
                                 date: image.date,
                                 type: action.payload.type,
+                                platform: action.payload.platform,
                                 selected: false,
                                 tags: {},
                                 picked_up: action.payload.picked_up,
@@ -225,6 +226,7 @@ export default function(state = INITIAL_STATE, action) {
                 }
                 break;
             }
+
             /**
              * Changes litter picked up status of all images
              * to payload
@@ -259,7 +261,6 @@ export default function(state = INITIAL_STATE, action) {
             /**
              * delete image by id
              */
-
             case DELETE_IMAGE:
                 const index = draft.imagesArray.findIndex(
                     delImg => delImg.id === action.payload
@@ -273,7 +274,6 @@ export default function(state = INITIAL_STATE, action) {
             /**
              * Delete selected images -- all images with property selected set to true
              */
-
             case DELETE_SELECTED_IMAGES:
                 draft.imagesArray = draft.imagesArray.filter(
                     img => !img.selected
@@ -287,7 +287,6 @@ export default function(state = INITIAL_STATE, action) {
              *
              * Change selected value on every image to false
              */
-
             case DESELECT_ALL_IMAGES:
                 draft.imagesArray.map(image => {
                     image.selected = false;
@@ -298,7 +297,6 @@ export default function(state = INITIAL_STATE, action) {
             /**
              * Increment the count of images selected for deletion
              */
-
             case INCREMENT_SELECTED:
                 draft.selected = draft.selected + 1;
 
@@ -307,7 +305,6 @@ export default function(state = INITIAL_STATE, action) {
             /**
              * remove the tag from image based on index
              */
-
             case REMOVE_TAG_FROM_IMAGE:
                 let photo = draft.imagesArray[action.payload.currentIndex];
 
@@ -361,6 +358,23 @@ export default function(state = INITIAL_STATE, action) {
                 draft.imagesArray[action.payload].selected = !draft.imagesArray[
                     action.payload
                 ].selected;
+
+                break;
+
+            /**
+             * After an untagged image was uploaded,
+             *
+             * If user.enable_admin_tagging is false,
+             * Update the image as uploaded which will show a cloud emoji
+             */
+            case 'UPDATE_IMAGE_AS_UPLOADED':
+                draft.imagesArray = draft.imagesArray.map(img => {
+                    if (img.id === action.payload) {
+                        img.uploaded = true;
+                    }
+
+                    return img;
+                });
 
                 break;
 

@@ -118,8 +118,6 @@ export const saveSettings = (data, value, token) => {
 
                     if (key === 'enable_admin_tagging') {
                         // value is what we just applied
-                        console.log('clear untagged uploaded photos', value);
-
                         if (value) {
                             dispatch({
                                 type: 'CLEAR_UPLOADED_WEB_IMAGES'

@@ -444,9 +444,6 @@ class SettingsScreen extends Component {
                             );
                         } else if (key === 'enable_admin_tagging') {
                             if (this.props.user.enable_admin_tagging) {
-                                console.log(
-                                    'settings screen - getUntaggedImages'
-                                );
                                 this.props.getUntaggedImages(this.props.token);
                             }
 

@@ -334,25 +334,25 @@ class HomeScreen extends PureComponent {
      * else
      * delete images from state based on id
      */
-
     deleteImages() {
         this.props.images.map(image => {
-            if (image.type !== 'WEB' && image.selected) {
-                this.props.deleteImage(image.id);
-            } else if (image.type === 'WEB' && image.selected) {
+            if ((image.type === 'WEB' || image.uploaded) && image.selected) {
                 this.props.deleteWebImage(
                     this.props.token,
                     image.photoId,
-                    image.id
+                    image.id,
+                    this.props.user.enable_admin_tagging
                 );
+            } else {
+                this.props.deleteImage(image.id);
             }
         });
+
         // this.props.deleteSelectedImages();
         this.props.toggleSelecting();
     }
 
     // reset state after cancel button pressed
-
     resetAfterUploadCancelled = () => {
         this.setState({
             total: 0,
@@ -361,6 +361,7 @@ class HomeScreen extends PureComponent {
             isUploadCancelled: false
         });
     };
+
     /**
      * Upload photos, 1 photo per request
      *
@@ -423,11 +424,15 @@ class HomeScreen extends PureComponent {
                         );
                     }
 
+                    console.log({ isItemTagged });
+
                     // Upload image
                     const response = await this.props.uploadImage(
                         this.props.token,
                         ImageData,
-                        img.id
+                        img.id,
+                        this.props.user.enable_admin_tagging,
+                        isItemTagged
                     );
 
                     // if success upload++ else failed++

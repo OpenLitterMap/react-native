@@ -26,7 +26,6 @@ import {
  * @param picked_up
  */
 export const addImages = (images, type, picked_up) => {
-    console.log('addImages', images, type);
     return {
         type: ADD_IMAGES,
         payload: { images, type, picked_up }
@@ -92,13 +91,14 @@ export const getUntaggedImages = token => {
             });
         } catch (error) {
             if (error?.response) {
-                console.log('checkForImagesOnWeb', error?.response?.data);
+                console.log('getUntaggedImages', error?.response?.data);
             } else {
-                console.log('checkForImagesOnWeb -- Network Error');
+                console.log('getUntaggedImages -- Network Error');
             }
         }
 
         if (response && response?.data?.photos?.length) {
+            console.log('getUntaggedImages response', response.data.photos);
             dispatch({
                 type: ADD_IMAGES,
                 payload: {
@@ -152,7 +152,7 @@ export const deselectAllImages = () => {
  * Delete selected web image
  * web image - image that are uploaded from web but not tagged
  */
-export const deleteWebImage = (token, photoId, id) => {
+export const deleteWebImage = (token, photoId, id, enableAdminTagging) => {
     return async dispatch => {
         let response;
 
@@ -166,10 +166,16 @@ export const deleteWebImage = (token, photoId, id) => {
                 },
                 params: { photoId }
             });
+
+            console.log('deleteWebImgResp', response.data);
         } catch (error) {
             console.log('delete web image', error);
         }
         if (response && response?.data?.success) {
+            console.log('deleteWebImageSuccess', response.data);
+
+            console.log({ enableAdminTagging });
+
             dispatch({
                 type: DELETE_IMAGE,
                 payload: id
@@ -246,11 +252,19 @@ export const toggleSelectedImage = id => {
  * image.tags & image.custom_tags may or may not have values
  *
  * @param {string} token
- * @param  image form data
+ * @param imageData form data
  * @param imageId
+ * @param enableAdminTagging: bool
+ *
  * @returns
  */
-export const uploadImage = (token, image, imageId) => {
+export const uploadImage = (
+    token,
+    imageData,
+    imageId,
+    enableAdminTagging,
+    isTagged
+) => {
     let response;
     return async dispatch => {
         try {
@@ -262,7 +276,7 @@ export const uploadImage = (token, image, imageId) => {
                         Authorization: 'Bearer ' + token,
                         'Content-Type': 'multipart/form-data'
                     },
-                    data: image
+                    data: imageData
                 }
             );
         } catch (error) {
@@ -288,10 +302,18 @@ export const uploadImage = (token, image, imageId) => {
         }
 
         if (response && response.data?.success) {
-            dispatch({
-                type: DELETE_IMAGE,
-                payload: imageId
-            });
+            if (enableAdminTagging || isTagged) {
+                dispatch({
+                    type: DELETE_IMAGE,
+                    payload: imageId
+                });
+            } else {
+                dispatch({
+                    type: 'UPDATE_IMAGE_AS_UPLOADED',
+                    payload: imageId
+                });
+            }
+
             // return the photo.id that has been created on the backend
             return {
                 success: true,
