@@ -72,6 +72,7 @@ export const saveSettings = (data, value, token) => {
             case 'global_flag':
                 key = 'global_flag';
                 break;
+
             case 'tag_my_uploaded_images':
                 key = 'tag_my_uploaded_images';
                 break;
@@ -113,6 +114,14 @@ export const saveSettings = (data, value, token) => {
                     });
 
                     // close modals - done from settings update success
+
+                    if (key === 'tag_my_uploaded_images') {
+                        if (!value) {
+                            dispatch({
+                                type: 'CLEAR_UPLOADED_WEB_IMAGES'
+                            });
+                        }
+                    }
                 } else {
                     console.log(
                         'ERROR updating settings. Todo - inform the user'

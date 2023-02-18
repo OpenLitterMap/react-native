@@ -233,6 +233,20 @@ export default function(state = INITIAL_STATE, action) {
                 break;
 
             /**
+             * After setting tag_my_uploaded_images changes to False,
+             *
+             * We want to clear the users uploaded un-tagged images.
+             */
+            case 'CLEAR_UPLOADED_WEB_IMAGES':
+                draft.imagesArray = draft.imagesArray.filter(img => {
+                    return img.type === 'WEB' && img.hasOwnProperty('photoId');
+                });
+
+                console.log('draft.images', draft.imagesArray);
+
+                break;
+
+            /**
              * Decrement the count of images selected for deletion
              */
             case DECREMENT_SELECTED:

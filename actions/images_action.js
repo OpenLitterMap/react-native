@@ -65,10 +65,18 @@ export const changeLitterStatus = value => {
 };
 
 /**
+ * After setting has changed, clear untagged uploads
+ */
+export const clearUntaggedUploads = () => {
+    return {
+        type: 'CLEAR_UPLOADED_WEB_IMAGES'
+    };
+};
+
+/**
  * Get images uploaded but not yet tagged
  *
  * @param token - jwt
- *
  */
 export const getUntaggedImages = token => {
     return async dispatch => {
@@ -89,7 +97,6 @@ export const getUntaggedImages = token => {
                 console.log('checkForImagesOnWeb -- Network Error');
             }
         }
-        console.log('getUntaggedImages', response);
 
         if (response && response?.data?.photos?.length) {
             dispatch({

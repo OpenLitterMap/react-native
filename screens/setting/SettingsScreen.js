@@ -8,7 +8,8 @@ import {
     Switch,
     View,
     Pressable,
-    StyleSheet
+    StyleSheet,
+    Text
 } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import { getTranslation, TransText } from 'react-native-translation';
@@ -26,6 +27,7 @@ const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 
 import SettingsComponent from './settingComponents/SettingsComponent';
+import { getUntaggedImages } from '../../actions';
 
 class SettingsScreen extends Component {
     constructor(props) {
@@ -396,11 +398,23 @@ class SettingsScreen extends Component {
         const lang = this.props.lang;
 
         const alert = getTranslation(`${lang}.settings.alert`);
-        const info = getTranslation(
+        let info = getTranslation(
             `${lang}.settings.do-you-really-want-to-change`
         );
         const ok = getTranslation(`${lang}.settings.ok`);
         const cancel = getTranslation(`${lang}.settings.cancel`);
+
+        // Needs translation
+        if (key === 'tag_my_uploaded_images') {
+            info += this.props.user.tag_my_uploaded_images
+                ? ' \n \n' +
+                  'If you enable this setting, all you need to do is upload ' +
+                  'and our admins will add the tags to your images. When this setting is turned on ' +
+                  'your untagged uploads will disappear.'
+                : ' \n \n' +
+                  'If you disable this setting, our admins will not be able to help with your tagging.' +
+                  ' You should leave this setting turned off if you want to tag your images yourself.';
+        }
 
         Alert.alert(
             alert,
@@ -428,6 +442,16 @@ class SettingsScreen extends Component {
                                 this.props.token
                             );
                         } else if (key === 'tag_my_uploaded_images') {
+                            // if value is true, first clear the images
+                            // then apply the new value
+
+                            if (
+                                this.props.user.tag_my_uploaded_images === false
+                            ) {
+                                // get the images
+                                this.props.getUntaggedImages(this.props.token);
+                            }
+
                             this.props.saveSettings(
                                 { key: 'tag_my_uploaded_images' },
                                 !this.props?.user?.tag_my_uploaded_images,
@@ -458,7 +482,7 @@ class SettingsScreen extends Component {
     /**
      * Get the 0 or 1 value for a Switch
      *
-     * INFO: show_name, show_username, picked_up and tag_my_uploaded_imageshave boolean values
+     * INFO: show_name, show_username, picked_up and tag_my_uploaded_images have boolean values
      * We need to cast these to integers
      *
      * rest have 0 & 1
@@ -483,7 +507,7 @@ class SettingsScreen extends Component {
             case 'settings.picked-up':
                 return this.props?.user?.picked_up === false ? 0 : 1;
             case 'tag_my_uploaded_images':
-                return Number(this.props?.user?.tag_my_uploaded_images);
+                return Number(!this.props?.user?.tag_my_uploaded_images);
             default:
                 break;
         }
