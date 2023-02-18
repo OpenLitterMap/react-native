@@ -483,9 +483,7 @@ class SettingsScreen extends Component {
             case 'settings.picked-up':
                 return this.props?.user?.picked_up === false ? 0 : 1;
             case 'tag_my_uploaded_images':
-                return this.props?.user?.tag_my_uploaded_images === false
-                    ? 0
-                    : 1;
+                return Number(this.props?.user?.tag_my_uploaded_images);
             default:
                 break;
         }

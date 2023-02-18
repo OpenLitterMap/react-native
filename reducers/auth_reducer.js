@@ -85,7 +85,6 @@ export default function(state = INITIAL_STATE, action) {
             /**
              * Logout user
              * reset state to initial
-             
              */
 
             case LOGOUT:

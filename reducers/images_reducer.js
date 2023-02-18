@@ -104,7 +104,6 @@ export default function(state = INITIAL_STATE, action) {
              * after adding tag save tag to previousTags array.
              * max 10 tags in previousTags array remove old tags if it exceeds limits.
              */
-
             case ADD_TAG_TO_IMAGE: {
                 let image = draft.imagesArray[action.payload.currentIndex];
                 let newTags = image.tags;
@@ -174,6 +173,10 @@ export default function(state = INITIAL_STATE, action) {
 
                 break;
             }
+
+            /**
+             * The user can add custom tags to an image
+             */
             case ADD_CUSTOM_TAG_TO_IMAGE: {
                 let currentImage =
                     draft.imagesArray[action.payload.currentIndex];

@@ -58,8 +58,13 @@ class HomeScreen extends PureComponent {
      * but were not tagged and submitted
      */
     async componentDidMount() {
-        // images_actions, images_reducer
-        await this.props.getUntaggedImages(this.props.token);
+        console.log('User?', this.props.user?.tag_my_uploaded_images);
+
+        // Only get untagged images for Users with this setting turned on.
+        if (this.props.user?.tag_my_uploaded_images) {
+            // images_actions, images_reducer
+            await this.props.getUntaggedImages(this.props.token);
+        }
 
         // if not in DEV mode check for new version
         !__DEV__ && this.checkNewVersion();

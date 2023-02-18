@@ -332,7 +332,6 @@ export const userLogin = data => {
 
 /**
  * Make an API request to fetch the current user with an access token
- *
  */
 export const fetchUser = token => {
     return async dispatch => {

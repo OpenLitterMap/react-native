@@ -26,6 +26,7 @@ import {
  * @param picked_up
  */
 export const addImages = (images, type, picked_up) => {
+    console.log('addImages', images, type);
     return {
         type: ADD_IMAGES,
         payload: { images, type, picked_up }
@@ -88,7 +89,7 @@ export const getUntaggedImages = token => {
                 console.log('checkForImagesOnWeb -- Network Error');
             }
         }
-        console.log({ response });
+        console.log('getUntaggedImages', response);
 
         if (response && response?.data?.photos?.length) {
             dispatch({

@@ -54,10 +54,7 @@ export const saveSettings = (data, value, token) => {
             type: START_UPDATING_SETTINGS
         });
 
-        console.log({ data });
-        console.log({ value });
-        console.log({ token });
-
+        // This needs to be refactored. We should use the same keys everywhere.
         let key = '';
         switch (data.key) {
             case 'name':
