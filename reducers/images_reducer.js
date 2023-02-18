@@ -242,8 +242,6 @@ export default function(state = INITIAL_STATE, action) {
                     return img.type === 'WEB' && img.hasOwnProperty('photoId');
                 });
 
-                console.log('draft.images', draft.imagesArray);
-
                 break;
 
             /**

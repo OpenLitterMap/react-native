@@ -99,6 +99,7 @@ export const saveSettings = (data, value, token) => {
 
                     // update user object
                     user[data.key] = value;
+
                     // save updated user data
                     AsyncStorage.setItem('user', JSON.stringify(user));
 
@@ -106,14 +107,12 @@ export const saveSettings = (data, value, token) => {
                         type: UPDATE_USER_OBJECT,
                         payload: user
                     });
-                    // then show success message
 
+                    // then show success message
                     dispatch({
                         type: SETTINGS_UPDATE_STATUS_MESSAGE,
                         payload: 'SUCCESS'
                     });
-
-                    // close modals - done from settings update success
 
                     if (key === 'tag_my_uploaded_images') {
                         if (!value) {
@@ -136,6 +135,7 @@ export const saveSettings = (data, value, token) => {
             })
             .catch(error => {
                 console.log('saveSettings', error);
+
                 // show error message
                 dispatch({
                     type: SETTINGS_UPDATE_STATUS_MESSAGE,
