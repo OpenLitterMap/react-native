@@ -252,9 +252,10 @@ export const toggleSelectedImage = id => {
  * image.tags & image.custom_tags may or may not have values
  *
  * @param {string} token
- * @param imageData form data
- * @param imageId
+ * @param imageData: FormData
+ * @param imageId: int
  * @param enableAdminTagging: bool
+ * @param isTagged: bool
  *
  * @returns
  */

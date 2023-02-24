@@ -50,8 +50,8 @@ class MainRoutes extends Component {
                 this.setState({ isLoading: false });
             } else {
                 // if token is invalid logout the user
-
                 this.props.logout();
+
                 this.setState({ isLoading: false });
             }
         } else {

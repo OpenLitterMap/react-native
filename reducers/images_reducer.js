@@ -32,8 +32,12 @@ export default function(state = INITIAL_STATE, action) {
              * Add images to state
              *
              * Three type of images --
-             * "CAMERA" --> Image taken from OLM App camera
+             *
+             * Platform: app
+             * "CAMERA" --> Image taken from OLM App camera (currently disabled)
              * "GALLERY" --> Selected from phone gallery
+             *
+             * Platform: web
              * "WEB" --> Uploaded from web app but may or may not be tagged
              *
              * CAMERA & GALLERY image have same shape object
@@ -44,9 +48,8 @@ export default function(state = INITIAL_STATE, action) {
              * if WEB --> check if image with same photoId already exist in state
              * if not add it to images array
              *
-             * WEB images dont have lat/long properties but they are geotagged because
-             * web app only accepts geotagged images.
-             *
+             * WEB images dont display lat/long properties at the moment
+             * but they are geotagged because web app only accepts geotagged images.
              */
             case ADD_IMAGES:
                 const images = action.payload.images;
@@ -55,39 +58,40 @@ export default function(state = INITIAL_STATE, action) {
                     images.map(image => {
                         // Web images are uploaded by web or mobile
                         // They are untagged
-                        if (action.payload.type === 'WEB') {
-                            const index = draft.imagesArray.findIndex(
-                                webimg => webimg.photoId === image.id
-                            );
-                            if (index === -1) {
-                                draft.imagesArray.push({
-                                    id: draft.imagesArray.length,
-                                    uri: image.filename,
-                                    filename: image.filename,
-                                    platform: action.payload.platform, // can be web or mobile!
-                                    selected: false,
-                                    tags: {}, // might exist?
-                                    picked_up: !action.payload.remaining,
-                                    photoId: image.id,
-                                    uploaded: true
-                                });
-                            }
-                        } else {
+                        console.log({ image });
+
+                        const index = draft.imagesArray.findIndex(
+                            img => img.id === image.id
+                        );
+
+                        console.log({ index });
+
+                        if (index === -1) {
                             draft.imagesArray.push({
-                                id: draft.imagesArray.length,
-                                lat: image.lat,
-                                lon: image.lon,
-                                uri: image.uri,
+                                id: image.id,
+                                uri: image.filename,
                                 filename: image.filename,
-                                date: image.date,
-                                type: action.payload.type,
-                                platform: action.payload.platform,
+                                lat: image.lat ?? 0,
+                                lon: image.lon ?? 0,
+                                date: image.date ?? null,
+                                platform: action.payload.platform, // can be web or mobile!
                                 selected: false,
-                                tags: {},
-                                picked_up: action.payload.picked_up,
-                                uploaded: false
+                                tags: {}, // might exist?
+                                picked_up: !action.payload.remaining,
+                                photoId: image.id, // need to remove this duplicate
+                                uploaded: true
                             });
                         }
+                        // draft.imagesArray.push({
+                        //     filename: image.filename,
+                        //     date: image.date,
+                        //     type: action.payload.type,
+                        //     platform: action.payload.platform,
+                        //     selected: false,
+                        //     tags: {},
+                        //     picked_up: action.payload.picked_up,
+                        //     uploaded: false
+                        // });
                     });
 
                 break;

@@ -96,7 +96,6 @@ export const checkForToken = () => async dispatch => {
  * Create an Account
  */
 export const createAccount = data => {
-    // console.log('action - attempting to create an account');
     return async dispatch => {
         // setting isSubmitting to true
         // shows loader on button
@@ -336,6 +335,7 @@ export const userLogin = data => {
 export const fetchUser = token => {
     return async dispatch => {
         let response;
+
         try {
             response = await axios(URL + '/api/user', {
                 method: 'GET',

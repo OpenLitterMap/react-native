@@ -128,7 +128,8 @@ export const getPhotosFromCameraroll = (fetchType = 'INITIAL') => async (
                 // lon: item.node.location?.longitude,
                 tags: {},
                 type: 'gallery',
-                ...coordinates
+                ...coordinates,
+                uploaded: false
             });
         });
 

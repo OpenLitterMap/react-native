@@ -58,9 +58,11 @@ class HomeScreen extends PureComponent {
      * but were not tagged and submitted
      */
     async componentDidMount() {
+        console.log('images', this.props.images);
         // If enable_admin_tagging is False, the user wants to get and tag their uploads
         if (!this.props.user?.enable_admin_tagging) {
             // images_actions, images_reducer
+            console.log('getUntaggedImages');
             await this.props.getUntaggedImages(this.props.token);
         }
 
@@ -336,14 +338,14 @@ class HomeScreen extends PureComponent {
      */
     deleteImages() {
         this.props.images.map(image => {
-            if ((image.type === 'WEB' || image.uploaded) && image.selected) {
+            if (image.uploaded && image.selected) {
                 this.props.deleteWebImage(
                     this.props.token,
                     image.photoId,
                     image.id,
                     this.props.user.enable_admin_tagging
                 );
-            } else {
+            } else if (image.selected) {
                 this.props.deleteImage(image.id);
             }
         });
