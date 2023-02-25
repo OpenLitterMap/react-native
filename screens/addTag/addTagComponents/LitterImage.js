@@ -88,7 +88,7 @@ class LitterImage extends PureComponent {
                             this.setState({ isLongPress: false });
                             this.props.onImageTap();
                         }}
-                        // if image is long pressed and  hold hide all containers
+                        // if image is long pressed and hold hide all containers
                         onLongPress={() => {
                             this.setState({ isLongPress: true });
                             this.props.onLongPressStart();

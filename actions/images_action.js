@@ -152,7 +152,7 @@ export const deselectAllImages = () => {
  * Delete selected web image
  * web image - image that are uploaded from web but not tagged
  */
-export const deleteWebImage = (token, photoId, id, enableAdminTagging) => {
+export const deleteWebImage = (token, photoId, enableAdminTagging) => {
     return async dispatch => {
         let response;
 
@@ -178,7 +178,7 @@ export const deleteWebImage = (token, photoId, id, enableAdminTagging) => {
 
             dispatch({
                 type: DELETE_IMAGE,
-                payload: id
+                payload: photoId
             });
         }
     };
@@ -311,7 +311,10 @@ export const uploadImage = (
             } else {
                 dispatch({
                     type: 'UPDATE_IMAGE_AS_UPLOADED',
-                    payload: imageId
+                    payload: {
+                        originalImageId: imageId,
+                        newImageId: response.data.photo_id
+                    }
                 });
             }
 

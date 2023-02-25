@@ -58,11 +58,10 @@ class HomeScreen extends PureComponent {
      * but were not tagged and submitted
      */
     async componentDidMount() {
-        console.log('images', this.props.images);
+        console.log('componentDidMount.images', this.props.images);
         // If enable_admin_tagging is False, the user wants to get and tag their uploads
         if (!this.props.user?.enable_admin_tagging) {
             // images_actions, images_reducer
-            console.log('getUntaggedImages');
             await this.props.getUntaggedImages(this.props.token);
         }
 
@@ -80,8 +79,9 @@ class HomeScreen extends PureComponent {
 
     async checkGalleryPermission() {
         const result = await checkCameraRollPermission();
+
         if (result === 'granted') {
-            this.getImagesFormCameraroll();
+            this.getImagesFromCameraRoll();
         } else {
             this.props.navigation.navigate('PERMISSION', {
                 screen: 'GALLERY_PERMISSION'
@@ -103,7 +103,10 @@ class HomeScreen extends PureComponent {
         }
     }
 
-    getImagesFormCameraroll() {
+    /**
+     * Dispatch action that will get the images from the camera roll
+     */
+    getImagesFromCameraRoll() {
         this.props.getPhotosFromCameraroll();
     }
 
@@ -338,15 +341,16 @@ class HomeScreen extends PureComponent {
      */
     deleteImages() {
         this.props.images.map(image => {
-            if (image.uploaded && image.selected) {
-                this.props.deleteWebImage(
-                    this.props.token,
-                    image.photoId,
-                    image.id,
-                    this.props.user.enable_admin_tagging
-                );
-            } else if (image.selected) {
-                this.props.deleteImage(image.id);
+            if (image.selected) {
+                if (image.type === 'gallery' || image.type === 'camera') {
+                    this.props.deleteImage(image.id);
+                } else if (image.uploaded) {
+                    this.props.deleteWebImage(
+                        this.props.token,
+                        image.id,
+                        this.props.user.enable_admin_tagging
+                    );
+                }
             }
         });
 
@@ -401,7 +405,7 @@ class HomeScreen extends PureComponent {
                 const isItemTagged = isTagged(img);
 
                 // Upload any new image that is tagged or not
-                if (img.type !== 'WEB' && isgeotagged) {
+                if (img.type === 'gallery' && isgeotagged) {
                     let ImageData = new FormData();
 
                     ImageData.append('photo', {
@@ -417,16 +421,11 @@ class HomeScreen extends PureComponent {
                     ImageData.append('model', model);
 
                     // Tags and custom_tags may or may not exist
-                    ImageData.append('tags', JSON.stringify(img.tags));
+                    ImageData.append('tags', img.tags);
 
                     if (img.hasOwnProperty('custom_tags')) {
-                        ImageData.append(
-                            'custom_tags',
-                            JSON.stringify(img.customTags)
-                        );
+                        ImageData.append('custom_tags', img.customTags);
                     }
-
-                    console.log({ isItemTagged });
 
                     // Upload image
                     const response = await this.props.uploadImage(
@@ -448,7 +447,7 @@ class HomeScreen extends PureComponent {
                             failedUpload: previousState.failedUpload + 1
                         }));
                     }
-                } else if (img.type === 'WEB' && isItemTagged) {
+                } else if (img.type.toLowerCase() === 'web' && isItemTagged) {
                     /**
                      * Upload tags for already uploaded image
                      *

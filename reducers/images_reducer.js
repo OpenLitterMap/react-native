@@ -33,17 +33,16 @@ export default function(state = INITIAL_STATE, action) {
              *
              * Three type of images --
              *
-             * Platform: app
+             * Platform: mobile
+             * type: "gallery" or "camera"
              * "CAMERA" --> Image taken from OLM App camera (currently disabled)
              * "GALLERY" --> Selected from phone gallery
              *
              * Platform: web
-             * "WEB" --> Uploaded from web app but may or may not be tagged
+             * type: "web"
+             * "WEB" --> Uploaded from web app. May or may not be tagged
              *
              * CAMERA & GALLERY image have same shape object
-             *
-             * "WEB" images can be uploaded via web and not tagged
-             * or uploaded via mobile and not tagged.
              *
              * if WEB --> check if image with same photoId already exist in state
              * if not add it to images array
@@ -56,42 +55,49 @@ export default function(state = INITIAL_STATE, action) {
 
                 images &&
                     images.map(image => {
-                        // Web images are uploaded by web or mobile
-                        // They are untagged
-                        console.log({ image });
+                        console.log('ADD_IMAGES.image', image);
 
-                        const index = draft.imagesArray.findIndex(
-                            img => img.id === image.id
-                        );
+                        let index;
+
+                        if (image.platform === 'mobile') {
+                            // image type can be gallery or camera
+
+                            if (image.uploaded) {
+                                index = draft.imagesArray.findIndex(
+                                    img => img.id === image.id
+                                );
+                            } else {
+                                index = draft.imagesArray.findIndex(
+                                    img => img.uri === image.uri
+                                );
+                            }
+                        }
 
                         console.log({ index });
 
+                        // size, height, width?
+
+                        // If index is -1, it was not found
                         if (index === -1) {
                             draft.imagesArray.push({
                                 id: image.id,
-                                uri: image.filename,
-                                filename: image.filename,
+                                date: image.date ?? null,
                                 lat: image.lat ?? 0,
                                 lon: image.lon ?? 0,
-                                date: image.date ?? null,
-                                platform: action.payload.platform, // can be web or mobile!
+                                filename: image.filename,
+                                uri: image.uri,
+                                type: image.type, // gallery, camera, or web
+                                platform: image.platform, // web or mobile
+
+                                tags: image.tags,
+                                customTags: image.customTags,
+                                picked_up: action.payload.picked_up,
+
+                                // photoId: image.id, // need to remove this duplicate
                                 selected: false,
-                                tags: {}, // might exist?
-                                picked_up: !action.payload.remaining,
-                                photoId: image.id, // need to remove this duplicate
-                                uploaded: true
+                                uploaded: image.uploaded
                             });
                         }
-                        // draft.imagesArray.push({
-                        //     filename: image.filename,
-                        //     date: image.date,
-                        //     type: action.payload.type,
-                        //     platform: action.payload.platform,
-                        //     selected: false,
-                        //     tags: {},
-                        //     picked_up: action.payload.picked_up,
-                        //     uploaded: false
-                        // });
                     });
 
                 break;
@@ -373,9 +379,15 @@ export default function(state = INITIAL_STATE, action) {
              */
             case 'UPDATE_IMAGE_AS_UPLOADED':
                 draft.imagesArray = draft.imagesArray.map(img => {
-                    if (img.id === action.payload) {
-                        img.uploaded = true;
+                    if (
+                        img.type === 'gallery' &&
+                        img.id === action.payload.originalImageId
+                    ) {
+                        img.id = action.payload.newImageId;
+                        img.type = 'web';
                     }
+
+                    img.uploaded = true;
 
                     return img;
                 });

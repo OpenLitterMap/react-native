@@ -44,6 +44,8 @@ class UploadImagesGrid extends PureComponent {
      *   - isSelected: for deletion
      */
     renderImage = ({ item, index }) => {
+        console.log('renderImage', index, item);
+
         const isItemTagged = isTagged(item);
         const itemIsPickedUp = item.picked_up ?? null;
         const pickedUpIcon = itemIsPickedUp ? '👍🏻' : '👎🏻';
@@ -64,7 +66,7 @@ class UploadImagesGrid extends PureComponent {
                                 top: 5,
                                 left: 5
                             }}>
-                            <Text>🌩</Text>
+                            <Text>☁</Text>
                         </View>
                     )}
                     {item.selected && (
