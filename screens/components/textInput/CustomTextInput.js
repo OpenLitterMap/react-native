@@ -123,7 +123,6 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         backgroundColor: '#fff',
-        height: 60,
         borderRadius: 8,
         borderWidth: 2,
         borderColor: Colors.white
@@ -133,10 +132,8 @@ const styles = StyleSheet.create({
     },
     input: {
         flex: 1,
-        paddingTop: 10,
+        paddingVertical: 10,
         paddingRight: 10,
-        paddingBottom: 10,
-        paddingLeft: 0,
         fontSize: 16,
         letterSpacing: 0.5,
         backgroundColor: Colors.white,
