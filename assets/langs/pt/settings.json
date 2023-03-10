@@ -5,6 +5,8 @@
     "username": "Nome de usuário",
     "email": "Email",
     "privacy": "PRIVACIDADE",
+    "tagging": "TAGGING",
+    "enable_admin_tagging": "Enable crowdsourced tagging",
     "show-name-maps": "Mostrar nome no Maps",
     "show-username-maps": "Mostrar nome de usuário no Maps",
     "show-name-leaderboards": "Mostrar meu nome no placar",

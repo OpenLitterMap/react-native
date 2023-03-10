@@ -5,6 +5,8 @@
     "username": "Nombre de usuario",
     "email": "Correos",
     "privacy": "PRIVACIDAD",
+    "tagging": "TAGGING",
+    "enable_admin_tagging": "Enable crowdsourced tagging",
     "show-name-maps": "Mostrar nombre en mapass",
     "show-username-maps": "mostrar nombre de usuario en mapas",
     "show-name-leaderboards": "Mostrar nombre en el marcador",

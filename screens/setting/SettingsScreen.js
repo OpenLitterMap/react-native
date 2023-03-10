@@ -8,7 +8,8 @@ import {
     Switch,
     View,
     Pressable,
-    StyleSheet
+    StyleSheet,
+    Text
 } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import { getTranslation, TransText } from 'react-native-translation';
@@ -26,6 +27,7 @@ const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 
 import SettingsComponent from './settingComponents/SettingsComponent';
+import { getUntaggedImages } from '../../actions';
 
 class SettingsScreen extends Component {
     constructor(props) {
@@ -139,6 +141,17 @@ class SettingsScreen extends Component {
                                             id: 11,
                                             key: 'picked-up',
                                             title: 'settings.litter-picked-up'
+                                        }
+                                    ]
+                                },
+                                {
+                                    title: 'settings.tagging',
+                                    data: [
+                                        {
+                                            id: 12,
+                                            key: 'enable_admin_tagging',
+                                            title:
+                                                'settings.enable_admin_tagging'
                                         }
                                     ]
                                 },
@@ -372,9 +385,7 @@ class SettingsScreen extends Component {
                 return (
                     <Switch
                         onValueChange={() => this._toggleSwitch(id, key)}
-                        value={
-                            this._getSwitchValue(id, key) === 0 ? false : true
-                        }
+                        value={this._getSwitchValue(key) === 0 ? false : true}
                     />
                 );
         }
@@ -386,16 +397,29 @@ class SettingsScreen extends Component {
     _toggleSwitch(id, key) {
         const lang = this.props.lang;
 
-        const alert = getTranslation(`${lang}.settings.alert`);
-        const info = getTranslation(
-            `${lang}.settings.do-you-really-want-to-change`
-        );
+        // const alert = getTranslation(`${lang}.settings.alert`);
+        let title = '';
+        let subtitle = '';
+
         const ok = getTranslation(`${lang}.settings.ok`);
         const cancel = getTranslation(`${lang}.settings.cancel`);
 
+        // Needs translation
+        if (key === 'enable_admin_tagging') {
+            title = this.props.user.enable_admin_tagging
+                ? 'Turn off'
+                : 'Turn on';
+
+            subtitle += this.props.user.enable_admin_tagging
+                ? ' \n' + 'Only you will be able to tag your uploads'
+                : ' \n' + 'Our volunteers will tag your uploads';
+        } else {
+            title = 'Change setting?';
+        }
+
         Alert.alert(
-            alert,
-            info,
+            title,
+            subtitle,
             [
                 {
                     text: ok,
@@ -418,7 +442,18 @@ class SettingsScreen extends Component {
                                 this.state.countryCode.toLowerCase(),
                                 this.props.token
                             );
+                        } else if (key === 'enable_admin_tagging') {
+                            if (this.props.user.enable_admin_tagging) {
+                                this.props.getUntaggedImages(this.props.token);
+                            }
+
+                            this.props.saveSettings(
+                                { key: 'enable_admin_tagging' },
+                                !this.props?.user?.enable_admin_tagging,
+                                this.props.token
+                            );
                         } else {
+                            // Privacy Settings
                             this.props.toggleSettingsSwitch(
                                 id,
                                 this.props.token
@@ -442,10 +477,12 @@ class SettingsScreen extends Component {
     /**
      * Get the 0 or 1 value for a Switch
      *
-     * INFO: show_name , show_username and picked_up have boolean values
+     * INFO: show_name, show_username, picked_up and enable_admin_tagging have boolean values
+     * We need to cast these to integers
+     *
      * rest have 0 & 1
      */
-    _getSwitchValue(id, key) {
+    _getSwitchValue(key) {
         switch (key) {
             case 'name-maps':
                 return this.props?.user?.show_name_maps;
@@ -464,6 +501,8 @@ class SettingsScreen extends Component {
             //     break;
             case 'settings.picked-up':
                 return this.props?.user?.picked_up === false ? 0 : 1;
+            case 'enable_admin_tagging':
+                return Number(this.props?.user?.enable_admin_tagging);
             default:
                 break;
         }

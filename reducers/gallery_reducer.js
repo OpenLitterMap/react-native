@@ -16,7 +16,6 @@ export default function(state = INITIAL_STATE, action) {
             /**
              * The users images have finished loading
              */
-
             case TOGGLE_IMAGES_LOADING:
                 draft.imagesLoading = action.payload;
 
@@ -25,12 +24,12 @@ export default function(state = INITIAL_STATE, action) {
             /**
              * add array of geotagged images to state
              */
-
             case ADD_GEOTAGGED_IMAGES:
                 const geotaggedImages = [
                     ...action.payload.geotagged,
                     ...draft.geotaggedImages
                 ];
+
                 draft.geotaggedImages = geotaggedImages;
                 draft.camerarollImageFetched = true;
                 draft.lastFetchTime = Math.floor(new Date().getTime());

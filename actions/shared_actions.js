@@ -6,7 +6,8 @@ import {
     TOGGLE_SELECTING,
     TOGGLE_THANK_YOU,
     TOGGLE_UPLOAD,
-    URL
+    URL,
+    WEB_NOT_TAGGED
 } from './types';
 import axios from 'axios';
 
@@ -53,5 +54,16 @@ export const toggleThankYou = () => {
 export const toggleUpload = () => {
     return {
         type: TOGGLE_UPLOAD
+    };
+};
+
+/**
+ * Show a modal that tells the user Web images are available
+ *
+ * But they are not tagged.
+ */
+export const toggleWebImagesNotTagged = () => {
+    return {
+        type: WEB_NOT_TAGGED
     };
 };

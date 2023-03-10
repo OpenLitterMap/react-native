@@ -54,6 +54,7 @@ export const saveSettings = (data, value, token) => {
             type: START_UPDATING_SETTINGS
         });
 
+        // This needs to be refactored. We should use the same keys everywhere.
         let key = '';
         switch (data.key) {
             case 'name':
@@ -70,6 +71,10 @@ export const saveSettings = (data, value, token) => {
                 break;
             case 'global_flag':
                 key = 'global_flag';
+                break;
+
+            case 'enable_admin_tagging':
+                key = 'enable_admin_tagging';
                 break;
         }
 
@@ -94,6 +99,7 @@ export const saveSettings = (data, value, token) => {
 
                     // update user object
                     user[data.key] = value;
+
                     // save updated user data
                     AsyncStorage.setItem('user', JSON.stringify(user));
 
@@ -101,14 +107,21 @@ export const saveSettings = (data, value, token) => {
                         type: UPDATE_USER_OBJECT,
                         payload: user
                     });
-                    // then show success message
 
+                    // then show success message
                     dispatch({
                         type: SETTINGS_UPDATE_STATUS_MESSAGE,
                         payload: 'SUCCESS'
                     });
 
-                    // close modals - done from settings update success
+                    if (key === 'enable_admin_tagging') {
+                        // value is what we just applied
+                        if (value) {
+                            dispatch({
+                                type: 'CLEAR_UPLOADED_WEB_IMAGES'
+                            });
+                        }
+                    }
                 } else {
                     console.log(
                         'ERROR updating settings. Todo - inform the user'
@@ -123,6 +136,7 @@ export const saveSettings = (data, value, token) => {
             })
             .catch(error => {
                 console.log('saveSettings', error);
+
                 // show error message
                 dispatch({
                     type: SETTINGS_UPDATE_STATUS_MESSAGE,
@@ -138,7 +152,7 @@ export const saveSocialAccounts = (data, value, token) => {
         dispatch({
             type: START_UPDATING_SETTINGS
         });
-        console.log({ data, value });
+
         try {
             response = await axios(URL + '/api/settings', {
                 method: 'PATCH',
@@ -158,8 +172,6 @@ export const saveSocialAccounts = (data, value, token) => {
                 payload: 'ERROR'
             });
         }
-
-        console.log('saveSettings', response.data);
 
         if (response?.data?.message === 'success') {
             // Get user and parse json to Object
@@ -206,6 +218,8 @@ export const toggleSettingsModal = (id, title, key) => {
 
 /**
  * The user wants to change one of these settings (<Switch />)
+ *
+ * Privacy settings
  */
 export const toggleSettingsSwitch = (id, token) => {
     let endUrl = '';

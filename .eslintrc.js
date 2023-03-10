@@ -7,7 +7,8 @@ module.exports = {
         'no-control-regex': 'off',
         'comma-dangle': ['warn', 'never'], // recommend always
         'no-undef': 'off',
-        'react-native/no-inline-styles': 'off' // recommend turning on
+        'react-native/no-inline-styles': 'off', // recommend turning on
+        'space-before-function-paren': 'always'
         // 'prettier/prettier': 'off',
         // quotes: ['off', 'double'] // recommend on and backtick
     }

@@ -15,7 +15,8 @@ import {
     TOGGLE_PICKED_UP,
     TOGGLE_SELECTING,
     TOGGLE_SELECTED_IMAGES,
-    URL
+    URL,
+    WEB_NOT_TAGGED
 } from './types';
 
 /**
@@ -63,19 +64,26 @@ export const changeLitterStatus = value => {
 };
 
 /**
- * Get images uploaded from website but not yet tagged
+ * After setting has changed, clear untagged uploads
+ */
+export const clearUntaggedUploads = () => {
+    return {
+        type: 'CLEAR_UPLOADED_WEB_IMAGES'
+    };
+};
+
+/**
+ * Get images uploaded but not yet tagged
  *
  * @param token - jwt
- * @param picked_up - default user setting if litter is picked_up or not
- *
  */
-export const checkForImagesOnWeb = (token, picked_up) => {
+export const getUntaggedImages = token => {
     return async dispatch => {
         let response;
 
         try {
             response = await axios({
-                url: URL + '/api/v2/photos/web/index',
+                url: URL + '/api/v2/photos/get-untagged-uploads',
                 method: 'GET',
                 headers: {
                     Authorization: 'Bearer ' + token
@@ -83,19 +91,19 @@ export const checkForImagesOnWeb = (token, picked_up) => {
             });
         } catch (error) {
             if (error?.response) {
-                console.log('checkForImagesOnWeb', error?.response?.data);
+                console.log('getUntaggedImages', error?.response?.data);
             } else {
-                console.log('checkForImagesOnWeb -- Network Error');
+                console.log('getUntaggedImages -- Network Error');
             }
         }
-        if (response && response?.data?.photos) {
-            let photos = response.data.photos;
+
+        if (response && response?.data?.photos?.length) {
+            console.log('getUntaggedImages response', response.data.photos);
             dispatch({
                 type: ADD_IMAGES,
                 payload: {
-                    images: photos,
-                    type: 'WEB',
-                    picked_up
+                    images: response.data.photos,
+                    type: 'WEB'
                 }
             });
         }
@@ -144,7 +152,7 @@ export const deselectAllImages = () => {
  * Delete selected web image
  * web image - image that are uploaded from web but not tagged
  */
-export const deleteWebImage = (token, photoId, id) => {
+export const deleteWebImage = (token, photoId, enableAdminTagging) => {
     return async dispatch => {
         let response;
 
@@ -158,13 +166,19 @@ export const deleteWebImage = (token, photoId, id) => {
                 },
                 params: { photoId }
             });
+
+            console.log('deleteWebImgResp', response.data);
         } catch (error) {
             console.log('delete web image', error);
         }
         if (response && response?.data?.success) {
+            console.log('deleteWebImageSuccess', response.data);
+
+            console.log({ enableAdminTagging });
+
             dispatch({
                 type: DELETE_IMAGE,
-                payload: id
+                payload: photoId
             });
         }
     };
@@ -233,24 +247,39 @@ export const toggleSelectedImage = id => {
 };
 
 /**
- * fn to upload images along with tags
+ * Upload images with or without tags
+ *
+ * image.tags & image.custom_tags may or may not have values
+ *
  * @param {string} token
- * @param  image form data
- * @param imageId
+ * @param imageData: FormData
+ * @param imageId: int
+ * @param enableAdminTagging: bool
+ * @param isTagged: bool
+ *
  * @returns
  */
-export const uploadImage = (token, image, imageId) => {
+export const uploadImage = (
+    token,
+    imageData,
+    imageId,
+    enableAdminTagging,
+    isTagged
+) => {
     let response;
     return async dispatch => {
         try {
-            response = await axios(URL + '/api/photos/upload-with-tags', {
-                method: 'POST',
-                headers: {
-                    Authorization: 'Bearer ' + token,
-                    'Content-Type': 'multipart/form-data'
-                },
-                data: image
-            });
+            response = await axios(
+                URL + '/api/photos/upload/with-or-without-tags',
+                {
+                    method: 'POST',
+                    headers: {
+                        Authorization: 'Bearer ' + token,
+                        'Content-Type': 'multipart/form-data'
+                    },
+                    data: imageData
+                }
+            );
         } catch (error) {
             if (error.response) {
                 // log error in sentry
@@ -273,11 +302,24 @@ export const uploadImage = (token, image, imageId) => {
             };
         }
 
+        // console.log({ response });
+
         if (response && response.data?.success) {
-            dispatch({
-                type: DELETE_IMAGE,
-                payload: imageId
-            });
+            if (enableAdminTagging || isTagged) {
+                dispatch({
+                    type: DELETE_IMAGE,
+                    payload: imageId
+                });
+            } else {
+                dispatch({
+                    type: 'UPDATE_IMAGE_AS_UPLOADED',
+                    payload: {
+                        originalImageId: imageId,
+                        newImageId: response.data.photo_id
+                    }
+                });
+            }
+
             // return the photo.id that has been created on the backend
             return {
                 success: true,
@@ -290,6 +332,7 @@ export const uploadImage = (token, image, imageId) => {
 /**
  * Upload the tags that were applied to a WEB image
  * This fn is used only for WEB images as those images are already uploaded from website.
+ * These can now include images uploaded from the app.
  *
  * @param {string} token
  * @param  image - the image object
@@ -297,20 +340,24 @@ export const uploadImage = (token, image, imageId) => {
 export const uploadTagsToWebImage = (token, image) => {
     return async dispatch => {
         let response;
+
         try {
-            response = await axios(URL + '/api/add-tags', {
+            response = await axios(URL + '/api/v2/add-tags-to-uploaded-image', {
                 method: 'POST',
                 headers: {
                     Authorization: 'Bearer ' + token
                 },
                 data: {
-                    litter: image.tags,
-                    photo_id: image.photoId,
+                    photo_id: image.id,
+                    tags: image.tags,
+                    custom_tags: image.customTags,
                     picked_up: image.picked_up ? 1 : 0
                 }
             });
         } catch (error) {
+            // Better error handling needed here
             console.log(error);
+            console.log(error.response.data);
             return {
                 success: false
             };

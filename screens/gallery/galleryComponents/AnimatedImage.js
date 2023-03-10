@@ -1,4 +1,11 @@
-import { View, Pressable, Image, Dimensions, StyleSheet } from 'react-native';
+import {
+    View,
+    Pressable,
+    Image,
+    Dimensions,
+    StyleSheet,
+    Text
+} from 'react-native';
 import React from 'react';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { Colors } from '../../components';
@@ -51,8 +58,8 @@ const AnimatedImage = ({ image, isImageGeotagged, selected, onPress }) => {
             )}
 
             {isImageGeotagged && (
-                <View style={[styles.geotaggedIcon, styles.iconBorderStyle]}>
-                    <Icon name="ios-location-outline" size={16} color="white" />
+                <View style={[styles.geotaggedIcon]}>
+                    <Text>📍</Text>
                 </View>
             )}
         </Pressable>
@@ -71,10 +78,8 @@ const styles = StyleSheet.create({
         position: 'absolute',
         width: 24,
         height: 24,
-        backgroundColor: '#0984e3',
         right: 5,
-        top: 5,
-        borderRadius: 100,
+        top: -25,
         justifyContent: 'center',
         alignItems: 'center'
     },

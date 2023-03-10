@@ -149,12 +149,12 @@ class GalleryScreen extends Component {
      * fn that is called when "done" is pressed
      * sorts the array based on id
      * call action addImages to save selected images to state
-     *
      */
     async handleDoneClick() {
         const sortedArray = await this.state.selectedImages.sort(
             (a, b) => a.id - b.id
         );
+
         this.props.addImages(sortedArray, 'GALLERY', this.props.user.picked_up);
     }
 
@@ -163,7 +163,6 @@ class GalleryScreen extends Component {
      *
      * @param  item - The image object
      */
-
     selectImage(item) {
         const selectedArray = this.state.selectedImages;
         // check if item /image is already selected
@@ -187,7 +186,6 @@ class GalleryScreen extends Component {
      * fn that returns the sections for flatlist to display
      *
      */
-
     renderSection({ item, index }) {
         let headerTitle = item?.title;
         if (Number.isInteger(headerTitle) && headerTitle < 12) {

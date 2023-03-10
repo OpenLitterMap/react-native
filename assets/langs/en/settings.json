@@ -6,6 +6,8 @@
     "email": "Email",
     "social": "Social Accounts",
     "privacy": "PRIVACY",
+    "tagging": "TAGGING",
+    "enable_admin_tagging": "Enable crowdsourced tagging",
     "show-name-maps": "Show Name on Maps",
     "show-username-maps": "Show Username on Maps",
     "show-name-leaderboards": "Show Name on Leaderboards",

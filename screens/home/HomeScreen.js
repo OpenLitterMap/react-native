@@ -29,6 +29,7 @@ import { UploadImagesGrid, ActionButton, UploadButton } from './homeComponents';
 import AddTags from '../addTag/AddTags';
 import DeviceInfo from 'react-native-device-info';
 import { isTagged } from '../../utils/isTagged';
+import { getUntaggedImages, toggleWebImagesNotTagged } from '../../actions';
 
 class HomeScreen extends PureComponent {
     constructor(props) {
@@ -57,11 +58,12 @@ class HomeScreen extends PureComponent {
      * but were not tagged and submitted
      */
     async componentDidMount() {
-        // web_actions, web_reducer
-        await this.props.checkForImagesOnWeb(
-            this.props.token,
-            this.props.user.picked_up
-        );
+
+        // If enable_admin_tagging is False, the user wants to get and tag their uploads
+        if (!this.props.user?.enable_admin_tagging) {
+            // images_actions, images_reducer
+            await this.props.getUntaggedImages(this.props.token);
+        }
 
         // if not in DEV mode check for new version
         !__DEV__ && this.checkNewVersion();
@@ -77,8 +79,9 @@ class HomeScreen extends PureComponent {
 
     async checkGalleryPermission() {
         const result = await checkCameraRollPermission();
+
         if (result === 'granted') {
-            this.getImagesFormCameraroll();
+            this.getImagesFromCameraRoll();
         } else {
             this.props.navigation.navigate('PERMISSION', {
                 screen: 'GALLERY_PERMISSION'
@@ -100,7 +103,10 @@ class HomeScreen extends PureComponent {
         }
     }
 
-    getImagesFormCameraroll() {
+    /**
+     * Dispatch action that will get the images from the camera roll
+     */
+    getImagesFromCameraRoll() {
         this.props.getPhotosFromCameraroll();
     }
 
@@ -154,6 +160,29 @@ class HomeScreen extends PureComponent {
                                     onPress={this._toggleUpload.bind(this)}
                                     title="Cancel"
                                 />
+                            </View>
+                        )}
+
+                        {this.props.webNotTagged && (
+                            <View style={styles.modal}>
+                                <View
+                                    style={
+                                        styles.uploadedImagesNotTaggedContainer
+                                    }>
+                                    <Title style={{ marginBottom: 10 }}>
+                                        None of your images are tagged.
+                                    </Title>
+
+                                    <SubTitle>
+                                        Add tags to your uploaded images, then
+                                        press Upload again to add your tags.
+                                    </SubTitle>
+
+                                    <Button
+                                        onPress={this._toggleUpload.bind(this)}
+                                        title="Cancel"
+                                    />
+                                </View>
                             </View>
                         )}
 
@@ -276,27 +305,11 @@ class HomeScreen extends PureComponent {
     renderUploadButton() {
         if (this.props.images?.length === 0 || this.props.isSelecting) {
             return;
-        } else {
-            let tagged = 0;
-            this.props.images.map(img => {
-                const isImageTagged = isTagged(img);
-
-                if (isImageTagged) {
-                    tagged++;
-                }
-            });
-
-            if (tagged === 0) {
-                return;
-            } else {
-                return (
-                    <UploadButton
-                        lang={this.props.lang}
-                        onPress={this.uploadPhotos}
-                    />
-                );
-            }
         }
+
+        return (
+            <UploadButton lang={this.props.lang} onPress={this.uploadPhotos} />
+        );
     }
 
     /**
@@ -341,25 +354,32 @@ class HomeScreen extends PureComponent {
      * else
      * delete images from state based on id
      */
-
-    deleteImages() {
+    deleteImages ()
+    {
         this.props.images.map(image => {
-            if (image.type !== 'WEB' && image.selected) {
-                this.props.deleteImage(image.id);
-            } else if (image.type === 'WEB' && image.selected) {
-                this.props.deleteWebImage(
-                    this.props.token,
-                    image.photoId,
-                    image.id
-                );
+
+            if (image.selected)
+            {
+                if (image.type === 'gallery' || image.type === 'camera')
+                {
+                    this.props.deleteImage(image.id);
+                }
+                else if (image.uploaded)
+                {
+                    this.props.deleteWebImage(
+                        this.props.token,
+                        image.id,
+                        this.props.user.enable_admin_tagging
+                    );
+                }
             }
         });
+
         // this.props.deleteSelectedImages();
         this.props.toggleSelecting();
     }
 
     // reset state after cancel button pressed
-
     resetAfterUploadCancelled = () => {
         this.setState({
             total: 0,
@@ -368,6 +388,7 @@ class HomeScreen extends PureComponent {
             isUploadCancelled: false
         });
     };
+
     /**
      * Upload photos, 1 photo per request
      *
@@ -384,20 +405,16 @@ class HomeScreen extends PureComponent {
 
         const model = this.props.model;
 
-        let imagesCount = 0;
+        let imagesCount = this.props.images.length;
 
-        this.props.images.map(item => {
-            const isItemTagged = isTagged(item);
-            if (isItemTagged) {
-                imagesCount++;
-            }
-        });
+        let returnWithError = false;
 
         this.setState({
             total: imagesCount
         });
 
         // shared.js
+        // turn state.modal to true, and select active modal component
         this.props.toggleUpload();
 
         if (imagesCount > 0) {
@@ -411,7 +428,8 @@ class HomeScreen extends PureComponent {
                 const isgeotagged = isGeotagged(img);
                 const isItemTagged = isTagged(img);
 
-                if (img.type !== 'WEB' && isItemTagged && isgeotagged) {
+                // Upload any new image that is tagged or not
+                if (img.type === 'gallery' && isgeotagged) {
                     let ImageData = new FormData();
 
                     ImageData.append('photo', {
@@ -425,17 +443,31 @@ class HomeScreen extends PureComponent {
                     ImageData.append('date', parseInt(img.date));
                     ImageData.append('picked_up', img.picked_up ? 1 : 0);
                     ImageData.append('model', model);
-                    ImageData.append('tags', JSON.stringify(img.tags));
-                    ImageData.append(
-                        'custom_tags',
-                        JSON.stringify(img.customTags)
-                    );
+
+                    // Tags and custom_tags may or may not exist
+
+                    if (isItemTagged)
+                    {
+                        if (Object.keys(img.tags).length > 0)
+                        {
+                            ImageData.append('tags', JSON.stringify(img.tags));
+                        }
+
+                        if (img.hasOwnProperty('customTags') && img.customTags.length > 0)
+                        {
+                            ImageData.append('custom_tags', JSON.stringify(img.customTags));
+                        }
+                    }
+
+                    console.log({ ImageData });
 
                     // Upload image
                     const response = await this.props.uploadImage(
                         this.props.token,
                         ImageData,
-                        img.id
+                        img.id,
+                        this.props.user.enable_admin_tagging,
+                        isItemTagged
                     );
 
                     // if success upload++ else failed++
@@ -449,10 +481,16 @@ class HomeScreen extends PureComponent {
                             failedUpload: previousState.failedUpload + 1
                         }));
                     }
-                } else if (img.type === 'WEB' && isItemTagged) {
+                } else if (img.type.toLowerCase() === 'web' && isItemTagged) {
+                    // console.log('uploadTagsToWebImage');
                     /**
-                     * Upload tags
-                     * Only need to upload tags and 'picked_up' value for WEB images
+                     * Upload tags for already uploaded image
+                     *
+                     * Previously these were images uploaded to web,
+                     * But now untagged images can also be uploaded from mobile.
+                     * These should be re-classified as Uploaded, Not tagged.
+                     *
+                     * We can also update 'picked_up' value here
                      */
                     const response = await this.props.uploadTagsToWebImage(
                         this.props.token,
@@ -472,8 +510,19 @@ class HomeScreen extends PureComponent {
                     this.setState(previousState => ({
                         failedUpload: previousState.failedUpload + 1
                     }));
+                } else {
+                    console.log('web image not tagged');
+
+                    this.props.toggleWebImagesNotTagged();
+
+                    returnWithError = true;
                 }
             }
+        }
+
+        if (returnWithError) {
+            console.log('return with error');
+            return;
         }
 
         //  Last step - if all photos have been deleted, close modal
@@ -551,6 +600,13 @@ const styles = {
         justifyContent: 'center',
         alignItems: 'center'
     },
+    uploadedImagesNotTaggedContainer: {
+        padding: 5,
+        backgroundColor: 'white',
+        justifyContent: 'center',
+        alignItems: 'center',
+        maWidth: SCREEN_WIDTH * 0.8
+    },
     photo: {
         height: 100,
         width: SCREEN_WIDTH * 0.325,
@@ -625,6 +681,7 @@ const mapStateToProps = state => {
         uploadVisible: state.shared.uploadVisible,
         uniqueValue: state.shared.uniqueValue,
         user: state.auth.user,
+        webNotTagged: state.shared.webNotTagged,
         appVersion: state.shared.appVersion,
         // new image reducer
         images: state.images.imagesArray

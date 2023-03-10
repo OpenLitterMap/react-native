@@ -6,7 +6,8 @@ import {
     TOGGLE_LITTER,
     TOGGLE_SELECTING,
     TOGGLE_THANK_YOU,
-    TOGGLE_UPLOAD
+    TOGGLE_UPLOAD,
+    WEB_NOT_TAGGED
 } from '../actions/types';
 
 const INITIAL_STATE = {
@@ -15,6 +16,7 @@ const INITIAL_STATE = {
     modalVisible: false,
     thankYouVisible: false,
     uploadVisible: false,
+    webNotTagged: false,
     appVersion: null
 };
 
@@ -47,6 +49,14 @@ export default function(state = INITIAL_STATE, action) {
                 draft.uploadVisible = !draft.uploadVisible;
 
                 break;
+
+            /**
+             * Toggle the modal to show Web images available but not tagged
+             */
+            case WEB_NOT_TAGGED:
+                draft.modalVisible = true;
+                draft.uploadVisible = false;
+                draft.webNotTagged = !draft.webNotTagged;
 
             default:
                 return draft;

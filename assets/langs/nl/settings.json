@@ -5,6 +5,8 @@
     "username": "Gebruikersnaam",
     "email": "Email",
     "privacy": "PRIVACY",
+    "tagging": "TAGGING",
+    "enable_admin_tagging": "Enable crowdsourced tagging",
     "show-name-maps": "Toon naam op kaarten",
     "show-username-maps": "Toon gebruikersnaam op kaarten",
     "show-name-leaderboards": "Toon naam op Scoreboards",

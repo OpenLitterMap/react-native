@@ -85,7 +85,6 @@ export default function(state = INITIAL_STATE, action) {
             /**
              * Logout user
              * reset state to initial
-             
              */
 
             case LOGOUT:
@@ -135,12 +134,11 @@ export default function(state = INITIAL_STATE, action) {
             /**
              * If user logged in
              * process user data and calculate
-             * user level -- based on user xp breakdown from ../screens/pages/data/xpLevel
-             * targetPercentage -- percentage completed to reach next level from prev level xp
-             * totalTags added by user
-             * totalLittercoin of user -- littercoin_allowance + littercoin_owed
+             *   user level -- based on user xp breakdown from ../screens/pages/data/xpLevel
+             *   targetPercentage -- percentage completed to reach next level from prev level xp
+             *   totalTags added by user
+             *   totalLittercoin of user -- littercoin_allowance + littercoin_owed
              */
-
             case USER_FOUND:
                 let user = action.payload.userObj;
 

@@ -13,7 +13,6 @@ export default function(state = INITIAL_STATE, action) {
             /**
              * At the end of swiping web.photos, load more images
              */
-
             case LOAD_MORE_WEB_IMAGES:
                 action.payload.map(photo => {
                     draft.photos.push(photo);

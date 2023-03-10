@@ -32,52 +32,67 @@ export default function(state = INITIAL_STATE, action) {
              * Add images to state
              *
              * Three type of images --
-             * "CAMERA" --> Image taken from OLM App camera
+             *
+             * Platform: mobile
+             * type: "gallery" or "camera"
+             * "CAMERA" --> Image taken from OLM App camera (currently disabled)
              * "GALLERY" --> Selected from phone gallery
-             * "WEB" --> Uploaded from web app but not yet tagged
+             *
+             * Platform: web
+             * type: "web"
+             * "WEB" --> Uploaded from web app. May or may not be tagged
              *
              * CAMERA & GALLERY image have same shape object
              *
              * if WEB --> check if image with same photoId already exist in state
              * if not add it to images array
              *
-             * WEB images dont have lat/long properties but they are geotagged because
-             * web app only accepts geotagged images.
-             *
+             * WEB images dont display lat/long properties at the moment
+             * but they are geotagged because web app only accepts geotagged images.
              */
             case ADD_IMAGES:
                 const images = action.payload.images;
 
                 images &&
                     images.map(image => {
-                        if (action.payload.type === 'WEB') {
-                            const index = draft.imagesArray.findIndex(
-                                webimg => webimg.photoId === image.id
-                            );
-                            if (index === -1) {
-                                draft.imagesArray.push({
-                                    id: draft.imagesArray.length,
-                                    uri: image.filename,
-                                    filename: image.filename,
-                                    type: action.payload.type,
-                                    selected: false,
-                                    tags: {},
-                                    picked_up: action.payload.picked_up,
-                                    photoId: image.id
-                                });
+
+                        let index;
+
+                        if (image.platform === 'mobile') {
+                            // image type can be gallery or camera
+
+                            if (image.uploaded) {
+                                index = draft.imagesArray.findIndex(
+                                    img => img.id === image.id
+                                );
+                            } else {
+                                index = draft.imagesArray.findIndex(
+                                    img => img.uri === image.uri
+                                );
                             }
-                        } else {
+                        }
+
+                        // size, height, width?
+
+                        // If index is -1, it was not found
+                        if (index === -1) {
                             draft.imagesArray.push({
-                                id: draft.imagesArray.length,
-                                lat: image.lat,
-                                lon: image.lon,
-                                uri: image.uri,
+                                id: image.id,
+                                date: image.date ?? null,
+                                lat: image.lat ?? 0,
+                                lon: image.lon ?? 0,
                                 filename: image.filename,
-                                date: image.date,
-                                type: action.payload.type,
+                                uri: image.uri,
+                                type: image.type, // gallery, camera, or web
+                                platform: image.platform, // web or mobile
+
+                                tags: image.tags,
+                                customTags: image.customTags,
+                                picked_up: action.payload.picked_up,
+
+                                // photoId: image.id, // need to remove this duplicate
                                 selected: false,
-                                tags: {},
-                                picked_up: action.payload.picked_up
+                                uploaded: image.uploaded
                             });
                         }
                     });
@@ -101,7 +116,6 @@ export default function(state = INITIAL_STATE, action) {
              * after adding tag save tag to previousTags array.
              * max 10 tags in previousTags array remove old tags if it exceeds limits.
              */
-
             case ADD_TAG_TO_IMAGE: {
                 let image = draft.imagesArray[action.payload.currentIndex];
                 let newTags = image.tags;
@@ -171,6 +185,10 @@ export default function(state = INITIAL_STATE, action) {
 
                 break;
             }
+
+            /**
+             * The user can add custom tags to an image
+             */
             case ADD_CUSTOM_TAG_TO_IMAGE: {
                 let currentImage =
                     draft.imagesArray[action.payload.currentIndex];
@@ -215,6 +233,7 @@ export default function(state = INITIAL_STATE, action) {
                 }
                 break;
             }
+
             /**
              * Changes litter picked up status of all images
              * to payload
@@ -223,6 +242,18 @@ export default function(state = INITIAL_STATE, action) {
              */
             case CHANGE_LITTER_STATUS:
                 draft.imagesArray.map(img => (img.picked_up = action.payload));
+
+                break;
+
+            /**
+             * After setting enable_admin_tagging changes to False,
+             *
+             * We want to clear the users uploaded un-tagged images.
+             */
+            case 'CLEAR_UPLOADED_WEB_IMAGES':
+                draft.imagesArray = draft.imagesArray.filter(img => {
+                    return img.type === 'WEB' && img.hasOwnProperty('photoId');
+                });
 
                 break;
 
@@ -237,7 +268,6 @@ export default function(state = INITIAL_STATE, action) {
             /**
              * delete image by id
              */
-
             case DELETE_IMAGE:
                 const index = draft.imagesArray.findIndex(
                     delImg => delImg.id === action.payload
@@ -251,7 +281,6 @@ export default function(state = INITIAL_STATE, action) {
             /**
              * Delete selected images -- all images with property selected set to true
              */
-
             case DELETE_SELECTED_IMAGES:
                 draft.imagesArray = draft.imagesArray.filter(
                     img => !img.selected
@@ -265,7 +294,6 @@ export default function(state = INITIAL_STATE, action) {
              *
              * Change selected value on every image to false
              */
-
             case DESELECT_ALL_IMAGES:
                 draft.imagesArray.map(image => {
                     image.selected = false;
@@ -276,7 +304,6 @@ export default function(state = INITIAL_STATE, action) {
             /**
              * Increment the count of images selected for deletion
              */
-
             case INCREMENT_SELECTED:
                 draft.selected = draft.selected + 1;
 
@@ -285,7 +312,6 @@ export default function(state = INITIAL_STATE, action) {
             /**
              * remove the tag from image based on index
              */
-
             case REMOVE_TAG_FROM_IMAGE:
                 let photo = draft.imagesArray[action.payload.currentIndex];
 
@@ -339,6 +365,29 @@ export default function(state = INITIAL_STATE, action) {
                 draft.imagesArray[action.payload].selected = !draft.imagesArray[
                     action.payload
                 ].selected;
+
+                break;
+
+            /**
+             * After an untagged image was uploaded,
+             *
+             * If user.enable_admin_tagging is false,
+             * Update the image as uploaded which will show a cloud emoji
+             */
+            case 'UPDATE_IMAGE_AS_UPLOADED':
+                draft.imagesArray = draft.imagesArray.map(img => {
+                    if (
+                        img.type === 'gallery' &&
+                        img.id === action.payload.originalImageId
+                    ) {
+                        img.id = action.payload.newImageId;
+                        img.type = 'web';
+                    }
+
+                    img.uploaded = true;
+
+                    return img;
+                });
 
                 break;
 

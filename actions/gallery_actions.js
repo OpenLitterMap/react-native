@@ -37,8 +37,6 @@ export const getPhotosFromCameraroll = (fetchType = 'INITIAL') => async (
     } = getState().gallery;
     const { user } = getState().auth;
 
-    let id = geotaggedImages.length;
-
     let camerarollData;
 
     if (imagesLoading) {
@@ -98,10 +96,12 @@ export const getPhotosFromCameraroll = (fetchType = 'INITIAL') => async (
             end_cursor: endCursor
         } = camerarollData.page_info;
         let geotagged = [];
+        let id = 1;
         imagesArray.map(item => {
+            let coordinates = {};
+
             id++;
 
-            let coordinates = {};
             if (
                 item.node?.location !== undefined &&
                 item.node?.location !== null &&
@@ -117,18 +117,23 @@ export const getPhotosFromCameraroll = (fetchType = 'INITIAL') => async (
             }
             geotagged.push({
                 id,
+                date: item.node.timestamp, // date -> unix/epoch timestamp
+                ...coordinates,
                 filename: item.node.image.filename, // this will get hashed on the backend
                 uri: item.node.image.uri,
-                size: item.node.image.fileSize,
-                height: item.node.image.height,
-                width: item.node.image.width,
-                date: item.node.timestamp, // date -> unix/epoch timestamp
-                selected: false,
-                // lat: item.node.location?.latitude,
-                // lon: item.node.location?.longitude,
-                tags: {},
                 type: 'gallery',
-                ...coordinates
+                platform: 'mobile',
+
+                // size: item.node.image.fileSize,
+                // height: item.node.image.height,
+                // width: item.node.image.width,
+
+                tags: {},
+                customTags: [],
+                // picked up will be applied after this step
+
+                selected: false,
+                uploaded: false
             });
         });
 
