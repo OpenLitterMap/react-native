@@ -44,7 +44,7 @@ class UploadImagesGrid extends PureComponent {
      *   - isSelected: for deletion
      */
     renderImage = ({ item, index }) => {
-        console.log('renderImage', index, item);
+        // console.log('renderImage', index, item);
 
         const isItemTagged = isTagged(item);
         const itemIsPickedUp = item.picked_up ?? null;
@@ -56,7 +56,11 @@ class UploadImagesGrid extends PureComponent {
                 <View style={styles.gridImageContainer}>
                     <Image
                         style={styles.gridImageStyle}
-                        source={{ uri: item.uri }}
+                        source={{
+                            uri: item.hasOwnProperty('uri') && item.uri !== undefined
+                                ? item.uri
+                                : item.filename
+                        }}
                         resizeMode="cover"
                     />
                     {isItemUploaded && (

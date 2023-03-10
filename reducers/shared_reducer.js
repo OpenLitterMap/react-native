@@ -57,8 +57,9 @@ export default function(state = INITIAL_STATE, action) {
              */
             case WEB_NOT_TAGGED:
                 console.log('web_not_tagged reducer');
-            // draft.modalVisible = !draft.modalVisible;
-            // draft.webNotTagged = !draft.webNotTagged;
+                draft.modalVisible = true;
+                draft.uploadVisible = false;
+                draft.webNotTagged = !draft.webNotTagged;
 
             default:
                 return draft;

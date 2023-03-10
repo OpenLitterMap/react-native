@@ -165,8 +165,23 @@ class HomeScreen extends PureComponent {
 
                         {this.props.webNotTagged && (
                             <View style={styles.modal}>
-                                <View style={styles.thankYouModalInner}>
-                                    <Title>Tag images to upload</Title>
+                                <View
+                                    style={
+                                        styles.uploadedImagesNotTaggedContainer
+                                    }>
+                                    <Title style={{ marginBottom: 10 }}>
+                                        None of your images are tagged.
+                                    </Title>
+
+                                    <SubTitle>
+                                        Add tags to your uploaded images, then
+                                        press Upload again to add your tags.
+                                    </SubTitle>
+
+                                    <Button
+                                        onPress={this._toggleUpload.bind(this)}
+                                        title="Cancel"
+                                    />
                                 </View>
                             </View>
                         )}
@@ -339,12 +354,18 @@ class HomeScreen extends PureComponent {
      * else
      * delete images from state based on id
      */
-    deleteImages() {
+    deleteImages ()
+    {
         this.props.images.map(image => {
-            if (image.selected) {
-                if (image.type === 'gallery' || image.type === 'camera') {
+
+            if (image.selected)
+            {
+                if (image.type === 'gallery' || image.type === 'camera')
+                {
                     this.props.deleteImage(image.id);
-                } else if (image.uploaded) {
+                }
+                else if (image.uploaded)
+                {
                     this.props.deleteWebImage(
                         this.props.token,
                         image.id,
@@ -386,11 +407,14 @@ class HomeScreen extends PureComponent {
 
         let imagesCount = this.props.images.length;
 
+        let returnWithError = false;
+
         this.setState({
             total: imagesCount
         });
 
         // shared.js
+        // turn state.modal to true, and select active modal component
         this.props.toggleUpload();
 
         if (imagesCount > 0) {
@@ -421,11 +445,21 @@ class HomeScreen extends PureComponent {
                     ImageData.append('model', model);
 
                     // Tags and custom_tags may or may not exist
-                    ImageData.append('tags', img.tags);
 
-                    if (img.hasOwnProperty('custom_tags')) {
-                        ImageData.append('custom_tags', img.customTags);
+                    if (isItemTagged)
+                    {
+                        if (Object.keys(img.tags).length > 0)
+                        {
+                            ImageData.append('tags', JSON.stringify(img.tags));
+                        }
+
+                        if (img.hasOwnProperty('customTags') && img.customTags.length > 0)
+                        {
+                            ImageData.append('custom_tags', JSON.stringify(img.customTags));
+                        }
                     }
+
+                    console.log({ ImageData });
 
                     // Upload image
                     const response = await this.props.uploadImage(
@@ -448,6 +482,7 @@ class HomeScreen extends PureComponent {
                         }));
                     }
                 } else if (img.type.toLowerCase() === 'web' && isItemTagged) {
+                    // console.log('uploadTagsToWebImage');
                     /**
                      * Upload tags for already uploaded image
                      *
@@ -455,7 +490,7 @@ class HomeScreen extends PureComponent {
                      * But now untagged images can also be uploaded from mobile.
                      * These should be re-classified as Uploaded, Not tagged.
                      *
-                     * We might have to update 'picked_up' value.
+                     * We can also update 'picked_up' value here
                      */
                     const response = await this.props.uploadTagsToWebImage(
                         this.props.token,
@@ -479,8 +514,15 @@ class HomeScreen extends PureComponent {
                     console.log('web image not tagged');
 
                     this.props.toggleWebImagesNotTagged();
+
+                    returnWithError = true;
                 }
             }
+        }
+
+        if (returnWithError) {
+            console.log('return with error');
+            return;
         }
 
         //  Last step - if all photos have been deleted, close modal
@@ -557,6 +599,13 @@ const styles = {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center'
+    },
+    uploadedImagesNotTaggedContainer: {
+        padding: 5,
+        backgroundColor: 'white',
+        justifyContent: 'center',
+        alignItems: 'center',
+        maWidth: SCREEN_WIDTH * 0.8
     },
     photo: {
         height: 100,

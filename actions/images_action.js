@@ -302,6 +302,8 @@ export const uploadImage = (
             };
         }
 
+        // console.log({ response });
+
         if (response && response.data?.success) {
             if (enableAdminTagging || isTagged) {
                 dispatch({
@@ -338,21 +340,24 @@ export const uploadImage = (
 export const uploadTagsToWebImage = (token, image) => {
     return async dispatch => {
         let response;
+
         try {
-            response = await axios(URL + '/api/add-tags', {
+            response = await axios(URL + '/api/v2/add-tags-to-uploaded-image', {
                 method: 'POST',
                 headers: {
                     Authorization: 'Bearer ' + token
                 },
                 data: {
-                    litter: image.tags,
-                    photo_id: image.photoId,
+                    photo_id: image.id,
+                    tags: image.tags,
+                    custom_tags: image.customTags,
                     picked_up: image.picked_up ? 1 : 0
                 }
             });
         } catch (error) {
             // Better error handling needed here
             console.log(error);
+            console.log(error.response.data);
             return {
                 success: false
             };

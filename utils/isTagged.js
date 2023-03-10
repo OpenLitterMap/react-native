@@ -1,6 +1,7 @@
 /**
  * fn to check if image is tagged or not
  * img should have at least one tag or one custom tag
+ *
  * @param {Object} img
  */
 export const isTagged = img => {
