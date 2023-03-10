@@ -30,8 +30,6 @@ export default function(state = INITIAL_STATE, action) {
                     ...draft.geotaggedImages
                 ];
 
-                // console.log({ geotaggedImages });
-
                 draft.geotaggedImages = geotaggedImages;
                 draft.camerarollImageFetched = true;
                 draft.lastFetchTime = Math.floor(new Date().getTime());

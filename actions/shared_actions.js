@@ -63,7 +63,6 @@ export const toggleUpload = () => {
  * But they are not tagged.
  */
 export const toggleWebImagesNotTagged = () => {
-    console.log('toggleWebImagesNotTagged');
     return {
         type: WEB_NOT_TAGGED
     };

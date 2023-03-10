@@ -78,8 +78,6 @@ export const saveSettings = (data, value, token) => {
                 break;
         }
 
-        console.log('beforeSaveSettings');
-
         await axios(URL + '/api/settings/update/', {
             method: 'POST',
             headers: {
@@ -154,7 +152,7 @@ export const saveSocialAccounts = (data, value, token) => {
         dispatch({
             type: START_UPDATING_SETTINGS
         });
-        console.log({ data, value });
+
         try {
             response = await axios(URL + '/api/settings', {
                 method: 'PATCH',
@@ -174,8 +172,6 @@ export const saveSocialAccounts = (data, value, token) => {
                 payload: 'ERROR'
             });
         }
-
-        console.log('saveSettings', response.data);
 
         if (response?.data?.message === 'success') {
             // Get user and parse json to Object

@@ -27,8 +27,6 @@ export const getPhotosFromCameraroll = (fetchType = 'INITIAL') => async (
     dispatch,
     getState
 ) => {
-    console.log('getPhotosFromCameraroll', fetchType);
-
     const {
         geotaggedImages,
         camerarollImageFetched,

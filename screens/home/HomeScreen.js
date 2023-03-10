@@ -58,7 +58,7 @@ class HomeScreen extends PureComponent {
      * but were not tagged and submitted
      */
     async componentDidMount() {
-        console.log('componentDidMount.images', this.props.images);
+
         // If enable_admin_tagging is False, the user wants to get and tag their uploads
         if (!this.props.user?.enable_admin_tagging) {
             // images_actions, images_reducer

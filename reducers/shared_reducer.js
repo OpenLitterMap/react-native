@@ -36,7 +36,6 @@ export default function(state = INITIAL_STATE, action) {
              * Toggles thank you modal after image uploaded
              */
             case TOGGLE_THANK_YOU:
-                console.log('togglethank_you, reducer');
                 draft.modalVisible = !draft.modalVisible;
                 draft.thankYouVisible = !draft.thankYouVisible;
 
@@ -46,7 +45,6 @@ export default function(state = INITIAL_STATE, action) {
              * Toggle the modal and the upload component
              */
             case TOGGLE_UPLOAD:
-                console.log('toggle_upload reducer');
                 draft.modalVisible = !draft.modalVisible;
                 draft.uploadVisible = !draft.uploadVisible;
 
@@ -56,7 +54,6 @@ export default function(state = INITIAL_STATE, action) {
              * Toggle the modal to show Web images available but not tagged
              */
             case WEB_NOT_TAGGED:
-                console.log('web_not_tagged reducer');
                 draft.modalVisible = true;
                 draft.uploadVisible = false;
                 draft.webNotTagged = !draft.webNotTagged;

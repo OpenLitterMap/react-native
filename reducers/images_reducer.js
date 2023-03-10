@@ -55,7 +55,6 @@ export default function(state = INITIAL_STATE, action) {
 
                 images &&
                     images.map(image => {
-                        console.log('ADD_IMAGES.image', image);
 
                         let index;
 
@@ -72,8 +71,6 @@ export default function(state = INITIAL_STATE, action) {
                                 );
                             }
                         }
-
-                        console.log({ index });
 
                         // size, height, width?
 
