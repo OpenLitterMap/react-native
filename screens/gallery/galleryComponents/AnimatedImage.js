@@ -79,7 +79,7 @@ const styles = StyleSheet.create({
         width: 24,
         height: 24,
         right: 5,
-        top: -25,
+        bottom: 5,
         justifyContent: 'center',
         alignItems: 'center'
     },
@@ -88,7 +88,7 @@ const styles = StyleSheet.create({
         width: 24,
         height: 24,
         backgroundColor: '#0984e3',
-        right: 5,
+        right: 35,
         bottom: 5,
         borderRadius: 100,
         justifyContent: 'center',

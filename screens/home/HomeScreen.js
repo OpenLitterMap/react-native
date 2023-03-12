@@ -58,6 +58,7 @@ class HomeScreen extends PureComponent {
      * but were not tagged and submitted
      */
     async componentDidMount() {
+        console.log(this.props.images);
 
         // If enable_admin_tagging is False, the user wants to get and tag their uploads
         if (!this.props.user?.enable_admin_tagging) {
@@ -354,23 +355,17 @@ class HomeScreen extends PureComponent {
      * else
      * delete images from state based on id
      */
-    deleteImages ()
-    {
+    deleteImages() {
         this.props.images.map(image => {
-
-            if (image.selected)
-            {
-                if (image.type === 'gallery' || image.type === 'camera')
-                {
-                    this.props.deleteImage(image.id);
-                }
-                else if (image.uploaded)
-                {
+            if (image.selected) {
+                if (image.type === 'web' && image.uploaded) {
                     this.props.deleteWebImage(
                         this.props.token,
                         image.id,
                         this.props.user.enable_admin_tagging
                     );
+                } else {
+                    this.props.deleteImage(image.id);
                 }
             }
         });
@@ -446,16 +441,19 @@ class HomeScreen extends PureComponent {
 
                     // Tags and custom_tags may or may not exist
 
-                    if (isItemTagged)
-                    {
-                        if (Object.keys(img.tags).length > 0)
-                        {
+                    if (isItemTagged) {
+                        if (Object.keys(img.tags).length > 0) {
                             ImageData.append('tags', JSON.stringify(img.tags));
                         }
 
-                        if (img.hasOwnProperty('customTags') && img.customTags.length > 0)
-                        {
-                            ImageData.append('custom_tags', JSON.stringify(img.customTags));
+                        if (
+                            img.hasOwnProperty('customTags') &&
+                            img.customTags.length > 0
+                        ) {
+                            ImageData.append(
+                                'custom_tags',
+                                JSON.stringify(img.customTags)
+                            );
                         }
                     }
 
