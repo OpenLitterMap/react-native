@@ -457,8 +457,6 @@ class HomeScreen extends PureComponent {
                         }
                     }
 
-                    console.log({ ImageData });
-
                     // Upload image
                     const response = await this.props.uploadImage(
                         this.props.token,
