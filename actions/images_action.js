@@ -281,6 +281,7 @@ export const uploadImage = (
                 }
             );
         } catch (error) {
+            console.log(error);
             if (error.response) {
                 // log error in sentry
                 Sentry.captureException(

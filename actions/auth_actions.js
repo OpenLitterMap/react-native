@@ -260,6 +260,7 @@ export const sendResetPasswordRequest = email => {
  * A user is trying to login with email and password
  */
 export const userLogin = data => {
+    console.log('userLogin');
     return async dispatch => {
         // initial dispatch to show form isSubmitting state
         dispatch({ type: SUBMIT_START });
@@ -282,6 +283,8 @@ export const userLogin = data => {
                     password: data.password
                 }
             });
+            console.log('TEST');
+            console.log(response);
             if (response?.status === 200) {
                 token = response?.data?.access_token;
 
@@ -296,6 +299,7 @@ export const userLogin = data => {
                 throw 'Something went wront';
             }
         } catch (error) {
+            console.log(error);
             if (error?.response) {
                 if (error?.response?.status === 400) {
                     // handling wrong password response from backend

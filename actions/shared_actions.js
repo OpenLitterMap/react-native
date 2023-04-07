@@ -1,8 +1,14 @@
 import React from 'react';
 import {
+    CANCEL_UPLOAD,
     CHECK_APP_VERSION,
+    CLOSE_THANK_YOU_MESSAGES,
     DECREMENT_SELECTED,
     INCREMENT_SELECTED,
+    SHOW_FAILED_TAGGED_UPLOADS,
+    SHOW_THANK_YOU_MESSAGES_AFTER_UPLOAD,
+    SHOW_TAGGED_UPLOADS,
+    START_UPLOADING,
     TOGGLE_SELECTING,
     TOGGLE_THANK_YOU,
     TOGGLE_UPLOAD,
@@ -12,10 +18,18 @@ import {
 import axios from 'axios';
 
 /**
+ *
+ */
+export const cancelUpload = () => {
+    return {
+        type: CANCEL_UPLOAD
+    };
+}
+
+/**
  * check for new app version
  *
  */
-
 export const checkAppVersion = () => {
     return async dispatch => {
         try {
@@ -39,9 +53,52 @@ export const checkAppVersion = () => {
 };
 
 /**
+ * After uploading,
+ * Thank you messages are shown,
+ * Now we hide the modal and messages.
+ */
+export const closeThankYouMessages = () => {
+    return {
+        type: CLOSE_THANK_YOU_MESSAGES
+    };
+}
+
+/**
+ * Uploading Tags to Already Uploaded images was a success
+ */
+export const showTaggedUploads = () => {
+    return {
+        type: SHOW_TAGGED_UPLOADS
+    };
+}
+
+/**
+ * Uploading Tags to Already Uploaded images failed
+ */
+export const showFailedTaggedUploads = () => {
+    return {
+        type: SHOW_FAILED_TAGGED_UPLOADS
+    };
+}
+
+/**
+ *
+ */
+export const showThankYouMessagesAfterUpload = () => {
+    return {
+        type: SHOW_THANK_YOU_MESSAGES_AFTER_UPLOAD
+    };
+}
+
+export const startUploading = () => {
+    return {
+        type: START_UPLOADING
+    };
+}
+
+/**
  * Toggles thank you modal after image uploaded
  */
-
 export const toggleThankYou = () => {
     return {
         type: TOGGLE_THANK_YOU

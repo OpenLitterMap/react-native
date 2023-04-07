@@ -13,6 +13,7 @@
     "please-wait-uploading": "Kérjük, várjon, amíg feltölti a képeket",
     "thank-you": "Köszönöm!!!",
     "you-have-uploaded": "Feltöltöttél {count} fényképet",
+    "you-have-tagged": "{count} képet címkéztél",
     "close": "Bezárás",
     "take-photo": "Készítsen fényképet vagy válasszon a galériából",
     "no-images": "Nincs feltölthető kép",
