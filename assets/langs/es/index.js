@@ -16,6 +16,7 @@ export const es = {
     settings,
     stats,
     tag,
+    team,
     user,
     welcome
 };

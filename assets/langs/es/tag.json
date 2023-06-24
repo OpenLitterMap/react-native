@@ -6,15 +6,15 @@
     "alert": "Alerta",
     "still-there": "¡La basura sigue ahí!",
     "picked-up": "¡La basura ha sido recogida!",
-    "litter-status": "Estado de la camada",
+    "litter-status": "Estado de la basura",
     "picked-thumb": "Recogido 👍🏻",
     "not-picked-thumb": "No recogido 👎🏻",
-    "delete-message": "Estás seguro de que deseas eliminar esta imagen?",
+    "delete-message": "¿Estás seguro de que deseas eliminar esta imagen?",
     "cancel": "Cancelar",
     "delete": "Sí, eliminar",
     "custom-tags": "Etiquetas Personalizadas",
     "custom-tags-min": "La etiqueta debe tener al menos 3 caracteres",
     "custom-tags-max": "La etiqueta puede tener un máximo de 100 caracteres",
-    "tag-already-added": "Etiqueta ya añadida.",
-    "tag-limit-reached": "Puede cargar hasta 3 etiquetas personalizadas."
+    "tag-already-added": "Etiqueta ya añadida",
+    "tag-limit-reached": "Puede cargar hasta 3 etiquetas personalizadas"
 }
