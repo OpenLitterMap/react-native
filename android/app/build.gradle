@@ -134,7 +134,7 @@ android {
 
     defaultConfig {
         applicationId "com.geotech.openlittermap"
-        minSdkVersion rootProject.ext.minSdkVersion
+        minSdkVersion 21
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 35 // increment this
         versionName "3.3.1"

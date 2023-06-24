@@ -156,9 +156,7 @@ export default function(state = INITIAL_STATE, action) {
                     xpRequired: xpRequired,
                     targetPercentage: targetPercentage,
                     totalTags: user.total_tags,
-                    totalLittercoin:
-                        (user.littercoin_allowance || 0) +
-                        (user.littercoin_owed || 0)
+                    totalLittercoin: user.littercoin_count
                 };
 
                 AsyncStorage.setItem('user', JSON.stringify(user));

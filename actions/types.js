@@ -4,7 +4,7 @@ import { SECRET_CLIENT } from '@env';
 import { ID_CLIENT } from '@env';
 import { OLM_ENDPOINT } from '@env';
 
-export const IS_PRODUCTION = true; // change this when working locally to disable sentry
+export const IS_PRODUCTION = false; // change this when working locally to disable sentry
 
 export const CLIENT_ID = ID_CLIENT;
 export const CLIENT_SECRET = SECRET_CLIENT;
@@ -106,7 +106,8 @@ export const UPDATE_USER_OBJECT = 'UPDATE_USER_OBJECT';
 export const CANCEL_UPLOAD = 'CANCEL_UPLOAD';
 export const CLOSE_THANK_YOU_MESSAGES = 'CLOSE_THANK_YOU_MESSAGES';
 export const START_UPLOADING = 'START_UPLOADING';
-export const SHOW_THANK_YOU_MESSAGES_AFTER_UPLOAD = 'SHOW_THANK_YOU_MESSAGES_AFTER_UPLOAD';
+export const SHOW_THANK_YOU_MESSAGES_AFTER_UPLOAD =
+    'SHOW_THANK_YOU_MESSAGES_AFTER_UPLOAD';
 export const SHOW_FAILED_TAGGED_UPLOADS = 'SHOW_FAILED_TAGGED_UPLOADS';
 export const SHOW_TAGGED_UPLOADS = 'SHOW_TAGGED_UPLOADS';
 
