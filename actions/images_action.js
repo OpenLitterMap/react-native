@@ -1,5 +1,5 @@
 import axios from 'axios';
-import * as Sentry from '@sentry/react-native';
+// import * as Sentry from '@sentry/react-native';
 import {
     ADD_IMAGES,
     ADD_TAG_TO_IMAGE,
@@ -284,15 +284,15 @@ export const uploadImage = (
             console.log(error);
             if (error.response) {
                 // log error in sentry
-                Sentry.captureException(
-                    JSON.stringify(error?.response?.data, null, 2),
-                    {
-                        level: 'error',
-                        tags: {
-                            section: 'image_upload'
-                        }
-                    }
-                );
+                // Sentry.captureException(
+                //     JSON.stringify(error?.response?.data, null, 2),
+                //     {
+                //         level: 'error',
+                //         tags: {
+                //             section: 'image_upload'
+                //         }
+                //     }
+                // );
             } else {
                 // Other errors -- NETWORK ERROR
                 console.log(error);
