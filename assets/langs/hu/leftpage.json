@@ -1,0 +1,21 @@
+{
+    "photos": "Fényképek",
+    "geotagged": "Megjelölve",
+    "cancel": "Megszüntet",
+    "done": "Kész",
+    "next": "Következő",
+    "upload": "Feltöltés",
+    "select-a-photo": "Válasszon ki egy fényképet",
+    "delete": "Törölés",
+    "selected": "{photos} kiválasztva",
+    "press-upload": "Nyomja meg a Feltöltés gombot",
+    "select-to-delete": "Válassza ki a törölni kívánt képeket",
+    "please-wait-uploading": "Kérjük, várjon, amíg feltölti a képeket",
+    "thank-you": "Köszönöm!!!",
+    "you-have-uploaded": "Feltöltöttél {count} fényképet",
+    "you-have-tagged": "{count} képet címkéztél",
+    "close": "Bezárás",
+    "take-photo": "Készítsen fényképet vagy válasszon a galériából",
+    "no-images": "Nincs feltölthető kép",
+    "camera": "Kamera"
+}

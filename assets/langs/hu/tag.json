@@ -1,0 +1,20 @@
+{
+    "add-tag": "Címke hozzáadása",
+    "confirm": "Megerősít",
+    "type-to-suggest": "Irja be a javasolt címkéit",
+    "suggested-tags": "Javasolt címkék: {count}",
+    "alert": "Riasztás",
+    "still-there": "Az hulladék még mindig ott van",
+    "picked-up": "Az Hulladékot összeszedték",
+    "litter-status": "Hulladék állapota",
+    "picked-thumb": "Felvették 👍🏻",
+    "not-picked-thumb": "Nem vették fel 👎🏻",
+    "delete-message": "Biztosan törli ezt a képet ?",
+    "cancel": "Megszüntet",
+    "delete": "Igen, Törlés",
+    "custom-tags": "Egyéni címkék",
+    "custom-tags-min": "A címkének legalább 3 karakter hosszúnak kell lennie",
+    "custom-tags-max": "A címke legfeljebb 100 karakterből állhat",
+    "tag-already-added": "Címke már hozzáadva",
+    "tag-limit-reached": "Legfeljebb 3 egyéni címkét tölthet fel."
+}

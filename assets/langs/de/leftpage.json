@@ -1,0 +1,21 @@
+{
+    "photos": "Fotos",
+    "geotagged": "Geotagged",
+    "cancel": "Abbrechen",
+    "done": "Fertig",
+    "next": "Nächste",
+    "upload": "Hochladen",
+    "select-a-photo": "Ein Foto aussuchen",
+    "delete": "Löschen",
+    "selected": "{photos} Ausgesucht",
+    "press-upload": "Drücke hochladen",
+    "select-to-delete": "Suche Fotos aus, die du löschen möchtest",
+    "please-wait-uploading": "Bitte warten bis deine Fotos hochgeladen sind",
+    "thank-you": "Herzlichen Dank!!!",
+    "you-have-uploaded": "Du hast {count} Foto(s) hochgeladen",
+    "you-have-tagged": "Sie haben {count} Fotos markiert",
+    "close": "Schlieβen",
+    "take-photo": "Machen Sie ein Foto oder wählen Sie aus der Galerie",
+    "no-images": "Keine Bilder zum Hochladen",
+    "camera": "Kamera"
+}

@@ -28,6 +28,9 @@ end
 target 'olm' do
   config = use_native_modules!
 
+  ## Permissions
+  permissions_path = '../node_modules/react-native-permissions/ios'
+
   # Flags change depending on the env values.
   flags = get_default_flags()
 

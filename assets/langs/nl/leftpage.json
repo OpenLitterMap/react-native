@@ -1,0 +1,21 @@
+{
+    "photos": "Foto's",
+    "geotagged": "Geotagged",
+    "cancel": "Cancel",
+    "done": "Klaar",
+    "next": "Volgende",
+    "upload": "Uploaden",
+    "select-a-photo": "Selecteer een foto",
+    "delete": "Verwijder",
+    "selected": "{photos} geselecteerd",
+    "press-upload": "Druk op Uploaden",
+    "select-to-delete": "Selecteer de afbeeldingen die je wilt verwijderen",
+    "please-wait-uploading": "Wacht even terwijl je foto's worden geupload",
+    "thank-you": "Dank je!!!",
+    "you-have-uploaded": "Je hebt {count} foto('s) geupload",
+    "you-have-tagged": "Je hebt {count} foto's getagd.",
+    "close": "Sluiten",
+    "take-photo": "Maak een foto of kies uit de galerij",
+    "no-images": "Geen afbeeldingen om te uploaden",
+    "camera": "camera"
+}

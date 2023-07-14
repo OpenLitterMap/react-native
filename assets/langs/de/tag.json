@@ -1,0 +1,20 @@
+{
+    "add-tag": "Tag hinzufügen",
+    "confirm": "Bestätigen",
+    "type-to-suggest": "Tippen um Tag zu suchen",
+    "suggested-tags": "Vorgestellter Tag {count}",
+    "alert": "Warnung",
+    "still-there": "Der Abfall ist immernoch dort",
+    "picked-up": "Der Abfall ist weggenommen",
+    "litter-status": "Wurfstatus",
+    "picked-thumb": "Abgeholt 👍🏻",
+    "not-picked-thumb": "Nicht abgeholt 👎🏻",
+    "delete-message": "Möchten Sie dieses Bild wirklich löschen?",
+    "cancel": "Abbrechen",
+    "delete": "Ja, löschen",
+    "custom-tags": "Custom Tags",
+    "custom-tags-min": "Tag muss mindestens 3 Zeichen lang sein",
+    "custom-tags-max": "Tag darf maximal 100 Zeichen lang sein",
+    "tag-already-added": "Tag bereits hinzugefügt",
+    "tag-limit-reached": "Sie können bis zu 3 benutzerdefinierte Tags hochladen"
+}
