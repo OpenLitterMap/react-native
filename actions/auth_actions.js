@@ -3,18 +3,17 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import {
     ACCOUNT_CREATED,
-    CHANGE_SERVER_STATUS_TEXT,
-    CLIENT_SECRET,
-    CLIENT_ID,
     CHANGE_LANG,
-    SUBMIT_START,
+    CHANGE_SERVER_STATUS_TEXT,
+    CLIENT_ID,
+    CLIENT_SECRET,
+    LOGIN_FAIL,
     LOGIN_OR_SIGNUP_RESET,
     LOGIN_SUCCESS,
-    LOGIN_FAIL,
     LOGOUT,
+    SUBMIT_START,
+    URL,
     USER_FOUND,
-    SUBMIT_END,
-    URL
 } from './types';
 import axios from 'axios';
 import * as Sentry from '@sentry/react-native';
@@ -22,7 +21,7 @@ import * as Sentry from '@sentry/react-native';
 export const changeLang = lang => {
     return {
         type: CHANGE_LANG,
-        payload: lang
+        payload: lang,
     };
 };
 
@@ -40,8 +39,8 @@ export const checkValidToken = token => {
             method: 'POST',
             headers: {
                 Authorization: 'Bearer ' + token,
-                Accept: 'application/json'
-            }
+                Accept: 'application/json',
+            },
         })
             .then(response => {
                 console.log('checkValidToken.response', response.data);
@@ -52,7 +51,7 @@ export const checkValidToken = token => {
                 ) {
                     dispatch({
                         type: 'TOKEN_IS_VALID',
-                        payload: true
+                        payload: true,
                     });
                 }
             })
@@ -63,7 +62,7 @@ export const checkValidToken = token => {
                 // we should mark token as invalid
                 dispatch({
                     type: 'TOKEN_IS_VALID',
-                    payload: false
+                    payload: false,
                 });
             });
     };
@@ -87,7 +86,7 @@ export const checkForToken = () => async dispatch => {
     if (jwt) {
         console.log('auth_actions - token exists');
         // Dispatch an action, login success
-        await dispatch({ type: LOGIN_SUCCESS, payload: jwt });
+        await dispatch({type: LOGIN_SUCCESS, payload: jwt});
     } else {
         console.log('auth_actions - token not found');
         return null;
@@ -101,7 +100,7 @@ export const createAccount = data => {
     return async dispatch => {
         // setting isSubmitting to true
         // shows loader on button
-        dispatch({ type: SUBMIT_START });
+        dispatch({type: SUBMIT_START});
         let response;
 
         try {
@@ -109,7 +108,7 @@ export const createAccount = data => {
                 method: 'POST',
                 headers: {
                     Accept: 'application/json',
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
                 },
                 data: {
                     client_id: CLIENT_ID,
@@ -117,8 +116,8 @@ export const createAccount = data => {
                     grant_type: 'password',
                     username: data.username,
                     email: data.email,
-                    password: data.password
-                }
+                    password: data.password,
+                },
             });
         } catch (error) {
             let payload;
@@ -137,7 +136,7 @@ export const createAccount = data => {
 
                 dispatch({
                     type: CHANGE_SERVER_STATUS_TEXT,
-                    payload: payload
+                    payload: payload,
                 });
                 return;
             } else {
@@ -145,7 +144,7 @@ export const createAccount = data => {
                 dispatch({
                     type: CHANGE_SERVER_STATUS_TEXT,
                     payload:
-                        'Network error, please check internet connection and try again'
+                        'Network error, please check internet connection and try again',
                 });
                 return;
             }
@@ -154,12 +153,12 @@ export const createAccount = data => {
         if (response?.data?.success) {
             dispatch({
                 type: ACCOUNT_CREATED,
-                payload: response?.data?.success
+                payload: response?.data?.success,
             });
             // Login user if account creation successful
             const login = {
                 email: data.email,
-                password: data.password
+                password: data.password,
             };
 
             // Log the user in
@@ -174,7 +173,7 @@ export const createAccount = data => {
 export const loginOrSignupReset = () => {
     // console.log('action - login or signup reset');
     return {
-        type: LOGIN_OR_SIGNUP_RESET
+        type: LOGIN_OR_SIGNUP_RESET,
     };
 };
 
@@ -191,7 +190,7 @@ export const logout = () => {
     // delete user from AsyncStorage?
     // state is reset on Logout => user: null
     return {
-        type: LOGOUT
+        type: LOGOUT,
     };
 };
 
@@ -203,7 +202,7 @@ export const logout = () => {
 export const changeServerStatusText = text => {
     return {
         type: CHANGE_SERVER_STATUS_TEXT,
-        payload: text
+        payload: text,
     };
 };
 
@@ -214,18 +213,18 @@ export const sendResetPasswordRequest = email => {
     return async dispatch => {
         // setting isSubmitting to true
         // shows loader on button
-        dispatch({ type: SUBMIT_START });
+        dispatch({type: SUBMIT_START});
         let response;
         try {
             response = await axios(URL + '/api/password/email', {
                 method: 'POST',
                 data: {
-                    email: email
+                    email: email,
                 },
                 headers: {
                     Accept: 'application/json',
-                    'Content-Type': 'application/json'
-                }
+                    'Content-Type': 'application/json',
+                },
             });
         } catch (error) {
             if (error?.response) {
@@ -235,14 +234,14 @@ export const sendResetPasswordRequest = email => {
                     type: CHANGE_SERVER_STATUS_TEXT,
                     payload:
                         error.response?.data?.errors?.email ||
-                        'Error, please try again'
+                        'Error, please try again',
                 });
             } else {
                 // Handling mainly network error
                 console.log('sendResetPasswordRequest', error);
                 dispatch({
                     type: CHANGE_SERVER_STATUS_TEXT,
-                    payload: 'Network error, please try again'
+                    payload: 'Network error, please try again',
                 });
             }
         }
@@ -252,7 +251,7 @@ export const sendResetPasswordRequest = email => {
             // setting isSubmitting to false
             dispatch({
                 type: CHANGE_SERVER_STATUS_TEXT,
-                payload: 'We have emailed your password reset link!'
+                payload: 'We have emailed your password reset link!',
             });
         }
     };
@@ -265,7 +264,7 @@ export const userLogin = data => {
     console.log('userLogin');
     return async dispatch => {
         // initial dispatch to show form isSubmitting state
-        dispatch({ type: SUBMIT_START });
+        dispatch({type: SUBMIT_START});
         // axios response
         let response;
         // jwt
@@ -275,15 +274,15 @@ export const userLogin = data => {
                 method: 'POST',
                 headers: {
                     Accept: 'application/json',
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
                 },
                 data: {
                     client_id: CLIENT_ID,
                     client_secret: CLIENT_SECRET,
                     grant_type: 'password',
                     username: data.email,
-                    password: data.password
-                }
+                    password: data.password,
+                },
             });
             console.log('TEST');
             console.log(response);
@@ -298,7 +297,7 @@ export const userLogin = data => {
                     throw 'Unable to save token to asyncstore';
                 }
             } else {
-                throw 'Something went wront';
+                throw 'Something went wrong';
             }
         } catch (error) {
             console.log(error);
@@ -308,14 +307,14 @@ export const userLogin = data => {
                     dispatch({
                         type: LOGIN_FAIL,
                         payload:
-                            'Your password is incorrect. Please try again or reset it.'
+                            'Your password is incorrect. Please try again or reset it.',
                     });
                     return;
                 } else {
                     // handling other errors from backend and thrown from try block
                     dispatch({
                         type: LOGIN_FAIL,
-                        payload: 'Login Unsuccessful. Please try again.'
+                        payload: 'Login Unsuccessful. Please try again.',
                     });
                     return;
                 }
@@ -323,7 +322,7 @@ export const userLogin = data => {
                 // Handling network error
                 dispatch({
                     type: LOGIN_FAIL,
-                    payload: 'Network error, please try again'
+                    payload: 'Network error, please try again',
                 });
                 return;
             }
@@ -346,20 +345,20 @@ export const fetchUser = token => {
             response = await axios(URL + '/api/user', {
                 method: 'GET',
                 headers: {
-                    Authorization: 'Bearer ' + token
-                }
+                    Authorization: 'Bearer ' + token,
+                },
             });
         } catch (error) {
             if (error?.response) {
                 dispatch({
                     type: LOGIN_FAIL,
-                    payload: 'Login Unsuccessful. Please try again.'
+                    payload: 'Login Unsuccessful. Please try again.',
                 });
             } else {
                 // Handling network error
                 dispatch({
                     type: LOGIN_FAIL,
-                    payload: 'Network error, please try again'
+                    payload: 'Network error, please try again',
                 });
             }
         }
@@ -367,11 +366,11 @@ export const fetchUser = token => {
             const userObj = response.data;
             // Adding context -- user to Sentry
             // will be able to identify the user who faced the errors.
-            Sentry.setUser({ email: userObj?.email, id: userObj?.id });
+            Sentry.setUser({email: userObj?.email, id: userObj?.id});
 
             dispatch({
                 type: USER_FOUND,
-                payload: { userObj, token }
+                payload: {userObj, token},
             });
         }
     };
@@ -384,7 +383,7 @@ export const userFound = data => {
     // console.log("action - user found");
     return {
         type: USER_FOUND,
-        payload: data
+        payload: data,
     };
 };
 

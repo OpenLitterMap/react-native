@@ -1,13 +1,32 @@
 import * as React from 'react';
-import { Easing, TextInput, Animated, View, StyleSheet } from 'react-native';
-import PropTypes from 'prop-types';
-import Svg, { G, Circle } from 'react-native-svg';
-import { Body, Caption } from './typography';
-import { Colors } from './theme';
+import {Animated, StyleSheet, TextInput, View} from 'react-native';
+import Svg, {Circle, G} from 'react-native-svg';
+import {Body} from './typography';
+import {Colors} from './theme';
 
 const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
 
-const AnimatedCircle = ({
+interface AnimatedCircleProps {
+    percentage?: number;
+    startPercentage?: number;
+    radius?: number;
+    strokeWidth?: number;
+    duration?: number;
+    color?: string;
+    delay?: number;
+    textColor?: string;
+    value?: number;
+    startValue?: number;
+    valueSuffix?: string;
+    valueStyles?: React.CSSProperties | Array<React.CSSProperties>;
+    max?: number;
+    tagline?: string;
+    taglineStyles?: React.CSSProperties | Array<React.CSSProperties>;
+    nextTarget?: string;
+    isValueDisplayed?: boolean;
+}
+
+const AnimatedCircle: React.FC<AnimatedCircleProps> = ({
     percentage = 0,
     startPercentage = 0,
     radius = 150,
@@ -24,7 +43,7 @@ const AnimatedCircle = ({
     tagline,
     nextTarget,
     taglineStyles,
-    isValueDisplayed = true
+    isValueDisplayed = true,
 }) => {
     // console.log({ startPercentage });
     const animated = React.useRef(new Animated.Value(startPercentage)).current;
@@ -35,22 +54,22 @@ const AnimatedCircle = ({
     const halfCircle = radius + strokeWidth;
 
     // animation fn for svg circle
-    const animation = toValue => {
+    const animation = (toValue: number) => {
         return Animated.timing(animated, {
             delay: delay,
             toValue,
             duration: startPercentage === percentage ? 0 : duration,
-            useNativeDriver: true
+            useNativeDriver: true,
             // easing: Easing.out(Easing.ease)
         }).start();
     };
     // animation fn for text value
-    const textAnimation = toValue => {
+    const textAnimation = (toValue: number) => {
         return Animated.timing(textAnimated, {
             delay: delay,
             toValue,
             duration: startValue === value ? 0 : duration,
-            useNativeDriver: true
+            useNativeDriver: true,
             // easing: Easing.out(Easing.ease)
         }).start();
     };
@@ -59,6 +78,7 @@ const AnimatedCircle = ({
         animation(percentage);
         textAnimation(value);
 
+        // @ts-ignore
         textAnimated.addListener(
             v => {
                 if (inputRef?.current) {
@@ -74,11 +94,11 @@ const AnimatedCircle = ({
                             : `${v.value.toFixed(1)}${suffix}`;
 
                     inputRef.current.setNativeProps({
-                        text
+                        text,
                     });
                 }
             },
-            [value]
+            [value],
         );
 
         animated.addListener(
@@ -90,11 +110,11 @@ const AnimatedCircle = ({
                 // console.log(strokeDashoffset);
                 if (circleRef?.current) {
                     circleRef.current.setNativeProps({
-                        strokeDashoffset
+                        strokeDashoffset,
                     });
                 }
             },
-            [max, percentage]
+            [max, percentage],
         );
 
         return () => {
@@ -107,7 +127,7 @@ const AnimatedCircle = ({
         <View
             style={{
                 justifyContent: 'center',
-                alignItems: 'center'
+                alignItems: 'center',
             }}>
             <Svg
                 height={radius * 2}
@@ -144,8 +164,8 @@ const AnimatedCircle = ({
                         StyleSheet.absoluteFillObject,
                         {
                             alignItems: 'center',
-                            justifyContent: 'center'
-                        }
+                            justifyContent: 'center',
+                        },
                     ]}>
                     <AnimatedTextInput
                         ref={inputRef}
@@ -153,21 +173,21 @@ const AnimatedCircle = ({
                         editable={false}
                         defaultValue="0"
                         style={[
-                            { color: textColor ?? color },
+                            {color: textColor ?? color},
                             styles.value,
-                            valueStyles
+                            valueStyles,
                         ]}
                     />
 
                     <Body
                         family="semiBold"
                         style={[
-                            { color: textColor ?? color },
+                            {color: textColor ?? color},
                             styles.tagline,
-                            taglineStyles
+                            taglineStyles,
                         ]}
                         dictionary={tagline}
-                        values={{ count: nextTarget }}>
+                        values={{count: nextTarget}}>
                         {tagline}
                     </Body>
                 </View>
@@ -176,36 +196,17 @@ const AnimatedCircle = ({
     );
 };
 
-AnimatedCircle.proptypes = {
-    percentage: PropTypes.number,
-    startPercentage: PropTypes.number,
-    radius: PropTypes.number,
-    strokeWidth: PropTypes.number,
-    duration: PropTypes.number,
-    color: PropTypes.string,
-    delay: PropTypes.number,
-    textColor: PropTypes.string,
-    value: PropTypes.number,
-    startValue: PropTypes.number,
-    valueSuffix: PropTypes.string,
-    valueStyles: PropTypes.oneOfType([PropTypes.array, PropTypes.object]),
-    tagline: PropTypes.string,
-    taglineStyles: PropTypes.oneOfType([PropTypes.array, PropTypes.object]),
-    nextTarget: PropTypes.string,
-    isValueDisplayed: PropTypes.bool
-};
-
 const styles = StyleSheet.create({
     value: {
         textAlign: 'center',
         fontSize: 62,
         fontFamily: 'Poppins-Medium',
-        textAlignVertical: 'center'
+        textAlignVertical: 'center',
     },
     tagline: {
         textAlign: 'center',
-        marginTop: -16
-    }
+        marginTop: -16,
+    },
 });
 
 export default AnimatedCircle;

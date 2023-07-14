@@ -1,26 +1,26 @@
-import React, { Component } from 'react';
+import React, {Component} from 'react';
 import {
     AppState,
+    Image,
+    Linking,
+    Platform,
+    Pressable,
     StyleSheet,
     View,
-    Image,
-    Pressable,
-    Platform,
-    Linking
 } from 'react-native';
-import { connect } from 'react-redux';
+import {connect} from 'react-redux';
 import * as actions from '../../actions';
-import { Title, Body, Colors } from '../components';
+import {Body, Colors, Title} from '../components';
 import {
     checkCameraRollPermission,
-    requestCameraRollPermission
+    requestCameraRollPermission,
 } from '../../utils/permissions';
 
 class GalleryPermissionScreen extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            appState: AppState.currentState
+            appState: AppState.currentState,
         };
     }
 
@@ -36,8 +36,16 @@ class GalleryPermissionScreen extends Component {
         /**
          * remove appState subscription
          */
-        AppState.removeEventListener('change', this.handleAppStateChange);
+        // deprecated in react-native 0.65+
+        // AppState.removeEventListener('change', this.handleAppStateChange);
+
+        const subscription = AppState.addEventListener(
+            'change',
+            this.handleAppStateChange,
+        );
+        subscription.remove();
     }
+
     /**
      * fn that is called when app state changes
      *
@@ -53,7 +61,7 @@ class GalleryPermissionScreen extends Component {
         ) {
             this.checkGalleryPermission();
         }
-        this.setState({ appState: nextAppState });
+        this.setState({appState: nextAppState});
     };
 
     /**
@@ -87,7 +95,7 @@ class GalleryPermissionScreen extends Component {
     }
 
     render() {
-        const { navigation, lang } = this.props;
+        const {navigation, lang} = this.props;
         return (
             <View style={styles.container}>
                 <Image
@@ -120,35 +128,32 @@ class GalleryPermissionScreen extends Component {
 
 const mapStateToProps = state => {
     return {
-        lang: state.auth.lang
+        lang: state.auth.lang,
     };
 };
 
-export default connect(
-    mapStateToProps,
-    actions
-)(GalleryPermissionScreen);
+export default connect(mapStateToProps, actions)(GalleryPermissionScreen);
 
 const styles = StyleSheet.create({
     container: {
         justifyContent: 'center',
         alignItems: 'center',
         flex: 1,
-        padding: 20
+        padding: 20,
     },
     imageStyle: {
         width: 300,
-        height: 300
+        height: 300,
     },
     bodyText: {
         textAlign: 'center',
-        marginVertical: 20
+        marginVertical: 20,
     },
     buttonStyle: {
         paddingHorizontal: 28,
         paddingVertical: 20,
         backgroundColor: Colors.accent,
         borderRadius: 100,
-        marginVertical: 32
-    }
+        marginVertical: 32,
+    },
 });

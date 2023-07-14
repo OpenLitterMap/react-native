@@ -1,29 +1,24 @@
 import React from 'react';
-import { View, SafeAreaView } from 'react-native';
-import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
+import {SafeAreaView, View} from 'react-native';
+import {createMaterialTopTabNavigator} from '@react-navigation/material-top-tabs';
 
 import Icon from 'react-native-vector-icons/Ionicons';
-import {
-    UserStatsScreen,
-    GlobalDataScreen,
-    HomeScreen,
-    CameraScreen
-} from '../screens';
+import {GlobalDataScreen, HomeScreen, UserStatsScreen} from '../screens';
 import TeamStack from './teamRoutes';
-import { Colors } from '../screens/components';
+import {Colors} from '../screens/components';
 
 const Tab = createMaterialTopTabNavigator();
 
-const TabRoutes = ({ navigation }) => (
+const TabRoutes = ({navigation}) => (
     <>
         <Tab.Navigator
             lazy={true}
             tabBarPosition="bottom"
             initialRouteName="HOME"
             showIcon={true}
-            tabStyle={{ backgroundColor: '#000' }}
-            screenOptions={({ route }) => ({
-                tabBarIcon: ({ focused, color, size }) => {
+            tabStyle={{backgroundColor: '#000'}}
+            screenOptions={({route}) => ({
+                tabBarIcon: ({focused, color, size}) => {
                     let iconName;
 
                     switch (route.name) {
@@ -74,32 +69,30 @@ const TabRoutes = ({ navigation }) => (
                                 alignItems: 'center',
                                 alignContent: 'center',
                                 padding: 0,
-                                marginTop: -5
+                                marginTop: -5,
                             }}>
                             <Icon name={iconName} size={24} color={color} />
                         </View>
                     );
-                }
-            })}
-            tabBarOptions={{
-                activeTintColor: `${Colors.accent}`,
-                inactiveTintColor: 'gray',
-                showIcon: true,
-                showLabel: false,
-                iconStyle: {
-                    height: 50
+                },
+                tabBarActiveTintColor: `${Colors.accent}`,
+                tabBarInactiveTintColor: 'gray',
+                tabBarShowIcon: true,
+                tabBarShowLabel: false,
+                tabBarIconStyle: {
+                    height: 50,
                 },
                 pressColor: 'white',
                 pressOpacity: 0,
-                indicatorStyle: { display: 'none', backgroundColor: 'white' },
+                indicatorStyle: {display: 'none', backgroundColor: 'white'},
                 style: {
                     backgroundColor: 'white',
                     borderTopWidth: 0,
                     height: 60,
                     margin: 0,
-                    padding: 0
-                }
-            }}>
+                    padding: 0,
+                },
+            })}>
             <Tab.Screen name="HOME" component={HomeScreen} />
             {/*<Tab.Screen*/}
             {/*    name="CAMERA"*/}

@@ -1,15 +1,8 @@
-import React, { Component } from 'react';
-import {
-    ActivityIndicator,
-    Dimensions,
-    Image,
-    ScrollView,
-    StyleSheet,
-    View
-} from 'react-native';
+import React, {Component} from 'react';
+import {Dimensions, Image, ScrollView, StyleSheet, View} from 'react-native';
 import PageControl from 'react-native-page-control';
-import { getLanguage, TransText } from 'react-native-translation';
-import { Title, Body, Colors } from '../../components';
+import {getLanguage} from 'react-native-translation';
+import {Body, Colors, Title} from '../../components';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -29,7 +22,7 @@ class Slides extends Component {
             flexDirection = 'column';
         }
 
-        return { flexDirection: flexDirection, alignSelf: 'center' };
+        return {flexDirection: flexDirection, alignSelf: 'center'};
     }
 
     renderSlides() {
@@ -53,14 +46,14 @@ class Slides extends Component {
                             />
                             <Title
                                 color="accent"
-                                style={[styles.slideTitle, { marginLeft: 6 }]}
+                                style={[styles.slideTitle, {marginLeft: 6}]}
                                 dictionary={`${lang}.${slide.title}`}
                             />
                         </View>
                         <Body
                             style={{
                                 textAlign: 'center',
-                                paddingHorizontal: 30
+                                paddingHorizontal: 30,
                             }}
                             dictionary={`${lang}.${slide.text}`}
                         />
@@ -73,8 +66,8 @@ class Slides extends Component {
                         // hidesForSinglePage
                         pageIndicatorTintColor="white"
                         currentPageIndicatorTintColor={`${Colors.accent}`}
-                        indicatorStyle={{ borderRadius: 15 }}
-                        currentIndicatorStyle={{ borderRadius: 5 }}
+                        indicatorStyle={{borderRadius: 15}}
+                        currentIndicatorStyle={{borderRadius: 5}}
                         indicatorSize={styles.indicatorSize}
                         onPageIndicatorPress={this.onItemTap}
                     />
@@ -87,7 +80,7 @@ class Slides extends Component {
         return (
             <ScrollView
                 horizontal
-                style={{ flex: 1 }}
+                style={{flex: 1}}
                 pagingEnabled
                 showsHorizontalScrollIndicator={false}>
                 {this.renderSlides()}
@@ -100,36 +93,36 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         alignItems: 'center',
-        justifyContent: 'center'
+        justifyContent: 'center',
     },
     slideImage: {
         width: SCREEN_WIDTH - 40,
         height: SCREEN_HEIGHT * 0.45,
-        marginTop: 80
+        marginTop: 80,
     },
     indicatorSize: {
         height: SCREEN_HEIGHT * 0.01,
-        width: SCREEN_WIDTH * 0.02
+        width: SCREEN_WIDTH * 0.02,
     },
     pageControl: {
         position: 'absolute',
         left: 0,
         right: 0,
-        bottom: SCREEN_HEIGHT * 0.02
+        bottom: SCREEN_HEIGHT * 0.02,
     },
     slide: {
         alignItems: 'center',
         flex: 1,
-        width: SCREEN_WIDTH
+        width: SCREEN_WIDTH,
     },
     slideTitle: {
         fontSize: 36,
-        textAlign: 'center'
+        textAlign: 'center',
     },
     slideText: {
         fontSize: 18,
-        textAlign: 'center'
-    }
+        textAlign: 'center',
+    },
 });
 
 export default Slides;

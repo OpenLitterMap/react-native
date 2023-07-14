@@ -2,31 +2,29 @@ import React from 'react';
 import {
     ActivityIndicator,
     Alert,
+    Animated,
     Dimensions,
+    Linking,
     Platform,
     SafeAreaView,
+    StyleSheet,
     Text,
     TouchableOpacity,
     View,
-    Animated,
-    Linking
 } from 'react-native';
 // import StyleSheet from 'react-native-extended-stylesheet';
 // import AsyncStorage from '@react-native-community/async-storage';
 // import AsyncStorage from '@react-native-async-storage/async-storage';
-
 // import RNLocation from 'react-native-location';
-import { RNCamera } from '@rneui/themed'; // FaceDetector
-
-import { Icon } from '@rneui/themed';
+import {Icon, RNCamera} from '@rneui/themed'; // FaceDetector
 
 import * as actions from '../../actions';
-import { connect } from 'react-redux';
+import {connect} from 'react-redux';
 // import moment from 'moment';
 // import VALUES from '../../utils/Values';
 import {
     checkCameraPermission,
-    checkLocationPermission
+    checkLocationPermission,
 } from '../../utils/permissions';
 
 import DeviceInfo from 'react-native-device-info';
@@ -45,7 +43,7 @@ class CameraScreen extends React.Component {
             errorMessage: '',
             loading: true,
             shutterOpacity: new Animated.Value(0),
-            permissionGranted: false
+            permissionGranted: false,
             // Camera.Constants.Type.back,
         };
 
@@ -64,7 +62,7 @@ class CameraScreen extends React.Component {
             this.checkPermission();
         });
         this.blurListner = this.props.navigation.addListener('blur', () => {
-            this.setState({ loading: true });
+            this.setState({loading: true});
         });
     }
 
@@ -88,14 +86,15 @@ class CameraScreen extends React.Component {
             cameraPermission === 'granted' &&
             locationPermission === 'granted'
         ) {
-            this.setState({ permissionGranted: true });
+            this.setState({permissionGranted: true});
             this.getUserLocation();
         } else {
             this.props.navigation.navigate('PERMISSION', {
-                screen: 'CAMERA_PERMISSION'
+                screen: 'CAMERA_PERMISSION',
             });
         }
     }
+
     /**
      * Get location of user
      * subscribe to location changes
@@ -113,9 +112,10 @@ class CameraScreen extends React.Component {
             //             });
             //     }
             // );
-            this.setState({ loading: false });
+            this.setState({loading: false});
         }
     }
+
     /**
      * Flash a black screen when the user takes a photo
      */
@@ -124,13 +124,13 @@ class CameraScreen extends React.Component {
             Animated.timing(this.state.shutterOpacity, {
                 toValue: 1,
                 duration: 150,
-                useNativeDriver: true
+                useNativeDriver: true,
             }),
             Animated.timing(this.state.shutterOpacity, {
                 toValue: 0,
                 duration: 150,
-                useNativeDriver: true
-            })
+                useNativeDriver: true,
+            }),
         ]).start();
     }
 
@@ -144,7 +144,7 @@ class CameraScreen extends React.Component {
                     style={{
                         flex: 1,
                         justifyContent: 'center',
-                        backgroundColor: 'black'
+                        backgroundColor: 'black',
                     }}>
                     <ActivityIndicator />
                 </View>
@@ -166,7 +166,7 @@ class CameraScreen extends React.Component {
                     ref={ref => {
                         this.camera = ref;
                     }}
-                    style={{ flex: 1 }}
+                    style={{flex: 1}}
                     captureAudio={false}>
                     {/* Bottom Row */}
                     <View style={styles.bottomRow}>
@@ -187,11 +187,11 @@ class CameraScreen extends React.Component {
                                 width: SCREEN_WIDTH,
                                 height: SCREEN_HEIGHT,
                                 backgroundColor: 'black',
-                                opacity: this.state.shutterOpacity
+                                opacity: this.state.shutterOpacity,
                             }}
                         />
                     </View>
-                    <SafeAreaView style={{ flex: 0 }} />
+                    <SafeAreaView style={{flex: 0}} />
                 </RNCamera>
             </>
         );
@@ -235,12 +235,12 @@ class CameraScreen extends React.Component {
                                 const result = await Linking.canOpenURL(iosUrl);
                                 result &&
                                     Linking.openURL(
-                                        'App-Prefs:Privacy&path=LOCATION'
+                                        'App-Prefs:Privacy&path=LOCATION',
                                     );
                             }
-                        }
-                    }
-                ]
+                        },
+                    },
+                ],
             );
         } else if (this.camera) {
             try {
@@ -263,11 +263,11 @@ class CameraScreen extends React.Component {
                                     lat,
                                     lon,
                                     filename,
-                                    date
-                                }
+                                    date,
+                                },
                             ],
                             'CAMERA',
-                            this.props.user.picked_up
+                            this.props.user.picked_up,
                         );
                     })
                     .catch(error => {
@@ -311,14 +311,14 @@ const styles = StyleSheet.create({
         bottom: 0,
         zIndex: 1,
         paddingRight: 20,
-        paddingTop: 20
+        paddingTop: 20,
     },
     bottomRow: {
         backgroundColor: 'transparent',
         marginBottom: 15,
         flex: 1,
         flexDirection: 'row',
-        position: 'relative'
+        position: 'relative',
     },
     cameraButton: {
         backgroundColor: 'transparent',
@@ -328,15 +328,15 @@ const styles = StyleSheet.create({
         right: SCREEN_WIDTH * 0.35,
         justifyContent: 'center',
         alignItems: 'center',
-        zIndex: 1
+        zIndex: 1,
     },
     container: {
-        flex: 1
+        flex: 1,
     },
     paragraph: {
         margin: 24,
         fontSize: 18,
-        textAlign: 'center'
+        textAlign: 'center',
     },
     noPermissionView: {
         flex: 1,
@@ -344,13 +344,13 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         textAlign: 'center',
         padding: '12rem',
-        backgroundColor: 'black'
+        backgroundColor: 'black',
     },
     noPermissionText: {
         color: 'white',
         textAlign: 'center',
-        fontSize: '18rem'
-    }
+        fontSize: '18rem',
+    },
 });
 
 const mapStateToProps = state => {
@@ -361,11 +361,8 @@ const mapStateToProps = state => {
         token: state.auth.token,
         type: state.camera.type,
         user: state.auth.user,
-        zoom: state.camera.zoom
+        zoom: state.camera.zoom,
     };
 };
 
-export default connect(
-    mapStateToProps,
-    actions
-)(CameraScreen);
+export default connect(mapStateToProps, actions)(CameraScreen);

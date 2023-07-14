@@ -1,13 +1,20 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-import { StyleSheet } from 'react-native';
+import {StyleSheet} from 'react-native';
 import StyledText from './StyledText';
-import { ColorType, FontType } from '../theme';
 
-const SubTitle = ({
+interface SubTitleProps {
+    color: any;
+    children: any;
+    dictionary: any;
+    family: any;
+    style: any;
+    values: any;
+}
+
+const SubTitle: React.FC<SubTitleProps> = ({
+    color = 'text',
     family = 'medium',
     style,
-    color = 'text',
     children,
     dictionary,
     values,
@@ -26,19 +33,10 @@ const SubTitle = ({
     );
 };
 
-SubTitle.propTypes = {
-    family: PropTypes.oneOf(FontType),
-    style: PropTypes.any,
-    color: PropTypes.oneOf(ColorType),
-    children: PropTypes.node,
-    dictionary: PropTypes.string,
-    values: PropTypes.object
-};
-
 const styles = StyleSheet.create({
     text: {
-        fontSize: 20
-    }
+        fontSize: 20,
+    },
 });
 
 export default SubTitle;
