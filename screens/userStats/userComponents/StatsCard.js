@@ -1,8 +1,9 @@
 import React from 'react';
-import { StyleSheet, View, Dimensions } from 'react-native';
+import {Dimensions, StyleSheet, View} from 'react-native';
 import PropTypes from 'prop-types';
-import { Title, SubTitle, Colors } from '../../components';
-const { width } = Dimensions.get('window');
+import {Colors, SubTitle, Title} from '../../components';
+
+const {width} = Dimensions.get('window');
 
 const StatsCard = ({
     style,
@@ -12,9 +13,9 @@ const StatsCard = ({
     backgroundColor = Colors.accent
 }) => {
     return (
-        <View style={[styles.container, { backgroundColor }, style]}>
-            <Title style={{ color: fontColor }}>{value}</Title>
-            <SubTitle family="regular" style={{ color: fontColor }}>
+        <View style={[styles.container, {backgroundColor}, style]}>
+            <Title style={{color: fontColor}}>{value}</Title>
+            <SubTitle family="regular" style={{color: fontColor}}>
                 {title}
             </SubTitle>
         </View>

@@ -84,6 +84,6 @@
         "Camera",
         "LocationAccuracy",
         "LocationWhenInUse",
-        "MediaLibrary"
+        "PhotoLibrary"
     ]
 }

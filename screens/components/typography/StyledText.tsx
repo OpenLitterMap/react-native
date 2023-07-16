@@ -9,7 +9,7 @@ interface StyledTextProps {
     color?: keyof typeof Colors;
     children?: React.ReactNode;
     dictionary?: string;
-    values?: Record<string, string>;
+    values?: Record<string, any>;
 }
 
 const StyledText: React.FC<StyledTextProps> = ({
@@ -21,8 +21,9 @@ const StyledText: React.FC<StyledTextProps> = ({
     values,
     ...rest
 }) => {
-    const textColor = Colors[`${color}`];
-    const font = Fonts[`${family}`];
+    const textColor = Colors[color as keyof typeof Colors];
+    const font = Fonts[family as keyof typeof Fonts];
+
     if (dictionary) {
         return (
             <TransText
@@ -41,8 +42,8 @@ const StyledText: React.FC<StyledTextProps> = ({
 
 const styles = StyleSheet.create({
     text: {
-        textAlign: 'left',
-    },
+        textAlign: 'left'
+    }
 });
 
 export default StyledText;

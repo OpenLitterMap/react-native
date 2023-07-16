@@ -1,11 +1,19 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-import { StyleSheet } from 'react-native';
+import {StyleSheet} from 'react-native';
 import StyledText from './StyledText';
-import { ColorType, FontType } from '../theme';
+import {Colors, Fonts} from '../theme';
 
-const Title = ({
-    family = 'semiBold',
+interface BodyProps {
+    family?: keyof typeof Fonts;
+    style?: any;
+    color?: keyof typeof Colors;
+    children?: React.ReactNode;
+    dictionary?: string;
+    values?: object;
+}
+
+const Body: React.FC<BodyProps> = ({
+    family = 'regular',
     style,
     color = 'text',
     children,
@@ -26,19 +34,13 @@ const Title = ({
     );
 };
 
-Title.propTypes = {
-    family: PropTypes.oneOf(FontType),
-    style: PropTypes.any,
-    color: PropTypes.oneOf(ColorType),
-    children: PropTypes.node,
-    dictionary: PropTypes.string,
-    values: PropTypes.object
-};
+Body.propTypes = {};
 
 const styles = StyleSheet.create({
     text: {
-        fontSize: 24
+        fontSize: 16,
+        letterSpacing: 0.5
     }
 });
 
-export default Title;
+export default Body;

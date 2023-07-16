@@ -1,14 +1,27 @@
 import React from 'react';
-import { StyleSheet, View, Dimensions } from 'react-native';
-import PropTypes from 'prop-types';
+import {Dimensions, StyleSheet, View} from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 
 import IconStatsCard from './IconStatsCard';
 
-const { width } = Dimensions.get('window');
+const {width} = Dimensions.get('window');
 
-const StatsGrid = ({ statsData, style }) => {
-    // console.log(statsData);
+interface StatData {
+    title?: string;
+    value?: number;
+    startValue?: number;
+    icon?: string;
+    color?: string;
+    bgColor?: string;
+    ordinal?: boolean;
+}
+
+interface StatsGridProps {
+    statsData: StatData[];
+    style?: object;
+}
+
+const StatsGrid: React.FC<StatsGridProps> = ({statsData, style}) => {
     return (
         <View style={styles.statsContainer}>
             <View style={[styles.statsRow, style]}>
@@ -24,9 +37,9 @@ const StatsGrid = ({ statsData, style }) => {
                                 />
                             )
                         }
-                        value={stat.value}
+                        value={stat?.value ? stat.value : 0}
                         startValue={stat.startValue}
-                        title={stat.title}
+                        title={stat.title ? stat.title : ''}
                         contentCenter
                         backgroundColor={stat.bgColor}
                         fontColor={stat.color}
@@ -37,20 +50,6 @@ const StatsGrid = ({ statsData, style }) => {
             </View>
         </View>
     );
-};
-
-StatsGrid.propTypes = {
-    statsData: PropTypes.arrayOf(
-        PropTypes.shape({
-            title: PropTypes.string.isRequired,
-            value: PropTypes.number.isRequired,
-            startValue: PropTypes.number,
-            icon: PropTypes.string.isRequired,
-            color: PropTypes.string.isRequired,
-            bgColor: PropTypes.string.isRequired,
-            ordinal: PropTypes.bool
-        })
-    )
 };
 
 export default StatsGrid;

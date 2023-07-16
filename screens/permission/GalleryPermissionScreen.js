@@ -70,6 +70,7 @@ class GalleryPermissionScreen extends Component {
      */
     async checkGalleryPermission() {
         const result = await checkCameraRollPermission();
+        console.log({result});
         if (result === 'granted') {
             this.props.navigation.navigate('HOME');
         }
@@ -85,6 +86,7 @@ class GalleryPermissionScreen extends Component {
      */
     async requestGalleryPermission() {
         const result = await requestCameraRollPermission();
+        console.log({result});
         if (result === 'granted') {
             this.props.navigation.navigate('HOME');
         } else {

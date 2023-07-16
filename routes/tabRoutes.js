@@ -12,7 +12,6 @@ const Tab = createMaterialTopTabNavigator();
 const TabRoutes = ({navigation}) => (
     <>
         <Tab.Navigator
-            lazy={true}
             tabBarPosition="bottom"
             initialRouteName="HOME"
             showIcon={true}
@@ -92,6 +91,7 @@ const TabRoutes = ({navigation}) => (
                     margin: 0,
                     padding: 0,
                 },
+                lazy: true,
             })}>
             <Tab.Screen name="HOME" component={HomeScreen} />
             {/*<Tab.Screen*/}

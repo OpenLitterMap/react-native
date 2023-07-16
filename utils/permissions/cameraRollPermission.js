@@ -1,5 +1,5 @@
-import { Platform, PermissionsAndroid } from 'react-native';
-import { check, request, PERMISSIONS } from 'react-native-permissions';
+import {PermissionsAndroid, Platform} from 'react-native';
+import {check, PERMISSIONS, request} from 'react-native-permissions';
 
 export const requestCameraRollPermission = async () => {
     let result;
@@ -10,7 +10,7 @@ export const requestCameraRollPermission = async () => {
     if (Platform.OS === 'android') {
         result = await request(PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE);
         const mediaLocation = await PermissionsAndroid.request(
-            'android.permission.ACCESS_MEDIA_LOCATION'
+            'android.permission.ACCESS_MEDIA_LOCATION',
         );
         if (
             result === 'granted' &&

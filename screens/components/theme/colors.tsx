@@ -7,15 +7,6 @@ export const Colors = {
     error: '#e74c3c',
     warn: '#df8041',
     info: '#1976D2'
-};
+} as const;
 
-export const ColorType = [
-    'accent',
-    'accentLight',
-    'text',
-    'muted',
-    'white',
-    'error',
-    'warn',
-    'info'
-];
+export type ColorType = keyof typeof Colors;

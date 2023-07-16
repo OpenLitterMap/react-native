@@ -1,10 +1,18 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-import { StyleSheet } from 'react-native';
+import {StyleProp, StyleSheet, TextStyle} from 'react-native';
 import StyledText from './StyledText';
-import { ColorType, FontType } from '../theme';
+import {Colors, Fonts} from '../theme';
 
-const Caption = ({
+interface CaptionProps {
+    family?: keyof typeof Fonts;
+    style?: StyleProp<TextStyle>;
+    color?: keyof typeof Colors;
+    children?: React.ReactNode; //  PropTypes.node,
+    dictionary?: string;
+    values?: object;
+}
+
+const Caption: React.FC<CaptionProps> = ({
     family = 'regular',
     style,
     color = 'muted',
@@ -24,15 +32,6 @@ const Caption = ({
             {children}
         </StyledText>
     );
-};
-
-Caption.propTypes = {
-    family: PropTypes.oneOf(FontType),
-    style: PropTypes.any,
-    color: PropTypes.oneOf(ColorType),
-    children: PropTypes.node,
-    dictionary: PropTypes.string,
-    values: PropTypes.object
 };
 
 const styles = StyleSheet.create({

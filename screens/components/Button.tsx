@@ -1,9 +1,19 @@
-import { StyleSheet, ActivityIndicator, Pressable } from 'react-native';
+import {ActivityIndicator, Pressable, StyleSheet} from 'react-native';
 import React from 'react';
-import PropTypes from 'prop-types';
-import { Colors, ColorType } from './theme';
+import {Colors} from './theme';
 
-const Button = ({
+interface ButtonProps {
+    style?: any;
+    color: keyof typeof Colors;
+    children: React.ReactNode;
+    variant?: 'default' | 'outline';
+    buttonColor?: keyof typeof Colors;
+    disabled?: boolean;
+    loading?: boolean;
+    onPress?: () => void; // Added onPress property
+}
+
+const Button: React.FC<ButtonProps> = ({
     style,
     buttonColor = 'accent',
     variant = 'default',
@@ -17,7 +27,7 @@ const Button = ({
 
     const buttonThemeColor = Colors[`${buttonColor}`];
     variant === 'default'
-        ? (variantStyle = { backgroundColor: buttonThemeColor })
+        ? (variantStyle = {backgroundColor: buttonThemeColor})
         : (variantStyle = {
               borderColor: buttonThemeColor,
               borderWidth: 1
@@ -42,13 +52,6 @@ const Button = ({
             )}
         </Pressable>
     );
-};
-
-Button.propTypes = {
-    style: PropTypes.any,
-    color: PropTypes.oneOf(ColorType),
-    children: PropTypes.node,
-    variant: PropTypes.oneOf(['default', 'outline'])
 };
 
 export default Button;
