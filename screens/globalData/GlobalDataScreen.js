@@ -1,23 +1,23 @@
-import React, { Component } from 'react';
+import React, {Component} from 'react';
 import {
-    View,
-    StyleSheet,
-    ScrollView,
     ActivityIndicator,
-    Pressable
+    Pressable,
+    ScrollView,
+    StyleSheet,
+    View
 } from 'react-native';
 // import AsyncStorage from '@react-native-community/async-storage';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
-    Header,
-    Title,
-    Colors,
     AnimatedCircle,
+    Body,
+    Colors,
+    Header,
     StatsGrid,
-    Body
+    Title
 } from '../components';
 import * as actions from '../../actions';
-import { connect } from 'react-redux';
+import {connect} from 'react-redux';
 
 class GlobalDataScreen extends Component {
     constructor(props) {
@@ -130,7 +130,7 @@ class GlobalDataScreen extends Component {
                         alignItems: 'center',
                         paddingHorizontal: 20
                     }}>
-                    <Body style={{ textAlign: 'center' }}>
+                    <Body style={{textAlign: 'center'}}>
                         {statsErrorMessage}
                     </Body>
                     <Pressable
@@ -231,7 +231,4 @@ const mapStateToProps = state => {
     };
 };
 
-export default connect(
-    mapStateToProps,
-    actions
-)(GlobalDataScreen);
+export default connect(mapStateToProps, actions)(GlobalDataScreen);

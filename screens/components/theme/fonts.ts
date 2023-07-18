@@ -1,4 +1,9 @@
-export const Fonts = {
+interface FontStyle {
+    fontWeight?: string;
+    fontFamily: string;
+}
+
+export const Fonts: {[key: string]: FontStyle} = {
     thin: {
         fontFamily: 'Poppins-Thin'
     },
@@ -20,4 +25,10 @@ export const Fonts = {
     }
 };
 
-export const FontType = ['thin', 'light', 'regular', 'medium', 'semiBold'];
+export const FontType: string[] = [
+    'thin',
+    'light',
+    'regular',
+    'medium',
+    'semiBold'
+];

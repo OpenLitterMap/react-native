@@ -72,6 +72,7 @@ const IconStatsCard: React.FC<IconStatsCardProps> = ({
                     end={value}
                     duration={5}
                     formatter={value => value.toLocaleString()}
+                    decimalPlaces={0}
                 />
                 {ordinal &&
                     value !== 0 &&

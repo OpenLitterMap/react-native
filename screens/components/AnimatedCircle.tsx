@@ -165,7 +165,11 @@ const AnimatedCircle: React.FC<AnimatedCircleProps> = ({
                         editable={false}
                         defaultValue="0"
                         style={[
-                            {color: textColor ?? color},
+                            {
+                                color: textColor ?? color,
+                                marginBottom: 10,
+                                fontWeight: '600'
+                            },
                             styles.value,
                             valueStyles
                         ]}
