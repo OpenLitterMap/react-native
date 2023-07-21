@@ -1,33 +1,27 @@
-import React, { Component, createRef } from 'react';
+import React, {Component, createRef} from 'react';
 import {
     ActivityIndicator,
     Alert,
     Dimensions,
     Modal,
-    SectionList,
-    Switch,
-    View,
     Pressable,
+    SectionList,
     StyleSheet,
-    Text
+    Switch,
+    View
 } from 'react-native';
+import {getTranslation} from 'react-native-translation';
 import DeviceInfo from 'react-native-device-info';
-import { getTranslation, TransText } from 'react-native-translation';
 import Icon from 'react-native-vector-icons/Ionicons';
 import * as actions from '../../actions';
-import { connect } from 'react-redux';
+import {connect} from 'react-redux';
 import ActionSheet from 'react-native-actions-sheet';
-// import CountryPicker, {
-//     FlagButton,
-//     Flag
-// } from 'react-native-country-picker-modal';
-import { Body, SubTitle, Title, Header, Colors, Caption } from '../components';
+import CountryPicker, {Flag} from 'react-native-country-picker-modal';
+import {Body, Caption, Colors, Header, SubTitle, Title} from '../components';
+import SettingsComponent from './settingComponents/SettingsComponent';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
-
-import SettingsComponent from './settingComponents/SettingsComponent';
-import { getUntaggedImages } from '../../actions';
 
 class SettingsScreen extends Component {
     constructor(props) {
@@ -47,7 +41,7 @@ class SettingsScreen extends Component {
         const lang = this.props.lang;
 
         return (
-            <View style={{ flex: 1 }}>
+            <View style={{flex: 1}}>
                 <Header
                     leftContent={
                         <Pressable
@@ -65,7 +59,7 @@ class SettingsScreen extends Component {
                             dictionary={`${lang}.settings.settings`}
                         />
                     }
-                    centerContainerStyle={{ flex: 2 }}
+                    centerContainerStyle={{flex: 2}}
                     rightContent={
                         <Pressable onPress={() => this.props.logout()}>
                             <Body
@@ -75,7 +69,7 @@ class SettingsScreen extends Component {
                         </Pressable>
                     }
                 />
-                <View style={{ flex: 1 }}>
+                <View style={{flex: 1}}>
                     <Modal
                         animationType="slide"
                         transparent={true}
@@ -96,7 +90,7 @@ class SettingsScreen extends Component {
                         <SectionList
                             alwaysBounceVertical={false}
                             stickySectionHeadersEnabled={false}
-                            renderSectionHeader={({ section: { title } }) => (
+                            renderSectionHeader={({section: {title}}) => (
                                 <SubTitle
                                     color="muted"
                                     style={styles.sectionHeaderTitle}
@@ -150,8 +144,7 @@ class SettingsScreen extends Component {
                                         {
                                             id: 12,
                                             key: 'enable_admin_tagging',
-                                            title:
-                                                'settings.enable_admin_tagging'
+                                            title: 'settings.enable_admin_tagging'
                                         }
                                     ]
                                 },
@@ -171,26 +164,32 @@ class SettingsScreen extends Component {
                                         {
                                             id: 6,
                                             key: 'name-leaderboard',
-                                            title:
-                                                'settings.show-name-leaderboards'
+                                            title: 'settings.show-name-leaderboards'
                                         },
                                         {
                                             id: 7,
                                             key: 'username-leaderboard',
-                                            title:
-                                                'settings.show-username-leaderboards'
+                                            title: 'settings.show-username-leaderboards'
                                         },
                                         {
                                             id: 8,
                                             key: 'name-createdby',
-                                            title:
-                                                'settings.show-name-createdby'
+                                            title: 'settings.show-name-createdby'
                                         },
                                         {
                                             id: 9,
                                             key: 'username-createdby',
-                                            title:
-                                                'settings.show-username-createdby'
+                                            title: 'settings.show-username-createdby'
+                                        }
+                                    ]
+                                },
+                                {
+                                    title: 'settings.delete-account',
+                                    data: [
+                                        {
+                                            id: 13,
+                                            key: 'delete-account',
+                                            title: 'settings.delete-your-account'
                                         }
                                     ]
                                 }
@@ -205,7 +204,7 @@ class SettingsScreen extends Component {
                                 //     ]
                                 // }
                             ]}
-                            renderItem={({ item, index, section }) => (
+                            renderItem={({item, index, section}) => (
                                 <View style={styles.sectionRow} key={index}>
                                     {this._renderRow(item)}
                                 </View>
@@ -238,7 +237,7 @@ class SettingsScreen extends Component {
                             backgroundColor: 'white',
                             justifyContent: 'center'
                         }}>
-                        <Body style={{ textAlign: 'center' }}>
+                        <Body style={{textAlign: 'center'}}>
                             Do you want to change picked up status of all the
                             images ?
                         </Body>
@@ -285,12 +284,18 @@ class SettingsScreen extends Component {
      * show values else show toggle switch
      */
     _renderRow(item) {
-        const dataKeys = ['name', 'username', 'email', 'social'];
+        const dataKeys = [
+            'name',
+            'username',
+            'email',
+            'social',
+            'delete-account'
+        ];
 
         if (dataKeys.includes(item?.key)) {
             return (
                 <Pressable
-                    style={{ flex: 1, padding: 10 }}
+                    style={{flex: 1, padding: 10}}
                     onPress={() =>
                         this._rowPressed(item.id, item.title, item.key)
                     }>
@@ -300,6 +305,7 @@ class SettingsScreen extends Component {
                             justifyContent: 'space-between'
                         }}>
                         <Body dictionary={`${this.props.lang}.${item.title}`} />
+
                         {/* dont show any data if key is social
                             we dont have any particular data to show now
                         */}
@@ -309,54 +315,53 @@ class SettingsScreen extends Component {
                     </View>
                 </Pressable>
             );
-        }
-        if (item?.key === 'country') {
+        } else if (item?.key === 'country') {
             return (
-                <View style={{ padding: 10, flex: 1 }}>
-                    {/*<CountryPicker*/}
-                    {/*    {...{*/}
-                    {/*        containerButtonStyle: {*/}
-                    {/*            height: 60,*/}
-                    {/*            justifyContent: 'center',*/}
-                    {/*            padding: 10*/}
-                    {/*        },*/}
-                    {/*        countryCode: this.state.countryCode,*/}
-                    {/*        withCountryNameButton: true,*/}
-                    {/*        onSelect: async country => {*/}
-                    {/*            this.setState({ countryCode: country.cca2 });*/}
-                    {/*            this._toggleSwitch(5, 'global_flag');*/}
-                    {/*        },*/}
-                    {/*        withAlphaFilter: true*/}
-                    {/*    }}*/}
-                    {/*    visible={this.state.isCountryPickerVisible}*/}
-                    {/*    onClose={() =>*/}
-                    {/*        this.setState({ isCountryPickerVisible: false })*/}
-                    {/*    }*/}
-                    {/*    // onSelect={country => console.log(country)}*/}
-                    {/*    renderFlagButton={() => {*/}
-                    {/*        return (*/}
-                    {/*            <Pressable*/}
-                    {/*                style={{*/}
-                    {/*                    flexDirection: 'row',*/}
-                    {/*                    justifyContent: 'space-between',*/}
-                    {/*                    alignItems: 'center'*/}
-                    {/*                }}*/}
-                    {/*                onPress={() =>*/}
-                    {/*                    this.setState({*/}
-                    {/*                        isCountryPickerVisible: true*/}
-                    {/*                    })*/}
-                    {/*                }>*/}
-                    {/*                <Body>Select Country</Body>*/}
-                    {/*                {this.state.countryCode && (*/}
-                    {/*                    <Flag*/}
-                    {/*                        flagSize={24}*/}
-                    {/*                        countryCode={this.state.countryCode}*/}
-                    {/*                    />*/}
-                    {/*                )}*/}
-                    {/*            </Pressable>*/}
-                    {/*        );*/}
-                    {/*    }}*/}
-                    {/*/>*/}
+                <View style={{padding: 10, flex: 1}}>
+                    <CountryPicker
+                        {...{
+                            containerButtonStyle: {
+                                height: 60,
+                                justifyContent: 'center',
+                                padding: 10
+                            },
+                            countryCode: this.state.countryCode,
+                            withCountryNameButton: true,
+                            onSelect: async country => {
+                                this.setState({countryCode: country.cca2});
+                                this._toggleSwitch(5, 'global_flag');
+                            },
+                            withAlphaFilter: true
+                        }}
+                        visible={this.state.isCountryPickerVisible}
+                        onClose={() =>
+                            this.setState({isCountryPickerVisible: false})
+                        }
+                        // onSelect={country => console.log(country)}
+                        renderFlagButton={() => {
+                            return (
+                                <Pressable
+                                    style={{
+                                        flexDirection: 'row',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'center'
+                                    }}
+                                    onPress={() =>
+                                        this.setState({
+                                            isCountryPickerVisible: true
+                                        })
+                                    }>
+                                    <Body>Select Country</Body>
+                                    {this.state.countryCode && (
+                                        <Flag
+                                            flagSize={24}
+                                            countryCode={this.state.countryCode}
+                                        />
+                                    )}
+                                </Pressable>
+                            );
+                        }}
+                    />
                 </View>
             );
         } else {
@@ -381,11 +386,19 @@ class SettingsScreen extends Component {
                 return this.props?.user?.username;
             case 'email':
                 return this.props?.user?.email;
+            case 'delete-account':
+                return (
+                    <Icon
+                        name="ios-chevron-forward-outline"
+                        color={Colors.muted}
+                        size={24}
+                    />
+                );
             default:
                 return (
                     <Switch
                         onValueChange={() => this._toggleSwitch(id, key)}
-                        value={this._getSwitchValue(key) === 0 ? false : true}
+                        value={this._getSwitchValue(key) !== 0}
                     />
                 );
         }
@@ -428,7 +441,7 @@ class SettingsScreen extends Component {
                             // Toggle picked_up value
                             // sending opposite of current value to api
                             await this.props.saveSettings(
-                                { id: 11, key: 'picked_up' },
+                                {id: 11, key: 'picked_up'},
                                 !this.props?.user?.picked_up,
                                 this.props.token
                             );
@@ -438,7 +451,7 @@ class SettingsScreen extends Component {
                             // );
                         } else if (key === 'global_flag') {
                             this.props.saveSettings(
-                                { key: 'global_flag' },
+                                {key: 'global_flag'},
                                 this.state.countryCode.toLowerCase(),
                                 this.props.token
                             );
@@ -448,7 +461,7 @@ class SettingsScreen extends Component {
                             }
 
                             this.props.saveSettings(
-                                { key: 'enable_admin_tagging' },
+                                {key: 'enable_admin_tagging'},
                                 !this.props?.user?.enable_admin_tagging,
                                 this.props.token
                             );
@@ -461,14 +474,16 @@ class SettingsScreen extends Component {
                         }
                     }
                 },
-                { text: cancel, onPress: () => console.log('cancel pressed') }
+                {text: cancel, onPress: () => console.log('cancel pressed')}
             ],
-            { cancelable: true }
+            {cancelable: true}
         );
     }
 
     /**
-     * A Row was pressed - open onTextChange
+     * A Row was pressed
+     *
+     * Open modal to show settings options
      */
     _rowPressed(id, title, key = '') {
         this.props.toggleSettingsModal(id, title, key);
@@ -600,7 +615,4 @@ const mapStateToProps = state => {
     };
 };
 
-export default connect(
-    mapStateToProps,
-    actions
-)(SettingsScreen);
+export default connect(mapStateToProps, actions)(SettingsScreen);

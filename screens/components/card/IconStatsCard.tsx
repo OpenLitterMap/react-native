@@ -71,7 +71,7 @@ const IconStatsCard: React.FC<IconStatsCardProps> = ({
                     start={startValue}
                     end={value}
                     duration={5}
-                    formatter={value => value.toLocaleString()}
+                    formatter={val => Math.floor(val).toLocaleString()}
                     decimalPlaces={0}
                 />
                 {ordinal &&
@@ -100,8 +100,5 @@ const styles = StyleSheet.create({
         padding: 10,
         borderRadius: 12,
         margin: 10
-        // width: width / 2 - 30,
-        // height: width / 3
-        // flex: 1
     }
 });

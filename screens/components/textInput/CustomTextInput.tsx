@@ -8,7 +8,7 @@ import {
     TextInput,
     TextStyle,
     View,
-    ViewStyle,
+    ViewStyle
 } from 'react-native';
 import {Colors} from '../theme';
 
@@ -52,14 +52,14 @@ const CustomTextInput: React.ForwardRefRenderFunction<
         rightContent,
         ...rest
     },
-    ref,
+    ref
 ) => {
     return (
         <>
             <View
                 style={[
                     styles.textfieldContainer,
-                    style,
+                    style
                     // touched && error && styles.errorBorder,
                 ]}>
                 {leftContent}
@@ -77,7 +77,7 @@ const CustomTextInput: React.ForwardRefRenderFunction<
                     ref={ref}
                     style={[
                         styles.input,
-                        inputStyle,
+                        inputStyle
                         // touched && error && styles.errorText,
                     ]}
                     placeholder={placeholder}
@@ -112,7 +112,7 @@ const CustomTextInput: React.ForwardRefRenderFunction<
 };
 
 export default React.forwardRef<TextInput, CustomTextInputProps>(
-    CustomTextInput,
+    CustomTextInput
 );
 
 const styles = StyleSheet.create({
@@ -124,10 +124,10 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
         borderRadius: 8,
         borderWidth: 2,
-        borderColor: Colors.white,
+        borderColor: Colors.white
     },
     textfieldIcon: {
-        padding: 10,
+        padding: 10
     },
     input: {
         flex: 1,
@@ -138,24 +138,24 @@ const styles = StyleSheet.create({
         backgroundColor: Colors.white,
         color: Colors.text,
         fontFamily: 'Poppins-Regular',
-        textAlignVertical: 'top',
+        textAlignVertical: 'top'
     },
     errorBorder: {
-        borderColor: Colors.error,
+        borderColor: Colors.error
     },
     errorText: {
-        color: Colors.error,
+        color: Colors.error
     },
     errorMessage: {
         height: 24,
         flexDirection: 'row',
-        justifyContent: 'center',
+        justifyContent: 'center'
     },
     errorContainer: {
         backgroundColor: 'red',
         borderBottomLeftRadius: 12,
         borderBottomRightRadius: 12,
         paddingHorizontal: 12,
-        marginBottom: 4,
-    },
+        marginBottom: 4
+    }
 });

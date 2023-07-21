@@ -19,8 +19,35 @@ import {
 import * as actions from '../../actions';
 import {connect} from 'react-redux';
 
-class GlobalDataScreen extends Component {
-    constructor(props) {
+interface GlobalDataScreenProps {
+    totalLitter: number;
+    totalPhotos: number;
+    totalUsers: number;
+    totalLittercoin: number;
+    litterTarget: any; // Replace 'any' with the type for 'litterTarget'
+    targetPercentage: number;
+    statsErrorMessage: string | null;
+    lang: string;
+    getStats: () => void;
+    navigation: any; // Replace 'any' with the type for 'navigation'
+}
+
+interface GlobalDataScreenState {
+    isFocused: boolean;
+    litterStart: number;
+    photosStart: number;
+    littercoinStart: number;
+    usersStart: number;
+    targetPercentageStart: number;
+}
+
+class GlobalDataScreen extends Component<
+    GlobalDataScreenProps,
+    GlobalDataScreenState
+> {
+    focusListener: (() => void) | null = null;
+
+    constructor(props: GlobalDataScreenProps) {
         super(props);
         // default start value
         this.state = {
@@ -34,7 +61,7 @@ class GlobalDataScreen extends Component {
     }
 
     async componentDidMount() {
-        this.focusListner = this.props.navigation.addListener('focus', () => {
+        this.focusListener = this.props.navigation.addListener('focus', () => {
             // console.log('GLOBAL DATA');
 
             this.setState({
@@ -42,12 +69,14 @@ class GlobalDataScreen extends Component {
             });
         });
 
-        this.getDataFormStorage();
+        await this.getDataFormStorage();
         this.props.getStats();
     }
 
     componentWillUnmount() {
-        this.focusListner();
+        if (this.focusListener) {
+            this.focusListener();
+        }
     }
 
     /**
@@ -218,7 +247,8 @@ const styles = StyleSheet.create({
     }
 });
 
-const mapStateToProps = state => {
+// Should be AppState -> Your actual root state
+const mapStateToProps = (state: any) => {
     return {
         totalLitter: state.stats.totalLitter,
         totalPhotos: state.stats.totalPhotos,

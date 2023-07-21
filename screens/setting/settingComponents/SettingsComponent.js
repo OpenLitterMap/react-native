@@ -1,29 +1,22 @@
-import React, { Component, createRef } from 'react';
+import React, {Component, createRef} from 'react';
 import {
     ActivityIndicator,
     Dimensions,
     Modal,
-    SafeAreaView,
+    Pressable,
+    ScrollView,
+    StyleSheet,
     Text,
     TextInput,
     TouchableHighlight,
-    Pressable,
-    View,
-    StyleSheet,
-    ScrollView
+    View
 } from 'react-native';
-import { Formik } from 'formik';
+import {Formik} from 'formik';
 import * as Yup from 'yup';
-import { getTranslation, TransText } from 'react-native-translation';
-import { Icon as ElementIcon } from '@rneui/base';
-import { connect } from 'react-redux';
-import {
-    Header,
-    SubTitle,
-    Body,
-    Caption,
-    CustomTextInput
-} from '../../components';
+import {getTranslation, TransText} from 'react-native-translation';
+import {Icon as ElementIcon} from '@rneui/base';
+import {connect} from 'react-redux';
+import {Body, CustomTextInput, Header, SubTitle} from '../../components';
 import Icon from 'react-native-vector-icons/Ionicons';
 import * as actions from '../../../actions';
 
@@ -35,10 +28,13 @@ class SettingsComponent extends Component {
         super(props);
         this._getTextInputValue();
         this.formikRef = createRef();
+        this.state = {
+            password: ''
+        };
     }
 
     render() {
-        const { lang, dataToEdit } = this.props;
+        const {lang, dataToEdit} = this.props;
 
         return (
             <>
@@ -53,21 +49,30 @@ class SettingsComponent extends Component {
                         </Pressable>
                     }
                     centerContent={
-                        <SubTitle color="white" style={{ textAlign: 'center' }}>
+                        <SubTitle
+                            color="white"
+                            style={{
+                                textAlign: 'center'
+                            }}>
                             {this._getHeaderName()}
                         </SubTitle>
                     }
                     rightContent={
-                        <Pressable onPress={() => this._saveSettings()}>
-                            <Body
-                                color="white"
-                                dictionary={`${lang}.settings.save`}
-                            />
-                        </Pressable>
+                        dataToEdit.key !== 'delete-account' ? (
+                            <Pressable onPress={() => this._saveSettings()}>
+                                <Body
+                                    color="white"
+                                    dictionary={`${lang}.settings.save`}
+                                />
+                            </Pressable>
+                        ) : (
+                            ''
+                        )
                     }
                 />
 
                 {this.getForm(dataToEdit, lang)}
+
                 <Modal
                     animationType="slide"
                     transparent={true}
@@ -121,9 +126,7 @@ class SettingsComponent extends Component {
                     }) => (
                         <View style={styles.container}>
                             <Body
-                                dictionary={`${lang}.${
-                                    this.props.dataToEdit.title
-                                }`}
+                                dictionary={`${lang}.${this.props.dataToEdit.title}`}
                             />
 
                             <CustomTextInput
@@ -131,7 +134,7 @@ class SettingsComponent extends Component {
                                 // ref={this.usernameRef}
                                 onChangeText={text => {
                                     setFieldValue(`${dataToEdit.key}`, text);
-                                    this.props.updateSettingsProp({ text });
+                                    this.props.updateSettingsProp({text});
                                 }}
                                 value={this.props.settingsEditProp}
                                 name={`${dataToEdit.key}`}
@@ -170,8 +173,8 @@ class SettingsComponent extends Component {
                     initialValues={{
                         twitter: this.props.settingsEditProp?.social_twitter,
                         facebook: this.props.settingsEditProp?.social_facebook,
-                        instagram: this.props.settingsEditProp
-                            ?.social_instagram,
+                        instagram:
+                            this.props.settingsEditProp?.social_instagram,
                         linkedin: this.props.settingsEditProp?.social_linkedin,
                         reddit: this.props.settingsEditProp?.social_reddit,
                         personal: this.props.settingsEditProp?.social_personal
@@ -185,7 +188,7 @@ class SettingsComponent extends Component {
                             this.props.token
                         );
                     }}>
-                    {({ setFieldValue, setFieldTouched, errors, touched }) => (
+                    {({setFieldValue, setFieldTouched, errors, touched}) => (
                         <ScrollView
                             alwaysBounceVertical={false}
                             showsVerticalScrollIndicator={false}
@@ -233,13 +236,54 @@ class SettingsComponent extends Component {
                     )}
                 </Formik>
             );
+        } else if (dataToEdit.key === 'delete-account') {
+            return (
+                <View style={styles.deleteAccountContainer}>
+                    <Text style={styles.deleteAccountTitle}>
+                        Are you sure you want to delete your account?
+                    </Text>
+                    <Text style={styles.deleteAccountSubtitle}>
+                        All of your data will be deleted.
+                    </Text>
+                    <Text style={styles.deleteAccountSubtitle}>
+                        This cannot be undone.
+                    </Text>
+
+                    <TextInput
+                        placeholder="Please enter your password"
+                        placeholderTextColor="grey"
+                        style={{
+                            height: 40,
+                            borderColor: 'gray',
+                            borderWidth: 1,
+                            paddingHorizontal: 8
+                        }}
+                        onChangeText={this.changeTextHandler}
+                        value={this.state.password}
+                        secureTextEntry={true}
+                    />
+
+                    <Pressable
+                        style={styles.deleteAccountButton}
+                        onPress={this.submitDeleteAccount}>
+                        <Text style={styles.deleteButtonText}>
+                            Delete account
+                        </Text>
+                    </Pressable>
+                </View>
+            );
         }
+    };
+
+    changeTextHandler = txt => {
+        this.setState({
+            password: txt
+        });
     };
 
     /**
      * Fn to return Validation schema
      */
-
     getSchema = key => {
         /**
          * Form field validation with keys for translation
@@ -260,9 +304,7 @@ class SettingsComponent extends Component {
         };
 
         const EmailSchema = {
-            email: Yup.string()
-                .email('email-not-valid')
-                .required('enter-email')
+            email: Yup.string().email('email-not-valid').required('enter-email')
         };
 
         const SocialSchema = {
@@ -285,6 +327,7 @@ class SettingsComponent extends Component {
                 return SocialSchema;
         }
     };
+
     /**
      * render modal messages based on vale of updateSettingsStatusMessage
      * ERROR || SUCCESS
@@ -351,6 +394,10 @@ class SettingsComponent extends Component {
             `${this.props.lang}.${this.props.dataToEdit.title}`
         );
 
+        if (this.props.dataToEdit.key === 'delete-account') {
+            return getTranslation(`${this.props.lang}.settings.warning`);
+        }
+
         const edit = getTranslation(`${this.props.lang}.settings.edit`);
 
         return edit + ' ' + text;
@@ -397,6 +444,13 @@ class SettingsComponent extends Component {
                 );
         }
     }
+
+    /**
+     *
+     */
+    submitDeleteAccount = () => {
+        console.log('test delete account', this.state.password);
+    };
 }
 
 const styles = StyleSheet.create({
@@ -417,6 +471,30 @@ const styles = StyleSheet.create({
         paddingLeft: 10,
         height: 48,
         maxHeight: 48
+    },
+    deleteAccountButton: {
+        height: SCREEN_HEIGHT * 0.05,
+        width: SCREEN_WIDTH * 0.8,
+        marginTop: 20,
+        backgroundColor: 'red',
+        paddingVertical: 10,
+        paddingHorizontal: 20,
+        borderRadius: 8
+    },
+    deleteButtonText: {
+        color: 'white',
+        fontSize: SCREEN_HEIGHT * 0.02
+    },
+    deleteAccountContainer: {
+        padding: SCREEN_WIDTH * 0.1
+    },
+    deleteAccountTitle: {
+        fontSize: SCREEN_HEIGHT * 0.045,
+        marginBottom: SCREEN_HEIGHT * 0.025
+    },
+    deleteAccountSubtitle: {
+        fontSize: SCREEN_HEIGHT * 0.035,
+        marginBottom: SCREEN_HEIGHT * 0.025
     },
     row: {
         alignItems: 'center',
@@ -477,7 +555,4 @@ const mapStateToProps = state => {
     };
 };
 
-export default connect(
-    mapStateToProps,
-    actions
-)(SettingsComponent);
+export default connect(mapStateToProps, actions)(SettingsComponent);

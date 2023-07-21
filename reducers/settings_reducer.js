@@ -1,4 +1,4 @@
-import { produce } from 'immer';
+import {produce} from 'immer';
 import {
     CLOSE_SECOND_SETTING_MODAL,
     SET_MODEL,
@@ -22,7 +22,7 @@ const INITIAL_STATE = {
     updatingSettings: false
 };
 
-export default function(state = INITIAL_STATE, action) {
+export default function (state = INITIAL_STATE, action) {
     return produce(state, draft => {
         switch (action.type) {
             case CLOSE_SECOND_SETTING_MODAL:
@@ -34,9 +34,7 @@ export default function(state = INITIAL_STATE, action) {
 
             /**
              * sets current device modal
-             *
              */
-
             case SET_MODEL:
                 draft.model = action.payload;
 
@@ -48,7 +46,6 @@ export default function(state = INITIAL_STATE, action) {
              * when user selects a field to edit current value of that field is set in settingsEditProp
              * to be used as initial value in textfield in edit modal
              */
-
             case SETTINGS_INIT:
                 draft.settingsEditProp = action.payload;
 
@@ -59,10 +56,9 @@ export default function(state = INITIAL_STATE, action) {
              * 'SUCCESS'/'ERROR'
              *
              * Used to render Success/Error modal based on the value --> 'SUCCESS'/'ERROR'
+             *
+             * TODO: use better name than updateSettingsStatusMessage
              */
-
-            // TODO: use better name than updateSettingsStatusMessage
-
             case SETTINGS_UPDATE_STATUS_MESSAGE:
                 draft.updateSettingsStatusMessage = action.payload;
 
@@ -71,7 +67,6 @@ export default function(state = INITIAL_STATE, action) {
             /**
              * There is a second modal in a modal to wait for POST request to complete
              */
-
             case START_UPDATING_SETTINGS:
                 draft.secondSettingsModalVisible = true;
                 draft.updatingSettings = true;
@@ -81,7 +76,6 @@ export default function(state = INITIAL_STATE, action) {
             /**
              * Change name / username / email component is inside a modal
              */
-
             case TOGGLE_SETTINGS_MODAL:
                 draft.settingsModalVisible = !draft.settingsModalVisible;
                 draft.settingsEdit = !draft.settingsEdit;
@@ -92,7 +86,6 @@ export default function(state = INITIAL_STATE, action) {
             /**
              * Toggle ActivityIndicator when changing Switch value
              */
-
             case TOGGLE_SETTINGS_WAIT:
                 draft.wait = !draft.wait;
                 draft.settingsModalVisible = !draft.settingsModalVisible;
@@ -102,7 +95,6 @@ export default function(state = INITIAL_STATE, action) {
             /**
              * User wants to change text in SettingsComponent
              */
-
             case UPDATE_SETTINGS_PROP:
                 draft.settingsEditProp = action.payload;
 
@@ -111,7 +103,6 @@ export default function(state = INITIAL_STATE, action) {
             /**
              * Default
              */
-
             default:
                 return draft;
         }

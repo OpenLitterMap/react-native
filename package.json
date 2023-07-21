@@ -32,6 +32,7 @@
         "react-native": "0.72.3",
         "react-native-actions-sheet": "^0.9.0-alpha.21",
         "react-native-config": "^1.5.1",
+        "react-native-country-picker-modal": "^2.0.0",
         "react-native-device-info": "^10.8.0",
         "react-native-gesture-handler": "^2.12.0",
         "react-native-linear-gradient": "^2.7.3",

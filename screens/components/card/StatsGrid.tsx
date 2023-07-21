@@ -32,7 +32,7 @@ const StatsGrid: React.FC<StatsGridProps> = ({statsData, style}) => {
                             stat.icon && (
                                 <Icon
                                     name={stat.icon}
-                                    size={28}
+                                    size={24}
                                     color={stat.color}
                                 />
                             )

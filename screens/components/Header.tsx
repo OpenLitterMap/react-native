@@ -1,17 +1,26 @@
-import React from 'react';
+import React, {ReactElement} from 'react';
 import {
-    StyleSheet,
-    Text,
-    View,
-    StatusBar,
-    SafeAreaView,
     Platform,
-    Dimensions
+    SafeAreaView,
+    StatusBar,
+    StyleSheet,
+    View
 } from 'react-native';
-import PropTypes from 'prop-types';
-import { Colors } from './theme';
-const { height: SCREEN_HEIGHT } = Dimensions.get('window');
-const Header = ({
+import {Colors} from './theme';
+
+// const {height: SCREEN_HEIGHT} = Dimensions.get('window');
+
+interface HeaderProps {
+    leftContent?: ReactElement;
+    rightContent?: ReactElement;
+    centerContent?: ReactElement;
+    containerStyle?: React.CSSProperties | React.CSSProperties[];
+    leftContainerStyle?: React.CSSProperties | React.CSSProperties[];
+    rightContainerStyle?: React.CSSProperties | React.CSSProperties[];
+    centerContainerStyle?: React.CSSProperties | React.CSSProperties[];
+}
+
+const Header: React.FC<HeaderProps> = ({
     leftContent,
     centerContent,
     rightContent,
@@ -34,7 +43,7 @@ const Header = ({
                 <View style={[styles.headerContainer, containerStyle]}>
                     {/* left icon */}
                     {leftContent && (
-                        <View style={[{ flex: 1 }, leftContainerStyle]}>
+                        <View style={[{flex: 1}, leftContainerStyle]}>
                             {leftContent}
                         </View>
                     )}
@@ -43,7 +52,7 @@ const Header = ({
                     {centerContent && (
                         <View
                             style={[
-                                { flex: 1, alignItems: 'center' },
+                                {flex: 1, alignItems: 'center'},
                                 centerContainerStyle
                             ]}>
                             {centerContent}
@@ -66,25 +75,6 @@ const Header = ({
             </SafeAreaView>
         </>
     );
-};
-
-Header.propTypes = {
-    leftContent: PropTypes.element,
-    rightContent: PropTypes.element,
-    centerContent: PropTypes.element,
-    containerStyle: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
-    leftContainerStyle: PropTypes.oneOfType([
-        PropTypes.object,
-        PropTypes.array
-    ]),
-    rightContainerStyle: PropTypes.oneOfType([
-        PropTypes.object,
-        PropTypes.array
-    ]),
-    centerContainerStyle: PropTypes.oneOfType([
-        PropTypes.object,
-        PropTypes.array
-    ])
 };
 
 export default Header;

@@ -1,16 +1,14 @@
 import React from 'react';
 import {
     CLOSE_SECOND_SETTING_MODAL,
-    SETTINGS_INIT,
     SET_MODEL,
+    SETTINGS_INIT,
     SETTINGS_UPDATE_STATUS_MESSAGE,
     START_UPDATING_SETTINGS,
     TOGGLE_SETTINGS_MODAL,
     TOGGLE_SETTINGS_WAIT,
     UPDATE_SETTINGS_PROP,
     UPDATE_USER_OBJECT,
-    URL_DEV,
-    URL_PRODUCTION,
     URL
 } from './types';
 // import AsyncStorage from '@react-native-community/async-storage';
@@ -207,13 +205,14 @@ export const saveSocialAccounts = (data, value, token) => {
         }
     };
 };
+
 /**
  * Toggle the modal and turn one of these options for updating
  */
 export const toggleSettingsModal = (id, title, key) => {
     return {
         type: TOGGLE_SETTINGS_MODAL,
-        payload: { id, title, key }
+        payload: {id, title, key}
     };
 };
 
@@ -225,13 +224,27 @@ export const toggleSettingsModal = (id, title, key) => {
 export const toggleSettingsSwitch = (id, token) => {
     let endUrl = '';
 
-    if (id === 4) endUrl = 'maps/name';
-    if (id === 5) endUrl = 'maps/username';
-    if (id === 6) endUrl = 'leaderboard/name';
-    if (id === 7) endUrl = 'leaderboard/username';
-    if (id === 8) endUrl = 'createdby/name';
-    if (id === 9) endUrl = 'createdby/username';
-    if (id === 10) endUrl = 'toggle-previous-tags';
+    if (id === 4) {
+        endUrl = 'maps/name';
+    }
+    if (id === 5) {
+        endUrl = 'maps/username';
+    }
+    if (id === 6) {
+        endUrl = 'leaderboard/name';
+    }
+    if (id === 7) {
+        endUrl = 'leaderboard/username';
+    }
+    if (id === 8) {
+        endUrl = 'createdby/name';
+    }
+    if (id === 9) {
+        endUrl = 'createdby/username';
+    }
+    if (id === 10) {
+        endUrl = 'toggle-previous-tags';
+    }
 
     return async dispatch => {
         dispatch({
