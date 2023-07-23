@@ -1,9 +1,10 @@
-import React, { Component } from 'react';
-import { Pressable, StyleSheet, Animated, View, Easing } from 'react-native';
+import React, {Component} from 'react';
+import {Animated, Easing, Pressable, StyleSheet, View} from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { Colors, SubTitle } from '../../components';
+import {Colors, SubTitle} from '../../components';
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+
 class TagsActionButton extends Component {
     state = {
         animation: new Animated.Value(0),
@@ -36,7 +37,7 @@ class TagsActionButton extends Component {
             duration: 500,
             useNativeDriver: true,
             easing: Easing.elastic(1)
-        }).start(() => this.setState({ isClosed: false }));
+        }).start(() => this.setState({isClosed: false}));
     };
 
     returnAnimation = () => {
@@ -59,7 +60,7 @@ class TagsActionButton extends Component {
             duration: 500,
             useNativeDriver: true,
             easing: Easing.elastic(1)
-        }).start(() => this.setState({ isClosed: true }));
+        }).start(() => this.setState({isClosed: true}));
     };
 
     showButtons = () => {
@@ -69,17 +70,17 @@ class TagsActionButton extends Component {
 
     render() {
         const animatedStyle = {
-            transform: [{ translateY: this.state.animation }]
+            transform: [{translateY: this.state.animation}]
         };
         const diagonalAnimatedStyle = {
             transform: [
-                { translateY: this.state.diagonalAnimation },
-                { translateX: this.state.diagonalAnimation }
+                {translateY: this.state.diagonalAnimation},
+                {translateX: this.state.diagonalAnimation}
             ]
         };
 
         const animatedXStyle = {
-            transform: [{ translateX: this.state.animation }]
+            transform: [{translateX: this.state.animation}]
         };
 
         const interpolate = this.state.mainButtonAnimation.interpolate({

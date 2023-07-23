@@ -1,13 +1,13 @@
-import React, { Component } from 'react';
-import { View, StyleSheet, Pressable, ActivityIndicator } from 'react-native';
-import { Formik } from 'formik';
+import React, {Component} from 'react';
+import {ActivityIndicator, Pressable, StyleSheet, View} from 'react-native';
+import {Formik} from 'formik';
 import * as Yup from 'yup';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { connect } from 'react-redux';
-import { getTranslation } from 'react-native-translation';
-import { createAccount } from '../../../actions';
+import {connect} from 'react-redux';
+import {getTranslation} from 'react-native-translation';
+import {createAccount} from '../../../actions';
 
-import { Colors, SubTitle, CustomTextInput } from '../../components';
+import {Colors, CustomTextInput, SubTitle} from '../../components';
 import StatusMessage from './StatusMessage';
 
 /**
@@ -19,9 +19,7 @@ const SignupSchema = Yup.object().shape({
         .min(3, 'username-min-max')
         .max(20, 'username-min-max')
         .required('enter-username'),
-    email: Yup.string()
-        .email('email-not-valid')
-        .required('enter-email'),
+    email: Yup.string().email('email-not-valid').required('enter-email'),
     password: Yup.string()
         .required('enter-password')
         .matches(/^(?=.*[A-Z])(?=.*[0-9]).{6,}$/, 'must-contain')
@@ -40,7 +38,7 @@ class SignupForm extends Component {
 
     render() {
         // translation text
-        const { lang, isSubmitting, serverStatusText } = this.props;
+        const {lang, isSubmitting, serverStatusText} = this.props;
 
         const emailTranslation = getTranslation(`${lang}.auth.email-address`);
         const passwordTranslation = getTranslation(`${lang}.auth.password`);
@@ -49,9 +47,9 @@ class SignupForm extends Component {
         );
         return (
             <Formik
-                initialValues={{ email: '', password: '', username: '' }}
+                initialValues={{email: '', password: '', username: ''}}
                 validationSchema={SignupSchema}
-                onSubmit={({ email, password, username }) => {
+                onSubmit={({email, password, username}) => {
                     this.props.createAccount({
                         email: email,
                         username: username,
@@ -66,7 +64,7 @@ class SignupForm extends Component {
                     errors,
                     touched
                 }) => (
-                    <View style={{ flex: 1, justifyContent: 'center' }}>
+                    <View style={{flex: 1, justifyContent: 'center'}}>
                         {/* username input */}
 
                         <CustomTextInput
@@ -74,6 +72,7 @@ class SignupForm extends Component {
                             onSubmitEditing={() =>
                                 this.emailRef.current.focus()
                             }
+                            style={{marginBottom: 10}}
                             onChangeText={handleChange('username')}
                             value={values.username}
                             name="username"
@@ -90,6 +89,7 @@ class SignupForm extends Component {
                         {/* email input */}
                         <CustomTextInput
                             ref={this.emailRef}
+                            style={{marginBottom: 10}}
                             onSubmitEditing={() =>
                                 this.passwordRef.current.focus()
                             }
@@ -133,7 +133,8 @@ class SignupForm extends Component {
                                 <Pressable
                                     onPress={() =>
                                         this.setState(prevState => ({
-                                            isPasswordVisible: !prevState.isPasswordVisible
+                                            isPasswordVisible:
+                                                !prevState.isPasswordVisible
                                         }))
                                     }>
                                     <Icon
@@ -163,9 +164,7 @@ class SignupForm extends Component {
                             ) : (
                                 <SubTitle
                                     color="accentLight"
-                                    dictionary={`${
-                                        this.props.lang
-                                    }.auth.create-account`}>
+                                    dictionary={`${this.props.lang}.auth.create-account`}>
                                     Create Account
                                 </SubTitle>
                             )}
@@ -206,7 +205,4 @@ const mapStateToProps = state => {
 };
 
 // bind all action creators to AuthScreen
-export default connect(
-    mapStateToProps,
-    { createAccount }
-)(SignupForm);
+export default connect(mapStateToProps, {createAccount})(SignupForm);

@@ -13,6 +13,7 @@ import {
 import {Colors} from '../theme';
 
 interface CustomTextInputProps {
+    autoCorrect?: boolean;
     label?: string;
     defaultValue?: string;
     inputStyle?: TextStyle;
@@ -28,6 +29,7 @@ interface CustomTextInputProps {
     rightIconName?: string;
     rightContent?: React.ReactElement;
     leftContent?: React.ReactElement;
+    placeholderTextColor?: any; // type pf Color
 }
 
 const CustomTextInput: React.ForwardRefRenderFunction<
@@ -89,7 +91,7 @@ const CustomTextInput: React.ForwardRefRenderFunction<
                     autoComplete="off"
                     textContentType="none"
                     underlineColorAndroid="transparent"
-                    // name={name}
+                    name={name}
                 />
                 {rightContent}
                 {rightIconName && (
@@ -148,7 +150,7 @@ const styles = StyleSheet.create({
         color: Colors.error
     },
     errorMessage: {
-        height: 24,
+        height: 0,
         flexDirection: 'row',
         justifyContent: 'center'
     },

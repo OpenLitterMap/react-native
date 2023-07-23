@@ -1,8 +1,8 @@
-import React, { Component } from 'react';
-import { StyleSheet, ScrollView, View, Dimensions } from 'react-native';
-import { Colors, Body, Caption } from '../../components';
+import React from 'react';
+import {Dimensions, ScrollView, StyleSheet, View} from 'react-native';
+import {Body, Caption, Colors} from '../../components';
 
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} = Dimensions.get('window');
 
 /**
  * Card component to show added tags on image when AddTags screen is opened
@@ -12,13 +12,26 @@ const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
  * @param {String} lang --> Selected Global Language
  */
 
-const LitterTagsCard = ({ tags, customTags, lang }) => {
+interface LitterTagsCardProps {
+    tags: {
+        [category: string]: {[tag: string]: number};
+    };
+    customTags: string[];
+    lang: string;
+}
+
+const LitterTagsCard: React.FC<LitterTagsCardProps> = ({
+    tags,
+    customTags,
+    lang
+}) => {
     const isTagged =
         (customTags && customTags.length > 0) ||
         (tags && Object.keys(tags)?.length !== 0);
+
     return (
         <>
-            {/* Only show if atleast one tag or one custom tag is present */}
+            {/* Only show if at least one tag or one custom tag is present */}
             {isTagged && (
                 <View style={[styles.card]}>
                     <Caption>Tags</Caption>
@@ -26,7 +39,7 @@ const LitterTagsCard = ({ tags, customTags, lang }) => {
                     <ScrollView
                         showsVerticalScrollIndicator={false}
                         alwaysBounceVertical={false}
-                        style={{ marginTop: 8 }}>
+                        style={{marginTop: 8}}>
                         {customTags && (
                             <RenderCustomTags customTags={customTags} />
                         )}
@@ -54,7 +67,12 @@ const LitterTagsCard = ({ tags, customTags, lang }) => {
  * @param {String} lang --> Selected Global Language
  */
 
-const RenderTags = ({ tags, lang }) => {
+interface RenderTagsProps {
+    tags: LitterTagsCardProps['tags'];
+    lang: string;
+}
+
+const RenderTags: React.FC<RenderTagsProps> = ({tags, lang}) => {
     return (
         <>
             {Object?.keys(tags)?.map(category => {
@@ -94,7 +112,12 @@ const RenderTags = ({ tags, lang }) => {
  * component to render custom tags
  * @param {Array<string>} customTags
  */
-const RenderCustomTags = ({ customTags }) => {
+
+interface RenderCustomTagsProps {
+    customTags: string[];
+}
+
+const RenderCustomTags: React.FC<RenderCustomTagsProps> = ({customTags}) => {
     return (
         <>
             <View>
@@ -124,7 +147,7 @@ const styles = StyleSheet.create({
         backgroundColor: Colors.white,
         width: SCREEN_WIDTH - 40,
         borderRadius: 12,
-        padding: 20,
+        padding: 15,
         maxHeight: SCREEN_HEIGHT / 2
     },
     tagBadges: {

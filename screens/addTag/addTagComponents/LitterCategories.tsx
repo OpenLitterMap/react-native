@@ -1,23 +1,46 @@
-import React, { PureComponent } from 'react';
-import { Image, FlatList, StyleSheet, View, Pressable } from 'react-native';
+import React, {PureComponent} from 'react';
+import {
+    Dimensions,
+    FlatList,
+    Image,
+    Pressable,
+    StyleSheet,
+    View
+} from 'react-native';
 import * as actions from '../../../actions';
-import { connect } from 'react-redux';
-import { Body, Colors } from '../../components';
+import {connect} from 'react-redux';
+import {Body, Colors} from '../../components';
 
-class LitterCategories extends PureComponent {
+const SCREEN_HEIGHT = Dimensions.get('window').height;
+const SCREEN_WIDTH = Dimensions.get('window').width;
+
+interface Category {
+    id: string;
+    title: string;
+    path: any; // Replace 'any' with the type of 'category.path'
+}
+
+interface Props {
+    categories: Category[];
+    category: Category;
+    lang: string;
+    changeCategory: (id: string) => void;
+}
+
+class LitterCategories extends PureComponent<Props> {
     /**
      * Change Category
      *
      * litter_actions, litter_reducer
      */
-    changeCategory(id) {
+    changeCategory(id: string) {
         this.props.changeCategory(id);
     }
 
     /**
      * Each category to display
      */
-    renderCategory(category) {
+    renderCategory(category: Category) {
         return (
             <Pressable
                 onPress={this.changeCategory.bind(this, category.title)}
@@ -35,9 +58,7 @@ class LitterCategories extends PureComponent {
                                 ? 'text'
                                 : 'muted'
                         }
-                        dictionary={`${this.props.lang}.litter.categories.${
-                            category.title
-                        }`}
+                        dictionary={`${this.props.lang}.litter.categories.${category.title}`}
                     />
                 </View>
             </Pressable>
@@ -49,13 +70,13 @@ class LitterCategories extends PureComponent {
      */
     render() {
         return (
-            <View style={{ marginVertical: 20 }}>
+            <View style={{marginVertical: 20}}>
                 <FlatList
-                    contentContainerStyle={{ paddingHorizontal: 10 }}
+                    contentContainerStyle={{paddingHorizontal: 10}}
                     showsHorizontalScrollIndicator={false}
                     data={this.props.categories}
                     horizontal={true}
-                    renderItem={({ item }) => this.renderCategory(item)}
+                    renderItem={({item}) => this.renderCategory(item)}
                     keyExtractor={category => category.title}
                     keyboardShouldPersistTaps="handled"
                 />
@@ -66,8 +87,8 @@ class LitterCategories extends PureComponent {
 
 const styles = StyleSheet.create({
     card: {
-        height: 100,
-        minWidth: 100,
+        height: SCREEN_HEIGHT * 0.1,
+        minWidth: SCREEN_WIDTH * 0.2,
         justifyContent: 'center',
         alignItems: 'center',
         marginHorizontal: 10,
@@ -86,7 +107,6 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         borderRadius: 6
     },
-
     image: {
         borderRadius: 6,
         height: 30,
@@ -95,7 +115,4 @@ const styles = StyleSheet.create({
     }
 });
 
-export default connect(
-    null,
-    actions
-)(LitterCategories);
+export default connect(null, actions)(LitterCategories);

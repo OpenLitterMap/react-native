@@ -1,4 +1,4 @@
-import React, { Component, createRef } from 'react';
+import React, {Component, createRef} from 'react';
 import {
     Dimensions,
     Pressable,
@@ -6,11 +6,10 @@ import {
     StyleSheet,
     View
 } from 'react-native';
-import { connect } from 'react-redux';
+import {connect} from 'react-redux';
 import * as actions from '../../../actions';
-import { Body, Caption, Colors } from '../../components';
+import {Body, Caption, Colors} from '../../components';
 
-const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
 // Tags not being deleted when using PureComponent
@@ -37,15 +36,11 @@ class LitterTags extends Component {
                             onLayout={event => this.scrollTo(event)}>
                             <View style={styles.card}>
                                 <Caption
-                                    dictionary={`${
-                                        this.props.lang
-                                    }.litter.categories.${category}`}
+                                    dictionary={`${this.props.lang}.litter.categories.${category}`}
                                 />
-                                <View style={{ flexDirection: 'row' }}>
+                                <View style={{flexDirection: 'row'}}>
                                     <Body
-                                        dictionary={`${
-                                            this.props.lang
-                                        }.litter.${category}.${tag}`}
+                                        dictionary={`${this.props.lang}.litter.${category}.${tag}`}
                                     />
                                     <Body>&nbsp; ({value})</Body>
                                 </View>
@@ -123,7 +118,10 @@ class LitterTags extends Component {
                     width: SCREEN_WIDTH
                 }}>
                 <ScrollView
-                    contentContainerStyle={{ padding: 10 }}
+                    contentContainerStyle={{
+                        paddingLeft: 20,
+                        marginBottom: 10
+                    }}
                     ref={this.scrollRef}
                     bounces={false}
                     horizontal={true}
@@ -141,7 +139,7 @@ const styles = StyleSheet.create({
         backgroundColor: 'white',
         borderWidth: 1,
         padding: 10,
-        margin: 10,
+        marginRight: 10,
         borderRadius: 12,
         borderColor: Colors.muted
     }
@@ -153,7 +151,4 @@ const mapStateToProps = state => {
         items: state.litter.items
     };
 };
-export default connect(
-    mapStateToProps,
-    actions
-)(LitterTags);
+export default connect(mapStateToProps, actions)(LitterTags);

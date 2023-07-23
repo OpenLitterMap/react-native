@@ -1,18 +1,12 @@
-import React, { Component } from 'react';
-import { View, StyleSheet, Pressable, ActivityIndicator } from 'react-native';
-import { Formik } from 'formik';
+import React, {Component} from 'react';
+import {ActivityIndicator, Pressable, StyleSheet, View} from 'react-native';
+import {Formik} from 'formik';
 import * as Yup from 'yup';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { connect } from 'react-redux';
-import { getTranslation } from 'react-native-translation';
-import { userLogin } from '../../../actions';
-import {
-    Body,
-    Caption,
-    Colors,
-    SubTitle,
-    CustomTextInput
-} from '../../components';
+import {connect} from 'react-redux';
+import {getTranslation} from 'react-native-translation';
+import {userLogin} from '../../../actions';
+import {Body, Colors, CustomTextInput, SubTitle} from '../../components';
 import StatusMessage from './StatusMessage';
 
 /**
@@ -20,9 +14,7 @@ import StatusMessage from './StatusMessage';
  * using Yup for validation
  */
 const SigninSchema = Yup.object().shape({
-    email: Yup.string()
-        .email('email-not-valid')
-        .required('enter-email'),
+    email: Yup.string().email('email-not-valid').required('enter-email'),
     password: Yup.string().required('enter-password')
 });
 
@@ -39,16 +31,16 @@ class SigninForm extends Component {
 
     render() {
         // translation text
-        const { lang, serverStatusText, isSubmitting } = this.props;
+        const {lang, serverStatusText, isSubmitting} = this.props;
 
         const emailTranslation = getTranslation(`${lang}.auth.email-address`);
         const passwordTranslation = getTranslation(`${lang}.auth.password`);
 
         return (
             <Formik
-                initialValues={{ email: '', password: '' }}
+                initialValues={{email: '', password: ''}}
                 validationSchema={SigninSchema}
-                onSubmit={({ email, password }) => {
+                onSubmit={({email, password}) => {
                     this.props.userLogin({
                         email,
                         password
@@ -63,10 +55,11 @@ class SigninForm extends Component {
                     errors,
                     touched
                 }) => (
-                    <View style={{ flex: 1, justifyContent: 'center' }}>
+                    <View style={{flex: 1, justifyContent: 'center'}}>
                         {/* email input */}
                         <CustomTextInput
                             ref={this.emailRef}
+                            style={{marginBottom: 10}}
                             onSubmitEditing={() =>
                                 this.passwordRef.current.focus()
                             }
@@ -94,6 +87,7 @@ class SigninForm extends Component {
                         <CustomTextInput
                             ref={this.passwordRef}
                             onChangeText={handleChange('password')}
+                            style={{marginBottom: 10}}
                             value={values.password}
                             name="password"
                             error={
@@ -110,7 +104,8 @@ class SigninForm extends Component {
                                 <Pressable
                                     onPress={() =>
                                         this.setState(prevState => ({
-                                            isPasswordVisible: !prevState.isPasswordVisible
+                                            isPasswordVisible:
+                                                !prevState.isPasswordVisible
                                         }))
                                     }>
                                     <Icon
@@ -127,7 +122,7 @@ class SigninForm extends Component {
                             }
                         />
                         <Pressable
-                            style={{ alignItems: 'flex-end' }}
+                            style={{alignItems: 'flex-end'}}
                             onPress={() => this.props.changeFormType('reset')}>
                             <Body
                                 color="white"
@@ -151,9 +146,7 @@ class SigninForm extends Component {
                             ) : (
                                 <SubTitle
                                     color="accentLight"
-                                    dictionary={`${
-                                        this.props.lang
-                                    }.auth.login`}>
+                                    dictionary={`${this.props.lang}.auth.login`}>
                                     Create Account
                                 </SubTitle>
                             )}
@@ -194,7 +187,4 @@ const mapStateToProps = state => {
 };
 
 // bind all action creators to AuthScreen
-export default connect(
-    mapStateToProps,
-    { userLogin }
-)(SigninForm);
+export default connect(mapStateToProps, {userLogin})(SigninForm);

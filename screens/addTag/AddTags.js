@@ -1,39 +1,40 @@
-import React, { Component, createRef } from 'react';
+import React, {Component, createRef} from 'react';
 import {
+    Animated,
     Dimensions,
+    Easing,
     Keyboard,
     Platform,
+    Pressable,
     StatusBar,
-    TouchableOpacity,
-    View,
-    Animated,
-    Easing,
     StyleSheet,
-    Pressable
+    TouchableOpacity,
+    View
 } from 'react-native';
 import Swiper from 'react-native-swiper';
-import { StackActions } from '@react-navigation/native';
-import { connect } from 'react-redux';
+import {StackActions} from '@react-navigation/native';
+import {connect} from 'react-redux';
 import LottieView from 'lottie-react-native';
 import ActionSheet from 'react-native-actions-sheet';
 import * as actions from '../../actions';
 import CATEGORIES from '../../assets/data/categories';
 import {
+    LitterBottomSearch,
     LitterCategories,
     LitterImage,
     LitterPickerWheels,
     LitterTags,
-    LitterBottomSearch,
-    TagsActionButton,
-    LitterTagsCard
+    LitterTagsCard,
+    TagsActionButton
 } from './addTagComponents';
-import { SubTitle, Colors, Body, Caption } from '../components';
+import {Body, Caption, Colors, SubTitle} from '../components';
+import Icon from 'react-native-vector-icons/Ionicons';
+
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 
-import Icon from 'react-native-vector-icons/Ionicons';
-
 const AnimatedSwiper = Animated.createAnimatedComponent(Swiper);
+
 class AddTags extends Component {
     constructor(props) {
         super(props);
@@ -56,8 +57,6 @@ class AddTags extends Component {
         this.taggingContainerPosition = 400;
     }
 
-    /**
-     */
     async componentDidMount() {
         this.keyboardDidShowSubscription = Keyboard.addListener(
             'keyboardDidShow',
@@ -74,19 +73,17 @@ class AddTags extends Component {
         this.keyboardDidHideSubscription = Keyboard.addListener(
             'keyboardDidHide',
             () => {
-                this.setState({ isKeyboardOpen: false, keyboardHeight: 0 });
+                this.setState({isKeyboardOpen: false, keyboardHeight: 0});
                 this.startAnimation();
             }
         );
 
         // react navigation subscription to check if stack navigation animation transaction have ended
-        this.openModalTransitionSubscription = this.props.navigation.addListener(
-            'transitionEnd',
-            () => {
+        this.openModalTransitionSubscription =
+            this.props.navigation.addListener('transitionEnd', () => {
                 // initially open tagging contaner
                 this.openTaggingContainer();
-            }
-        );
+            });
     }
 
     /**
@@ -151,6 +148,7 @@ class AddTags extends Component {
             easing: Easing.elastic(1)
         }).start();
     };
+
     /**
      * fn for start animation on add tags floating button click
      * animates categories from top
@@ -219,7 +217,6 @@ class AddTags extends Component {
     /**
      * fn to open tagging containers with animation
      */
-
     openTaggingContainer = () => {
         this.startAnimation();
         this.setState({
@@ -227,7 +224,9 @@ class AddTags extends Component {
         });
     };
 
-    /** function for deleting image
+    /**
+     * function for deleting image
+     *
      * currentIndex is current swiper index
      * if WEB image hit api and delete uploaded image and then delete from state
      *  else delete from state by id
@@ -237,7 +236,7 @@ class AddTags extends Component {
         const length = this.props.images.length;
         const currentIndex = this.props.swiperIndex;
 
-        const { id, type } = this.props.images[currentIndex];
+        const {id, type} = this.props.images[currentIndex];
 
         if (type === 'WEB') {
             const photoId = this.props.images[currentIndex].photoId;
@@ -263,36 +262,33 @@ class AddTags extends Component {
      * The LitterPicker component
      */
     render() {
-        const { lang } = this.props;
+        const {lang} = this.props;
 
         const categoryAnimatedStyle = {
-            transform: [{ translateY: this.state.categoryAnimation }]
+            transform: [{translateY: this.state.categoryAnimation}]
         };
         const sheetAnimatedStyle = {
-            transform: [{ translateY: this.state.sheetAnimation }]
+            transform: [{translateY: this.state.sheetAnimation}]
         };
         const animatedStyle = {
-            transform: [{ translateY: this.state.animation }]
+            transform: [{translateY: this.state.animation}]
         };
 
         const opacityStyle = {
             opacity: this.state.opacityAnimation
         };
         return (
-            <View style={{ flex: 1 }}>
-                <View style={{ flex: 1 }}>
+            <View style={{flex: 1}}>
+                <View style={{flex: 1}}>
                     <View style={styles.container}>
                         {/* Hide status bar on this screen */}
                         <StatusBar hidden />
 
-                        {/* Images swiper  */}
-
+                        {/* Images swiper */}
                         <AnimatedSwiper
                             style={[animatedStyle]}
                             ref={this.swiper}
-                            showsButtons={
-                                this.state.isCategoriesVisible ? false : true
-                            }
+                            showsButtons={!this.state.isCategoriesVisible}
                             nextButton={
                                 <View style={styles.slideButtonStyle}>
                                     <Icon
@@ -324,8 +320,8 @@ class AddTags extends Component {
                         </AnimatedSwiper>
 
                         {/* Category component -- show only if add tag button is clicked
-                        hidden when backdrop is pressed
-                    */}
+                            hidden when backdrop is pressed
+                        */}
                         {this.state.isCategoriesVisible && (
                             <Animated.View
                                 style={[
@@ -368,7 +364,7 @@ class AddTags extends Component {
                                 <Icon
                                     name="ios-close-outline"
                                     color="black"
-                                    size={32}
+                                    size={24}
                                 />
                             </Pressable>
                         </View>
@@ -416,7 +412,7 @@ class AddTags extends Component {
                         )}
 
                         {/* Floating action button
-                         // shows only when Tags action sheet is not open
+                            shows only when Tags action sheet is not open
                         */}
                         {!this.state.isCategoriesVisible && (
                             <TagsActionButton
@@ -427,7 +423,8 @@ class AddTags extends Component {
                                 openTagSheet={this.openTaggingContainer}
                                 toggleOverlay={() => {
                                     this.setState(previousState => ({
-                                        isOverlayDisplayed: !previousState.isOverlayDisplayed
+                                        isOverlayDisplayed:
+                                            !previousState.isOverlayDisplayed
                                     }));
                                 }}
                                 verticalButtonPress={() => {
@@ -444,11 +441,10 @@ class AddTags extends Component {
                         )}
 
                         {/* Bottom action sheet with Tags picker and add tags section */}
-
                         {this.state.isCategoriesVisible && (
                             <Animated.View
                                 style={[
-                                    { bottom: -this.taggingContainerPosition },
+                                    {bottom: -this.taggingContainerPosition},
                                     styles.bottomSheet,
                                     sheetAnimatedStyle,
                                     opacityStyle
@@ -493,7 +489,7 @@ class AddTags extends Component {
                                         />
                                     )}
                                     {!this.state.isKeyboardOpen && (
-                                        <View style={{ flexDirection: 'row' }}>
+                                        <View style={{flexDirection: 'row'}}>
                                             <TouchableOpacity
                                                 onPress={() => this.addTag()}
                                                 style={styles.buttonStyle}>
@@ -521,10 +517,10 @@ class AddTags extends Component {
                             source={require('../../assets/lottie/trash_can_lottie.json')}
                             autoPlay
                             loop
-                            style={{ width: 80, height: 80, marginBottom: 20 }}
+                            style={{width: 80, height: 80, marginBottom: 20}}
                         />
                         <Body
-                            style={{ textAlign: 'center' }}
+                            style={{textAlign: 'center'}}
                             dictionary={`${lang}.tag.delete-message`}
                         />
                         <View
@@ -543,7 +539,7 @@ class AddTags extends Component {
                                 onPress={this.deleteImage}
                                 style={[
                                     styles.actionButtonStyle,
-                                    { backgroundColor: Colors.error }
+                                    {backgroundColor: Colors.error}
                                 ]}>
                                 <Body
                                     color="white"
@@ -561,7 +557,6 @@ class AddTags extends Component {
      * The user has swiped left or right across an array of all photo types.
      *
      * This function gives us the new index the user has swiped to.
-    
      */
     swiperIndexChanged = newGlobalIndex => {
         // Without this, we get "cannot update a component from within the function body of another component"
@@ -574,7 +569,6 @@ class AddTags extends Component {
     /**
      * Array of images to swipe through
      */
-
     _renderLitterImage = () => {
         // Return an array of all photos
         return this.props.images.map((image, index) => {
@@ -651,15 +645,15 @@ const styles = StyleSheet.create({
     indexStyle: {
         minWidth: 80,
         paddingHorizontal: 20,
-        height: 40,
+        height: 30,
         backgroundColor: 'rgba(255, 255, 255, 1)',
         borderRadius: 100,
         justifyContent: 'center',
         alignItems: 'center'
     },
     closeButton: {
-        width: 40,
-        height: 40,
+        width: 30,
+        height: 30,
         backgroundColor: 'white',
         borderRadius: 100,
         justifyContent: 'center',
@@ -693,7 +687,4 @@ const mapStateToProps = state => {
     };
 };
 
-export default connect(
-    mapStateToProps,
-    actions
-)(AddTags);
+export default connect(mapStateToProps, actions)(AddTags);
