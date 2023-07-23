@@ -1,18 +1,16 @@
-import React, { Component } from 'react';
+import React, {Component} from 'react';
 import {
-    Platform,
     Image,
+    Platform,
     SafeAreaView,
-    TouchableOpacity,
     StyleSheet,
-    View
+    TouchableOpacity
 } from 'react-native';
 
 // setLang not working
 // import { getLanguage, setLanguage } from 'react-native-translation';
 // import * as Animatable from 'react-native-animatable';
-
-import { connect } from 'react-redux';
+import {connect} from 'react-redux';
 import * as actions from '../../../actions';
 
 // const SCREEN_HEIGHT = Dimensions.get('window').height;
@@ -49,6 +47,10 @@ class LanguageFlags extends Component {
                     flag: require('../../../assets/icons/flags/de.png')
                 },
                 {
+                    lang: 'ie',
+                    flag: require('../../../assets/icons/flags/ie.png')
+                },
+                {
                     lang: 'nl',
                     flag: require('../../../assets/icons/flags/nl.png')
                 },
@@ -83,7 +85,7 @@ class LanguageFlags extends Component {
      * Show or hide available languages
      */
     toggle() {
-        this.setState({ show: !this.state.show });
+        this.setState({show: !this.state.show});
     }
 
     render() {
@@ -129,12 +131,9 @@ const styles = StyleSheet.create({
         left: 20,
         zIndex: 1
     },
-    imageStyle: { borderRadius: 4, width: 60, height: 40 }
+    imageStyle: {borderRadius: 4, width: 60, height: 40}
 });
 
 // LanguageFlags = Animatable.createAnimatableComponent(LanguageFlags);
 
-export default connect(
-    null,
-    actions
-)(LanguageFlags);
+export default connect(null, actions)(LanguageFlags);

@@ -1,0 +1,20 @@
+{
+    "add-tag": "Cuir Tag Leis",
+    "confirm": "Deimhnigh",
+    "type-to-suggest": "Cineál le haghaidh moltaí tagála",
+    "suggested-tags": "Moltaí Tagála: {count}",
+    "alert": "Fógra",
+    "still-there": "Tá an bruscar fós ann",
+    "picked-up": "Tá an bruscar sroichte",
+    "litter-status": "Stádas an Bhruscair",
+    "picked-thumb": "Sroichte 👍🏻",
+    "not-picked-thumb": "Níor sroichte 👎🏻",
+    "delete-message": "An bhfuil tú cinnte go bhfuil tú ag iarraidh an íomhá seo a scriosadh?",
+    "cancel": "Cealaigh",
+    "delete": "Sea, Scrios",
+    "custom-tags": "Tagáil Arna dhéanamh Ag Féin",
+    "custom-tags-min": "Caithfidh an tag a bheith ar a laghad 3 carachtair ar fad",
+    "custom-tags-max": "Ní féidir leis an gceangal níos mó ná 100 carachtair",
+    "tag-already-added": "Tag á chur leis cheana",
+    "tag-limit-reached": "Tá tú in ann suas le 3 tagála a uaslódáil."
+}

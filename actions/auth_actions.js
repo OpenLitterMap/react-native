@@ -13,7 +13,7 @@ import {
     LOGOUT,
     SUBMIT_START,
     URL,
-    USER_FOUND,
+    USER_FOUND
 } from './types';
 import axios from 'axios';
 import * as Sentry from '@sentry/react-native';
@@ -21,7 +21,7 @@ import * as Sentry from '@sentry/react-native';
 export const changeLang = lang => {
     return {
         type: CHANGE_LANG,
-        payload: lang,
+        payload: lang
     };
 };
 
@@ -39,8 +39,8 @@ export const checkValidToken = token => {
             method: 'POST',
             headers: {
                 Authorization: 'Bearer ' + token,
-                Accept: 'application/json',
-            },
+                Accept: 'application/json'
+            }
         })
             .then(response => {
                 console.log('checkValidToken.response', response.data);
@@ -51,7 +51,7 @@ export const checkValidToken = token => {
                 ) {
                     dispatch({
                         type: 'TOKEN_IS_VALID',
-                        payload: true,
+                        payload: true
                     });
                 }
             })
@@ -62,7 +62,7 @@ export const checkValidToken = token => {
                 // we should mark token as invalid
                 dispatch({
                     type: 'TOKEN_IS_VALID',
-                    payload: false,
+                    payload: false
                 });
             });
     };
@@ -108,7 +108,7 @@ export const createAccount = data => {
                 method: 'POST',
                 headers: {
                     Accept: 'application/json',
-                    'Content-Type': 'application/json',
+                    'Content-Type': 'application/json'
                 },
                 data: {
                     client_id: CLIENT_ID,
@@ -116,8 +116,8 @@ export const createAccount = data => {
                     grant_type: 'password',
                     username: data.username,
                     email: data.email,
-                    password: data.password,
-                },
+                    password: data.password
+                }
             });
         } catch (error) {
             let payload;
@@ -136,7 +136,7 @@ export const createAccount = data => {
 
                 dispatch({
                     type: CHANGE_SERVER_STATUS_TEXT,
-                    payload: payload,
+                    payload: payload
                 });
                 return;
             } else {
@@ -144,7 +144,7 @@ export const createAccount = data => {
                 dispatch({
                     type: CHANGE_SERVER_STATUS_TEXT,
                     payload:
-                        'Network error, please check internet connection and try again',
+                        'Network error, please check internet connection and try again'
                 });
                 return;
             }
@@ -153,12 +153,12 @@ export const createAccount = data => {
         if (response?.data?.success) {
             dispatch({
                 type: ACCOUNT_CREATED,
-                payload: response?.data?.success,
+                payload: response?.data?.success
             });
             // Login user if account creation successful
             const login = {
                 email: data.email,
-                password: data.password,
+                password: data.password
             };
 
             // Log the user in
@@ -173,7 +173,7 @@ export const createAccount = data => {
 export const loginOrSignupReset = () => {
     // console.log('action - login or signup reset');
     return {
-        type: LOGIN_OR_SIGNUP_RESET,
+        type: LOGIN_OR_SIGNUP_RESET
     };
 };
 
@@ -190,7 +190,7 @@ export const logout = () => {
     // delete user from AsyncStorage?
     // state is reset on Logout => user: null
     return {
-        type: LOGOUT,
+        type: LOGOUT
     };
 };
 
@@ -202,7 +202,7 @@ export const logout = () => {
 export const changeServerStatusText = text => {
     return {
         type: CHANGE_SERVER_STATUS_TEXT,
-        payload: text,
+        payload: text
     };
 };
 
@@ -219,12 +219,12 @@ export const sendResetPasswordRequest = email => {
             response = await axios(URL + '/api/password/email', {
                 method: 'POST',
                 data: {
-                    email: email,
+                    email: email
                 },
                 headers: {
                     Accept: 'application/json',
-                    'Content-Type': 'application/json',
-                },
+                    'Content-Type': 'application/json'
+                }
             });
         } catch (error) {
             if (error?.response) {
@@ -234,14 +234,14 @@ export const sendResetPasswordRequest = email => {
                     type: CHANGE_SERVER_STATUS_TEXT,
                     payload:
                         error.response?.data?.errors?.email ||
-                        'Error, please try again',
+                        'Error, please try again'
                 });
             } else {
                 // Handling mainly network error
                 console.log('sendResetPasswordRequest', error);
                 dispatch({
                     type: CHANGE_SERVER_STATUS_TEXT,
-                    payload: 'Network error, please try again',
+                    payload: 'Network error, please try again'
                 });
             }
         }
@@ -251,7 +251,7 @@ export const sendResetPasswordRequest = email => {
             // setting isSubmitting to false
             dispatch({
                 type: CHANGE_SERVER_STATUS_TEXT,
-                payload: 'We have emailed your password reset link!',
+                payload: 'We have emailed your password reset link!'
             });
         }
     };
@@ -261,7 +261,6 @@ export const sendResetPasswordRequest = email => {
  * A user is trying to login with email and password
  */
 export const userLogin = data => {
-    console.log('userLogin');
     return async dispatch => {
         // initial dispatch to show form isSubmitting state
         dispatch({type: SUBMIT_START});
@@ -274,15 +273,15 @@ export const userLogin = data => {
                 method: 'POST',
                 headers: {
                     Accept: 'application/json',
-                    'Content-Type': 'application/json',
+                    'Content-Type': 'application/json'
                 },
                 data: {
                     client_id: CLIENT_ID,
                     client_secret: CLIENT_SECRET,
                     grant_type: 'password',
                     username: data.email,
-                    password: data.password,
-                },
+                    password: data.password
+                }
             });
             console.log('TEST');
             console.log(response);
@@ -302,19 +301,20 @@ export const userLogin = data => {
         } catch (error) {
             console.log(error);
             if (error?.response) {
+                console.log(error.response);
                 if (error?.response?.status === 400) {
                     // handling wrong password response from backend
                     dispatch({
                         type: LOGIN_FAIL,
                         payload:
-                            'Your password is incorrect. Please try again or reset it.',
+                            'Your password is incorrect. Please try again or reset it.'
                     });
                     return;
                 } else {
                     // handling other errors from backend and thrown from try block
                     dispatch({
                         type: LOGIN_FAIL,
-                        payload: 'Login Unsuccessful. Please try again.',
+                        payload: 'Login Unsuccessful. Please try again.'
                     });
                     return;
                 }
@@ -322,7 +322,7 @@ export const userLogin = data => {
                 // Handling network error
                 dispatch({
                     type: LOGIN_FAIL,
-                    payload: 'Network error, please try again',
+                    payload: 'Network error, please try again'
                 });
                 return;
             }
@@ -345,20 +345,20 @@ export const fetchUser = token => {
             response = await axios(URL + '/api/user', {
                 method: 'GET',
                 headers: {
-                    Authorization: 'Bearer ' + token,
-                },
+                    Authorization: 'Bearer ' + token
+                }
             });
         } catch (error) {
             if (error?.response) {
                 dispatch({
                     type: LOGIN_FAIL,
-                    payload: 'Login Unsuccessful. Please try again.',
+                    payload: 'Login Unsuccessful. Please try again.'
                 });
             } else {
                 // Handling network error
                 dispatch({
                     type: LOGIN_FAIL,
-                    payload: 'Network error, please try again',
+                    payload: 'Network error, please try again'
                 });
             }
         }
@@ -370,7 +370,7 @@ export const fetchUser = token => {
 
             dispatch({
                 type: USER_FOUND,
-                payload: {userObj, token},
+                payload: {userObj, token}
             });
         }
     };
@@ -383,48 +383,6 @@ export const userFound = data => {
     // console.log("action - user found");
     return {
         type: USER_FOUND,
-        payload: data,
+        payload: data
     };
 };
-
-/**
- * TO DO - FACEBOOK LOGIN
- */
-
-// AsyncStorage.setItem('fbtoken', token);
-// AsyncStorage.getItem('fbtoken');
-// export const facebookLogin = () => async dispatch => {
-//   try {
-//     let token = await AsyncStorage.getItem("token");
-//   } catch (e) {
-//     console.log("error getting token, facebookLogin");
-//   }
-//   if (token) {
-//     // Dispatch an action, login success
-//     dispatch({ type: FACEBOOK_LOGIN_SUCCESS, payload: token });
-//   } else {
-//     // Start up Login process - helper
-//     doFacebookLogin(dispatch);
-//     // login(dispatch);
-//   }
-// }
-
-// helper function
-// async action
-// 1. open login screen
-// 2. wait for login success
-// doFacebookLogin = async dispatch => {
-//   let { type, token } = await Facebook.logInWithReadPermissionsAsync('2064390957175459', {
-//     permissions: ['public_profile']
-//   });
-//
-//   console.log(" === facebook login type ===");
-//   console.log(type);
-//
-//   if (type === 'cancel') {
-//     return dispatch({ type: FACEBOOK_LOGIN_FAIL });
-//   }
-//
-//   await AsyncStorage.setItem("token", token);
-//   dispatch({ type: FACEBOOK_LOGIN_SUCCESS, payload: token });
-// }

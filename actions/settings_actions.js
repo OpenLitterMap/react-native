@@ -1,6 +1,7 @@
 import React from 'react';
 import {
     CLOSE_SECOND_SETTING_MODAL,
+    LOGOUT,
     SET_MODEL,
     SETTINGS_INIT,
     SETTINGS_UPDATE_STATUS_MESSAGE,
@@ -11,13 +12,60 @@ import {
     UPDATE_USER_OBJECT,
     URL
 } from './types';
-// import AsyncStorage from '@react-native-community/async-storage';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 
 export const closeSecondSettingModal = () => {
     return {
         type: CLOSE_SECOND_SETTING_MODAL
+    };
+};
+
+/**
+ * The user wants to delete their password
+ *
+ * @param password
+ * @param token
+ * @returns {{payload, type: string}}
+ */
+export const deleteAccount = (password, token) => {
+    return async dispatch => {
+        dispatch({
+            type: 'START_DELETE_ACCOUNT'
+        });
+
+        await axios(URL + '/api/settings/delete-account/', {
+            method: 'POST',
+            headers: {
+                Authorization: 'Bearer ' + token,
+                'content-type': 'application/json'
+            },
+            data: {
+                password,
+                token
+            }
+        })
+            .then(response => {
+                console.log('DELETE_ACCOUNT', response.data);
+
+                if (!response.data.success) {
+                    if (response.data.msg === 'password does not match') {
+                        dispatch({
+                            type: 'SET_DELETE_ACCOUNT_ERROR',
+                            payload: 'settings.password-incorrect'
+                        });
+                    }
+                } else {
+                    AsyncStorage.clear();
+
+                    dispatch({
+                        type: LOGOUT
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('ERROR DELETE_ACCOUNT', error);
+            });
     };
 };
 
@@ -100,7 +148,7 @@ export const saveSettings = (data, value, token) => {
                     user[data.key] = value;
 
                     // save updated user data
-                    AsyncStorage.setItem('user', JSON.stringify(user));
+                    await AsyncStorage.setItem('user', JSON.stringify(user));
 
                     dispatch({
                         type: UPDATE_USER_OBJECT,
@@ -180,7 +228,7 @@ export const saveSocialAccounts = (data, value, token) => {
             // update user object
             user.settings = value;
             // save updated user data
-            AsyncStorage.setItem('user', JSON.stringify(user));
+            await AsyncStorage.setItem('user', JSON.stringify(user));
 
             dispatch({
                 type: UPDATE_USER_OBJECT,
@@ -279,7 +327,7 @@ export const toggleSettingsSwitch = (id, token) => {
 
                     user[key] = value;
 
-                    AsyncStorage.setItem('user', JSON.stringify(user));
+                    await AsyncStorage.setItem('user', JSON.stringify(user));
 
                     dispatch({
                         type: UPDATE_USER_OBJECT,
@@ -294,6 +342,19 @@ export const toggleSettingsSwitch = (id, token) => {
             .catch(error => {
                 console.log('Error: toggleSettingsSwitch', error);
             });
+    };
+};
+
+/**
+ * After the users password error is shown,
+ *
+ * This will be used to reset the value to ''
+ * after the user types into the input.
+ */
+export const setDeleteAccountError = value => {
+    return {
+        type: 'SET_DELETE_ACCOUNT_ERROR',
+        payload: value
     };
 };
 

@@ -5,7 +5,7 @@ import {
     SafeAreaView,
     StatusBar,
     StyleSheet,
-    View,
+    View
 } from 'react-native';
 import {LanguageFlags, Slides} from './authComponents';
 import {Body, Colors} from '../components';
@@ -28,20 +28,20 @@ const SLIDE_DATA = [
         id: 1,
         image: require('../../assets/illustrations/click_image.png'),
         title: 'welcome.easy',
-        text: 'welcome.just-tag-and-upload',
+        text: 'welcome.just-tag-and-upload'
     },
     {
         id: 2,
         image: require('../../assets/illustrations/rankup.png'),
         title: 'welcome.fun',
-        text: 'welcome.climb-leaderboards',
+        text: 'welcome.climb-leaderboards'
     },
     {
         id: 3,
         image: require('../../assets/illustrations/open_data.png'),
         title: 'welcome.open',
-        text: 'welcome.open-database',
-    },
+        text: 'welcome.open-database'
+    }
 ];
 
 class WelcomeScreen extends Component<WelcomeScreenProps, WelcomeScreenState> {
@@ -51,7 +51,7 @@ class WelcomeScreen extends Component<WelcomeScreenProps, WelcomeScreenState> {
 
     goToAuth(auth: string) {
         this.props.navigation.navigate('AUTH', {
-            screen: auth,
+            screen: auth
         });
     }
 
@@ -74,7 +74,7 @@ class WelcomeScreen extends Component<WelcomeScreenProps, WelcomeScreenState> {
                     <View
                         style={{
                             flex: 1,
-                            backgroundColor: Colors.accentLight,
+                            backgroundColor: Colors.accentLight
                         }}>
                         <Slides data={SLIDE_DATA} lang={lang} />
 
@@ -87,8 +87,6 @@ class WelcomeScreen extends Component<WelcomeScreenProps, WelcomeScreenState> {
                                     style={styles.signupText}
                                     color="white"
                                     dictionary={`${lang}.welcome.continue`}
-                                    children={{Continue: 'test'}}
-                                    values={['test']}
                                 />
                             </Pressable>
                             <Pressable
@@ -98,21 +96,17 @@ class WelcomeScreen extends Component<WelcomeScreenProps, WelcomeScreenState> {
                                     justifyContent: 'center',
                                     alignItems: 'center',
                                     alignSelf: 'center',
-                                    alignContent: 'center',
+                                    alignContent: 'center'
                                 }}>
                                 <Body
                                     style={styles.loginText}
                                     dictionary={`${lang}.auth.already-have`}
-                                    children={{Continue: 'test'}}
-                                    values={['test']}
                                 />
                                 <Body
                                     color="accent"
                                     family="semiBold"
                                     style={[styles.loginText]}
                                     dictionary={`${lang}.auth.login`}
-                                    children={{Continue: 'test'}}
-                                    values={['test']}
                                 />
                             </Pressable>
                         </View>
@@ -128,7 +122,7 @@ const styles = StyleSheet.create({
     activityContainer: {
         flex: 1,
         justifyContent: 'center',
-        alignItems: 'center',
+        alignItems: 'center'
     },
     loginButton: {
         alignItems: 'center',
@@ -137,12 +131,12 @@ const styles = StyleSheet.create({
         borderRadius: 100,
         height: SCREEN_HEIGHT * 0.08,
         justifyContent: 'center',
-        width: SCREEN_WIDTH - 40,
+        width: SCREEN_WIDTH - 40
     },
     loginPosition: {
         position: 'absolute',
         bottom: SCREEN_HEIGHT * 0.06,
-        left: 20,
+        left: 20
     },
     signupText: {
         // fontSize: SCREEN_HEIGHT * 0.02,
@@ -152,14 +146,14 @@ const styles = StyleSheet.create({
     loginText: {
         marginTop: 10,
         paddingVertical: 10,
-        paddingHorizontal: 5,
-    },
+        paddingHorizontal: 5
+    }
 });
 
 const mapStateToProps = (state: any) => {
     return {
         lang: state.auth.lang,
-        token: state.auth.token,
+        token: state.auth.token
     };
 };
 

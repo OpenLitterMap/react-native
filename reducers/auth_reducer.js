@@ -1,5 +1,4 @@
-import { produce } from 'immer';
-// import AsyncStorage from '@react-native-community/async-storage';
+import {produce} from 'immer';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import {
@@ -7,20 +6,21 @@ import {
     CHANGE_ACTIVE_TEAM,
     CHANGE_LANG,
     CHANGE_SERVER_STATUS_TEXT,
+    LOGIN_FAIL,
     LOGIN_OR_SIGNUP_RESET,
     LOGIN_SUCCESS,
-    LOGIN_FAIL,
     LOGOUT,
+    SUBMIT_END,
+    SUBMIT_START,
     TOKEN_IS_VALID,
     UPDATE_USER_OBJECT,
-    USER_FOUND,
-    SUBMIT_END,
-    SUBMIT_START
+    USER_FOUND
 } from '../actions/types';
-import { XPLEVEL } from '../assets/data/xpLevel';
+import {XPLEVEL} from '../assets/data/xpLevel';
 
 import * as RNLocalize from 'react-native-localize';
-let lang = RNLocalize.getLocales()['languageCode'];
+
+let lang = RNLocalize.getLocales().languageCode;
 
 const INITIAL_STATE = {
     lang: 'en',
@@ -32,7 +32,7 @@ const INITIAL_STATE = {
     serverStatusText: ''
 };
 
-export default function(state = INITIAL_STATE, action) {
+export default function (state = INITIAL_STATE, action) {
     return produce(state, draft => {
         switch (action.type) {
             case CHANGE_ACTIVE_TEAM:
@@ -43,7 +43,6 @@ export default function(state = INITIAL_STATE, action) {
              * Change app language
              * Language changeable from WelcomeScreen -- LanguageFlags.js
              */
-
             case CHANGE_LANG:
                 draft.lang = action.payload;
 
@@ -52,7 +51,6 @@ export default function(state = INITIAL_STATE, action) {
             /**
              * Change auth form messages/errors
              */
-
             case CHANGE_SERVER_STATUS_TEXT:
                 draft.serverStatusText = action.payload;
                 draft.isSubmitting = false;
@@ -63,7 +61,6 @@ export default function(state = INITIAL_STATE, action) {
              * Auth API request /  form submit end
              * makes submit button active again
              */
-
             case SUBMIT_END:
                 draft.isSubmitting = false;
 
@@ -73,7 +70,6 @@ export default function(state = INITIAL_STATE, action) {
              * Auth API request /  form submit start
              * makes submit button inactive
              */
-
             case SUBMIT_START:
                 draft.isSubmitting = true;
 
@@ -88,7 +84,6 @@ export default function(state = INITIAL_STATE, action) {
              * Logout user
              * reset state to initial
              */
-
             case LOGOUT:
                 return INITIAL_STATE;
 
@@ -97,7 +92,6 @@ export default function(state = INITIAL_STATE, action) {
              * Wrong password
              * Network/Server error
              */
-
             case LOGIN_FAIL:
                 draft.serverStatusText = action.payload;
                 draft.isSubmitting = false;
@@ -107,7 +101,6 @@ export default function(state = INITIAL_STATE, action) {
             /**
              * Resets the auth form and display messages
              */
-
             case LOGIN_OR_SIGNUP_RESET:
                 draft.isSubmitting = false;
                 draft.serverStatusText = '';
@@ -117,7 +110,6 @@ export default function(state = INITIAL_STATE, action) {
             /**
              * After a successful login
              */
-
             case LOGIN_SUCCESS:
                 draft.token = action.payload;
                 draft.isSubmitting = false;
@@ -127,7 +119,6 @@ export default function(state = INITIAL_STATE, action) {
             /**
              * When the app loads, we check if the JWT is valid
              */
-
             case TOKEN_IS_VALID:
                 draft.tokenIsValid = action.payload;
 
@@ -174,7 +165,6 @@ export default function(state = INITIAL_STATE, action) {
             /**
              * Update user object after userdata changed from settings
              */
-
             case UPDATE_USER_OBJECT:
                 draft.user = action.payload;
 

@@ -1,0 +1,14 @@
+{
+    "allow-gallery-access": "Ceadaigh Rochtain ar an nGailearaí",
+    "allow-permission": "Ceadaigh Ceadúnais",
+    "camera-access": "Rochtain ar an gCeamara",
+    "camera-access-body": "Chun íomhánna na tránna a ghabháil ó gceamara an aip",
+    "gallery-body": "Tabhair cead dúinn rochtain ar do ghailéaraí, tá sé riachtanach más mian leat íomhánna geotheagtha a uaslódáil ón ngailéaraí",
+    "location-access": "Rochtain ar an Láithreacht",
+    "location-body": "Chun faisnéis go díreach ar áit an ghailí a fháil",
+    "new-version": "Leagan Nua Ar Fáil",
+    "not-now": "Níos déanaí, Náisiúna",
+    "please-give-permissions": "Tabhair Ceadúnais, Más É Do Thoil É",
+    "please-update-app": "Le do thoil, coimeád an t-appliacs as láthair chun taithí feabhsaithe a fháil",
+    "update-now": "Nuashonraigh Anois"
+}

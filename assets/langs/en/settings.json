@@ -38,5 +38,6 @@
     "url-not-valid": "Please enter a valid url",
     "delete-account": "Delete Account",
     "delete-your-account": "Delete your account",
-    "warning": "Warning"
+    "warning": "Warning",
+    "password-incorrect": "Your password did not match"
 }

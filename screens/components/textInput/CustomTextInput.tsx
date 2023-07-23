@@ -81,6 +81,7 @@ const CustomTextInput: React.ForwardRefRenderFunction<
                         // touched && error && styles.errorText,
                     ]}
                     placeholder={placeholder}
+                    placeholderTextColor={Colors.muted}
                     value={value}
                     autoFocus={false}
                     autoCorrect={false}

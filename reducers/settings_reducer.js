@@ -18,6 +18,7 @@ const INITIAL_STATE = {
     settingsEditProp: '',
     wait: false,
     dataToEdit: null,
+    deleteAccountError: '',
     updateSettingsStatusMessage: '',
     updatingSettings: false
 };
@@ -30,6 +31,13 @@ export default function (state = INITIAL_STATE, action) {
                 draft.updatingSettings = false;
                 draft.secondSettingsModalVisible = false;
 
+                break;
+
+            /**
+             * The users delete-account attempt failed due to wrong password
+             */
+            case 'SET_DELETE_ACCOUNT_ERROR':
+                draft.deleteAccountError = action.payload;
                 break;
 
             /**

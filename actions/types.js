@@ -1,14 +1,10 @@
 // Import keys to authenticate with your Laravel backend
 // See https://laravel.com/docs/8.x/passport#the-passportclient-command
-// import { SECRET_CLIENT } from '@env';
-// import { ID_CLIENT } from '@env';
-// import { OLM_ENDPOINT } from '@env';
-
 import Config from 'react-native-config';
 
-const SECRET_CLIENT = Config.SECRET_CLIENT;
-const ID_CLIENT = Config.ID_CLIENT;
-const OLM_ENDPOINT = Config.OLM_ENDPOINT;
+const SECRET_CLIENT = Config.STAGING_SECRET_CLIENT;
+const ID_CLIENT = Config.STAGING_ID_CLIENT;
+const OLM_ENDPOINT = Config.STAGING_OLM_ENDPOINT;
 
 export const IS_PRODUCTION = false; // change this when working locally to disable sentry
 

@@ -16,7 +16,13 @@ import * as Yup from 'yup';
 import {getTranslation, TransText} from 'react-native-translation';
 import {Icon as ElementIcon} from '@rneui/base';
 import {connect} from 'react-redux';
-import {Body, CustomTextInput, Header, SubTitle} from '../../components';
+import {
+    Body,
+    Colors,
+    CustomTextInput,
+    Header,
+    SubTitle
+} from '../../components';
 import Icon from 'react-native-vector-icons/Ionicons';
 import * as actions from '../../../actions';
 
@@ -270,6 +276,17 @@ class SettingsComponent extends Component {
                             Delete account
                         </Text>
                     </Pressable>
+
+                    {this.props.deleteAccountError !== '' ? (
+                        <View>
+                            <TransText
+                                style={styles.wrongPasswordText}
+                                dictionary={`${lang}.${this.props.deleteAccountError}`}
+                            />
+                        </View>
+                    ) : (
+                        ''
+                    )}
                 </View>
             );
         }
@@ -279,6 +296,10 @@ class SettingsComponent extends Component {
         this.setState({
             password: txt
         });
+
+        if (this.props.deleteAccountError !== '') {
+            this.props.setDeleteAccountError('');
+        }
     };
 
     /**
@@ -446,10 +467,10 @@ class SettingsComponent extends Component {
     }
 
     /**
-     *
+     * Send a request to delete the account and all associated data
      */
     submitDeleteAccount = () => {
-        console.log('test delete account', this.state.password);
+        this.props.deleteAccount(this.state.password, this.props.token);
     };
 }
 
@@ -539,6 +560,10 @@ const styles = StyleSheet.create({
         paddingLeft: 10,
         fontSize: SCREEN_HEIGHT * 0.02,
         width: SCREEN_WIDTH * 0.25
+    },
+    wrongPasswordText: {
+        marginTop: 20,
+        color: Colors.error
     }
 });
 
@@ -551,7 +576,8 @@ const mapStateToProps = state => {
         token: state.auth.token,
         updatingSettings: state.settings.updatingSettings,
         updateSettingsStatusMessage: state.settings.updateSettingsStatusMessage,
-        user: state.auth.user
+        user: state.auth.user,
+        deleteAccountError: state.settings.deleteAccountError
     };
 };
 
