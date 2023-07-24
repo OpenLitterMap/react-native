@@ -1,19 +1,11 @@
-import React, { PureComponent } from 'react';
-import {
-    Dimensions,
-    FlatList,
-    Image,
-    View,
-    Pressable,
-    Text
-} from 'react-native';
-import Icon from 'react-native-vector-icons/Ionicons';
-import { connect } from 'react-redux';
+import React, {PureComponent} from 'react';
+import {Dimensions, FlatList, Image, Pressable, Text, View} from 'react-native';
+import {connect} from 'react-redux';
 import * as actions from '../../../actions';
-import { Body, Colors, SubTitle } from '../../components';
-import { isTagged } from '../../../utils/isTagged';
+import {Body, SubTitle} from '../../components';
+import {isTagged} from '../../../utils/isTagged';
 
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} = Dimensions.get('window');
 
 class UploadImagesGrid extends PureComponent {
     imagePressed(index) {
@@ -43,12 +35,12 @@ class UploadImagesGrid extends PureComponent {
      *   - isPickedUp
      *   - isSelected: for deletion
      */
-    renderImage = ({ item, index }) => {
+    renderImage = ({item, index}) => {
         // console.log('renderImage', index, item);
 
         const isItemTagged = isTagged(item);
         const itemIsPickedUp = item.picked_up ?? null;
-        const pickedUpIcon = itemIsPickedUp ? '👍🏻' : '👎🏻';
+        const pickedUpIcon = itemIsPickedUp ? '👍' : '👎';
         const isItemUploaded = item.hasOwnProperty('uploaded') && item.uploaded;
 
         return (
@@ -57,9 +49,11 @@ class UploadImagesGrid extends PureComponent {
                     <Image
                         style={styles.gridImageStyle}
                         source={{
-                            uri: item.hasOwnProperty('uri') && item.uri !== undefined
-                                ? item.uri
-                                : item.filename
+                            uri:
+                                item.hasOwnProperty('uri') &&
+                                item.uri !== undefined
+                                    ? item.uri
+                                    : item.filename
                         }}
                         resizeMode="cover"
                     />
@@ -138,7 +132,7 @@ class UploadImagesGrid extends PureComponent {
                 }}>
                 {this.props.photos && (
                     <FlatList
-                        contentContainerStyle={{ paddingBottom: 100 }}
+                        contentContainerStyle={{paddingBottom: 100}}
                         data={this.props.photos}
                         extraData={this.props.uniqueValue}
                         keyExtractor={(item, index) => item + index}
@@ -184,7 +178,4 @@ const styles = {
     }
 };
 
-export default connect(
-    null,
-    actions
-)(UploadImagesGrid);
+export default connect(null, actions)(UploadImagesGrid);

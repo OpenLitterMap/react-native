@@ -23,11 +23,9 @@ import {
     LitterCategories,
     LitterImage,
     LitterPickerWheels,
-    LitterTags,
-    LitterTagsCard,
-    TagsActionButton
+    LitterTags
 } from './addTagComponents';
-import {Body, Caption, Colors, SubTitle} from '../components';
+import {Body, Colors, SubTitle} from '../components';
 import Icon from 'react-native-vector-icons/Ionicons';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -46,7 +44,6 @@ class AddTags extends Component {
             isCategoriesVisible: true,
             isKeyboardOpen: false,
             keyboardHeight: 0,
-            isOverlayDisplayed: false,
             animation: new Animated.Value(0)
         };
         this.actionSheetRef = createRef();
@@ -81,7 +78,7 @@ class AddTags extends Component {
         // react navigation subscription to check if stack navigation animation transaction have ended
         this.openModalTransitionSubscription =
             this.props.navigation.addListener('transitionEnd', () => {
-                // initially open tagging contaner
+                // initially open tagging container
                 this.openTaggingContainer();
             });
     }
@@ -115,7 +112,7 @@ class AddTags extends Component {
 
         /**
          * If quantityChanged is true -- then while clicking Add Tag button
-         * the quantilty value currently in PICKER is added to tag
+         * the quantity value currently in PICKER is added to tag
          *
          * else if quantityChanged is false -- then while clicking Add Tag button
          * quantity currently on TAG + 1 is added on tag.
@@ -127,7 +124,7 @@ class AddTags extends Component {
 
     keyboardStartAnimation = () => {
         // Animate keyboard only for ios
-        // TODO: need testing on other andrid devices
+        // TODO: need testing on other android devices
 
         const sheetPosition = -(
             this.state.keyboardHeight + this.taggingContainerPosition
@@ -183,9 +180,10 @@ class AddTags extends Component {
             useNativeDriver: true,
             easing: Easing.elastic(1)
         }).start(() => {
+            console.log('handle image tap');
             pressType === 'REGULAR' &&
                 this.setState({
-                    isCategoriesVisible: false
+                    isCategoriesVisible: true
                 });
         });
         Animated.timing(this.state.sheetAnimation, {
@@ -288,20 +286,20 @@ class AddTags extends Component {
                         <AnimatedSwiper
                             style={[animatedStyle]}
                             ref={this.swiper}
-                            showsButtons={!this.state.isCategoriesVisible}
-                            nextButton={
+                            showsButtons={true}
+                            prevButton={
                                 <View style={styles.slideButtonStyle}>
                                     <Icon
-                                        name="ios-chevron-forward"
+                                        name="ios-chevron-back"
                                         color={Colors.accent}
                                         size={32}
                                     />
                                 </View>
                             }
-                            prevButton={
+                            nextButton={
                                 <View style={styles.slideButtonStyle}>
                                     <Icon
-                                        name="ios-chevron-back"
+                                        name="ios-chevron-forward"
                                         color={Colors.accent}
                                         size={32}
                                     />
@@ -319,28 +317,8 @@ class AddTags extends Component {
                             {this._renderLitterImage()}
                         </AnimatedSwiper>
 
-                        {/* Category component -- show only if add tag button is clicked
-                            hidden when backdrop is pressed
-                        */}
-                        {this.state.isCategoriesVisible && (
-                            <Animated.View
-                                style={[
-                                    {
-                                        position: 'absolute',
-                                        top: -this.categoryContainerPosition,
-                                        zIndex: 2
-                                    },
-                                    categoryAnimatedStyle,
-                                    opacityStyle
-                                ]}>
-                                <LitterCategories
-                                    categories={CATEGORIES}
-                                    category={this.props.category}
-                                    lang={this.props.lang}
-                                />
-                            </Animated.View>
-                        )}
-
+                        {/* Top nav */}
+                        {/* index/total && Close X */}
                         <View
                             style={{
                                 position: 'absolute',
@@ -350,12 +328,14 @@ class AddTags extends Component {
                                 justifyContent: 'space-between',
                                 width: SCREEN_WIDTH - 40
                             }}>
+                            {/* ImgIndex/Total */}
                             <View style={styles.indexStyle}>
                                 <Body color="text">
                                     {this.props.swiperIndex + 1}/
                                     {this.props.images.length}
                                 </Body>
                             </View>
+                            {/* Close X */}
                             <Pressable
                                 onPress={() =>
                                     this.props.navigation.navigate('HOME')
@@ -369,33 +349,40 @@ class AddTags extends Component {
                             </Pressable>
                         </View>
 
-                        {!this.state.isCategoriesVisible && (
+                        {/* Category component -- show only if add tag button is clicked
+                            hidden when backdrop is pressed
+                        */}
+                        <Animated.View
+                            style={[
+                                {
+                                    position: 'absolute',
+                                    top: -this.categoryContainerPosition,
+                                    zIndex: 2
+                                },
+                                categoryAnimatedStyle,
+                                opacityStyle
+                            ]}>
+                            <LitterCategories
+                                categories={CATEGORIES}
+                                category={this.props.category}
+                                lang={this.props.lang}
+                            />
+                        </Animated.View>
+
+                        {/* Bottom action sheet with Tags picker and add tags section */}
+                        <Animated.View
+                            style={[
+                                {bottom: -this.taggingContainerPosition},
+                                styles.bottomSheet,
+                                sheetAnimatedStyle,
+                                opacityStyle
+                            ]}>
                             <View
                                 style={{
-                                    position: 'absolute',
-                                    marginLeft: 20,
-                                    top: 70
+                                    // height: 200,
+                                    maxWidth: SCREEN_WIDTH
                                 }}>
-                                {/* Shows the status of litter if "picked up" or not */}
-                                <View style={styles.statusCard}>
-                                    <Caption
-                                        dictionary={`${lang}.tag.litter-status`}
-                                    />
-                                    {this.props.images[this.props.swiperIndex]
-                                        ?.picked_up ? (
-                                        <Body
-                                            color="accent"
-                                            dictionary={`${lang}.tag.picked-thumb`}
-                                        />
-                                    ) : (
-                                        <Body
-                                            color="error"
-                                            dictionary={`${lang}.tag.not-picked-thumb`}
-                                        />
-                                    )}
-                                </View>
-                                {/* Shows the list of tags */}
-                                <LitterTagsCard
+                                <LitterTags
                                     tags={
                                         this.props.images[
                                             this.props.swiperIndex
@@ -407,102 +394,64 @@ class AddTags extends Component {
                                         ]?.customTags
                                     }
                                     lang={this.props.lang}
+                                    swiperIndex={this.props.swiperIndex}
                                 />
-                            </View>
-                        )}
 
-                        {/* Floating action button
-                            shows only when Tags action sheet is not open
-                        */}
-                        {!this.state.isCategoriesVisible && (
-                            <TagsActionButton
-                                pickedUpStatus={
-                                    this.props.images[this.props.swiperIndex]
-                                        ?.picked_up
-                                }
-                                openTagSheet={this.openTaggingContainer}
-                                toggleOverlay={() => {
-                                    this.setState(previousState => ({
-                                        isOverlayDisplayed:
-                                            !previousState.isOverlayDisplayed
-                                    }));
-                                }}
-                                verticalButtonPress={() => {
-                                    this.actionSheetRef.current?.setModalVisible();
-                                }}
-                                horizontalButtonPress={() =>
-                                    this.props.togglePickedUp(
-                                        this.props.images[
-                                            this.props.swiperIndex
-                                        ]?.id
-                                    )
-                                }
-                            />
-                        )}
-
-                        {/* Bottom action sheet with Tags picker and add tags section */}
-                        {this.state.isCategoriesVisible && (
-                            <Animated.View
-                                style={[
-                                    {bottom: -this.taggingContainerPosition},
-                                    styles.bottomSheet,
-                                    sheetAnimatedStyle,
-                                    opacityStyle
-                                ]}>
-                                <View
-                                    style={{
-                                        // height: 200,
-                                        maxWidth: SCREEN_WIDTH
-                                    }}>
-                                    <LitterTags
-                                        tags={
-                                            this.props.images[
-                                                this.props.swiperIndex
-                                            ]?.tags
-                                        }
-                                        customTags={
-                                            this.props.images[
-                                                this.props.swiperIndex
-                                            ]?.customTags
-                                        }
+                                <LitterBottomSearch
+                                    suggestedTags={this.props.suggestedTags}
+                                    // height={this.state.height}
+                                    lang={this.props.lang}
+                                    swiperIndex={this.props.swiperIndex}
+                                    isKeyboardOpen={this.state.isKeyboardOpen}
+                                    navigation={this.props.navigation}
+                                />
+                                {!this.state.isKeyboardOpen && (
+                                    <LitterPickerWheels
+                                        item={this.props.item}
+                                        items={this.props.items}
+                                        model={this.props.model}
+                                        category={this.props.category}
                                         lang={this.props.lang}
-                                        swiperIndex={this.props.swiperIndex}
                                     />
-
-                                    <LitterBottomSearch
-                                        suggestedTags={this.props.suggestedTags}
-                                        // height={this.state.height}
-                                        lang={this.props.lang}
-                                        swiperIndex={this.props.swiperIndex}
-                                        isKeyboardOpen={
-                                            this.state.isKeyboardOpen
-                                        }
-                                        navigation={this.props.navigation}
-                                    />
-                                    {!this.state.isKeyboardOpen && (
-                                        <LitterPickerWheels
-                                            item={this.props.item}
-                                            items={this.props.items}
-                                            model={this.props.model}
-                                            category={this.props.category}
-                                            lang={this.props.lang}
-                                        />
-                                    )}
-                                    {!this.state.isKeyboardOpen && (
-                                        <View style={{flexDirection: 'row'}}>
-                                            <TouchableOpacity
-                                                onPress={() => this.addTag()}
-                                                style={styles.buttonStyle}>
+                                )}
+                                {!this.state.isKeyboardOpen && (
+                                    <View
+                                        style={{
+                                            flexDirection: 'row',
+                                            paddingBottom: 5,
+                                            alignItems: 'center'
+                                        }}>
+                                        <TouchableOpacity
+                                            onPress={() =>
+                                                this.togglePickedUp()
+                                            }
+                                            style={styles.pickedUpButton}>
+                                            {this.props.images[
+                                                this.props.swiperIndex
+                                            ]?.picked_up ? (
                                                 <SubTitle
                                                     color="white"
-                                                    dictionary={`${lang}.tag.add-tag`}
+                                                    dictionary={`${lang}.tag.picked-thumb`}
                                                 />
-                                            </TouchableOpacity>
-                                        </View>
-                                    )}
-                                </View>
-                            </Animated.View>
-                        )}
+                                            ) : (
+                                                <SubTitle
+                                                    color="white"
+                                                    dictionary={`${lang}.tag.not-picked-thumb`}
+                                                />
+                                            )}
+                                        </TouchableOpacity>
+                                        <TouchableOpacity
+                                            onPress={() => this.addTag()}
+                                            style={styles.buttonStyle}>
+                                            <SubTitle
+                                                color="white"
+                                                dictionary={`${lang}.tag.add-tag`}
+                                            />
+                                        </TouchableOpacity>
+                                    </View>
+                                )}
+                            </View>
+                        </Animated.View>
                     </View>
                 </View>
 
@@ -554,6 +503,15 @@ class AddTags extends Component {
     }
 
     /**
+     * Toggle the picked-up status of 1 image in our array
+     */
+    togglePickedUp = () => {
+        this.props.togglePickedUp(
+            this.props.images[this.props.swiperIndex]?.id
+        );
+    };
+
+    /**
      * The user has swiped left or right across an array of all photo types.
      *
      * This function gives us the new index the user has swiped to.
@@ -586,9 +544,10 @@ class AddTags extends Component {
                     onLongPressEnd={() => this.startAnimation()}
                     // hide tagging containers and show meta containers
                     onImageTap={() => {
-                        if (this.state.isCategoriesVisible) {
-                            this.returnAnimation('REGULAR');
-                        }
+                        console.log('image tapped');
+                        // if (this.state.isCategoriesVisible) {
+                        //     this.returnAnimation('REGULAR');
+                        // }
                     }}
                 />
             );
@@ -609,14 +568,26 @@ const styles = StyleSheet.create({
         marginBottom: 20
     },
     buttonStyle: {
-        height: 56,
+        height: SCREEN_HEIGHT * 0.05,
         flex: 1,
         backgroundColor: Colors.accent,
-        marginBottom: Platform.OS === 'ios' ? 40 : 0,
         marginHorizontal: 20,
         justifyContent: 'center',
         alignItems: 'center',
-        borderRadius: 12
+        borderRadius: 12,
+        paddingLeft: 10,
+        paddingRight: 10
+    },
+    pickedUpButton: {
+        height: SCREEN_HEIGHT * 0.05,
+        flex: 1.5,
+        backgroundColor: Colors.accent,
+        marginHorizontal: 20,
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderRadius: 12,
+        paddingLeft: 10,
+        paddingRight: 10
     },
     slideButtonStyle: {
         backgroundColor: '#fff',

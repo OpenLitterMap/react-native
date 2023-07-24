@@ -1,25 +1,25 @@
-import React, { Component } from 'react';
+import React, {Component} from 'react';
 import {
-    StyleSheet,
-    View,
-    Pressable,
-    FlatList,
+    ActivityIndicator,
     Dimensions,
+    FlatList,
+    Pressable,
     SafeAreaView,
-    ActivityIndicator
+    StyleSheet,
+    View
 } from 'react-native';
 import moment from 'moment';
 import _ from 'lodash';
 
-import { connect } from 'react-redux';
+import {connect} from 'react-redux';
 import Icon from 'react-native-vector-icons/Ionicons';
 import * as actions from '../../actions';
-import { Header, SubTitle, Body, Caption, Colors } from '../components';
-import { isGeotagged } from '../../utils/isGeotagged';
-import { checkCameraRollPermission } from '../../utils/permissions';
+import {Body, Caption, Colors, Header, SubTitle} from '../components';
+import {isGeotagged} from '../../utils/isGeotagged';
+import {checkCameraRollPermission} from '../../utils/permissions';
 import AnimatedImage from './galleryComponents/AnimatedImage';
 
-const { width } = Dimensions.get('window');
+const {width} = Dimensions.get('window');
 
 /**
  * fn to check if arg date is "today", this "week", this "month"
@@ -71,6 +71,7 @@ class GalleryScreen extends Component {
             this.splitIntoRows(this.props.geotaggedImages);
         }
     }
+
     /**
      * fn to check for cameraroll/gallery permissions
      * if permissions granted setState, else navigate to GalleryPermissionScreen
@@ -81,7 +82,7 @@ class GalleryScreen extends Component {
         if (result === 'granted') {
             await this.props.getPhotosFromCameraroll();
             this.splitIntoRows(this.props.geotaggedImages);
-            this.setState({ hasPermission: true, loading: false });
+            this.setState({hasPermission: true, loading: false});
         } else {
             this.props.navigation.navigate('PERMISSION', {
                 screen: 'GALLERY_PERMISSION'
@@ -138,11 +139,11 @@ class GalleryScreen extends Component {
 
         for (let prop of order) {
             if (temp[prop]) {
-                let newObj = { title: prop, data: temp[prop] };
+                let newObj = {title: prop, data: temp[prop]};
                 final.push(newObj);
             }
         }
-        this.setState({ sortedData: final });
+        this.setState({sortedData: final});
     }
 
     /**
@@ -177,7 +178,7 @@ class GalleryScreen extends Component {
 
         if (index === -1) {
             this.setState(prevState => {
-                return { selectedImages: [...prevState.selectedImages, item] };
+                return {selectedImages: [...prevState.selectedImages, item]};
             });
         }
     }
@@ -186,7 +187,7 @@ class GalleryScreen extends Component {
      * fn that returns the sections for flatlist to display
      *
      */
-    renderSection({ item, index }) {
+    renderSection({item, index}) {
         let headerTitle = item?.title;
         if (Number.isInteger(headerTitle) && headerTitle < 12) {
             headerTitle = moment(headerTitle.toString(), 'MM').format('MMMM');
@@ -214,11 +215,10 @@ class GalleryScreen extends Component {
                         {headerTitle}
                     </Body>
                 </View>
-                <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+                <View style={{flexDirection: 'row', flexWrap: 'wrap'}}>
                     {item.data.map(image => {
-                        const selected = this.state.selectedImages.includes(
-                            image
-                        );
+                        const selected =
+                            this.state.selectedImages.includes(image);
 
                         const isImageGeotagged = isGeotagged(image);
                         return (
@@ -239,7 +239,7 @@ class GalleryScreen extends Component {
     }
 
     render() {
-        const { lang } = this.props;
+        const {lang} = this.props;
         return (
             <>
                 <Header
@@ -261,7 +261,7 @@ class GalleryScreen extends Component {
                             dictionary={`${lang}.leftpage.geotagged`}
                         />
                     }
-                    centerContainerStyle={{ flex: 2 }}
+                    centerContainerStyle={{flex: 2}}
                     rightContent={
                         <Pressable
                             onPress={async () => {
@@ -280,16 +280,14 @@ class GalleryScreen extends Component {
                                 />
                                 <Body color="white">
                                     {this.state.selectedImages?.length > 0 &&
-                                        ` : ${
-                                            this.state.selectedImages?.length
-                                        }`}
+                                        ` : ${this.state.selectedImages?.length}`}
                                 </Body>
                             </View>
                         </Pressable>
                     }
                 />
                 {this.state.hasPermission && !this.state.loading ? (
-                    <View style={{ flex: 1 }}>
+                    <View style={{flex: 1}}>
                         <View
                             style={{
                                 flexDirection: 'row',
@@ -298,7 +296,7 @@ class GalleryScreen extends Component {
                             }}>
                             <Icon
                                 name="ios-information-circle-outline"
-                                style={{ color: Colors.muted }}
+                                style={{color: Colors.muted}}
                                 size={18}
                             />
                             <Caption>
@@ -312,8 +310,8 @@ class GalleryScreen extends Component {
                                 flex: 1
                             }}>
                             <FlatList
-                                contentContainerStyle={{ paddingBottom: 40 }}
-                                style={{ flexDirection: 'column' }}
+                                contentContainerStyle={{paddingBottom: 40}}
+                                style={{flexDirection: 'column'}}
                                 alwaysBounceVertical={false}
                                 showsVerticalScrollIndicator={false}
                                 data={this.state.sortedData}
@@ -347,10 +345,7 @@ const mapStateToProps = state => {
     };
 };
 
-export default connect(
-    mapStateToProps,
-    actions
-)(GalleryScreen);
+export default connect(mapStateToProps, actions)(GalleryScreen);
 
 const styles = StyleSheet.create({
     headerStyle: {

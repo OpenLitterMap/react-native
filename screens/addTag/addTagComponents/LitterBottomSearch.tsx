@@ -1,19 +1,27 @@
 import React, {PureComponent} from 'react';
 import {Dimensions, FlatList, Pressable, StyleSheet, View} from 'react-native';
+// @ts-ignore
 import {getTranslation} from 'react-native-translation';
 import {connect} from 'react-redux';
 import * as actions from '../../../actions';
+import {
+    addCustomTagToImage,
+    addTagToImage,
+    resetLitterTags,
+    suggestTags
+} from '../../../actions';
 import {Body, Caption, Colors, CustomTextInput} from '../../components';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 
-interface LitterBottomSearchProps extends PropsFromRedux {
+interface LitterBottomSearchProps {
     suggestedTags: any;
     swiperIndex: number;
     images: any;
     previousTags: any;
     lang: string;
     isKeyboardOpen: boolean;
+    navigation: any;
 }
 
 interface LitterBottomSearchState {
@@ -48,7 +56,8 @@ class LitterBottomSearch extends PureComponent<
         // currentGlobalIndex
         const currentIndex = this.props.swiperIndex;
 
-        this.props.addTagToImage({
+        // images_actions
+        addTagToImage({
             tag: newTag,
             currentIndex,
             quantityChanged: false
@@ -71,10 +80,12 @@ class LitterBottomSearch extends PureComponent<
             // currentGlobalIndex
             const currentIndex = this.props.swiperIndex;
 
-            this.props.addCustomTagToImage({
+            // images_actions
+            addCustomTagToImage({
                 tag: tag,
                 currentIndex
             });
+
             this.updateText('');
         }
     };
@@ -106,7 +117,7 @@ class LitterBottomSearch extends PureComponent<
         }
 
         // below checks are only required if customTagsArray is defined
-        // on a new image it's undefined till atleast one custom tag is added
+        // on a new image it's undefined till at least one custom tag is added
         if (customTagsArray) {
             // check if tag already exist
             if (
@@ -150,7 +161,7 @@ class LitterBottomSearch extends PureComponent<
     updateText(text: string) {
         this.setState({text});
 
-        this.props.suggestTags(text, this.props.lang);
+        suggestTags(text, this.props.lang);
     }
 
     /**
@@ -158,7 +169,7 @@ class LitterBottomSearch extends PureComponent<
      */
     closeLitterPicker() {
         // litter_reducer
-        this.props.resetLitterTags();
+        resetLitterTags();
 
         this.props.navigation.navigate('HOME');
     }
@@ -196,6 +207,8 @@ class LitterBottomSearch extends PureComponent<
     render() {
         const lang = this.props.lang;
         const suggest = getTranslation(`${lang}.tag.type-to-suggest`);
+
+        // @ts-ignore
         return (
             <View>
                 <View
@@ -262,7 +275,7 @@ const styles = StyleSheet.create({
         fontSize: SCREEN_HEIGHT * 0.02
     },
     suggest: {
-        marginBottom: 0,
+        marginBottom: 5,
         marginLeft: 20,
         backgroundColor: 'white',
         paddingHorizontal: 10,

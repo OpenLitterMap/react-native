@@ -1,22 +1,21 @@
 import axios from 'axios';
 import * as Sentry from '@sentry/react-native';
 import {
+    ADD_CUSTOM_TAG_TO_IMAGE,
     ADD_IMAGES,
     ADD_TAG_TO_IMAGE,
-    ADD_CUSTOM_TAG_TO_IMAGE,
     CHANGE_LITTER_STATUS,
     DECREMENT_SELECTED,
     DELETE_IMAGE,
     DELETE_SELECTED_IMAGES,
     DESELECT_ALL_IMAGES,
     INCREMENT_SELECTED,
-    REMOVE_TAG_FROM_IMAGE,
     REMOVE_CUSTOM_TAG_FROM_IMAGE,
+    REMOVE_TAG_FROM_IMAGE,
     TOGGLE_PICKED_UP,
-    TOGGLE_SELECTING,
     TOGGLE_SELECTED_IMAGES,
-    URL,
-    WEB_NOT_TAGGED
+    TOGGLE_SELECTING,
+    URL
 } from './types';
 
 /**
@@ -28,27 +27,27 @@ import {
 export const addImages = (images, type, picked_up) => {
     return {
         type: ADD_IMAGES,
-        payload: { images, type, picked_up }
+        payload: {images, type, picked_up}
     };
 };
 
 /**
  * Add tag to image
  */
-export const addTagToImage = ({ tag, currentIndex, quantityChanged }) => {
+export const addTagToImage = ({tag, currentIndex, quantityChanged}) => {
     return {
         type: ADD_TAG_TO_IMAGE,
-        payload: { tag, currentIndex, quantityChanged }
+        payload: {tag, currentIndex, quantityChanged}
     };
 };
 
 /**
  * Add tag to image
  */
-export const addCustomTagToImage = ({ tag, currentIndex }) => {
+export const addCustomTagToImage = ({tag, currentIndex}) => {
     return {
         type: ADD_CUSTOM_TAG_TO_IMAGE,
-        payload: { tag, currentIndex }
+        payload: {tag, currentIndex}
     };
 };
 
@@ -164,7 +163,7 @@ export const deleteWebImage = (token, photoId, enableAdminTagging) => {
                     Authorization: `Bearer ${token}`,
                     'Content-Type': 'application/json'
                 },
-                params: { photoId }
+                params: {photoId}
             });
 
             console.log('deleteWebImgResp', response.data);
@@ -174,7 +173,7 @@ export const deleteWebImage = (token, photoId, enableAdminTagging) => {
         if (response && response?.data?.success) {
             console.log('deleteWebImageSuccess', response.data);
 
-            console.log({ enableAdminTagging });
+            console.log({enableAdminTagging});
 
             dispatch({
                 type: DELETE_IMAGE,
@@ -208,10 +207,10 @@ export const removeTagFromImage = data => {
  * @param {number} tagIndex --> index of tag in customTags array.
  * @param {number} currentIndex --> current index of image
  */
-export const removeCustomTagFromImage = ({ tagIndex, currentIndex }) => {
+export const removeCustomTagFromImage = ({tagIndex, currentIndex}) => {
     return {
         type: REMOVE_CUSTOM_TAG_FROM_IMAGE,
-        payload: { tagIndex, currentIndex }
+        payload: {tagIndex, currentIndex}
     };
 };
 

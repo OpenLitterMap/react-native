@@ -1,12 +1,12 @@
 import React from 'react';
-import { View, Pressable, StyleSheet } from 'react-native';
+import {Pressable, StyleSheet, View} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { Colors, Body } from '../../components';
+import {Colors} from '../../components';
 
-const ActionButton = ({ navigation, status, onPress }) => {
+const ActionButton = ({navigation, status, onPress}) => {
     let iconName;
-    const disabled = status === 'SELECTING' ? true : false;
+    const disabled = status === 'SELECTING';
     switch (status) {
         case 'NO_IMAGES':
             iconName = 'ios-images-outline';

@@ -1,6 +1,7 @@
-import { produce } from 'immer';
+import {produce} from 'immer';
 
 import {
+    ADD_CUSTOM_TAG_TO_IMAGE,
     ADD_IMAGES,
     ADD_TAG_TO_IMAGE,
     CHANGE_LITTER_STATUS,
@@ -9,12 +10,11 @@ import {
     DELETE_SELECTED_IMAGES,
     DESELECT_ALL_IMAGES,
     INCREMENT_SELECTED,
+    REMOVE_CUSTOM_TAG_FROM_IMAGE,
     REMOVE_TAG_FROM_IMAGE,
     TOGGLE_PICKED_UP,
-    TOGGLE_SELECTING,
     TOGGLE_SELECTED_IMAGES,
-    ADD_CUSTOM_TAG_TO_IMAGE,
-    REMOVE_CUSTOM_TAG_FROM_IMAGE
+    TOGGLE_SELECTING
 } from '../actions/types';
 
 const INITIAL_STATE = {
@@ -25,7 +25,7 @@ const INITIAL_STATE = {
     previousTags: []
 };
 
-export default function(state = INITIAL_STATE, action) {
+export default function (state = INITIAL_STATE, action) {
     return produce(state, draft => {
         switch (action.type) {
             /**
@@ -55,7 +55,6 @@ export default function(state = INITIAL_STATE, action) {
 
                 images &&
                     images.map(image => {
-
                         let index;
 
                         if (image.platform === 'mobile') {
@@ -342,9 +341,10 @@ export default function(state = INITIAL_STATE, action) {
                 const imageIndex = draft.imagesArray.findIndex(
                     image => image.id === action.payload
                 );
-                if (imageIndex !== -1)
-                    draft.imagesArray[imageIndex].picked_up = !draft
-                        .imagesArray[imageIndex].picked_up;
+                if (imageIndex !== -1) {
+                    draft.imagesArray[imageIndex].picked_up =
+                        !draft.imagesArray[imageIndex].picked_up;
+                }
 
                 break;
 
@@ -362,9 +362,8 @@ export default function(state = INITIAL_STATE, action) {
              */
 
             case TOGGLE_SELECTED_IMAGES:
-                draft.imagesArray[action.payload].selected = !draft.imagesArray[
-                    action.payload
-                ].selected;
+                draft.imagesArray[action.payload].selected =
+                    !draft.imagesArray[action.payload].selected;
 
                 break;
 

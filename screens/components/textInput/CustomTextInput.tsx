@@ -1,6 +1,4 @@
 import React from 'react';
-// import PropTypes from 'prop-types';
-// import stylePropType from 'react-style-proptype';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {
     StyleProp,
@@ -43,7 +41,7 @@ const CustomTextInput: React.ForwardRefRenderFunction<
         inputStyle,
         // labelStyle,
         // editable = true,
-        name,
+        // name,
         value,
         touched,
         error,
@@ -91,7 +89,7 @@ const CustomTextInput: React.ForwardRefRenderFunction<
                     autoComplete="off"
                     textContentType="none"
                     underlineColorAndroid="transparent"
-                    name={name}
+                    // name={name}
                 />
                 {rightContent}
                 {rightIconName && (

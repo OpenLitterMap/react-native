@@ -1,36 +1,32 @@
-import React, { PureComponent } from 'react';
+import React, {PureComponent} from 'react';
 import {
     ActivityIndicator,
     Dimensions,
     Modal,
+    Platform,
     Text,
     TouchableWithoutFeedback,
-    View,
-    Platform
+    View
 } from 'react-native';
 // import AsyncStorage from '@react-native-community/async-storage';
 // import AsyncStorage from '@react-native-async-storage/async-storage';
+import {TransText} from 'react-native-translation';
 
-import { TransText } from 'react-native-translation';
-
-import { Button } from '@rneui/themed';
+import {Button} from '@rneui/themed';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { Header, Title, Body, Colors, SubTitle } from '../components';
+import {Body, Colors, Header, Title} from '../components';
 
-import { connect } from 'react-redux';
+import {connect} from 'react-redux';
 import * as actions from '../../actions';
-import { checkCameraRollPermission } from '../../utils/permissions';
-import { isGeotagged } from '../../utils/isGeotagged';
+import {checkCameraRollPermission} from '../../utils/permissions';
+import {isGeotagged} from '../../utils/isGeotagged';
+// Components
+import {ActionButton, UploadButton, UploadImagesGrid} from './homeComponents';
+import DeviceInfo from 'react-native-device-info';
+import {isTagged} from '../../utils/isTagged';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
-
-// Components
-import { UploadImagesGrid, ActionButton, UploadButton } from './homeComponents';
-import AddTags from '../addTag/AddTags';
-import DeviceInfo from 'react-native-device-info';
-import { isTagged } from '../../utils/isTagged';
-import {closeThankYouMessages, getUntaggedImages} from '../../actions';
 
 class HomeScreen extends PureComponent {
     constructor(props) {
@@ -42,7 +38,7 @@ class HomeScreen extends PureComponent {
             uploaded: 0, // total number of tagged images uploaded
             uploadFailed: 0,
             tagged: 0, // total number of images tagged successfully
-            taggedFailed: 0,
+            taggedFailed: 0
         };
 
         // Bind any functions that call props
@@ -86,7 +82,7 @@ class HomeScreen extends PureComponent {
         this.props.cancelUpload();
 
         // cancel pending uploads
-        this.setState({ isUploadCancelled: true });
+        this.setState({isUploadCancelled: true});
     }
 
     /**
@@ -128,8 +124,7 @@ class HomeScreen extends PureComponent {
         this.props.getPhotosFromCameraroll();
     }
 
-    render ()
-    {
+    render() {
         const lang = this.props.lang;
 
         return (
@@ -148,124 +143,108 @@ class HomeScreen extends PureComponent {
                     <Modal
                         animationType="slide"
                         transparent={true}
-                        visible={this.props.showModal}
-                    >
+                        visible={this.props.showModal}>
                         {/* Waiting spinner to show during upload */}
-                        {
-                            this.props.isUploading && (
-                                <View style={styles.modal}>
-                                    <TransText
-                                        style={styles.uploadText}
-                                        dictionary={`${lang}.leftpage.please-wait-uploading`}
-                                    />
+                        {this.props.isUploading && (
+                            <View style={styles.modal}>
+                                <TransText
+                                    style={styles.uploadText}
+                                    dictionary={`${lang}.leftpage.please-wait-uploading`}
+                                />
 
-                                    <ActivityIndicator
-                                        style={{ marginBottom: 10 }}
-                                    />
+                                <ActivityIndicator style={{marginBottom: 10}} />
 
-                                    <Text style={styles.uploadCount}>
-                                        {this.state.uploaded} / {this.state.total}
-                                    </Text>
+                                <Text style={styles.uploadCount}>
+                                    {this.state.uploaded} / {this.state.total}
+                                </Text>
 
-                                    <Button
-                                        onPress={this.cancelUpload.bind(this)}
-                                        title="Cancel"
-                                    />
-                                </View>
-                            )
-                        }
+                                <Button
+                                    onPress={this.cancelUpload.bind(this)}
+                                    title="Cancel"
+                                />
+                            </View>
+                        )}
 
                         {/* Thank You + Messages */}
-                        {
-                            this.props.showThankYouMessages && (
-                                <View style={styles.modal}>
-                                    <View style={styles.thankYouModalInner}>
+                        {this.props.showThankYouMessages && (
+                            <View style={styles.modal}>
+                                <View style={styles.thankYouModalInner}>
+                                    <TransText
+                                        style={{
+                                            fontSize: SCREEN_HEIGHT * 0.03,
+                                            marginBottom: 5
+                                        }}
+                                        dictionary={`${lang}.leftpage.thank-you`}
+                                    />
 
+                                    {/* Upload success */}
+                                    {this.state.uploaded > 0 && (
                                         <TransText
                                             style={{
-                                                fontSize: SCREEN_HEIGHT * 0.03,
+                                                fontSize: SCREEN_HEIGHT * 0.02,
                                                 marginBottom: 5
                                             }}
-                                            dictionary={`${lang}.leftpage.thank-you`}
+                                            dictionary={`${lang}.leftpage.you-have-uploaded`}
+                                            values={{
+                                                count: this.state.uploaded
+                                            }}
                                         />
+                                    )}
 
-                                        {/* Upload success */}
-                                        {
-                                            this.state.uploaded > 0 && (
+                                    {/* Tagged success */}
+                                    {this.state.tagged > 0 && (
+                                        <TransText
+                                            style={{
+                                                fontSize: SCREEN_HEIGHT * 0.02,
+                                                marginBottom: 5
+                                            }}
+                                            dictionary={`${lang}.leftpage.you-have-tagged`}
+                                            values={{
+                                                count: this.state.tagged
+                                            }}
+                                        />
+                                    )}
+
+                                    {this.state.uploadFailed > 0 && (
+                                        <Text
+                                            style={{
+                                                fontSize: SCREEN_HEIGHT * 0.02,
+                                                marginBottom: 5
+                                            }}>
+                                            {this.state.uploadFailed} uploads
+                                            failed
+                                        </Text>
+                                    )}
+
+                                    {this.state.taggedFailed > 0 && (
+                                        <Text
+                                            style={{
+                                                fontSize: SCREEN_HEIGHT * 0.02,
+                                                marginBottom: 5
+                                            }}>
+                                            {this.state.taggedFailed} tags
+                                            failed
+                                        </Text>
+                                    )}
+
+                                    <View style={{flexDirection: 'row'}}>
+                                        <TouchableWithoutFeedback
+                                            onPress={this.hideThankYouMessages.bind(
+                                                this
+                                            )}>
+                                            <View style={styles.thankYouButton}>
                                                 <TransText
-                                                    style={{
-                                                        fontSize: SCREEN_HEIGHT * 0.02,
-                                                        marginBottom: 5
-                                                    }}
-                                                    dictionary={`${lang}.leftpage.you-have-uploaded`}
-                                                    values={{
-                                                        count: this.state.uploaded
-                                                    }}
+                                                    style={
+                                                        styles.normalWhiteText
+                                                    }
+                                                    dictionary={`${lang}.leftpage.close`}
                                                 />
-                                            )
-                                        }
-
-                                        {/* Tagged success */}
-                                        {
-                                            this.state.tagged > 0 && (
-                                                <TransText
-                                                    style={{
-                                                        fontSize: SCREEN_HEIGHT * 0.02,
-                                                        marginBottom: 5
-                                                    }}
-                                                    dictionary={`${lang}.leftpage.you-have-tagged`}
-                                                    values={{
-                                                        count: this.state.tagged
-                                                    }}
-                                                />
-                                            )
-                                        }
-
-                                        {
-                                            this.state.uploadFailed > 0 && (
-                                                <Text
-                                                    style={{
-                                                        fontSize: SCREEN_HEIGHT * 0.02,
-                                                        marginBottom: 5
-                                                    }}
-                                                >
-                                                    {this.state.uploadFailed} uploads failed
-                                                </Text>
-                                            )
-                                        }
-
-
-                                        {
-                                            this.state.taggedFailed > 0 && (
-                                                <Text
-                                                    style={{
-                                                        fontSize: SCREEN_HEIGHT * 0.02,
-                                                        marginBottom: 5
-                                                    }}
-                                                >
-                                                    {this.state.taggedFailed} tags failed
-                                                </Text>
-                                            )
-                                        }
-
-                                        <View style={{ flexDirection: 'row' }}>
-                                            <TouchableWithoutFeedback
-                                                onPress={this.hideThankYouMessages.bind(this)}
-                                            >
-                                                <View style={styles.thankYouButton}>
-                                                    <TransText
-                                                        style={
-                                                            styles.normalWhiteText
-                                                        }
-                                                        dictionary={`${lang}.leftpage.close`}
-                                                    />
-                                                </View>
-                                            </TouchableWithoutFeedback>
-                                        </View>
+                                            </View>
+                                        </TouchableWithoutFeedback>
                                     </View>
                                 </View>
-                            )
-                        }
+                            </View>
+                        )}
                     </Modal>
                     {/* Grid to display images -- 3 columns */}
                     <UploadImagesGrid
@@ -292,7 +271,7 @@ class HomeScreen extends PureComponent {
      *
      */
     loadGallery = async () => {
-        this.props.navigation.navigate('ALBUM', { screen: 'GALLERY' });
+        this.props.navigation.navigate('ALBUM', {screen: 'GALLERY'});
     };
 
     /**
@@ -309,11 +288,9 @@ class HomeScreen extends PureComponent {
                             size={32}
                         />
                         <Body
-                            style={{ marginLeft: 10 }}
+                            style={{marginLeft: 10}}
                             color="muted"
-                            dictionary={`${
-                                this.props.lang
-                            }.leftpage.select-to-delete`}
+                            dictionary={`${this.props.lang}.leftpage.select-to-delete`}
                         />
                     </View>
                 );
@@ -346,11 +323,9 @@ class HomeScreen extends PureComponent {
         }
 
         return (
-            <UploadButton
-                lang={this.props.lang}
-                onPress={this.uploadPhotos}
-            />
-        );r
+            <UploadButton lang={this.props.lang} onPress={this.uploadPhotos} />
+        );
+        r;
     }
 
     /**
@@ -458,11 +433,9 @@ class HomeScreen extends PureComponent {
         // isUploading = true;
         this.props.startUploading();
 
-        if (imagesCount > 0)
-        {
+        if (imagesCount > 0) {
             // async loop
-            for (const img of this.props.images)
-            {
+            for (const img of this.props.images) {
                 console.log('LOOP');
                 console.log(img);
 
@@ -475,8 +448,7 @@ class HomeScreen extends PureComponent {
                 const isItemTagged = isTagged(img);
 
                 // Upload any new image that is tagged or not
-                if (img.type === 'gallery' && isgeotagged)
-                {
+                if (img.type === 'gallery' && isgeotagged) {
                     let ImageData = new FormData();
 
                     ImageData.append('photo', {
@@ -493,15 +465,15 @@ class HomeScreen extends PureComponent {
 
                     // Tags and custom_tags may or may not exist
 
-                    if (isItemTagged)
-                    {
-                        if (Object.keys(img.tags).length > 0)
-                        {
+                    if (isItemTagged) {
+                        if (Object.keys(img.tags).length > 0) {
                             ImageData.append('tags', JSON.stringify(img.tags));
                         }
 
-                        if (img.hasOwnProperty('customTags') && img.customTags.length > 0)
-                        {
+                        if (
+                            img.hasOwnProperty('customTags') &&
+                            img.customTags.length > 0
+                        ) {
                             ImageData.append(
                                 'custom_tags',
                                 JSON.stringify(img.customTags)
@@ -524,16 +496,12 @@ class HomeScreen extends PureComponent {
                         this.setState(previousState => ({
                             uploaded: previousState.uploaded + 1
                         }));
-                    }
-                    else
-                    {
+                    } else {
                         this.setState(previousState => ({
                             uploadFailed: previousState.uploadFailed + 1
                         }));
                     }
-                }
-                else if (img.type.toLowerCase() === 'web' && isItemTagged)
-                {
+                } else if (img.type.toLowerCase() === 'web' && isItemTagged) {
                     /**
                      * Upload tags for already uploaded image
                      *
@@ -551,14 +519,11 @@ class HomeScreen extends PureComponent {
                     console.log('After web upload');
                     console.log(response);
 
-                    if (response && response.success)
-                    {
+                    if (response && response.success) {
                         this.setState(previousState => ({
                             tagged: previousState.tagged + 1
                         }));
-                    }
-                    else
-                    {
+                    } else {
                         this.setState(previousState => ({
                             taggedFailed: previousState.taggedFailed + 1
                         }));
@@ -570,8 +535,7 @@ class HomeScreen extends PureComponent {
                 //         uploadFailed: previousState.uploadFailed + 1
                 //     }));
                 // }
-                else
-                {
+                else {
                     console.log('do something?');
                 }
             }
@@ -724,11 +688,8 @@ const mapStateToProps = state => {
         totalImagesToUpload: state.shared.totalImagesToUpload,
         isUploading: state.shared.isUploading,
         uniqueValue: state.shared.uniqueValue,
-        user: state.auth.user,
+        user: state.auth.user
     };
 };
 
-export default connect(
-    mapStateToProps,
-    actions
-)(HomeScreen);
+export default connect(mapStateToProps, actions)(HomeScreen);
