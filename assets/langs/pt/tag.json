@@ -1,0 +1,21 @@
+{
+    "add-tag": "Adicionar Tag",
+    "confirm": "Confirmar",
+    "type-to-suggest": "Digite para sugerir Tags",
+    "suggested-tags": "Tags Sugeridas {count}",
+    "alert": "Alerta",
+    "still-there": "O lixo ainda está lá!",
+    "picked-up": "O lixo foi coletado!",
+    "litter-status": "Status da ninhada",
+    "picked-thumb": "Pegou 👍🏻",
+    "not-picked-thumb": "Não pegou 👎🏻",
+    "delete-message": "Tem certeza de que deseja apagar esta imagem ?",
+    "cancel": "Cancelar",
+    "delete": "Sim, Excluir",
+    "custom-tags": "Etiquetas Personalizadas",
+    "custom-tags-min": "A tag precisa ter pelo menos 3 caracteres",
+    "custom-tags-max": "A tag pode ter no máximo 100 caracteres",
+    "tag-already-added": "Etiqueta já adicionada.",
+    "tag-limit-reached": "Você pode fazer upload de até 3 etiquetas personalizadas.",
+    "delete-image": "\uD83D\uDEAE Deletar Imagem"
+}

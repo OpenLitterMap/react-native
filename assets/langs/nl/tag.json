@@ -1,0 +1,21 @@
+{
+    "add-tag": "Voeg Tag toe",
+    "confirm": "Bevestig",
+    "type-to-suggest": "Tik om Tags voor te stellen",
+    "suggested-tags": "Voorgestelde Tags {count}",
+    "alert": "Waarschuwing",
+    "still-there": "Het afval ligt er nog",
+    "picked-up": "Het afval is opgeraapt",
+    "litter-status": "Neststatus",
+    "picked-thumb": "Opgehaald 👍🏻",
+    "not-picked-thumb": "Niet opgehaald 👎🏻",
+    "delete-message": "Weet je zeker dat je deze afbeelding wilt verwijderen?",
+    "cancel": "Annuleren",
+    "delete": "Ja, verwijderen",
+    "custom-tags": "Aangepaste Tags",
+    "custom-tags-min": "Tag moet minimaal 3 tekens lang zijn",
+    "custom-tags-max": "Tag mag maximaal 100 tekens bevatten",
+    "tag-already-added": "Tag al toegevoegd.",
+    "tag-limit-reached": "U kunt maximaal 3 aangepaste tags uploaden.",
+    "delete-image": "\uD83D\uDEAE Afbeelding verwijderen"
+}

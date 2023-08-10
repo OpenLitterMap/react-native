@@ -1,0 +1,21 @@
+{
+    "photos": "Grianghraif",
+    "geotagged": "Grianghraif Lógraite",
+    "cancel": "Cealaigh",
+    "done": "Críochnaithe",
+    "next": "Ar Aghaidh",
+    "upload": "Uaslódáil",
+    "select-a-photo": "Roghnaigh grianghraf",
+    "delete": "Scrios",
+    "selected": "{photos} roghnaithe",
+    "press-upload": "Brúigh Uaslódáil",
+    "select-to-delete": "Roghnaigh na híomhánna atá uait a scriosadh",
+    "please-wait-uploading": "Fan go bhfuil do ghréasáin ag uaslódáil na ngrianghraif",
+    "thank-you": "Go raibh maith agat!!!",
+    "you-have-uploaded": "Tá {count} grianghraf uaslódáilte agat",
+    "you-have-tagged": "Tá tú tarraingthe le lógraif {count}",
+    "close": "Dún",
+    "take-photo": "Glac grianghraf agus roghnaigh í ón ngalra",
+    "no-images": "Gan íomhánna le huaslódáil",
+    "camera": "Ceamara"
+}
