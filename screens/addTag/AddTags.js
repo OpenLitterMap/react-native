@@ -8,6 +8,7 @@ import {
     Pressable,
     StatusBar,
     StyleSheet,
+    TouchableWithoutFeedback,
     View
 } from 'react-native';
 import Swiper from 'react-native-swiper';
@@ -226,6 +227,18 @@ class AddTags extends Component {
         }
     };
 
+    outerViewClicked = () => {
+        if (this.state.isKeyboardOpen) {
+            this.handleCloseKeyboard();
+        }
+    };
+
+    handleCloseKeyboard = () => {
+        this.setState({isKeyboardOpen: false, keyboardHeight: 0});
+        this.startAnimation();
+        Keyboard.dismiss();
+    };
+
     /**
      * The Add Tags component
      */
@@ -347,61 +360,68 @@ class AddTags extends Component {
                                 sheetAnimatedStyle,
                                 opacityStyle
                             ]}>
-                            <View
-                                style={{
-                                    // height: 200,
-                                    maxWidth: SCREEN_WIDTH
-                                }}>
-                                <LitterTags
-                                    tags={
-                                        this.props.images[
-                                            this.props.swiperIndex
-                                        ]?.tags
-                                    }
-                                    customTags={
-                                        this.props.images[
-                                            this.props.swiperIndex
-                                        ]?.customTags
-                                    }
-                                    lang={this.props.lang}
-                                    swiperIndex={this.props.swiperIndex}
-                                />
-
-                                <LitterTextInput
-                                    suggestedTags={this.props.suggestedTags}
-                                    // height={this.state.height}
-                                    lang={this.props.lang}
-                                    swiperIndex={this.props.swiperIndex}
-                                    isKeyboardOpen={this.state.isKeyboardOpen}
-                                    navigation={this.props.navigation}
-                                />
-                                {!this.state.isKeyboardOpen && (
-                                    <LitterPickerWheels
-                                        item={this.props.item}
-                                        items={this.props.items}
-                                        model={this.props.model}
-                                        category={this.props.category}
-                                        lang={this.props.lang}
-                                    />
-                                )}
-                                {!this.state.isKeyboardOpen && (
-                                    <LitterBottomButtons
-                                        images={this.props.images}
-                                        swiperIndex={this.props.swiperIndex}
-                                        lang={lang}
-                                        category={this.props.category}
-                                        item={this.props.item}
-                                        quantityChanged={
-                                            this.props.quantityChanged
+                            <TouchableWithoutFeedback
+                                onPress={this.outerViewClicked}>
+                                <View
+                                    style={[
+                                        {maxWidth: SCREEN_WIDTH},
+                                        this.state.isKeyboardOpen
+                                            ? {paddingTop: SCREEN_HEIGHT * 0.15}
+                                            : null
+                                    ]}>
+                                    <LitterTags
+                                        tags={
+                                            this.props.images[
+                                                this.props.swiperIndex
+                                            ]?.tags
                                         }
-                                        q={this.props.q}
-                                        navigation={this.props.navigation}
-                                        deleteButtonPressed={() => {
-                                            this.actionSheetRef.current?.show();
-                                        }}
+                                        customTags={
+                                            this.props.images[
+                                                this.props.swiperIndex
+                                            ]?.customTags
+                                        }
+                                        lang={this.props.lang}
+                                        swiperIndex={this.props.swiperIndex}
                                     />
-                                )}
-                            </View>
+
+                                    <LitterTextInput
+                                        suggestedTags={this.props.suggestedTags}
+                                        // height={this.state.height}
+                                        lang={this.props.lang}
+                                        swiperIndex={this.props.swiperIndex}
+                                        isKeyboardOpen={
+                                            this.state.isKeyboardOpen
+                                        }
+                                        navigation={this.props.navigation}
+                                    />
+                                    {!this.state.isKeyboardOpen && (
+                                        <LitterPickerWheels
+                                            item={this.props.item}
+                                            items={this.props.items}
+                                            model={this.props.model}
+                                            category={this.props.category}
+                                            lang={this.props.lang}
+                                        />
+                                    )}
+                                    {!this.state.isKeyboardOpen && (
+                                        <LitterBottomButtons
+                                            images={this.props.images}
+                                            swiperIndex={this.props.swiperIndex}
+                                            lang={lang}
+                                            category={this.props.category}
+                                            item={this.props.item}
+                                            quantityChanged={
+                                                this.props.quantityChanged
+                                            }
+                                            q={this.props.q}
+                                            navigation={this.props.navigation}
+                                            deleteButtonPressed={() => {
+                                                this.actionSheetRef.current?.show();
+                                            }}
+                                        />
+                                    )}
+                                </View>
+                            </TouchableWithoutFeedback>
                         </Animated.View>
                     </View>
                 </View>
@@ -500,7 +520,7 @@ class AddTags extends Component {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: 'black'
+        backgroundColor: 'blue'
     },
     statusCard: {
         backgroundColor: Colors.white,
