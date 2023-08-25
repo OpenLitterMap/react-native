@@ -50,7 +50,7 @@ export const addTagToImage = payload => {
  */
 export const addCustomTagToImage = ({tag, currentIndex}) => {
     return {
-        type: 'ADD_CUSTOM_TAG_TO_IMAGE',
+        type: ADD_CUSTOM_TAG_TO_IMAGE,
         payload: {tag, currentIndex}
     };
 };

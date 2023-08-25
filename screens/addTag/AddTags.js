@@ -151,7 +151,6 @@ class AddTags extends Component {
             useNativeDriver: true,
             easing: Easing.elastic(1)
         }).start(() => {
-            console.log('handle image tap');
             pressType === 'REGULAR' &&
                 this.setState({
                     isCategoriesVisible: true
@@ -159,24 +158,6 @@ class AddTags extends Component {
         });
         Animated.timing(this.state.sheetAnimation, {
             toValue: 100,
-            duration: 500,
-            useNativeDriver: true,
-            easing: Easing.elastic(1)
-        }).start();
-    };
-
-    opacityAnmiation = async () => {
-        Animated.timing(this.state.opacityAnimation, {
-            toValue: 0,
-            duration: 500,
-            useNativeDriver: true,
-            easing: Easing.elastic(1)
-        }).start();
-    };
-
-    returnOpacityAnmiation = async () => {
-        Animated.timing(this.state.opacityAnimation, {
-            toValue: 1,
             duration: 500,
             useNativeDriver: true,
             easing: Easing.elastic(1)
@@ -251,9 +232,13 @@ class AddTags extends Component {
         const sheetAnimatedStyle = {
             transform: [{translateY: this.state.sheetAnimation}]
         };
-        const animatedStyle = {
-            transform: [{translateY: this.state.animation}]
-        };
+
+        // Had a bug with this since upgrading react-native from 0.63 -> 0.72
+        // swiper was perfect, but now rarely detected
+        // removing the style/containerStyle prop seems to have helped a bit.
+        // const animatedStyle = {
+        //     transform: [{translateY: this.state.animation}]
+        // };
 
         const opacityStyle = {
             opacity: this.state.opacityAnimation
@@ -267,7 +252,6 @@ class AddTags extends Component {
 
                         {/* Images swiper */}
                         <AnimatedSwiper
-                            style={[animatedStyle]}
                             ref={this.swiper}
                             showsButtons={!this.state.isKeyboardOpen}
                             prevButton={
@@ -519,8 +503,7 @@ class AddTags extends Component {
 
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
-        backgroundColor: 'blue'
+        flex: 1
     },
     statusCard: {
         backgroundColor: Colors.white,

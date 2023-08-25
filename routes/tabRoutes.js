@@ -3,7 +3,12 @@ import {SafeAreaView, View} from 'react-native';
 import {createMaterialTopTabNavigator} from '@react-navigation/material-top-tabs';
 
 import Icon from 'react-native-vector-icons/Ionicons';
-import {GlobalDataScreen, HomeScreen, UserStatsScreen} from '../screens';
+import {
+    GlobalDataScreen,
+    HomeScreen,
+    UserStatsScreen,
+    LeaderboardsScreen
+} from '../screens';
 import TeamStack from './teamRoutes';
 import {Colors} from '../screens/components';
 
@@ -41,6 +46,12 @@ const TabRoutes = ({navigation}) => (
                         //         ? 'ios-trophy'
                         //         : 'ios-trophy-outline';
                         //     break;
+                        case 'LEADERBOARDS':
+                            iconName = focused
+                                ? 'ios-trophy'
+                                : 'ios-trophy-outline';
+                            break;
+
                         case 'CAMERA':
                             iconName = focused
                                 ? 'ios-camera'
@@ -101,6 +112,7 @@ const TabRoutes = ({navigation}) => (
             {/*/>*/}
             <Tab.Screen name="TEAM" component={TeamStack} />
             <Tab.Screen name="GLOBAL_DATA" component={GlobalDataScreen} />
+            <Tab.Screen name="LEADERBOARDS" component={LeaderboardsScreen} />
 
             {/* <Tab.Screen name="RANKING" component={RankingScreen} /> */}
             <Tab.Screen name="USER_STATS" component={UserStatsScreen} />

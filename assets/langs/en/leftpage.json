@@ -17,5 +17,6 @@
     "close": "Close",
     "take-photo": "Take a photo and select it from the gallery",
     "no-images": "No images to upload",
-    "camera": "Camera"
+    "camera": "Camera",
+    "leaderboard": "Leaderboard"
 }

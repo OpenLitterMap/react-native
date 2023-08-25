@@ -44,7 +44,7 @@ const App = () => {
                         language={lang}
                         defaultLanguage={'en'}
                         translations={langs}>
-                        <MainRoutes/>
+                        <MainRoutes />
                     </LanguageProvider>
                 </PersistGate>
             </Provider>

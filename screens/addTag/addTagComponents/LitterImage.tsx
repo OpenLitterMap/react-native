@@ -10,7 +10,11 @@ import {
 import * as actions from '../../../actions';
 import {connect} from 'react-redux';
 import GestureRecognizer from 'react-native-swipe-gestures';
-import {PinchGestureHandler, State} from 'react-native-gesture-handler';
+import {
+    GestureHandlerRootView,
+    PinchGestureHandler,
+    State
+} from 'react-native-gesture-handler';
 import {NavigationProp} from '@react-navigation/native';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -86,47 +90,51 @@ class LitterImage extends PureComponent<LitterImageProps, LitterImageState> {
             this.props;
 
         return (
-            <GestureRecognizer
-                onSwipeDown={state => {
-                    console.log('swipe down', state);
-                    navigation.navigate('HOME');
-                }}>
-                <PinchGestureHandler
-                    onGestureEvent={this.onPinchGestureEvent}
-                    onHandlerStateChange={this.onPinchHandlerStateChange}>
-                    <AnimatedPressable
-                        onPress={() => {
-                            this.setState({isLongPress: false});
-                        }}
-                        onLongPress={() => {
-                            this.setState({isLongPress: true});
-                            onLongPressStart();
-                        }}
-                        onPressOut={() => {
-                            this.state.isLongPress && onLongPressEnd();
-                        }}
-                        style={{backgroundColor: 'black'}}>
-                        <Animated.Image
-                            resizeMode="contain"
-                            source={
-                                {uri: photoSelected.uri} as ImageSourcePropType
-                            }
-                            style={[
-                                styles.image,
-                                {
-                                    transform: [{scale: this.scale}]
+            <GestureHandlerRootView>
+                <GestureRecognizer
+                    onSwipeDown={state => {
+                        console.log('swipe down', state);
+                        navigation.navigate('HOME');
+                    }}>
+                    <PinchGestureHandler
+                        onGestureEvent={this.onPinchGestureEvent}
+                        onHandlerStateChange={this.onPinchHandlerStateChange}>
+                        <AnimatedPressable
+                            onPress={() => {
+                                this.setState({isLongPress: false});
+                            }}
+                            onLongPress={() => {
+                                this.setState({isLongPress: true});
+                                onLongPressStart();
+                            }}
+                            onPressOut={() => {
+                                this.state.isLongPress && onLongPressEnd();
+                            }}
+                            style={{backgroundColor: 'black'}}>
+                            <Animated.Image
+                                resizeMode="contain"
+                                source={
+                                    {
+                                        uri: photoSelected.uri
+                                    } as ImageSourcePropType
                                 }
-                            ]}
-                            onLoad={this._imageLoaded}
-                        />
+                                style={[
+                                    styles.image,
+                                    {
+                                        transform: [{scale: this.scale}]
+                                    }
+                                ]}
+                                onLoad={this._imageLoaded}
+                            />
 
-                        <ActivityIndicator
-                            style={styles.activityIndicator}
-                            animating={!this.state.imageLoaded}
-                        />
-                    </AnimatedPressable>
-                </PinchGestureHandler>
-            </GestureRecognizer>
+                            <ActivityIndicator
+                                style={styles.activityIndicator}
+                                animating={!this.state.imageLoaded}
+                            />
+                        </AnimatedPressable>
+                    </PinchGestureHandler>
+                </GestureRecognizer>
+            </GestureHandlerRootView>
         );
     }
 }
