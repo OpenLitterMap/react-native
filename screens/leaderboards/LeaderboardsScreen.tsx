@@ -350,6 +350,7 @@ class LeaderboardsScreen extends PureComponent<
         });
 
         // dispatch
+        // @ts-ignore
         await this.props.getLeaderboardData(value);
 
         this.setState({

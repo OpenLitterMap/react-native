@@ -29,6 +29,8 @@ const Header: React.FC<HeaderProps> = ({
     centerContainerStyle,
     rightContainerStyle
 }) => {
+    // @ts-ignore
+    // @ts-ignore
     return (
         <>
             <StatusBar
