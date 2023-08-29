@@ -1,6 +1,7 @@
 apply plugin: "com.android.application"
 apply plugin: "com.facebook.react"
 apply from: project(":react-native-config").projectDir.getPath() + "/dotenv.gradle"
+apply from: "../../node_modules/react-native-vector-icons/fonts.gradle"
 
 /**
  * This is the configuration block to customize your React Native Android app.
@@ -72,23 +73,29 @@ def jscFlavor = 'org.webkit:android-jsc:+'
 android {
     ndkVersion rootProject.ext.ndkVersion
 
-    compileSdkVersion rootProject.ext.compileSdkVersion
+    compileSdkVersion 33
 
-    namespace "com.openlittermap"
+    namespace "com.geotech.openlittermap"
 
     defaultConfig {
-        applicationId "com.openlittermap"
+        applicationId "com.geotech.openlittermap"
         minSdkVersion rootProject.ext.minSdkVersion
-        targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
+        targetSdkVersion 33
+        versionCode 42
+        versionName "5.1.2"
     }
     signingConfigs {
         debug {
-            storeFile file('debug.keystore')
-            storePassword 'android'
-            keyAlias 'androiddebugkey'
-            keyPassword 'android'
+            storeFile file(project.env.get("OLM_RELEASE_STORE_FILE"))
+            storePassword project.env.get("OLM_RELEASE_STORE_PASSWORD")
+            keyAlias project.env.get("OLM_RELEASE_KEY_ALIAS")
+            keyPassword project.env.get("OLM_RELEASE_KEY_PASSWORD")
+        }
+        release {
+            storeFile file(project.env.get("OLM_RELEASE_STORE_FILE"))
+            storePassword project.env.get("OLM_RELEASE_STORE_PASSWORD")
+            keyAlias project.env.get("OLM_RELEASE_KEY_ALIAS")
+            keyPassword project.env.get("OLM_RELEASE_KEY_PASSWORD")
         }
     }
     buildTypes {
@@ -98,7 +105,7 @@ android {
         release {
             // Caution! In production, you need to generate your own keystore file.
             // see https://reactnative.dev/docs/signed-apk-android.
-            signingConfig signingConfigs.debug
+            signingConfig signingConfigs.release
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }

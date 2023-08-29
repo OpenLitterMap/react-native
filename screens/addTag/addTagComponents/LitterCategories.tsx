@@ -3,6 +3,7 @@ import {
     Dimensions,
     FlatList,
     Image,
+    Platform,
     Pressable,
     StyleSheet,
     View
@@ -41,13 +42,18 @@ class LitterCategories extends PureComponent<Props> {
      * Each category to display
      */
     renderCategory(category: Category) {
+        const cardStyle = Platform.select({
+            ios: styles.cardiOS,
+            android: styles.cardAndroid
+        });
+
         return (
             <Pressable
                 onPress={this.changeCategory.bind(this, category.title)}
                 key={category.id}>
                 <View
                     style={[
-                        styles.card,
+                        cardStyle,
                         category.title === this.props.category.title &&
                             styles.selectedCard
                     ]}>
@@ -86,8 +92,20 @@ class LitterCategories extends PureComponent<Props> {
 }
 
 const styles = StyleSheet.create({
-    card: {
+    cardiOS: {
         height: SCREEN_HEIGHT * 0.085,
+        minWidth: SCREEN_WIDTH * 0.2,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginHorizontal: 10,
+        borderRadius: 12,
+        padding: 8,
+        borderWidth: 2,
+        borderColor: Colors.accentLight,
+        backgroundColor: Colors.white
+    },
+    cardAndroid: {
+        height: SCREEN_HEIGHT * 0.1,
         minWidth: SCREEN_WIDTH * 0.2,
         justifyContent: 'center',
         alignItems: 'center',

@@ -35,30 +35,30 @@
 			</dict>
 		</dict>
 	</dict>
-    <key>NSAppleMusicUsageDescription</key>
-    <string>OpenLitterMap needs permission to your photos if you would like to upload geotagged photos taken outside of the app.</string>
-    <key>NSCameraUsageDescription</key>
-    <string>Giving permission to the camera and location services will enable you to take geotagged photos of litter with the app. Please take photos of litter only.</string>
-    <key>NSLocationAlwaysUsageDescription</key>
-    <string>OpenLitterMap needs permission to your local if you would like to collect geotagged photos using the app</string>
-    <key>NSLocationWhenInUseUsageDescription</key>
-    <string>OpenLitterMap needs permission to your location services to geotag the location of the photos you take with the app.</string>
-    <key>NSPhotoLibraryUsageDescription</key>
-    <string>OpenLitterMap needs permission to your photos if you would like to upload geotagged photos taken outside of the app.</string>
-    <key>UIAppFonts</key>
-    	<array>
-    		<string>Avenir-Black.ttf</string>
-    		<string>Poppins-Thin.ttf</string>
-    		<string>Poppins-SemiBold.ttf</string>
-    		<string>Poppins-Regular.ttf</string>
-    		<string>Poppins-Medium.ttf</string>
-    		<string>Poppins-Light.ttf</string>
-    		<string>Poppins-Bold.ttf</string>
-    		<string>MaterialIcons.ttf</string>
-    		<string>Ionicons.ttf</string>
-    		<string>Feather.ttf</string>
-    		<string>MaterialCommunityIcons.ttf</string>
-    	</array>
+	<key>NSAppleMusicUsageDescription</key>
+	<string>OpenLitterMap needs permission to your photos if you would like to upload geotagged photos taken outside of the app.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Giving permission to the camera and location services will enable you to take geotagged photos of litter with the app. Please take photos of litter only.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>OpenLitterMap needs permission to your local if you would like to collect geotagged photos using the app</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>OpenLitterMap needs permission to your location services to geotag the location of the photos you take with the app.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>OpenLitterMap needs permission to your photos if you would like to upload geotagged photos taken outside of the app.</string>
+	<key>UIAppFonts</key>
+	<array>
+		<string>Avenir-Black.ttf</string>
+		<string>Poppins-Thin.ttf</string>
+		<string>Poppins-SemiBold.ttf</string>
+		<string>Poppins-Regular.ttf</string>
+		<string>Poppins-Medium.ttf</string>
+		<string>Poppins-Light.ttf</string>
+		<string>Poppins-Bold.ttf</string>
+		<string>MaterialIcons.ttf</string>
+		<string>Ionicons.ttf</string>
+		<string>Feather.ttf</string>
+		<string>MaterialCommunityIcons.ttf</string>
+	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIRequiredDeviceCapabilities</key>
@@ -67,9 +67,9 @@
 	</array>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
-		<string>UIInterfaceOrientationPortrait</string>
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
+		<string>UIInterfaceOrientationPortrait</string>
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>

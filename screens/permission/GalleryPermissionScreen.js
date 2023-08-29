@@ -6,21 +6,21 @@ import {
     Platform,
     Pressable,
     StyleSheet,
-    View,
+    View
 } from 'react-native';
 import {connect} from 'react-redux';
 import * as actions from '../../actions';
 import {Body, Colors, Title} from '../components';
 import {
     checkCameraRollPermission,
-    requestCameraRollPermission,
+    requestCameraRollPermission
 } from '../../utils/permissions';
 
 class GalleryPermissionScreen extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            appState: AppState.currentState,
+            appState: AppState.currentState
         };
     }
 
@@ -41,7 +41,7 @@ class GalleryPermissionScreen extends Component {
 
         const subscription = AppState.addEventListener(
             'change',
-            this.handleAppStateChange,
+            this.handleAppStateChange
         );
         subscription.remove();
     }
@@ -69,6 +69,7 @@ class GalleryPermissionScreen extends Component {
      * if permissions granted go back to home, else do nothing
      */
     async checkGalleryPermission() {
+        console.log('checkCameraRollPermission');
         const result = await checkCameraRollPermission();
         console.log({result});
         if (result === 'granted') {
@@ -85,6 +86,7 @@ class GalleryPermissionScreen extends Component {
      * if user granted access go back
      */
     async requestGalleryPermission() {
+        console.log('requestCameraRollPermission');
         const result = await requestCameraRollPermission();
         console.log({result});
         if (result === 'granted') {
@@ -130,7 +132,7 @@ class GalleryPermissionScreen extends Component {
 
 const mapStateToProps = state => {
     return {
-        lang: state.auth.lang,
+        lang: state.auth.lang
     };
 };
 
@@ -141,21 +143,21 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         flex: 1,
-        padding: 20,
+        padding: 20
     },
     imageStyle: {
         width: 300,
-        height: 300,
+        height: 300
     },
     bodyText: {
         textAlign: 'center',
-        marginVertical: 20,
+        marginVertical: 20
     },
     buttonStyle: {
         paddingHorizontal: 28,
         paddingVertical: 20,
         backgroundColor: Colors.accent,
         borderRadius: 100,
-        marginVertical: 32,
-    },
+        marginVertical: 32
+    }
 });

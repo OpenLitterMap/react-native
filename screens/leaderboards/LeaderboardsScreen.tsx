@@ -402,6 +402,7 @@ class LeaderboardsScreen extends PureComponent<
                     <Picker
                         selectedValue={selectedValue}
                         style={styles.picker}
+                        itemStyle={styles.pickerItem}
                         onValueChange={itemValue =>
                             this.setSelectedValue(itemValue)
                         }
@@ -465,7 +466,12 @@ const styles = StyleSheet.create({
     picker: {
         flex: 1,
         backgroundColor: '#f0f0f0',
-        borderRadius: 5
+        borderRadius: 5,
+        height: 50
+    },
+    pickerItem: {
+        backgroundColor: '#f0f0f0',
+        height: 50
     },
     row: {
         flexDirection: 'row',
