@@ -8,9 +8,12 @@ export const requestCameraRollPermission = async () => {
     }
 
     if (Platform.OS === 'android') {
-        result = await request(PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE);
+        result = await request(PERMISSIONS.ANDROID.READ_MEDIA_IMAGES);
+
+        console.log('checkCameraRollPermission', result);
+
         const mediaLocation = await PermissionsAndroid.request(
-            'android.permission.ACCESS_MEDIA_LOCATION',
+            'android.permission.ACCESS_MEDIA_LOCATION'
         );
         if (
             result === 'granted' &&
@@ -31,7 +34,7 @@ export const checkCameraRollPermission = async () => {
         result = await check('ios.permission.PHOTO_LIBRARY');
     }
     if (Platform.OS === 'android') {
-        result = await check('android.permission.READ_EXTERNAL_STORAGE');
+        result = await check('android.permission.READ_MEDIA_IMAGES');
     }
 
     return result;

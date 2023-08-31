@@ -66,7 +66,7 @@ class HomeScreen extends PureComponent {
         // if not in DEV mode check for new version
         !__DEV__ && this.checkNewVersion();
 
-        this.checkGalleryPermission();
+        await this.checkGalleryPermission();
     }
 
     componentDidUpdate(prevProps) {

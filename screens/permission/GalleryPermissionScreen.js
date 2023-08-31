@@ -15,6 +15,7 @@ import {
     checkCameraRollPermission,
     requestCameraRollPermission
 } from '../../utils/permissions';
+import * as Sentry from '@sentry/react-native';
 
 class GalleryPermissionScreen extends Component {
     constructor(props) {
@@ -69,11 +70,19 @@ class GalleryPermissionScreen extends Component {
      * if permissions granted go back to home, else do nothing
      */
     async checkGalleryPermission() {
-        console.log('checkCameraRollPermission');
         const result = await checkCameraRollPermission();
-        console.log({result});
-        if (result === 'granted') {
+        if (result.toLowerCase() === 'granted') {
             this.props.navigation.navigate('HOME');
+        } else {
+            Sentry.captureException(
+                JSON.stringify('Gallery Permission Error ' + result, null, 2),
+                {
+                    level: 'error',
+                    tags: {
+                        section: 'checkGalleryPermission'
+                    }
+                }
+            );
         }
     }
 
@@ -86,15 +95,13 @@ class GalleryPermissionScreen extends Component {
      * if user granted access go back
      */
     async requestGalleryPermission() {
-        console.log('requestCameraRollPermission');
         const result = await requestCameraRollPermission();
-        console.log({result});
         if (result === 'granted') {
             this.props.navigation.navigate('HOME');
         } else {
             Platform.OS === 'ios'
-                ? Linking.openURL('app-settings:')
-                : Linking.openSettings();
+                ? await Linking.openURL('app-settings:')
+                : await Linking.openSettings();
         }
     }
 

@@ -1,18 +1,16 @@
-import React, { Component } from 'react';
-import { View, Text, ActivityIndicator } from 'react-native';
-import { connect } from 'react-redux';
-import { createStackNavigator } from '@react-navigation/stack';
-// import AsyncStorage from '@react-native-community/async-storage';
+import React, {Component} from 'react';
+import {ActivityIndicator, View} from 'react-native';
+import {connect} from 'react-redux';
+import {createStackNavigator} from '@react-navigation/stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import * as actions from '../actions';
 import AuthStack from './authRoutes';
 import TabRoutes from './tabRoutes';
 import PermissionStack from './permissionRoutes';
-import { SettingScreen, NewUpdateScreen, GalleryScreen } from '../screens';
-// import AlbumList from '../screens/pages/library/AlbumList';
-// import GalleryStack from './galleryRoutes';
+import {GalleryScreen, NewUpdateScreen, SettingScreen} from '../screens';
 import AddTags from '../screens/addTag/AddTags';
+
 const Stack = createStackNavigator();
 
 class MainRoutes extends Component {
@@ -25,8 +23,8 @@ class MainRoutes extends Component {
         // this._bootstrapAsync();
     }
 
-    componentDidMount() {
-        this._bootstrapAsync();
+    async componentDidMount() {
+        await this._bootstrapAsync();
     }
 
     /**
@@ -49,17 +47,18 @@ class MainRoutes extends Component {
             if (this.props.tokenIsValid) {
                 await this.props.fetchUser(userToken);
 
-                this.setState({ isLoading: false });
+                this.setState({isLoading: false});
             } else {
                 // if token is invalid logout the user
                 this.props.logout();
 
-                this.setState({ isLoading: false });
+                this.setState({isLoading: false});
             }
         } else {
-            this.setState({ isLoading: false });
+            this.setState({isLoading: false});
         }
     };
+
     render() {
         // TODO: show splash screen instead of loading
         if (this.state.isLoading) {
@@ -118,7 +117,4 @@ const mapStateToProps = state => {
     };
 };
 
-export default connect(
-    mapStateToProps,
-    actions
-)(MainRoutes);
+export default connect(mapStateToProps, actions)(MainRoutes);

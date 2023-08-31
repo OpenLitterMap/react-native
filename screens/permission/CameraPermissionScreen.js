@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, {Component} from 'react';
 import {
     AppState,
     StyleSheet,
@@ -10,9 +10,9 @@ import {
     Dimensions
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { connect } from 'react-redux';
+import {connect} from 'react-redux';
 import * as actions from '../../actions';
-import { Title, Body, Colors, Caption } from '../components';
+import {Title, Body, Colors, Caption} from '../components';
 import {
     checkCameraPermission,
     checkLocationPermission,
@@ -20,7 +20,7 @@ import {
     requestLocationPermission
 } from '../../utils/permissions';
 
-const { width } = Dimensions.get('window');
+const {width} = Dimensions.get('window');
 class CameraPermissionScreen extends Component {
     constructor(props) {
         super(props);
@@ -58,7 +58,7 @@ class CameraPermissionScreen extends Component {
         ) {
             this.checkPermissions();
         }
-        this.setState({ appState: nextAppState });
+        this.setState({appState: nextAppState});
     };
 
     /**
@@ -98,7 +98,7 @@ class CameraPermissionScreen extends Component {
     }
 
     render() {
-        const { navigation, lang } = this.props;
+        const {navigation, lang} = this.props;
         return (
             <View style={styles.container}>
                 <Image
@@ -113,16 +113,16 @@ class CameraPermissionScreen extends Component {
                     <View
                         style={[
                             styles.permissionItem,
-                            lang === 'ar' && { flexDirection: 'row-reverse' }
+                            lang === 'ar' && {flexDirection: 'row-reverse'}
                         ]}>
                         <Icon name="ios-camera" size={32} color={Colors.text} />
                         <View style={styles.itemBody}>
                             <Body
-                                style={lang === 'ar' && { textAlign: 'right' }}
+                                style={lang === 'ar' && {textAlign: 'right'}}
                                 dictionary={`${lang}.permission.camera-access`}
                             />
                             <Caption
-                                style={lang === 'ar' && { textAlign: 'right' }}
+                                style={lang === 'ar' && {textAlign: 'right'}}
                                 dictionary={`${lang}.permission.camera-access-body`}
                             />
                         </View>
@@ -132,16 +132,16 @@ class CameraPermissionScreen extends Component {
                     <View
                         style={[
                             styles.permissionItem,
-                            lang === 'ar' && { flexDirection: 'row-reverse' }
+                            lang === 'ar' && {flexDirection: 'row-reverse'}
                         ]}>
                         <Icon name="ios-location" size={32} />
                         <View style={styles.itemBody}>
                             <Body
-                                style={lang === 'ar' && { textAlign: 'right' }}
+                                style={lang === 'ar' && {textAlign: 'right'}}
                                 dictionary={`${lang}.permission.location-access`}
                             />
                             <Caption
-                                style={lang === 'ar' && { textAlign: 'right' }}
+                                style={lang === 'ar' && {textAlign: 'right'}}
                                 dictionary={`${lang}.permission.location-body`}
                             />
                         </View>
@@ -169,10 +169,7 @@ const mapStateToProps = state => {
     };
 };
 
-export default connect(
-    mapStateToProps,
-    actions
-)(CameraPermissionScreen);
+export default connect(mapStateToProps, actions)(CameraPermissionScreen);
 
 const styles = StyleSheet.create({
     container: {
@@ -198,7 +195,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         marginTop: 20
     },
-    itemBody: { flexShrink: 1, marginHorizontal: 20 },
+    itemBody: {flexShrink: 1, marginHorizontal: 20},
     buttonStyle: {
         paddingHorizontal: 28,
         paddingVertical: 20,

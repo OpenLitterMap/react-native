@@ -1,6 +1,6 @@
 import React from 'react';
-import { createStackNavigator } from '@react-navigation/stack';
-import { GalleryPermissionScreen, CameraPermissionScreen } from '../screens';
+import {createStackNavigator} from '@react-navigation/stack';
+import {CameraPermissionScreen, GalleryPermissionScreen} from '../screens';
 
 const Stack = createStackNavigator();
 
