@@ -81,8 +81,8 @@ android {
         applicationId "com.geotech.openlittermap"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion 33
-        versionCode 43
-        versionName "5.1.3"
+        versionCode 45
+        versionName "5.1.5"
     }
     signingConfigs {
         debug {

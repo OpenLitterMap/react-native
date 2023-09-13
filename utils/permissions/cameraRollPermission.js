@@ -7,21 +7,33 @@ export const requestCameraRollPermission = async () => {
         result = await request(PERMISSIONS.IOS.PHOTO_LIBRARY);
     }
 
+    // Check android version
     if (Platform.OS === 'android') {
-        result = await request(PERMISSIONS.ANDROID.READ_MEDIA_IMAGES);
+        // Android 13 and above
+        // needs to request READ_MEDIA_IMAGES and ACCESS_MEDIA_LOCAITON
+        if (Platform.Version >= 33) {
+            result = await request(PERMISSIONS.ANDROID.READ_MEDIA_IMAGES);
 
-        console.log('checkCameraRollPermission', result);
-
-        const mediaLocation = await PermissionsAndroid.request(
-            'android.permission.ACCESS_MEDIA_LOCATION'
-        );
-        if (
-            result === 'granted' &&
-            mediaLocation !== PermissionsAndroid.RESULTS.DENIED
-        ) {
-            result = 'granted';
+            const mediaLocation = await PermissionsAndroid.request(
+                'android.permission.ACCESS_MEDIA_LOCATION'
+            );
+            if (
+                result === 'granted' &&
+                mediaLocation !== PermissionsAndroid.RESULTS.DENIED
+            ) {
+                result = 'granted';
+            } else {
+                result = 'denied';
+            }
         } else {
-            result = 'denied';
+            // Android 12 and below needs to request READ_EXTERNAL_STORAGE
+            result = await request(PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE);
+
+            if (result === 'granted') {
+                result = 'granted';
+            } else {
+                result = 'denied';
+            }
         }
     }
 
@@ -34,8 +46,18 @@ export const checkCameraRollPermission = async () => {
         result = await check('ios.permission.PHOTO_LIBRARY');
     }
     if (Platform.OS === 'android') {
-        result = await check('android.permission.READ_MEDIA_IMAGES');
+        result =
+            Platform.Version >= 33
+                ? await check('android.permission.READ_MEDIA_IMAGES')
+                : await check('android.permission.READ_EXTERNAL_STORAGE');
     }
 
     return result;
+};
+
+/**
+ * Android 13+ only
+ */
+export const checkAccessMediaLocation = async () => {
+    return await check('android.permission.ACCESS_MEDIA_LOCATION');
 };

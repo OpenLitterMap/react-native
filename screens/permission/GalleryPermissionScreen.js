@@ -12,6 +12,7 @@ import {connect} from 'react-redux';
 import * as actions from '../../actions';
 import {Body, Colors, Title} from '../components';
 import {
+    checkAccessMediaLocation,
     checkCameraRollPermission,
     requestCameraRollPermission
 } from '../../utils/permissions';
@@ -95,10 +96,28 @@ class GalleryPermissionScreen extends Component {
      * if user granted access go back
      */
     async requestGalleryPermission() {
+        console.log('requestGalleryPermission.1');
         const result = await requestCameraRollPermission();
+        console.log({result});
         if (result === 'granted') {
             this.props.navigation.navigate('HOME');
+
+            if (Platform.OS === 'android') {
+                const result2 = await checkAccessMediaLocation();
+
+                console.log({result2});
+            }
         } else {
+            Sentry.captureException(
+                JSON.stringify('Gallery Permission Error ' + result, null, 2),
+                {
+                    level: 'error',
+                    tags: {
+                        section: 'requestGalleryPermission: ' + Platform.OS
+                    }
+                }
+            );
+
             Platform.OS === 'ios'
                 ? await Linking.openURL('app-settings:')
                 : await Linking.openSettings();
