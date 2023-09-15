@@ -71,16 +71,19 @@ class GalleryPermissionScreen extends Component {
      * if permissions granted go back to home, else do nothing
      */
     async checkGalleryPermission() {
+        console.log('checkGalleryPermission.1');
         const result = await checkCameraRollPermission();
+        console.log({result});
         if (result.toLowerCase() === 'granted') {
             this.props.navigation.navigate('HOME');
         } else {
             Sentry.captureException(
-                JSON.stringify('Gallery Permission Error ' + result, null, 2),
+                JSON.stringify('Gallery Permission Error ', null, 2),
                 {
                     level: 'error',
                     tags: {
-                        section: 'checkGalleryPermission'
+                        section: 'checkGalleryPermission',
+                        result
                     }
                 }
             );
@@ -99,7 +102,7 @@ class GalleryPermissionScreen extends Component {
         console.log('requestGalleryPermission.1');
         const result = await requestCameraRollPermission();
         console.log({result});
-        if (result === 'granted') {
+        if (result === 'granted' || result === 'limited') {
             this.props.navigation.navigate('HOME');
 
             if (Platform.OS === 'android') {
