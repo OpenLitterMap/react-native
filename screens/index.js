@@ -8,5 +8,6 @@ export {default as GalleryScreen} from './gallery/GalleryScreen';
 export {default as AlbumScreen} from './gallery/AlbumScreen';
 export {default as NewUpdateScreen} from './NewUpdateScreen';
 export {default as LeaderboardsScreen} from './leaderboards/LeaderboardsScreen';
+export {default as MapScreen} from './map/MapScreen';
 export * from './permission';
 export * from './team';

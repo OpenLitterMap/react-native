@@ -6,6 +6,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import {
     GlobalDataScreen,
     HomeScreen,
+    MapScreen,
     UserStatsScreen,
     LeaderboardsScreen
 } from '../screens';
@@ -50,6 +51,11 @@ const TabRoutes = ({navigation}) => (
                             iconName = focused
                                 ? 'ios-trophy'
                                 : 'ios-trophy-outline';
+                            break;
+
+                        case 'MAP':
+                            iconName = focused ? 'ios-map' : 'ios-map-outline';
+
                             break;
 
                         case 'CAMERA':
@@ -113,6 +119,7 @@ const TabRoutes = ({navigation}) => (
             <Tab.Screen name="TEAM" component={TeamStack} />
             <Tab.Screen name="GLOBAL_DATA" component={GlobalDataScreen} />
             <Tab.Screen name="LEADERBOARDS" component={LeaderboardsScreen} />
+            <Tab.Screen name="MAP" component={MapScreen} />
 
             {/* <Tab.Screen name="RANKING" component={RankingScreen} /> */}
             <Tab.Screen name="USER_STATS" component={UserStatsScreen} />

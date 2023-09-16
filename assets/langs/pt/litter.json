@@ -8,6 +8,7 @@
         "dumping": "Despejo",
         "food": "Comida",
         "industrial": "Industrial",
+        "material": "Material",
         "other": "Outros",
         "sanitary": "Sanitária",
         "softdrinks": "Refrigerantes",
@@ -270,5 +271,31 @@
     "dogshit": {
         "poo": "Surpresa!",
         "poo_in_bag": "Surpresa em uma bolsa!"
+    },
+    "material": {
+        "aluminium": "Alumínio",
+        "bronze": "Bronze",
+        "carbon_fiber": "Fibra de carbono",
+        "ceramic": "Cerâmica",
+        "composite": "Composto",
+        "concrete": "Concreto",
+        "copper": "Cobre",
+        "fiberglass": "Fibra de vidro",
+        "glass": "Vidro",
+        "iron_or_steel": "Ferro/Aço",
+        "latex": "Látex",
+        "metal": "Metal",
+        "nickel": "Níquel",
+        "nylon": "Nylon",
+        "paper": "Papel",
+        "plastic": "Plástico",
+        "polyethylene": "Polietileno",
+        "polymer": "Polímero",
+        "polypropylene": "Polipropileno",
+        "polystyrene": "Poliestireno",
+        "pvc": "PVC",
+        "rubber": "Borracha",
+        "titanium": "Titânio",
+        "wood": "Madeira"
     }
 }

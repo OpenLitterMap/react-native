@@ -190,10 +190,9 @@ class AddTags extends Component {
 
         if (type === 'WEB') {
             const photoId = this.props.images[currentIndex].photoId;
-
             this.props.deleteWebImage(this.props.token, photoId, id);
         } else {
-            this.props.deleteImage(id);
+            await this.props.deleteImage(id);
         }
         // close delete confirmation action sheet
         // if last image is deleted close AddTags modal

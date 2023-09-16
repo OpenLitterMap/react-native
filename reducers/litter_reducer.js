@@ -51,13 +51,13 @@ export default function (state = INITIAL_STATE, action) {
              * @items = Array of objects [ { id, key }, { id, key } ]
              * @item = First key from array 'butts'
              */
-            // FIXME: Make it pure fn
             case CHANGE_CATEGORY:
                 const category = CATEGORIES.find(
                     cat => cat.title === action.payload
                 );
                 const items = LITTERKEYS[category.title];
                 const item = items[0];
+
                 draft.category = category;
                 draft.items = items;
                 draft.item = item;
@@ -112,8 +112,6 @@ export default function (state = INITIAL_STATE, action) {
             // Reset tags to null and close LitterPicker modal
             case RESET_LITTER_STATE:
                 return INITIAL_STATE;
-
-                break;
 
             /**
              * Content to show in the modal on LitterPicker

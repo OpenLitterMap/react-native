@@ -33,6 +33,7 @@
     "react-native-gesture-handler": "^2.12.1",
     "react-native-linear-gradient": "^2.8.1",
     "react-native-localize": "^3.0.2",
+    "react-native-maps": "^1.7.1",
     "react-native-page-control": "^1.1.2",
     "react-native-pager-view": "^6.2.0",
     "react-native-permissions": "^3.8.4",
