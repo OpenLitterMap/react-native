@@ -1,13 +1,14 @@
 import React from 'react';
-import { StyleSheet, Image, View } from 'react-native';
-import { Body } from '../../components';
+import {Image, StyleSheet, View} from 'react-native';
+import {Body} from '../../components';
+
 const medals = {
     gold: require('../../../assets/icons/gold-medal.png'),
     silver: require('../../../assets/icons/silver-medal.png'),
     bronze: require('../../../assets/icons/bronze-medal.png')
 };
 
-const RankingMedal = ({ index }) => {
+const RankingMedal = ({index}) => {
     let medalSource;
     switch (index) {
         case 0:
@@ -34,7 +35,7 @@ const RankingMedal = ({ index }) => {
                 />
             ) : (
                 <View style={[styles.container]}>
-                    <Body style={{ textAlign: 'center' }}>{index + 1}</Body>
+                    <Body style={{textAlign: 'center'}}>{index + 1}</Body>
                 </View>
             )}
         </>
