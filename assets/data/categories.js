@@ -44,6 +44,10 @@ const CATEGORIES = [
         path: require('../icons/industrial.png')
     },
     {
+        title: 'material',
+        path: require('../icons/package.png')
+    },
+    {
         title: 'other',
         path: require('../icons/dice2.png')
     }

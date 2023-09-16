@@ -8,6 +8,7 @@
         "dumping": "Szemétlerakó",
         "food": "Étel",
         "industrial": "Ipari",
+        "material": "Material",
         "sanitary": "Egészségügyi",
         "softdrinks": "Üditők",
         "smoking": "Dohány",
@@ -294,5 +295,31 @@
     "dogshit": {
         "poo": "Meglepetés!",
         "poo_in_bag": "Meglepetés felszéve!"
+    },
+    "material": {
+        "aluminium":  "Alumínium",
+        "bronze":  "Bronz",
+        "carbon_fiber":  "Szén-szál",
+        "ceramic":  "Kerámia",
+        "composite":  "Kompozit",
+        "concrete":  "Beton",
+        "copper":  "Réz",
+        "fiberglass":  "Üvegszál",
+        "glass":  "Üveg",
+        "iron_or_steel":  "Vas/Acél",
+        "latex":  "Latex",
+        "metal":  "Fém",
+        "nickel":  "Nikkel",
+        "nylon":  "Nylon",
+        "paper":  "Papír",
+        "plastic":  "Műanyag",
+        "polyethylene":  "Polietilén",
+        "polymer":  "Polimer",
+        "polypropylene":  "Polipropilén",
+        "polystyrene":  "Polisztirol",
+        "pvc":  "PVC",
+        "rubber":  "Gumi",
+        "titanium":  "Titán",
+        "wood":  "Fa"
     }
 }

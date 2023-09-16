@@ -9,6 +9,7 @@
         "dumping": "Caith",
         "food": "Bia",
         "industrial": "Tionscalach",
+        "material": "Material",
         "other": "Eile",
         "sanitary": "Slachtmhar",
         "softdrinks": "Deochanna Bog",
@@ -278,5 +279,31 @@
     "dogshit": {
         "poo": "Ionadh!",
         "poo_in_bag": "Ionadh in mhála!"
+    },
+    "material": {
+        "aluminium": "Alúmanam",
+        "bronze": "Próinsias",
+        "carbon_fiber": "Snáthcharbóin",
+        "ceramic": "Céirimeach",
+        "composite": "Comhdheanta",
+        "concrete": "Concréit",
+        "copper": "Copar",
+        "fiberglass": "Gloineála",
+        "glass": "Gloine",
+        "iron_or_steel": "Iarann/Níolacáin",
+        "latex": "Latex",
+        "metal": "Miotail",
+        "nickel": "Nicil",
+        "nylon": "Nailon",
+        "paper": "Páipéar",
+        "plastic": "Plaisteach",
+        "polyethylene": "Polaitiléin",
+        "polymer": "Polamaire",
+        "polypropylene": "Polapróipiléin",
+        "polystyrene": "Polastairéin",
+        "pvc": "PVC",
+        "rubber": "Rubair",
+        "titanium": "Titianam",
+        "wood": "Adhmad"
     }
 }

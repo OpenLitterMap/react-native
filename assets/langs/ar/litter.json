@@ -8,6 +8,7 @@
         "dumping": "نفايات",
         "food": "طعام",
         "industrial": "صناعي",
+        "material": "Material",
         "other": "أخرى",
         "sanitary": "صحي",
         "softdrinks": "مشروبات باردة",
@@ -275,5 +276,31 @@
     "dogshit": {
         "poo": "مفاجئة!",
         "poo_in_bag": "مفاجأة في حقيبة!"
+    },
+    "material": {
+        "aluminium":  "ألومنيوم",
+        "bronze":  "برونز",
+        "carbon_fiber":  "ألياف الكربون",
+        "ceramic":  "سيراميك",
+        "composite":  "مركب",
+        "concrete":  "خرسانة",
+        "copper":  "نحاس",
+        "fiberglass":  "ألياف الزجاج",
+        "glass":  "زجاج",
+        "iron_or_steel":  "حديد/صلب",
+        "latex":  "لاتكس",
+        "metal":  "معدن",
+        "nickel":  "نيكل",
+        "nylon":  "نايلون",
+        "paper":  "ورق",
+        "plastic":  "بلاستيك",
+        "polyethylene":  "بولي إيثيلين",
+        "polymer":  "بوليمر",
+        "polypropylene":  "بولي بروبيلين",
+        "polystyrene":  "بوليسترين",
+        "pvc":  "بي في سي",
+        "rubber":  "مطاط",
+        "titanium":  "تيتانيوم",
+        "wood":  "خشب"
     }
 }

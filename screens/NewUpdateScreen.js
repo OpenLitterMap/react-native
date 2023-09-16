@@ -1,15 +1,15 @@
-import React, { Component } from 'react';
+import React, {Component} from 'react';
 import {
-    StyleSheet,
-    View,
     Image,
-    Pressable,
     Linking,
-    Platform
+    Platform,
+    Pressable,
+    StyleSheet,
+    View
 } from 'react-native';
-import { connect } from 'react-redux';
+import {connect} from 'react-redux';
 import * as actions from '../actions';
-import { Title, Body, Colors } from './components';
+import {Body, Colors, Title} from './components';
 
 class NewUpdateScreen extends Component {
     constructor(props) {
@@ -26,9 +26,10 @@ class NewUpdateScreen extends Component {
 
         canOpen && (await Linking.openURL(url));
     }
+
     render() {
-        const { navigation, route, lang } = this.props;
-        const { url } = route.params;
+        const {navigation, route, lang} = this.props;
+        const {url} = route.params;
         return (
             <View style={styles.container}>
                 <Image
@@ -63,10 +64,7 @@ const mapStateToProps = state => {
     };
 };
 
-export default connect(
-    mapStateToProps,
-    actions
-)(NewUpdateScreen);
+export default connect(mapStateToProps, actions)(NewUpdateScreen);
 
 const styles = StyleSheet.create({
     container: {

@@ -172,7 +172,12 @@ export const deleteWebImage = (token, photoId, enableAdminTagging) => {
 
             console.log('deleteWebImgResp', response.data);
         } catch (error) {
-            console.log('delete web image', error);
+            console.log('delete web image.error', error);
+
+            dispatch({
+                type: DELETE_IMAGE,
+                payload: photoId
+            });
         }
         if (response && response?.data?.success) {
             console.log('deleteWebImageSuccess', response.data);
