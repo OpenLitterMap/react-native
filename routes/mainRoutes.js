@@ -20,7 +20,6 @@ class MainRoutes extends Component {
             isLoading: true,
             userToken: null
         };
-        // this._bootstrapAsync();
     }
 
     async componentDidMount() {
@@ -84,22 +83,10 @@ class MainRoutes extends Component {
                     ) : (
                         <>
                             <Stack.Screen name="APP" component={TabRoutes} />
-                            <Stack.Screen
-                                name="ALBUM"
-                                component={GalleryScreen}
-                            />
-                            <Stack.Screen
-                                name="SETTING"
-                                component={SettingScreen}
-                            />
-                            <Stack.Screen
-                                name="PERMISSION"
-                                component={PermissionStack}
-                            />
-                            <Stack.Screen
-                                name="UPDATE"
-                                component={NewUpdateScreen}
-                            />
+                            <Stack.Screen name="ALBUM" component={GalleryScreen} />
+                            <Stack.Screen name="SETTING" component={SettingScreen} />
+                            <Stack.Screen name="PERMISSION" component={PermissionStack} />
+                            <Stack.Screen name="UPDATE" component={NewUpdateScreen} />
                             <Stack.Screen name="ADD_TAGS" component={AddTags} />
                         </>
                     )}

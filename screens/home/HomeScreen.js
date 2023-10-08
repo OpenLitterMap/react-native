@@ -8,8 +8,7 @@ import {
     TouchableWithoutFeedback,
     View
 } from 'react-native';
-// import AsyncStorage from '@react-native-community/async-storage';
-// import AsyncStorage from '@react-native-async-storage/async-storage';
+
 import {TransText} from 'react-native-translation';
 
 // import {Button} from '@rneui/themed';
@@ -38,7 +37,13 @@ class HomeScreen extends PureComponent {
             uploaded: 0, // total number of tagged images uploaded
             uploadFailed: 0,
             tagged: 0, // total number of images tagged successfully
-            taggedFailed: 0
+            taggedFailed: 0,
+
+            failedCounts: {
+                alreadyUploaded: 0,
+                invalidCoordinates: 0,
+                unknown: 0
+            }
         };
 
         // Bind any functions that call props
@@ -91,6 +96,8 @@ class HomeScreen extends PureComponent {
     async checkGalleryPermission() {
         const result = await checkCameraRollPermission();
 
+        console.log('Home.checkGalleryPermission', result);
+
         if (result === 'granted') {
             this.getImagesFromCameraRoll();
         } else {
@@ -130,20 +137,12 @@ class HomeScreen extends PureComponent {
         return (
             <>
                 <Header
-                    leftContent={
-                        <Title
-                            color="white"
-                            dictionary={`${lang}.leftpage.upload`}
-                        />
-                    }
+                    leftContent={<Title color="white" dictionary={`${lang}.leftpage.upload`} />}
                     rightContent={this.renderDeleteButton()}
                 />
                 <View style={styles.container}>
                     {/* INFO: modal thats shown during image upload */}
-                    <Modal
-                        animationType="slide"
-                        transparent={true}
-                        visible={this.props.showModal}>
+                    <Modal animationType="slide" transparent={true} visible={this.props.showModal}>
                         {/* Waiting spinner to show during upload */}
                         {this.props.isUploading && (
                             <View style={styles.modal}>
@@ -206,14 +205,35 @@ class HomeScreen extends PureComponent {
                                     )}
 
                                     {this.state.uploadFailed > 0 && (
-                                        <Text
-                                            style={{
-                                                fontSize: SCREEN_HEIGHT * 0.02,
-                                                marginBottom: 5
-                                            }}>
-                                            {this.state.uploadFailed} uploads
-                                            failed
-                                        </Text>
+                                        <View>
+                                            <Text
+                                                style={{
+                                                    fontSize: SCREEN_HEIGHT * 0.02,
+                                                    marginBottom: 5
+                                                }}>
+                                                {this.state.uploadFailed} uploads failed
+                                            </Text>
+
+                                            {this.state.failedCounts.alreadyUploaded > 0 && (
+                                                <Text>
+                                                    {this.state.failedCounts.alreadyUploaded}{' '}
+                                                    already uploaded
+                                                </Text>
+                                            )}
+
+                                            {this.state.failedCounts.invalidCoordinates > 0 && (
+                                                <Text>
+                                                    {this.state.failedCounts.invalidCoordinates}{' '}
+                                                    invalid coordinates (lat=0, lon=0)
+                                                </Text>
+                                            )}
+
+                                            {this.state.failedCounts.unknown > 0 && (
+                                                <Text>
+                                                    {this.state.failedCounts.unknown} unknown)
+                                                </Text>
+                                            )}
+                                        </View>
                                     )}
 
                                     {this.state.taggedFailed > 0 && (
@@ -222,21 +242,16 @@ class HomeScreen extends PureComponent {
                                                 fontSize: SCREEN_HEIGHT * 0.02,
                                                 marginBottom: 5
                                             }}>
-                                            {this.state.taggedFailed} tags
-                                            failed
+                                            {this.state.taggedFailed} tags failed
                                         </Text>
                                     )}
 
                                     <View style={{flexDirection: 'row'}}>
                                         <TouchableWithoutFeedback
-                                            onPress={this.hideThankYouMessages.bind(
-                                                this
-                                            )}>
+                                            onPress={this.hideThankYouMessages.bind(this)}>
                                             <View style={styles.thankYouButton}>
                                                 <TransText
-                                                    style={
-                                                        styles.normalWhiteText
-                                                    }
+                                                    style={styles.normalWhiteText}
                                                     dictionary={`${lang}.leftpage.close`}
                                                 />
                                             </View>
@@ -255,9 +270,7 @@ class HomeScreen extends PureComponent {
                         isSelecting={this.props.isSelecting}
                     />
 
-                    <View style={styles.bottomContainer}>
-                        {this.renderHelperMessage()}
-                    </View>
+                    <View style={styles.bottomContainer}>{this.renderHelperMessage()}</View>
                 </View>
                 {this.renderActionButton()}
 
@@ -322,9 +335,7 @@ class HomeScreen extends PureComponent {
             return;
         }
 
-        return (
-            <UploadButton lang={this.props.lang} onPress={this.uploadPhotos} />
-        );
+        return <UploadButton lang={this.props.lang} onPress={this.uploadPhotos} />;
     }
 
     /**
@@ -396,7 +407,12 @@ class HomeScreen extends PureComponent {
             uploadFailed: 0,
             isUploadCancelled: false,
             tagged: 0,
-            taggedFailed: 0
+            taggedFailed: 0,
+            failedCounts: {
+                alreadyUploaded: 0,
+                invalidCoordinates: 0,
+                unknown: 0
+            }
         });
     };
 
@@ -416,7 +432,13 @@ class HomeScreen extends PureComponent {
 
             // Images that are uploaded, now being tagged
             tagged: 0,
-            taggedFailed: 0
+            taggedFailed: 0,
+
+            failedCounts: {
+                alreadyUploaded: 0,
+                invalidCoordinates: 0,
+                unknown: 0
+            }
         });
 
         // The model of the users device
@@ -470,14 +492,8 @@ class HomeScreen extends PureComponent {
                             ImageData.append('tags', JSON.stringify(img.tags));
                         }
 
-                        if (
-                            img.hasOwnProperty('customTags') &&
-                            img.customTags.length > 0
-                        ) {
-                            ImageData.append(
-                                'custom_tags',
-                                JSON.stringify(img.customTags)
-                            );
+                        if (img.hasOwnProperty('customTags') && img.customTags.length > 0) {
+                            ImageData.append('custom_tags', JSON.stringify(img.customTags));
                         }
                     }
 
@@ -497,9 +513,29 @@ class HomeScreen extends PureComponent {
                             uploaded: previousState.uploaded + 1
                         }));
                     } else {
-                        this.setState(previousState => ({
-                            uploadFailed: previousState.uploadFailed + 1
-                        }));
+                        let errorMessage = '';
+
+                        if (response.errorMessage === 'photo-already-uploaded') {
+                            errorMessage = 'alreadyUploaded';
+                        } else if (response.errorMessage === 'invalid-coordinates') {
+                            errorMessage = 'invalidCoordinates';
+                        } else if (response.errorMessage === 'unknown') {
+                            errorMessage = 'unknown';
+                        }
+
+                        this.setState(previousState => {
+                            const updatedFailedCounts = {
+                                ...previousState.failedCounts
+                            };
+
+                            updatedFailedCounts[errorMessage] =
+                                (updatedFailedCounts[errorMessage] || 0) + 1;
+
+                            return {
+                                uploadFailed: previousState.uploadFailed + 1,
+                                failedCounts: updatedFailedCounts
+                            };
+                        });
                     }
                 } else if (img.type.toLowerCase() === 'web' && isItemTagged) {
                     /**
@@ -511,13 +547,7 @@ class HomeScreen extends PureComponent {
                      *
                      * We can also update 'picked_up' value here
                      */
-                    const response = await this.props.uploadTagsToWebImage(
-                        this.props.token,
-                        img
-                    );
-
-                    console.log('After web upload');
-                    console.log(response);
+                    const response = await this.props.uploadTagsToWebImage(this.props.token, img);
 
                     if (response && response.success) {
                         this.setState(previousState => ({
@@ -535,9 +565,6 @@ class HomeScreen extends PureComponent {
                 //         uploadFailed: previousState.uploadFailed + 1
                 //     }));
                 // }
-                else {
-                    console.log('do something?');
-                }
             }
         }
 

@@ -36,7 +36,7 @@
     "react-native-maps": "^1.7.1",
     "react-native-page-control": "^1.1.2",
     "react-native-pager-view": "^6.2.0",
-    "react-native-permissions": "^3.8.4",
+    "react-native-permissions": "^3.9.3",
     "react-native-reanimated": "^3.4.2",
     "react-native-safe-area-context": "^4.7.1",
     "react-native-screens": "^3.24.0",

@@ -1,13 +1,5 @@
 import React, {Component} from 'react';
-import {
-    AppState,
-    Image,
-    Linking,
-    Platform,
-    Pressable,
-    StyleSheet,
-    View
-} from 'react-native';
+import {AppState, Image, Linking, Platform, Pressable, StyleSheet, View} from 'react-native';
 import {connect} from 'react-redux';
 import * as actions from '../../actions';
 import {Body, Colors, Title} from '../components';
@@ -17,6 +9,7 @@ import {
     requestCameraRollPermission
 } from '../../utils/permissions';
 import * as Sentry from '@sentry/react-native';
+import {check} from 'react-native-permissions';
 
 class GalleryPermissionScreen extends Component {
     constructor(props) {
@@ -41,10 +34,7 @@ class GalleryPermissionScreen extends Component {
         // deprecated in react-native 0.65+
         // AppState.removeEventListener('change', this.handleAppStateChange);
 
-        const subscription = AppState.addEventListener(
-            'change',
-            this.handleAppStateChange
-        );
+        const subscription = AppState.addEventListener('change', this.handleAppStateChange);
         subscription.remove();
     }
 
@@ -57,10 +47,7 @@ class GalleryPermissionScreen extends Component {
      * "inactive" is IOS only
      */
     handleAppStateChange = nextAppState => {
-        if (
-            this.state.appState.match(/inactive|background/) &&
-            nextAppState === 'active'
-        ) {
+        if (this.state.appState.match(/inactive|background/) && nextAppState === 'active') {
             this.checkGalleryPermission();
         }
         this.setState({appState: nextAppState});
@@ -71,22 +58,20 @@ class GalleryPermissionScreen extends Component {
      * if permissions granted go back to home, else do nothing
      */
     async checkGalleryPermission() {
-        console.log('checkGalleryPermission.1');
         const result = await checkCameraRollPermission();
+
         console.log({result});
+
         if (result.toLowerCase() === 'granted') {
             this.props.navigation.navigate('HOME');
         } else {
-            Sentry.captureException(
-                JSON.stringify('Gallery Permission Error ', null, 2),
-                {
-                    level: 'error',
-                    tags: {
-                        section: 'checkGalleryPermission',
-                        result
-                    }
+            Sentry.captureException(JSON.stringify('Gallery Permission Error ', null, 2), {
+                level: 'error',
+                tags: {
+                    section: 'checkGalleryPermission',
+                    result
                 }
-            );
+            });
         }
     }
 
@@ -99,27 +84,24 @@ class GalleryPermissionScreen extends Component {
      * if user granted access go back
      */
     async requestGalleryPermission() {
-        console.log('requestGalleryPermission.1');
         const result = await requestCameraRollPermission();
-        console.log({result});
-        if (result === 'granted' || result === 'limited') {
+
+        if (result === 'granted') {
             this.props.navigation.navigate('HOME');
 
-            if (Platform.OS === 'android') {
-                const result2 = await checkAccessMediaLocation();
+            if (Platform.OS === 'android' && Platform.Version >= 33) {
+                // double check we have mediaLocation permissions
+                const accessMediaLocation = await checkAccessMediaLocation();
 
-                console.log({result2});
+                console.log('GalleryPermissionScreen.accessMediaLocation', accessMediaLocation);
             }
         } else {
-            Sentry.captureException(
-                JSON.stringify('Gallery Permission Error ' + result, null, 2),
-                {
-                    level: 'error',
-                    tags: {
-                        section: 'requestGalleryPermission: ' + Platform.OS
-                    }
+            Sentry.captureException(JSON.stringify('Gallery Permission Error ' + result, null, 2), {
+                level: 'error',
+                tags: {
+                    section: 'requestGalleryPermission: ' + Platform.OS
                 }
-            );
+            });
 
             Platform.OS === 'ios'
                 ? await Linking.openURL('app-settings:')
@@ -129,6 +111,7 @@ class GalleryPermissionScreen extends Component {
 
     render() {
         const {navigation, lang} = this.props;
+
         return (
             <View style={styles.container}>
                 <Image
@@ -140,16 +123,13 @@ class GalleryPermissionScreen extends Component {
                     color="muted"
                     style={styles.bodyText}
                     dictionary={`${lang}.permission.gallery-body`}>
-                    Please provide us access to your gallery, which is required
-                    if you want to upload geotagged images from gallery.
+                    Please provide us access to your gallery, which is required if you want to
+                    upload geotagged images from gallery.
                 </Body>
                 <Pressable
                     style={styles.buttonStyle}
                     onPress={() => this.requestGalleryPermission()}>
-                    <Body
-                        color="white"
-                        dictionary={`${lang}.permission.allow-gallery-access`}
-                    />
+                    <Body color="white" dictionary={`${lang}.permission.allow-gallery-access`} />
                 </Pressable>
                 <Pressable onPress={() => navigation.navigate('HOME')}>
                     <Body dictionary={`${lang}.permission.not-now`} />

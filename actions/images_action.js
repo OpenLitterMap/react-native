@@ -101,7 +101,6 @@ export const getUntaggedImages = token => {
         }
 
         if (response && response?.data?.photos?.length) {
-            console.log('getUntaggedImages response', response.data.photos);
             dispatch({
                 type: ADD_IMAGES,
                 payload: {
@@ -267,72 +266,68 @@ export const toggleSelectedImage = id => {
  *
  * @returns
  */
-export const uploadImage = (
-    token,
-    imageData,
-    imageId,
-    enableAdminTagging,
-    isTagged
-) => {
-    let response;
+export const uploadImage = (token, imageData, imageId, enableAdminTagging, isTagged) => {
     return async dispatch => {
         try {
-            response = await axios(
-                URL + '/api/photos/upload/with-or-without-tags',
-                {
-                    method: 'POST',
-                    headers: {
-                        Authorization: 'Bearer ' + token,
-                        'Content-Type': 'multipart/form-data'
-                    },
-                    data: imageData
-                }
-            );
-        } catch (error) {
-            console.log(error);
-            if (error.response) {
-                // log error in sentry
-                Sentry.captureException(
-                    JSON.stringify(error?.response?.data, null, 2),
-                    {
-                        level: 'error',
-                        tags: {
-                            section: 'image_upload'
+            const response = await axios(URL + '/api/photos/upload/with-or-without-tags', {
+                method: 'POST',
+                headers: {
+                    Authorization: 'Bearer ' + token,
+                    'Content-Type': 'multipart/form-data'
+                },
+                data: imageData
+            });
+
+            if (response.data?.success) {
+                if (enableAdminTagging || isTagged) {
+                    dispatch({
+                        type: DELETE_IMAGE,
+                        payload: imageId
+                    });
+                } else {
+                    dispatch({
+                        type: 'UPDATE_IMAGE_AS_UPLOADED',
+                        payload: {
+                            originalImageId: imageId,
+                            newImageId: response.data.photo_id
                         }
-                    }
-                );
-            } else {
-                // Other errors -- NETWORK ERROR
-                console.log(error);
+                    });
+                }
+
+                return {
+                    success: true,
+                    photo_id: response.data.photo_id
+                };
             }
+        } catch (error) {
+            console.log('images_action.uploadImage.catch', error);
 
-            return {
-                success: false
-            };
-        }
+            let errorMessage = 'none';
 
-        // console.log({ response });
+            if (error.response) {
+                switch (error.response.data?.msg) {
+                    case 'photo-already-uploaded':
+                        errorMessage = 'photo-already-uploaded';
+                        break;
+                    case 'invalid-coordinates':
+                        errorMessage = 'invalid-coordinates';
+                        break;
+                    default:
+                        errorMessage = error.response.data?.msg || 'unknown';
+                }
 
-        if (response && response.data?.success) {
-            if (enableAdminTagging || isTagged) {
-                dispatch({
-                    type: DELETE_IMAGE,
-                    payload: imageId
-                });
-            } else {
-                dispatch({
-                    type: 'UPDATE_IMAGE_AS_UPLOADED',
-                    payload: {
-                        originalImageId: imageId,
-                        newImageId: response.data.photo_id
+                // log error in sentry
+                Sentry.captureException(JSON.stringify(error?.response?.data, null, 2), {
+                    level: 'error',
+                    tags: {
+                        section: 'image_upload',
+                        errorMessage: errorMessage
                     }
                 });
             }
-
-            // return the photo.id that has been created on the backend
             return {
-                success: true,
-                photo_id: response.data.photo_id
+                success: false,
+                errorMessage
             };
         }
     };
@@ -365,8 +360,8 @@ export const uploadTagsToWebImage = (token, image) => {
             });
         } catch (error) {
             // Better error handling needed here
-            console.log(error);
-            console.log(error.response.data);
+            // console.log(error);
+            // console.log(error.response.data);
             return {
                 success: false
             };
