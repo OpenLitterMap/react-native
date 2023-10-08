@@ -3,7 +3,7 @@
     "allow-permission": "Allow Permissions",
     "camera-access": "Camera Access",
     "camera-access-body": "To capture litter images from app camera",
-    "gallery-body": "Please provide us access to your gallery, which is required if you want to upload geo tagged images from gallery",
+    "gallery-body": "Please provide us access to your gallery, which is required to upload geotagged images from your device",
     "location-access": "Location Access",
     "location-body": "To get exact geolocation of where the litter is",
     "new-version": "New Version Available",
