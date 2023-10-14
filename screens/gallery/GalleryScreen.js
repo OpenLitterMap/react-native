@@ -66,7 +66,6 @@ class GalleryScreen extends Component {
 
     async checkGalleryPermission() {
         const result = await checkCameraRollPermission();
-        console.log('GalleryPermissionsScreen.checkCameraRollPermissions.result', result);
 
         if (result === 'granted') {
             await this.props.getPhotosFromCameraroll();

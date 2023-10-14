@@ -60,8 +60,6 @@ class GalleryPermissionScreen extends Component {
     async checkGalleryPermission() {
         const result = await checkCameraRollPermission();
 
-        console.log({result});
-
         if (result.toLowerCase() === 'granted') {
             this.props.navigation.navigate('HOME');
         } else {

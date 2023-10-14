@@ -47,9 +47,7 @@ export const checkCameraRollPermission = async () => {
     }
     if (Platform.OS === 'android') {
         if (Platform.Version >= 33) {
-            const readMediaImages = await check('android.permission.READ_MEDIA_IMAGES');
-
-            console.log('checkCameraRollPermissions.readMediaImages');
+            const readMediaImages = await check(PERMISSIONS.ANDROID.READ_MEDIA_IMAGES);
 
             if (readMediaImages === 'granted') {
                 return 'granted';
@@ -57,7 +55,7 @@ export const checkCameraRollPermission = async () => {
                 return 'denied';
             }
         } else {
-            return await check('android.permission.READ_EXTERNAL_STORAGE');
+            return await check(PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE);
         }
     }
 };
@@ -66,5 +64,15 @@ export const checkCameraRollPermission = async () => {
  * Android 13+ only
  */
 export const checkAccessMediaLocation = async () => {
-    return await check('android.permission.ACCESS_MEDIA_LOCATION');
+    const result = await check('android.permission.ACCESS_MEDIA_LOCATION');
+
+    if (result !== 'granted') {
+        const requestResult = await request(PERMISSIONS.ANDROID.ACCESS_MEDIA_LOCATION);
+
+        if (requestResult === 'granted') {
+            return 'granted';
+        } else {
+            return 'denied';
+        }
+    }
 };
