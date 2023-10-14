@@ -1,13 +1,5 @@
 import React, {Component} from 'react';
-import {
-    ActivityIndicator,
-    Dimensions,
-    FlatList,
-    Pressable,
-    SafeAreaView,
-    StyleSheet,
-    View
-} from 'react-native';
+import {ActivityIndicator, FlatList, Pressable, SafeAreaView, StyleSheet, View} from 'react-native';
 import moment from 'moment';
 import _ from 'lodash';
 
@@ -18,8 +10,6 @@ import {Body, Caption, Colors, Header, SubTitle} from '../components';
 import {isGeotagged} from '../../utils/isGeotagged';
 import {checkCameraRollPermission} from '../../utils/permissions';
 import AnimatedImage from './galleryComponents/AnimatedImage';
-
-const {width} = Dimensions.get('window');
 
 /**
  * fn to check if arg date is "today", this "week", this "month"
@@ -59,15 +49,12 @@ class GalleryScreen extends Component {
         };
     }
 
-    componentDidMount() {
-        this.checkGalleryPermission();
+    async componentDidMount() {
+        await this.checkGalleryPermission();
     }
 
     componentDidUpdate(prevProps) {
-        if (
-            prevProps.geotaggedImages?.length <
-            this.props.geotaggedImages?.length
-        ) {
+        if (prevProps.geotaggedImages?.length < this.props.geotaggedImages?.length) {
             this.splitIntoRows(this.props.geotaggedImages);
         }
     }
@@ -79,9 +66,12 @@ class GalleryScreen extends Component {
 
     async checkGalleryPermission() {
         const result = await checkCameraRollPermission();
+
         if (result === 'granted') {
             await this.props.getPhotosFromCameraroll();
-            this.splitIntoRows(this.props.geotaggedImages);
+
+            await this.splitIntoRows(this.props.geotaggedImages);
+
             this.setState({hasPermission: true, loading: false});
         } else {
             this.props.navigation.navigate('PERMISSION', {
@@ -125,9 +115,7 @@ class GalleryScreen extends Component {
             return prop;
         });
 
-        let allMonths = allTimeTags.filter(
-            prop => Number.isInteger(prop) && prop < 12
-        );
+        let allMonths = allTimeTags.filter(prop => Number.isInteger(prop) && prop < 12);
         allMonths = _.reverse(_.sortBy(allMonths));
 
         let allYears = allTimeTags.filter(
@@ -152,9 +140,7 @@ class GalleryScreen extends Component {
      * call action addImages to save selected images to state
      */
     async handleDoneClick() {
-        const sortedArray = await this.state.selectedImages.sort(
-            (a, b) => a.id - b.id
-        );
+        const sortedArray = await this.state.selectedImages.sort((a, b) => a.id - b.id);
 
         this.props.addImages(sortedArray, 'GALLERY', this.props.user.picked_up);
     }
@@ -170,9 +156,7 @@ class GalleryScreen extends Component {
         const index = selectedArray.indexOf(item);
         if (index !== -1) {
             this.setState({
-                selectedImages: this.state.selectedImages.filter(
-                    (_, i) => i !== index
-                )
+                selectedImages: this.state.selectedImages.filter((_, i) => i !== index)
             });
         }
 
@@ -217,16 +201,13 @@ class GalleryScreen extends Component {
                 </View>
                 <View style={{flexDirection: 'row', flexWrap: 'wrap'}}>
                     {item.data.map(image => {
-                        const selected =
-                            this.state.selectedImages.includes(image);
+                        const selected = this.state.selectedImages.includes(image);
 
                         const isImageGeotagged = isGeotagged(image);
                         return (
                             <AnimatedImage
                                 key={image.uri}
-                                onPress={() =>
-                                    isImageGeotagged && this.selectImage(image)
-                                }
+                                onPress={() => isImageGeotagged && this.selectImage(image)}
                                 image={image}
                                 isImageGeotagged={isImageGeotagged}
                                 selected={selected}
@@ -249,17 +230,11 @@ class GalleryScreen extends Component {
                                 this.props.navigation.navigate('HOME');
                                 // this.props.setImageLoading;
                             }}>
-                            <Body
-                                color="white"
-                                dictionary={`${lang}.leftpage.cancel`}
-                            />
+                            <Body color="white" dictionary={`${lang}.leftpage.cancel`} />
                         </Pressable>
                     }
                     centerContent={
-                        <SubTitle
-                            color="white"
-                            dictionary={`${lang}.leftpage.geotagged`}
-                        />
+                        <SubTitle color="white" dictionary={`${lang}.leftpage.geotagged`} />
                     }
                     centerContainerStyle={{flex: 2}}
                     rightContent={
@@ -274,10 +249,7 @@ class GalleryScreen extends Component {
                                     justifyContent: 'center',
                                     alignItems: 'center'
                                 }}>
-                                <Body
-                                    color="white"
-                                    dictionary={`${lang}.leftpage.next`}
-                                />
+                                <Body color="white" dictionary={`${lang}.leftpage.next`} />
                                 <Body color="white">
                                     {this.state.selectedImages?.length > 0 &&
                                         ` : ${this.state.selectedImages?.length}`}
@@ -299,9 +271,7 @@ class GalleryScreen extends Component {
                                 style={{color: Colors.muted}}
                                 size={18}
                             />
-                            <Caption>
-                                Only geotagged images can be selected
-                            </Caption>
+                            <Caption>Only geotagged images can be selected</Caption>
                         </View>
 
                         <SafeAreaView
@@ -315,9 +285,7 @@ class GalleryScreen extends Component {
                                 alwaysBounceVertical={false}
                                 showsVerticalScrollIndicator={false}
                                 data={this.state.sortedData}
-                                renderItem={(item, index) =>
-                                    this.renderSection(item, index)
-                                }
+                                renderItem={(item, index) => this.renderSection(item, index)}
                                 extraData={this.state.selectedImages}
                                 keyExtractor={item => `${item.title}`}
                                 onEndReached={() => {

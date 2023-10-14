@@ -31,42 +31,48 @@ const TabRoutes = ({navigation}) => (
                                 ? 'ios-home'
                                 : 'ios-home-outline';
                             break;
-                        case 'GLOBAL_DATA':
-                            iconName = focused
-                                ? 'ios-trending-up'
-                                : 'ios-trending-up-outline';
-                            break;
+
                         case 'TEAM':
                             iconName = focused
                                 ? 'ios-people'
                                 : 'ios-people-outline';
                             break;
+
+                        case 'GLOBAL_DATA':
+                            iconName = focused
+                                ? 'ios-trending-up'
+                                : 'ios-trending-up-outline';
+                            break;
+
                         // case 'RANKING':
                         //     iconName = focused
                         //         ? 'ios-trophy'
                         //         : 'ios-trophy-outline';
                         //     break;
+
                         case 'LEADERBOARDS':
                             iconName = focused
                                 ? 'ios-trophy'
                                 : 'ios-trophy-outline';
                             break;
 
-                        case 'MAP':
-                            iconName = focused ? 'ios-map' : 'ios-map-outline';
-
-                            break;
+                        // case 'MAP':
+                        //     iconName = focused ? 'ios-map' : 'ios-map-outline';
+                        //
+                        //     break;
 
                         case 'CAMERA':
                             iconName = focused
                                 ? 'ios-camera'
                                 : 'ios-camera-outline';
                             break;
+
                         case 'USER_STATS':
                             iconName = focused
                                 ? 'ios-person'
                                 : 'ios-person-outline';
                             break;
+
                         default:
                             break;
                     }

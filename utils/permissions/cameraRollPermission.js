@@ -3,32 +3,28 @@ import {check, PERMISSIONS, request} from 'react-native-permissions';
 
 export const requestCameraRollPermission = async () => {
     let result;
-    console.log('requestCameraRollPermission');
     try {
         if (Platform.OS === 'ios') {
             result = await request(PERMISSIONS.IOS.PHOTO_LIBRARY);
         } else if (Platform.OS === 'android') {
-            console.log('android found version: ' + Platform.Version);
             // Android 13 and above
             // needs to request READ_MEDIA_IMAGES and ACCESS_MEDIA_LOCATION
             if (Platform.Version >= 33) {
                 result = await request(PERMISSIONS.ANDROID.READ_MEDIA_IMAGES);
                 console.log('READ_MEDIA_IMAGES: ' + result);
 
-                const mediaLocation = await request(
-                    PERMISSIONS.ANDROID.ACCESS_MEDIA_LOCATION
-                );
+                const mediaLocation = await request(PERMISSIONS.ANDROID.ACCESS_MEDIA_LOCATION);
 
                 console.log('ACCESS_MEDIA_LOCATION: ' + mediaLocation);
 
-                if (result !== 'granted' || mediaLocation !== 'granted') {
+                if (result === 'granted' && mediaLocation === 'granted') {
+                    return 'granted';
+                } else {
                     return 'denied';
                 }
             } else {
                 // Android 12 and below needs to request READ_EXTERNAL_STORAGE
-                result = await request(
-                    PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE
-                );
+                result = await request(PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE);
 
                 console.log('READ_EXTERNAL_STORAGE: ' + result);
             }
@@ -41,25 +37,42 @@ export const requestCameraRollPermission = async () => {
     return result;
 };
 
+/**
+ *
+ * @returns {Promise<"limited"|"denied"|"blocked"|"unavailable"|"granted">}
+ */
 export const checkCameraRollPermission = async () => {
-    let result;
     if (Platform.OS === 'ios') {
-        result = await check('ios.permission.PHOTO_LIBRARY');
+        return await check('ios.permission.PHOTO_LIBRARY');
     }
     if (Platform.OS === 'android') {
-        result =
-            Platform.Version >= 33
-                ? (await check('android.permission.READ_MEDIA_IMAGES')) &&
-                  (await check('ACCESS_MEDIA_LOCATION'))
-                : await check('android.permission.READ_EXTERNAL_STORAGE');
-    }
+        if (Platform.Version >= 33) {
+            const readMediaImages = await check(PERMISSIONS.ANDROID.READ_MEDIA_IMAGES);
 
-    return result;
+            if (readMediaImages === 'granted') {
+                return 'granted';
+            } else {
+                return 'denied';
+            }
+        } else {
+            return await check(PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE);
+        }
+    }
 };
 
 /**
  * Android 13+ only
  */
 export const checkAccessMediaLocation = async () => {
-    return await check('android.permission.ACCESS_MEDIA_LOCATION');
+    const result = await check('android.permission.ACCESS_MEDIA_LOCATION');
+
+    if (result !== 'granted') {
+        const requestResult = await request(PERMISSIONS.ANDROID.ACCESS_MEDIA_LOCATION);
+
+        if (requestResult === 'granted') {
+            return 'granted';
+        } else {
+            return 'denied';
+        }
+    }
 };
