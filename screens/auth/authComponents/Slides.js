@@ -6,7 +6,8 @@ import { Body, Colors, Title } from '../../components';
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
-const Slides = ({ data }) => {
+const Slides = ({ data, activeIndex, onScroll }) => {
+
     /**
      * For langs with longer text, we need to change flexDirection
      */
@@ -21,6 +22,22 @@ const Slides = ({ data }) => {
             flexDirection: flexDirection,
             alignSelf: 'center'
         };
+    }
+
+    const renderDots = () => {
+      return data.map((_, i) => {
+        return (
+          <View
+            key={i}
+            style={[
+              styles.dot,
+              {
+                backgroundColor: i === activeIndex ? Colors.accent : 'white'
+              }
+            ]}
+          />
+        );
+      });
     }
 
     const renderSlides = () => {
@@ -55,32 +72,24 @@ const Slides = ({ data }) => {
                             dictionary={slide.text}
                         />
                     </View>
-
-                    {/*<PageControl*/}
-                    {/*    style={styles.pageControl}*/}
-                    {/*    numberOfPages={props.data.length}*/}
-                    {/*    currentPage={slide.id - 1}*/}
-                    {/*    // hidesForSinglePage*/}
-                    {/*    pageIndicatorTintColor="white"*/}
-                    {/*    currentPageIndicatorTintColor={`${Colors.accent}`}*/}
-                    {/*    indicatorStyle={{borderRadius: 15}}*/}
-                    {/*    currentIndicatorStyle={{borderRadius: 5}}*/}
-                    {/*    indicatorSize={styles.indicatorSize}*/}
-                    {/*    onPageIndicatorPress={onItemTap}*/}
-                    {/*/>*/}
                 </View>
             );
         });
     }
 
     return (
-        <ScrollView
-            horizontal
-            style={{flex: 1}}
-            pagingEnabled
-            showsHorizontalScrollIndicator={false}>
-            {renderSlides()}
-        </ScrollView>
+        <View style={styles.container}>
+            <ScrollView
+                horizontal
+                style={{flex: 1}}
+                pagingEnabled
+                onScroll={onScroll}
+                scrollEventThrottle={16}
+                showsHorizontalScrollIndicator={false}>
+                {renderSlides()}
+            </ScrollView>
+            <View style={styles.dotContainer}>{renderDots()}</View>
+        </View>
     );
 }
 
@@ -95,16 +104,6 @@ const styles = StyleSheet.create({
         height: SCREEN_HEIGHT * 0.45,
         marginTop: 80,
     },
-    indicatorSize: {
-        height: SCREEN_HEIGHT * 0.01,
-        width: SCREEN_WIDTH * 0.02,
-    },
-    pageControl: {
-        position: 'absolute',
-        left: 0,
-        right: 0,
-        bottom: SCREEN_HEIGHT * 0.02,
-    },
     slide: {
         alignItems: 'center',
         flex: 1,
@@ -117,6 +116,17 @@ const styles = StyleSheet.create({
     slideText: {
         fontSize: 18,
         textAlign: 'center',
+    },
+    dotContainer: {
+      flexDirection: 'row',
+      justifyContent: 'center',
+      paddingVertical: 20,
+    },
+    dot: {
+      width: SCREEN_WIDTH * 0.02,
+      height: SCREEN_HEIGHT * 0.01,
+      borderRadius: 5,
+      marginHorizontal: 8,
     },
 });
 

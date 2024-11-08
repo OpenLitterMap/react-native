@@ -44,6 +44,13 @@ const SLIDE_DATA = [
 // @ts-ignore
 const WelcomeScreen: FC = ({ navigation })  => {
 
+  const [activeIndex, setActiveIndex] = React.useState(0);
+
+  const handleScroll = (event: any) => {
+    const currentIndex = Math.round(event.nativeEvent.contentOffset.x / SCREEN_WIDTH);
+    setActiveIndex(currentIndex);
+  }
+
     const goToAuth = (screen: string) => {
         navigation.navigate('AUTH', {
             screen
@@ -66,7 +73,7 @@ const WelcomeScreen: FC = ({ navigation })  => {
 
                 <View style={{ flex: 1, backgroundColor: Colors.accentLight }}>
 
-                    <Slides data={SLIDE_DATA}/>
+                    <Slides data={SLIDE_DATA} activeIndex={activeIndex} onScroll={handleScroll}/>
 
                     <View style={styles.loginPosition}>
                         <Pressable
