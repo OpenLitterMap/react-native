@@ -1,88 +1,78 @@
 import React from 'react';
-import { StyleSheet, View, Dimensions } from 'react-native';
-import ProgressStatCard from './ProgressStatCard';
-import { AnimatedCircle } from '../../components';
-const { width } = Dimensions.get('window');
+import { StyleSheet, View } from 'react-native';
+import { CountUp } from 'use-count-up';
+import { Body, Caption, Title } from '../../components';
 
 const ProgressCircleCard = ({
     level,
     levelStart,
     levelPercentage,
-    levelPercentageStart,
-    xpRequired,
-    totalLittercoin,
-    littercoinStart,
-    littercoinPercentage,
-    littercoinPercentageStart
+    xpRequired
 }) => {
+    const clampedPercent = Math.min(Math.max(levelPercentage || 0, 0), 100);
+
     return (
         <View style={styles.container}>
-            <View style={styles.circleContainer}>
-                <View style={{ position: 'absolute' }}>
-                    <AnimatedCircle
-                        isValueDisplayed={false}
-                        strokeWidth={10}
-                        percentage={levelPercentage}
-                        startPercentage={levelPercentageStart}
-                        color="#e268b3"
-                        value={levelPercentage}
-                        delay={0}
-                        duration={5000}
-                        radius={(width - 40) / 4 - 16}
+            <View style={styles.headerRow}>
+                <Title style={styles.levelText}>
+                    <CountUp
+                        isCounting={levelStart !== level}
+                        start={levelStart}
+                        end={level}
+                        duration={3}
+                        formatter={val => `Level ${Math.floor(val)}`}
+                        decimalPlaces={0}
                     />
-                </View>
-
-                <View>
-                    <AnimatedCircle
-                        isValueDisplayed={false}
-                        strokeWidth={10}
-                        percentage={littercoinPercentage}
-                        startPercentage={littercoinPercentageStart}
-                        color="#A46EDA"
-                        value={littercoinPercentage}
-                        delay={0}
-                        duration={5000}
-                        radius={(width - 40) / 4}
-                    />
-                </View>
+                </Title>
+                <Caption color="muted">
+                    {Math.round(clampedPercent)}%
+                </Caption>
             </View>
 
-            <View style={{ flexShrink: 1, padding: 10 }}>
-                <ProgressStatCard
-                    color="#e268b3"
-                    value={level}
-                    startValue={levelStart}
-                    title={`user.level`}
-                    tagline={`user.level-up`}
-                    taglineCount={xpRequired}
-                />
-                <ProgressStatCard
-                    style={{ marginTop: 20 }}
-                    color="#A46EDA"
-                    value={totalLittercoin}
-                    startValue={littercoinStart}
-                    title={`user.littercoin`}
-                    tagline={`user.next-littercoin`}
-                    taglineCount={littercoinPercentage}
+            <View style={styles.barBackground}>
+                <View
+                    style={[
+                        styles.barFill,
+                        { width: `${clampedPercent}%` }
+                    ]}
                 />
             </View>
+
+            <Caption color="muted" style={styles.xpText}>
+                {(xpRequired || 0).toLocaleString()} XP to next level
+            </Caption>
         </View>
     );
 };
 
 const styles = StyleSheet.create({
     container: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        flex: 1,
         marginHorizontal: 20,
-        paddingVertical: 20,
-        borderRadius: 20
+        paddingVertical: 16
     },
-    circleContainer: {
-        flexGrow: 1,
-        justifyContent: 'center',
-        alignItems: 'center'
+    headerRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'baseline',
+        marginBottom: 8
+    },
+    levelText: {
+        color: '#e268b3',
+        fontSize: 22
+    },
+    barBackground: {
+        height: 10,
+        backgroundColor: '#f3e8ff',
+        borderRadius: 5,
+        overflow: 'hidden'
+    },
+    barFill: {
+        height: '100%',
+        backgroundColor: '#e268b3',
+        borderRadius: 5
+    },
+    xpText: {
+        marginTop: 6
     }
 });
 

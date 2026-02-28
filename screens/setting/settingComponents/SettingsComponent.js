@@ -215,7 +215,7 @@ const SettingsComponent = () => {
                             <Text
                                 style={styles.wrongPasswordText}
                             >
-                                t(`${deleteAccountError}`)
+                                {t(deleteAccountError)}
                             </Text>
                         </View>
                     ) : (

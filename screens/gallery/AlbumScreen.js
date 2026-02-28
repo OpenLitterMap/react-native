@@ -9,8 +9,8 @@ const AlbumScreen = ({ navigation }) => {
 
     const [hasPermission, setHasPermission] = useState(false);
 
-    useEffect(async () => {
-        await checkGalleryPermission();
+    useEffect(() => {
+        checkGalleryPermission();
     }, []);
 
     /**

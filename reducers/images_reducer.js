@@ -1,27 +1,83 @@
 import axios from 'axios';
-import { createSlice } from '@reduxjs/toolkit';
-import { createAsyncThunk } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import * as Sentry from '@sentry/react-native';
 import { URL } from '../actions/types';
 
+/**
+ * Classify an axios error into a structured { errorType, userMessage } object.
+ * Used by all upload thunks for consistent error handling.
+ */
+function classifyError (error, section) {
+    let errorType = 'unknown';
+    let userMessage = 'Upload failed. Please try again.';
+
+    if (!error.response) {
+        // No server response — network or timeout
+        if (error.code === 'ECONNABORTED') {
+            errorType = 'timeout';
+            userMessage = 'Upload timed out. Check your connection and try again.';
+        } else {
+            errorType = 'network';
+            userMessage = 'No internet connection. Please check your network.';
+        }
+    } else {
+        const status = error.response.status;
+        const msg = error.response.data?.msg || error.response.data?.message;
+
+        if (status === 401) {
+            errorType = 'unauthorized';
+            userMessage = 'Session expired. Please log in again.';
+        } else if (status === 422) {
+            if (msg === 'photo-already-uploaded') {
+                errorType = 'photo-already-uploaded';
+                userMessage = 'This photo was already uploaded.';
+            } else if (msg === 'invalid-coordinates') {
+                errorType = 'invalid-coordinates';
+                userMessage = 'Photo has invalid GPS coordinates.';
+            } else {
+                errorType = 'validation';
+                userMessage = msg || 'Photo could not be processed.';
+            }
+        } else if (status >= 500) {
+            errorType = 'server';
+            userMessage = 'Server error. Please try again later.';
+        } else {
+            errorType = 'unknown';
+            userMessage = msg || 'Upload failed. Please try again.';
+        }
+
+        Sentry.captureException(new Error(JSON.stringify(error.response.data)), {
+            level: 'error',
+            tags: { section, errorType, status: String(status) }
+        });
+    }
+
+    return { errorType, userMessage };
+}
+
 const initialState = {
     imagesArray: [],
-    selectedImages: [],
-    previousTags: [],
+    swiperIndex: 0,
 
-    // For Uploads
+    // Upload progress
     totalToUpload: 0,
     uploaded: 0,
     uploadFailed: 0,
-
-    // uploaded to web and tagged or not
     tagged: 0,
     taggedFailed: 0,
+
+    // Upload phase tracking
+    uploadPhase: 'idle',        // 'idle' | 'uploading' | 'tagging'
+    currentUploadIndex: 0,
+    uploadAbortReason: null,    // null | 'token-expired' | 'cancelled'
 
     errorMessage: '',
     failedCounts: {
         alreadyUploaded: 0,
         invalidCoordinates: 0,
+        timeout: 0,
+        network: 0,
+        server: 0,
         unknown: 0
     }
 };
@@ -32,6 +88,7 @@ const initialState = {
  * - getUntaggedImages
  * - uploadImage
  * - uploadTagsToWebImage
+ * - postTagsToPhoto
  */
 
 export const deleteWebImage = createAsyncThunk(
@@ -49,13 +106,13 @@ export const deleteWebImage = createAsyncThunk(
             });
 
             if (response.data.success) {
-                return photoId;  // returning photoId to identify the deleted image
+                return photoId;
             } else {
                 return rejectWithValue('Failed to delete image, no success flag');
             }
         } catch (error) {
             console.error('delete web image.error', error);
-            return rejectWithValue(error.response?.data || 'An error occurred during deletion');
+            return rejectWithValue(error.response?.data?.message || 'An error occurred during deletion');
         }
     }
 );
@@ -73,7 +130,6 @@ export const getUntaggedImages = createAsyncThunk(
                 }
             });
 
-            // Return the photos array if available
             if (response?.data?.photos?.length > 0)
             {
                 return {
@@ -83,14 +139,12 @@ export const getUntaggedImages = createAsyncThunk(
             }
             else
             {
-                // Handle no photos case
                 return rejectWithValue('No photos found');
             }
         }
         catch (error)
         {
-            // Return a reject action with value if an error occurs
-            return rejectWithValue(error.response?.data || 'Network Error');
+            return rejectWithValue(error.response?.data?.message || 'Network Error');
         }
     }
 );
@@ -118,37 +172,12 @@ export const uploadImage = createAsyncThunk(
                     photoHasTags
                 };
             } else {
-                return rejectWithValue('Upload failed with no success flag');
+                return rejectWithValue({ errorType: 'unknown', userMessage: 'Upload failed with no success flag' });
             }
         }
         catch (error)
         {
-            let errorMessage = 'none';
-
-            if (error.response)
-            {
-                switch (error.response.data?.msg)
-                {
-                    case 'photo-already-uploaded':
-                        errorMessage = 'photo-already-uploaded';
-                        break;
-                    case 'invalid-coordinates':
-                        errorMessage = 'invalid-coordinates';
-                        break;
-                    default:
-                        errorMessage = error.response.data?.msg || 'unknown';
-                }
-
-                Sentry.captureException(new Error(JSON.stringify(error.response.data)), {
-                    level: 'error',
-                    tags: {
-                        section: 'image_upload',
-                        errorMessage
-                    }
-                });
-            }
-
-            return rejectWithValue(errorMessage);
+            return rejectWithValue(classifyError(error, 'image_upload'));
         }
     }
 );
@@ -174,14 +203,50 @@ export const uploadTagsToWebImage = createAsyncThunk(
             if (response.data.success) {
                 return img.id;
             } else {
-                return rejectWithValue('Failed to add tags to the image');
+                return rejectWithValue({ errorType: 'unknown', userMessage: 'Failed to add tags to the image' });
             }
         } catch (error) {
-            return rejectWithValue(error.response?.data || 'An error occurred during the upload');
+            return rejectWithValue(classifyError(error, 'upload_tags_v2'));
         }
     }
 );
 
+
+/**
+ * Post tags to a photo using the v3 API.
+ *
+ * Expects { token, photoId, tags, pickedUp } where tags is an array of
+ * resolved tag objects: [{ object: {id, key}, category: {id, key}, quantity, picked_up, materials: [], brands: [], custom_tags: [] }]
+ */
+export const postTagsToPhoto = createAsyncThunk(
+    'images/postTagsToPhoto',
+    async ({ token, photoId, tags, pickedUp }, { rejectWithValue }) => {
+        try {
+            const response = await axios.post(
+                `${URL}/api/v3/tags`,
+                {
+                    photo_id: photoId,
+                    tags,
+                    picked_up: pickedUp ? 1 : 0
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+
+            if (response.data?.success) {
+                return { photoId };
+            } else {
+                return rejectWithValue({ errorType: 'unknown', userMessage: 'Failed to post tags' });
+            }
+        } catch (error) {
+            return rejectWithValue(classifyError(error, 'post_tags_v3'));
+        }
+    }
+);
 
 const imagesSlice = createSlice({
 
@@ -198,7 +263,7 @@ const imagesSlice = createSlice({
             const images = action.payload.images;
 
             images && images.map(image => {
-                let index;
+                let index = -1;
 
                 if (image.platform === 'mobile')
                 {
@@ -210,26 +275,29 @@ const imagesSlice = createSlice({
                         index = state.imagesArray.findIndex(img => img.uri === image.uri);
                     }
                 }
-
-                // size, height, width?
+                else
+                {
+                    // Web images: check by server id
+                    index = state.imagesArray.findIndex(img => img.id === image.id);
+                }
 
                 // If index is -1, it was not found
                 if (index === -1) {
                     state.imagesArray.push({
                         id: image.id,
                         date: image.date ?? null,
-                        lat: image.lat ?? 0,
-                        lon: image.lon ?? 0,
+                        lat: image.lat ?? null,
+                        lon: image.lon ?? null,
                         filename: image.filename,
                         uri: image.uri,
                         type: image.type, // gallery, camera, or web
                         platform: image.platform, // web or mobile
 
                         tags: image.tags,
+                        tagsV5: [],
                         customTags: image.customTags,
                         picked_up: action.payload.picked_up,
 
-                        // photoId: image.id, // need to remove this duplicate
                         selected: false,
                         uploaded: image.uploaded
                     });
@@ -238,133 +306,70 @@ const imagesSlice = createSlice({
         },
 
         /**
-         * Add or update tags object on a gallery image
-         *
-         * payload = {tag, currentIndex, quantityChanged}
-         * quantityChanged = true if quantity is changed from picker wheel
-         *
-         * check if tag `category` already exist on image index
-         * if false --> add tag to image
-         * if true --> check if title is already present
-         * title if false --> add tag title to the category with quantity: 1
-         * title is true (already present) -->
-         * if quantityChanged change the quantity to that number
-         * else add 1 to quantity
-         *
-         * after adding tag save tag to previousTags array.
-         * max 10 tags in previousTags array remove old tags if it exceeds limits.
+         * Change the swiperIndex (which image is currently selected).
          */
-        addTagToImage (state, action)
-        {
-            let image = state.imagesArray[action.payload.currentIndex];
+        changeSwiperIndex (state, action) {
+            state.swiperIndex = action.payload;
+        },
 
-            let newTags = image.tags;
+        /**
+         * V5 tagging: Add a tag by cloId to the current image.
+         * payload = { imageIndex, cloId }
+         * If the cloId already exists, increment quantity by 1.
+         */
+        addTagV5 (state, action) {
+            const { imageIndex, cloId } = action.payload;
+            const image = state.imagesArray[imageIndex];
+            if (!image) return;
 
-            let quantity = 1;
-            // if quantity exists, assign it
-            if (action.payload.tag.hasOwnProperty('quantity')) {
-                quantity = action.payload.tag.quantity;
-            }
-            let payloadCategory = action.payload.tag.category;
-            let payloadTitle = action.payload.tag.title;
-            let quantityChanged = action.payload.quantityChanged
-                ? action.payload.quantityChanged
-                : false;
+            if (!image.tagsV5) image.tagsV5 = [];
 
-            // check if category of incoming payload already exist in image tags
-            if (newTags.hasOwnProperty(payloadCategory)) {
-                // check if title of incoming payload already exist
-                if (newTags[payloadCategory].hasOwnProperty(payloadTitle)) {
-                    quantity = newTags[payloadCategory][payloadTitle];
-
-                    // if quantity is changed from picker wheel assign it
-                    // else increase quantity by 1
-                    quantity = quantityChanged
-                        ? action.payload.tag.quantity
-                        : quantity + 1;
-                }
-                image.tags[payloadCategory][payloadTitle] = quantity;
+            const existing = image.tagsV5.find(t => t.cloId === cloId);
+            if (existing) {
+                existing.quantity += 1;
             } else {
-                // if incoming payload category doesn't exist on image tags add it
-                image.tags[payloadCategory] = {
-                    [payloadTitle]: quantity
-                };
-            }
-
-            // check if tag already exist in prev tags array
-            const prevImgIndex = state.previousTags.findIndex(
-                tag => tag.key === payloadTitle
-            );
-
-            // if tag doesn't exist add tag to array
-            // if length < 10 then add at the start of array
-            // else remove the last element and add new tag to the start of array
-
-            // if item in array remove it and add to the start of array
-
-            if (prevImgIndex === -1) {
-                if (state.previousTags.length < 10) {
-                    state.previousTags.unshift({
-                        category: payloadCategory,
-                        key: payloadTitle
-                    });
-                } else {
-                    state.previousTags.pop();
-                    state.previousTags.unshift({
-                        category: payloadCategory,
-                        key: payloadTitle
-                    });
-                }
-            } else {
-                state.previousTags.splice(prevImgIndex, 1);
-                state.previousTags.unshift({
-                    category: payloadCategory,
-                    key: payloadTitle
-                });
+                image.tagsV5.push({ cloId, quantity: 1 });
             }
         },
 
-        addCustomTagToImage (state, action)
-        {
-            let currentImage = state.imagesArray[action.payload.currentIndex];
-            let customTags = action.payload.tag;
+        /**
+         * V5 tagging: Remove a tag by cloId from the current image.
+         * payload = { imageIndex, cloId }
+         */
+        removeTagV5 (state, action) {
+            const { imageIndex, cloId } = action.payload;
+            const image = state.imagesArray[imageIndex];
+            if (!image || !image.tagsV5) return;
 
-            if (currentImage.customTags) {
-                currentImage.customTags.push(customTags);
+            image.tagsV5 = image.tagsV5.filter(t => t.cloId !== cloId);
+        },
+
+        /**
+         * V5 tagging: Set exact quantity for a tag.
+         * payload = { imageIndex, cloId, quantity }
+         * Removes the tag if quantity <= 0.
+         */
+        updateTagQuantityV5 (state, action) {
+            const { imageIndex, cloId, quantity } = action.payload;
+            const image = state.imagesArray[imageIndex];
+            if (!image || !image.tagsV5) return;
+
+            if (quantity <= 0) {
+                image.tagsV5 = image.tagsV5.filter(t => t.cloId !== cloId);
             } else {
-                currentImage.customTags = [customTags];
+                const tag = image.tagsV5.find(t => t.cloId === cloId);
+                if (tag) tag.quantity = quantity;
             }
+        },
 
-            // check if tag already exist in prev tags array
-            const prevImgIndex = state.previousTags.findIndex(
-                tag => tag.key === action.payload.tag
-            );
-
-            // if tag doesn't exist add tag to array
-            // if length < 10 then add at the start of array
-            // else remove the last element and add new tag to the start of array
-
-            // if item in array remove it and add to the start of array
-
-            if (prevImgIndex === -1) {
-                if (state.previousTags.length < 10) {
-                    state.previousTags.unshift({
-                        category: 'custom-tag',
-                        key: action.payload.tag
-                    });
-                } else {
-                    state.previousTags.pop();
-                    state.previousTags.unshift({
-                        category: 'custom-tag',
-                        key: action.payload.tag
-                    });
-                }
-            } else {
-                state.previousTags.splice(prevImgIndex, 1);
-                state.previousTags.unshift({
-                    category: 'custom-tag',
-                    key: action.payload.tag
-                });
+        /**
+         * V5 tagging: Toggle picked_up on a single image by index.
+         * payload = imageIndex
+         */
+        togglePickedUpByIndex (state, action) {
+            const image = state.imagesArray[action.payload];
+            if (image) {
+                image.picked_up = !image.picked_up;
             }
         },
 
@@ -386,7 +391,7 @@ const imagesSlice = createSlice({
          */
         clearUploadedWebImages (state) {
             state.imagesArray = state.imagesArray.filter(img => {
-                return img.type === 'WEB' && img.hasOwnProperty('photoId');
+                return img.type?.toLowerCase() === 'web' && img.hasOwnProperty('photoId');
             });
         },
 
@@ -424,30 +429,6 @@ const imagesSlice = createSlice({
             });
         },
 
-        /**
-         * remove the tag from image based on index
-         */
-        removeTagFromImage (state, action) {
-
-            let photo = state.imagesArray[action.payload.currentIndex];
-
-            // if only one tag in payload category delete the category also
-            // else delete only tag
-            if (Object.keys(photo.tags[action.payload.category]).length === 1) {
-                delete photo.tags[action.payload.category];
-            } else {
-                delete photo.tags[action.payload.category][
-                    action.payload.tag
-                ];
-            }
-        },
-
-        removeCustomTagFromImage (state, action) {
-            state.imagesArray[
-                action.payload.currentIndex
-            ].customTags.splice(action.payload.tagIndex, 1);
-        },
-
         resetUploadState (state) {
             state.isUploading = false;
             state.showThankYouMessages = false;
@@ -456,16 +437,34 @@ const imagesSlice = createSlice({
             state.uploadFailed = 0;
             state.tagged = 0;
             state.taggedFailed = 0;
+            state.uploadPhase = 'idle';
+            state.currentUploadIndex = 0;
+            state.uploadAbortReason = null;
             state.errorMessage = '';
             state.failedCounts = {
                 alreadyUploaded: 0,
                 invalidCoordinates: 0,
+                timeout: 0,
+                network: 0,
+                server: 0,
                 unknown: 0
-            }
+            };
         },
 
         setTotalToUpload (state, action) {
             state.totalToUpload = action.payload;
+        },
+
+        setUploadPhase (state, action) {
+            state.uploadPhase = action.payload;
+        },
+
+        setCurrentUploadIndex (state, action) {
+            state.currentUploadIndex = action.payload;
+        },
+
+        setUploadAbortReason (state, action) {
+            state.uploadAbortReason = action.payload;
         },
 
         /**
@@ -515,8 +514,6 @@ const imagesSlice = createSlice({
                 // nothing yet
             })
             .addCase(deleteWebImage.fulfilled, (state, action) => {
-                // no loading yet
-
                 const index = state.imagesArray.findIndex(
                     delImg => delImg.id === action.payload
                 );
@@ -529,63 +526,42 @@ const imagesSlice = createSlice({
                 // no error handling yet
             })
 
-            /**
-             * Add images to state
-             *
-             * Three type of images --
-             * Platform: mobile
-             * type: "gallery" or "camera"
-             * "CAMERA" --> Image taken from OLM App camera (currently disabled)
-             * "GALLERY" --> Selected from phone gallery
-             *
-             * Platform: web
-             * type: "web"
-             * "WEB" --> Uploaded from web app. May or may not be tagged
-             *
-             * CAMERA & GALLERY image have same shape object
-             *
-             * if WEB --> check if image with same photoId already exist in state
-             * if not add it to images array
-             *
-             * WEB images dont display lat/long properties at the moment
-             * but they are geotagged because web app only accepts geotagged images.
-             */
             .addCase(getUntaggedImages.fulfilled, (state, action) => {
 
                 action.payload.images && action.payload.images.map(image => {
 
-                    let index;
+                    let index = -1;
 
                     if (image.platform === 'mobile') {
-                        // image type can be gallery or camera
-
                         if (image.uploaded) {
                             index = state.imagesArray.findIndex(img => img.id === image.id);
                         } else {
                             index = state.imagesArray.findIndex(img => img.uri === image.uri);
                         }
                     }
+                    else
+                    {
+                        // Web images: check by server id
+                        index = state.imagesArray.findIndex(img => img.id === image.id);
+                    }
 
-                    // size, height, width?
-
-                    // If index is -1, it was not found
                     if (index === -1)
                     {
                         state.imagesArray.push({
                             id: image.id,
                             date: image.date ?? null,
-                            lat: image.lat ?? 0,
-                            lon: image.lon ?? 0,
+                            lat: image.lat ?? null,
+                            lon: image.lon ?? null,
                             filename: image.filename,
                             uri: null,
-                            type: image.type, // gallery, camera, or web
-                            platform: image.platform, // web or mobile
+                            type: image.type,
+                            platform: image.platform,
 
                             tags: {},
+                            tagsV5: [],
                             customTags: [],
                             picked_up: action.payload.picked_up,
 
-                            // photoId: image.id, // need to remove this duplicate
                             selected: false,
                             uploaded: image.uploaded
                         });
@@ -594,29 +570,21 @@ const imagesSlice = createSlice({
             })
 
             // Upload Image
-            // if success upload++ else failed++
             .addCase(uploadImage.pending, (state) => {
-                // state.uploading = true;
+                // nothing yet
             })
             .addCase(uploadImage.fulfilled, (state, action) => {
-
-                // image_id is a local index
-                // photo_id is our primary key from the photos table
                 const { imageId, photo_id, enableAdminTagging, photoHasTags } = action.payload;
 
                 if (enableAdminTagging || photoHasTags) {
-                    // Remove the image if its tagged + uploaded
                     state.imagesArray = state.imagesArray.filter(img => img.id !== imageId);
                 } else {
-                    // Update image as uploaded but not yet tagged
                     state.imagesArray = state.imagesArray.map(img => {
-
                         if (img.type === 'gallery' && img.id === imageId) {
-                            img.id = action.payload.photo_id;
+                            img.id = photo_id;
                             img.type = 'web';
                             img.uploaded = true;
                         }
-
                         return img;
                     });
                 }
@@ -624,62 +592,71 @@ const imagesSlice = createSlice({
                 state.uploaded++;
             })
             .addCase(uploadImage.rejected, (state, action) => {
-                const errorMessage = action.payload;
+                const { errorType } = action.payload || { errorType: 'unknown' };
 
                 state.uploadFailed += 1;
-                // state.uploading = false;
-                state.error = errorMessage;
+                state.errorMessage = errorType;
 
-                // Parse the error message and increment the corresponding counter
-                if (errorMessage === 'photo-already-uploaded') {
-                    state.failedCounts.alreadyUploaded += 1;
-                } else if (errorMessage === 'invalid-coordinates') {
-                    state.failedCounts.invalidCoordinates += 1;
-                } else if (errorMessage === 'unknown') {
-                    state.failedCounts.unknown += 1;
+                switch (errorType) {
+                    case 'photo-already-uploaded': state.failedCounts.alreadyUploaded += 1; break;
+                    case 'invalid-coordinates': state.failedCounts.invalidCoordinates += 1; break;
+                    case 'timeout': state.failedCounts.timeout += 1; break;
+                    case 'network': state.failedCounts.network += 1; break;
+                    case 'server': state.failedCounts.server += 1; break;
+                    default: state.failedCounts.unknown += 1;
                 }
             })
 
-            // UploadTagsToWebImage
+            // UploadTagsToWebImage (v4 legacy)
             .addCase(uploadTagsToWebImage.pending, (state) => {
                 // nothing yet
             })
             .addCase(uploadTagsToWebImage.fulfilled, (state, action) => {
-
-                console.log('uploadTagsToWebImage.fulfilled');
-                // Remove the tagged image
                 state.imagesArray = state.imagesArray.filter(img => img.id !== action.payload);
-
                 state.tagged++;
             })
             .addCase(uploadTagsToWebImage.rejected, (state, action) => {
-                // state.loading = false;
-                // state.error = action.payload;
+                const { errorType } = action.payload || { errorType: 'unknown' };
                 state.taggedFailed++;
+                state.errorMessage = errorType;
+            })
+
+            // Post Tags V3
+            .addCase(postTagsToPhoto.fulfilled, (state, action) => {
+                const { photoId } = action.payload;
+                state.imagesArray = state.imagesArray.filter(img => img.id !== photoId);
+                state.tagged++;
+            })
+            .addCase(postTagsToPhoto.rejected, (state, action) => {
+                const { errorType } = action.payload || { errorType: 'unknown' };
+                state.taggedFailed++;
+                state.errorMessage = errorType;
             });
     }
 });
 
 export const {
     addImages,
-    addTagToImage,
-    addCustomTagToImage,
+    addTagV5,
     cancelUploadImages,
     changeLitterStatus,
+    changeSwiperIndex,
     clearUploadedWebImages,
     deleteImage,
     deleteSelectedImages,
     deselectAllImages,
-    removeTagFromImage,
-    removeCustomTagFromImage,
+    removeTagV5,
     resetUploadState,
+    setCurrentUploadIndex,
     setTotalToUpload,
+    setUploadAbortReason,
+    setUploadPhase,
     togglePickedUp,
+    togglePickedUpByIndex,
     toggleSelecting,
     toggleSelectedImages,
-    updateImageAsUploaded
+    updateImageAsUploaded,
+    updateTagQuantityV5
 } = imagesSlice.actions;
 
 export default imagesSlice.reducer;
-
-

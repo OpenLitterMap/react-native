@@ -1,19 +1,15 @@
 import axios from "axios";
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { URL } from '../actions/types';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const initialState = {
     statsErrorMessage: null,
-    totalLitter: 0,
-    totalPhotos: 0,
+    totalTags: 0,
+    totalImages: 0,
     totalUsers: 0,
-    totalLittercoin: 0,
-    targetPercentage: 0,
-    litterTarget: {
-        previousTarget: 0,
-        nextTarget: 0
-    }
+    newUsersToday: 0,
+    newUsersLast7Days: 0,
+    newUsersLast30Days: 0
 };
 
 export const getStats = createAsyncThunk(
@@ -40,6 +36,7 @@ export const getStats = createAsyncThunk(
     }
 );
 
+
 const statsSlice = createSlice({
 
     name: 'stats',
@@ -56,44 +53,22 @@ const statsSlice = createSlice({
                 state.statsErrorMessage = null;
             })
             .addCase(getStats.fulfilled, (state, action) => {
+                const totalTags = action.payload?.total_tags || 0;
+                const totalImages = action.payload?.total_images || 0;
+                const totalUsers = action.payload?.total_users || 0;
 
-                const totalLitter = action.payload?.total_litter || 1;
-                const totalPhotos = action.payload?.total_photos || 1;
-                const totalUsers = action.payload?.total_users || 1;
-                const totalLittercoin = parseInt(action.payload?.littercoin);
-                const litterTarget = {
-                    previousTarget: action.payload.previousXp,
-                    nextTarget: action.payload.nextXp
-                };
-                const targetPercentage =
-                    ((totalLitter - litterTarget.previousTarget) /
-                        (litterTarget.nextTarget -
-                            litterTarget.previousTarget)) *
-                    100;
-
-                AsyncStorage.setItem(
-                    'globalStats',
-                    JSON.stringify({
-                        totalLitter,
-                        totalPhotos,
-                        totalUsers,
-                        totalLittercoin,
-                        litterTarget,
-                        targetPercentage
-                    })
-                );
-
-                state.totalLitter = totalLitter;
-                state.totalPhotos = totalPhotos;
+                state.totalTags = totalTags;
+                state.totalImages = totalImages;
                 state.totalUsers = totalUsers;
-                state.totalLittercoin = totalLittercoin;
-                state.litterTarget = litterTarget;
-                state.targetPercentage = targetPercentage;
+                state.newUsersToday = action.payload?.new_users_today || 0;
+                state.newUsersLast7Days = action.payload?.new_users_last_7_days || 0;
+                state.newUsersLast30Days = action.payload?.new_users_last_30_days || 0;
                 state.statsErrorMessage = null;
             })
             .addCase(getStats.rejected, (state, action) => {
                 state.statsErrorMessage = action.payload;
-            });
+            })
+;
     }
 });
 

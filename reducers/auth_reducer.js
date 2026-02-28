@@ -1,8 +1,7 @@
 import axios from "axios";
 import * as Sentry from "@sentry/react-native";
-import { XPLEVEL } from '../assets/data/xpLevel';
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import { CLIENT_ID, CLIENT_SECRET, URL } from  '../actions/types';
+import { URL } from  '../actions/types';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const initialState = {
@@ -45,8 +44,10 @@ export const checkValidToken = createAsyncThunk(
 
             if (response.data.hasOwnProperty('message') && response.data.message === 'valid') {
                 dispatch(fetchUser(jwt));
+                return jwt;
             } else {
                 dispatch(logout());
+                return rejectWithValue('Token invalid');
             }
         }
         catch (error) {
@@ -58,16 +59,12 @@ export const checkValidToken = createAsyncThunk(
 
 export const createAccount = createAsyncThunk(
     'auth/createAccount',
-    async ({ username, email, password }, { rejectWithValue, dispatch }) => {
+    async ({ email, password }, { rejectWithValue, dispatch }) => {
         try
         {
             const response = await axios.post(`${URL}/api/register`, {
-                client_id: CLIENT_ID,
-                client_secret: CLIENT_SECRET,
-                grant_type: 'password',
-                username: username,
-                email: email,
-                password: password
+                email,
+                password
             }, {
                 headers: {
                     Accept: 'application/json',
@@ -75,9 +72,23 @@ export const createAccount = createAsyncThunk(
                 }
             });
 
-            dispatch(userLogin({ email, password }));
+            if (response.data?.token) {
+                const token = response.data.token;
 
-            return response.data;
+                await AsyncStorage.setItem('jwt', token);
+
+                if (response.data?.user) {
+                    if (__DEV__) {
+                        console.log('[Auth] Registered with auto-generated username:', response.data.user.username);
+                    }
+                }
+
+                dispatch(fetchUser(token));
+
+                return token;
+            }
+
+            return rejectWithValue('Registration failed — no token received');
         }
         catch (error)
         {
@@ -86,12 +97,11 @@ export const createAccount = createAsyncThunk(
                 const errorData = error.response.data.errors;
 
                 if (errorData) {
-                    if (errorData.email) return rejectWithValue(errorData.email);
-                    if (errorData.username) return rejectWithValue(errorData.username);
-                    if (errorData.password) return rejectWithValue(errorData.password);
+                    if (errorData.email) return rejectWithValue(errorData.email[0]);
+                    if (errorData.password) return rejectWithValue(errorData.password[0]);
                 }
 
-                return rejectWithValue('Something went wrong, please try again');
+                return rejectWithValue(error.response.data?.message || 'Something went wrong, please try again');
             }
             else {
                 return rejectWithValue('Network error, please check your internet connection.');
@@ -107,7 +117,7 @@ export const fetchUser = createAsyncThunk(
         try
         {
             const response = await axios({
-                url: `${URL}/api/user`,
+                url: `${URL}/api/user/profile/index`,
                 method: 'GET',
                 headers: {
                     Accept: 'application/json',
@@ -127,7 +137,7 @@ export const fetchUser = createAsyncThunk(
                 return rejectWithValue('User fetch failed');
             }
         } catch (error) {
-            return rejectWithValue(error.response?.data || error.message || 'Network error, please try again');
+            return rejectWithValue(error.response?.data?.message || error.message || 'Network error, please try again');
         }
     }
 );
@@ -166,28 +176,28 @@ export const sendResetPasswordRequest = createAsyncThunk(
 
 export const userLogin = createAsyncThunk(
     'auth/userLogin',
-    async ({ email, password }, { rejectWithValue, dispatch }) => {
+    async ({ login, password }, { rejectWithValue, dispatch }) => {
         try
         {
+            const identifier = login.trim().includes('@')
+                ? login.trim().toLowerCase()
+                : login.trim();
+
+            const data = { identifier, password };
+
             const response = await axios({
-                url: `${URL}/oauth/token`,
+                url: `${URL}/api/auth/token`,
                 method: 'POST',
                 headers: {
                     Accept: 'application/json',
                     'Content-Type': 'application/json'
                 },
-                data: {
-                    client_id: CLIENT_ID,
-                    client_secret: CLIENT_SECRET,
-                    grant_type: 'password',
-                    username: email,
-                    password: password
-                }
+                data
             });
 
             if (response.status === 200)
             {
-                const token = response.data.access_token;
+                const token = response.data.token;
 
                 try
                 {
@@ -205,7 +215,7 @@ export const userLogin = createAsyncThunk(
                 return rejectWithValue('Login failed');
             }
         } catch (error) {
-            return rejectWithValue(error.response?.data || error.message || 'Network error, please try again');
+            return rejectWithValue(error.response?.data?.message || error.message || 'Network error, please try again');
         }
     }
 );
@@ -231,7 +241,8 @@ const authSlice = createSlice({
          * reset state to initial
          */
         logout () {
-            AsyncStorage.clear();
+            AsyncStorage.removeItem('jwt');
+            AsyncStorage.removeItem('user');
 
             return initialState;
         },
@@ -256,12 +267,25 @@ const authSlice = createSlice({
 
         builder
 
+            // Check Valid Token
+            .addCase(checkValidToken.fulfilled, (state, action) => {
+                if (action.payload) {
+                    state.token = action.payload;
+                }
+            })
+            .addCase(checkValidToken.rejected, (state) => {
+                state.token = null;
+            })
+
             // Create Account
             .addCase(createAccount.pending, (state) => {
                 state.serverStatusText = "";
                 state.isSubmitting = true;
             })
-            .addCase(createAccount.fulfilled, (state) => {
+            .addCase(createAccount.fulfilled, (state, action) => {
+                if (action.payload) {
+                    state.token = action.payload;
+                }
                 state.isSubmitting = false;
             })
             .addCase(createAccount.rejected, (state, action) => {
@@ -270,31 +294,21 @@ const authSlice = createSlice({
             })
 
 
-            // Fetch User
+            // Fetch User Profile
             .addCase(fetchUser.fulfilled, (state, action) => {
 
-                let user = action.payload;
+                const data = action.payload;
+                const levelData = data.level || {};
 
-                /**
-                 * If user logged in
-                 * process user data and calculate
-                 *   user level -- based on user xp breakdown from ../screens/pages/data/xpLevel
-                 *   targetPercentage -- percentage completed to reach next level from prev level xp
-                 *   totalTags added by user
-                 *   totalLittercoin of user -- littercoin_allowance + littercoin_owed
-                 */
-                const level = XPLEVEL.findIndex(xp => xp > user.xp_redis);
-                const xpRequired = XPLEVEL[level] - user.xp_redis;
-                const previousTarget = level > 0 ? XPLEVEL[level - 1] : 0;
-                const targetPercentage = ((user.xp_redis - previousTarget) / (XPLEVEL[level] - previousTarget)) * 100;
-
-                user = {
-                    ...user,
-                    level: level,
-                    xpRequired: xpRequired,
-                    targetPercentage: targetPercentage,
-                    totalTags: user.total_tags,
-                    totalLittercoin: (user.littercoin_allowance || 0) + (user.littercoin_owed || 0)
+                const user = {
+                    ...data,
+                    level: levelData.level || 0,
+                    levelTitle: levelData.title || '',
+                    xp_redis: levelData.xp || data.stats?.xp || 0,
+                    xpRequired: levelData.xp_remaining || 0,
+                    targetPercentage: levelData.progress_percent || 0,
+                    totalTags: data.total_tags,
+                    totalLittercoin: (data.littercoin_allowance || 0) + (data.littercoin_owed || 0)
                 };
 
                 AsyncStorage.setItem('user', JSON.stringify(user));
@@ -327,23 +341,20 @@ const authSlice = createSlice({
             .addCase(userLogin.fulfilled, (state, action) => {
                 state.token = action.payload;
                 state.errors = {};
-                // state.isSubmitting = false;
+                state.isSubmitting = false;
             })
             .addCase(userLogin.rejected, (state, action) => {
-                state.serverStatusText = action.payload?.message || "Problem with login";
+                state.serverStatusText = action.payload || "Problem with login";
                 state.isSubmitting = false;
             })
     }
 });
 
 export const {
-    accountCreated,
     changeUsersActiveTeam,
     clearStatusText,
     logout,
     loginOrSignupReset,
-    tokenIsValid,
-    userFound,
     updateUserObject
 } = authSlice.actions;
 

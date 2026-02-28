@@ -18,10 +18,10 @@ interface AnimatedCircleProps {
     value?: number;
     startValue?: number;
     valueSuffix?: string;
-    valueStyles?: TextStyle | TextStyle[]; // React.CSSProperties | Array<React.CSSProperties>;
+    valueStyles?: TextStyle | TextStyle[];
     max?: number;
     tagline?: string;
-    taglineStyles?: TextStyle | TextStyle[]; // React.CSSProperties | Array<React.CSSProperties>;
+    taglineStyles?: TextStyle | TextStyle[];
     nextTarget?: string;
     isValueDisplayed?: boolean;
 }
@@ -46,64 +46,19 @@ const AnimatedCircle: React.FC<AnimatedCircleProps> = ({
     isValueDisplayed = true
 }) => {
     const animated = React.useRef(new Animated.Value(startPercentage)).current;
-    // need this to stop a warning
-    animated.addListener(() => {return});
     const textAnimated = React.useRef(new Animated.Value(startValue)).current;
     const circleRef = React.useRef<any>();
     const inputRef = React.useRef<any>();
     const circumference = 2 * Math.PI * radius;
     const halfCircle = radius + strokeWidth;
 
-    // animation fn for svg circle
-    const animation = (toValue: number) => {
-        return Animated.timing(animated, {
-            delay: delay,
-            toValue,
-            duration: startPercentage === percentage ? 0 : duration,
-            useNativeDriver: true
-            // easing: Easing.out(Easing.ease)
-        }).start();
-    };
-    // animation fn for text value
-    const textAnimation = (toValue: number) => {
-        return Animated.timing(textAnimated, {
-            delay: delay,
-            toValue,
-            duration: startValue === value ? 0 : duration,
-            useNativeDriver: true
-            // easing: Easing.out(Easing.ease)
-        }).start();
-    };
-
     React.useEffect(() => {
-        animation(percentage);
-        textAnimation(value);
-
-        textAnimated.addListener(v => {
-            if (inputRef?.current) {
-                const suffix =
-                    valueSuffix !== undefined ? `${valueSuffix}` : '';
-                // if value(props) is decimal then return value with decimal
-                // else return v.value without decimal
-                // decimal used for stats page
-
-                const text =
-                    value === Math.floor(value)
-                        ? `${Math.floor(v.value)}${suffix}`
-                        : `${v.value.toFixed(1)}${suffix}`;
-
-                inputRef.current.setNativeProps({
-                    text
-                });
-            }
-        });
-
-        animated.addListener(v => {
+        // Register listeners before starting animations
+        const circleListener = animated.addListener(v => {
             const maxPercent = (100 * v.value) / max;
             const strokeDashoffset =
                 circumference - (circumference * maxPercent) / 100;
 
-            // console.log(strokeDashoffset);
             if (circleRef?.current) {
                 circleRef.current.setNativeProps({
                     strokeDashoffset
@@ -111,11 +66,38 @@ const AnimatedCircle: React.FC<AnimatedCircleProps> = ({
             }
         });
 
+        const textListener = textAnimated.addListener(v => {
+            if (inputRef?.current) {
+                const suffix = valueSuffix !== undefined ? `${valueSuffix}` : '';
+                const text =
+                    value === Math.floor(value)
+                        ? `${Math.floor(v.value)}${suffix}`
+                        : `${v.value.toFixed(1)}${suffix}`;
+
+                inputRef.current.setNativeProps({ text });
+            }
+        });
+
+        // Start animations after listeners are attached
+        Animated.timing(animated, {
+            delay,
+            toValue: percentage,
+            duration: startPercentage === percentage ? 0 : duration,
+            useNativeDriver: true
+        }).start();
+
+        Animated.timing(textAnimated, {
+            delay,
+            toValue: value,
+            duration: startValue === value ? 0 : duration,
+            useNativeDriver: true
+        }).start();
+
         return () => {
-            animated.removeAllListeners();
-            textAnimated.removeAllListeners();
+            animated.removeListener(circleListener);
+            textAnimated.removeListener(textListener);
         };
-    });
+    }, [percentage, value, duration, delay, max]);
 
     return (
         <View

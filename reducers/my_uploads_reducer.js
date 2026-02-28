@@ -46,7 +46,7 @@ export const fetchUploads = createAsyncThunk(
 
             return { data: response.data.photos, append };
         } catch (error) {
-            return rejectWithValue(error.response?.data || 'Failed to load uploads');
+            return rejectWithValue(error.response?.data?.message || 'Failed to load uploads');
         }
     }
 );

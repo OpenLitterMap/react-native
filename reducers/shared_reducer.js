@@ -5,9 +5,7 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
 
 const initialState = {
     appVersion: null,
-    isSelecting: false,
     isUploading: false,
-    selected: 0,
     showModal: false,
     showThankYouMessages: false,
 };
@@ -35,7 +33,7 @@ export const checkAppVersion = createAsyncThunk(
         }
         catch (error)
         {
-            return rejectWithValue(error.response.data);
+            return rejectWithValue(error.response?.data?.message || 'Failed to check app version');
         }
     }
 );
@@ -53,6 +51,7 @@ const sharedSlice = createSlice({
          */
         cancelUpload (state) {
             state.isUploading = false;
+            state.showModal = false;
         },
 
         /**

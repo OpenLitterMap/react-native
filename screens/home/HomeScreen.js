@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
     ActivityIndicator,
+    Alert,
     Button,
     Dimensions,
     Modal,
@@ -26,11 +27,17 @@ import {
     deleteWebImage,
     deselectAllImages,
     getUntaggedImages,
-    resetUploadState, setTotalToUpload,
+    postTagsToPhoto,
+    resetUploadState,
+    setCurrentUploadIndex,
+    setTotalToUpload,
+    setUploadAbortReason,
+    setUploadPhase,
     uploadImage,
     uploadTagsToWebImage
 } from '../../reducers/images_reducer';
 import { getPhotosFromCameraroll } from "../../reducers/gallery_reducer";
+import { fetchAllTags } from "../../reducers/tags_reducer";
 
 import Icon from 'react-native-vector-icons/Ionicons';
 import { Body, Colors, Header, Title } from '../components';
@@ -64,6 +71,13 @@ const HomeScreen = ({ navigation }) => {
     const user = useSelector(state => state.auth.user);
     const uniqueValue = useSelector(state => state.shared.uniqueValue);
     const isUploading = useSelector(state => state.shared.isUploading);
+    const entriesByCloId = useSelector(state => state.tags.entriesByCloId);
+    const categoriesById = useSelector(state => state.tags.categoriesById);
+
+    // Upload progress
+    const uploadPhase = useSelector(state => state.images.uploadPhase);
+    const currentUploadIndex = useSelector(state => state.images.currentUploadIndex);
+    const uploadAbortReason = useSelector(state => state.images.uploadAbortReason);
 
     // Number of selected images
     const selected = images.filter(img => img.selected).length;
@@ -76,6 +90,24 @@ const HomeScreen = ({ navigation }) => {
     const taggedFailed = useSelector(state => state.images.taggedFailed);
     const failedCounts = useSelector(state => state.images.failedCounts);
 
+    // Abort the upload loop if token expires mid-upload
+    useEffect(() => {
+        if (uploadAbortReason === 'token-expired') {
+            isUploadCancelled.current = true;
+        }
+    }, [uploadAbortReason]);
+
+    // Show alert after re-login if upload was interrupted by token expiry
+    useEffect(() => {
+        if (token && uploadAbortReason === 'token-expired' && images.length > 0) {
+            Alert.alert(
+                'Upload Interrupted',
+                'Your session expired during upload. Your photos are preserved — press Upload to continue.',
+                [{ text: 'OK', onPress: () => dispatch(setUploadAbortReason(null)) }]
+            );
+        }
+    }, [token]);
+
     useEffect(() => {
         const getModel = () => {
             const model = DeviceInfo.getModel();
@@ -87,6 +119,9 @@ const HomeScreen = ({ navigation }) => {
             if (!user?.enable_admin_tagging && token) {
                 await dispatch(getUntaggedImages(token));
             }
+
+            // Pre-fetch tags for the v5 tagging UI
+            dispatch(fetchAllTags({ token }));
 
             if (!__DEV__) {
                 await checkNewVersion();
@@ -111,7 +146,7 @@ const HomeScreen = ({ navigation }) => {
     async function checkGalleryPermission () {
         const result = await checkCameraRollPermission();
 
-        if (result === 'granted' || 'limited') {
+        if (result === 'granted' || result === 'limited') {
             await dispatch(getPhotosFromCameraroll());
         } else {
             navigation.navigate('PERMISSION', { screen: 'GALLERY_PERMISSION' });
@@ -286,9 +321,38 @@ const HomeScreen = ({ navigation }) => {
         setIsSelectingImagesToDelete(false);
     }
 
+    /**
+     * Build v5 tags payload from an image's tagsV5 array.
+     * Resolves cloId → full { object, category, quantity, picked_up } format.
+     */
+    const buildV5TagsPayload = (img) => {
+        if (!img.tagsV5 || img.tagsV5.length === 0) return null;
+
+        return img.tagsV5.map(tag => {
+            const entry = entriesByCloId[tag.cloId];
+            if (!entry) {
+                if (__DEV__) console.warn('[Upload] Unresolved cloId:', tag.cloId);
+                return null;
+            }
+
+            const cat = categoriesById[entry.categoryId];
+
+            return {
+                object: { id: entry.objectId, key: entry.objectKey },
+                category: { id: entry.categoryId, key: cat?.key || entry.categoryKey },
+                quantity: tag.quantity,
+                picked_up: img.picked_up ? true : false,
+                materials: [],
+                brands: [],
+                custom_tags: []
+            };
+        }).filter(Boolean);
+    };
+
     const getImageDataForUpload = (img) => {
         const isGeoTagged = isGeotagged(img);
         const photoHasTags = isTagged(img);
+        const hasV5Tags = img.tagsV5 && img.tagsV5.length > 0;
 
         // Upload any new image that is tagged or not
         if (img.type === 'gallery' && isGeoTagged)
@@ -307,9 +371,9 @@ const HomeScreen = ({ navigation }) => {
             imageData.append('picked_up', img.picked_up ? 1 : 0);
             imageData.append('model', model);
 
-            // Tags and custom_tags may or may not exist
-            if (photoHasTags) {
-                if (Object.keys(img.tags).length > 0) {
+            // V4 tags go in FormData; V5 tags are posted separately
+            if (!hasV5Tags && photoHasTags) {
+                if (img.tags && Object.keys(img.tags).length > 0) {
                     imageData.append('tags', JSON.stringify(img.tags));
                 }
 
@@ -327,58 +391,120 @@ const HomeScreen = ({ navigation }) => {
     }
 
     /**
-     * Upload photos, 1 photo per request
-     *
-     * - status - images being sent across
-     * - fix progress bar percentComplete
-     * - Consider: Auto-upload any tagged images in the background once the user has pressed Confirm
+     * Upload photos, 1 photo per request.
+     * Two-step for v5 tags: upload photo first, then POST tags separately.
      */
     const uploadPhotos = async () => {
+        // Pre-upload validation: filter out non-geotagged gallery images
+        const geotaggedImages = images.filter(img =>
+            img.type === 'web' || isGeotagged(img)
+        );
+        const skippedCount = images.length - geotaggedImages.length;
+
+        if (skippedCount > 0) {
+            const confirmed = await new Promise(resolve => {
+                Alert.alert(
+                    'Missing GPS Data',
+                    `${geotaggedImages.length} of ${images.length} photos will be uploaded. ${skippedCount} ${skippedCount === 1 ? 'photo' : 'photos'} skipped (no GPS data).`,
+                    [
+                        { text: 'Cancel', onPress: () => resolve(false), style: 'cancel' },
+                        { text: 'Continue', onPress: () => resolve(true) }
+                    ]
+                );
+            });
+
+            if (!confirmed) return;
+        }
 
         dispatch(resetUploadState());
         dispatch(resetThankYouMessages());
         isUploadCancelled.current = false;
 
-        const numberOfImages = images.filter(image => image.type.toLowerCase() !== 'web').length;
-        dispatch(setTotalToUpload(numberOfImages));
+        // Count all items as work (gallery uploads + web tagging)
+        dispatch(setTotalToUpload(geotaggedImages.length));
 
         // shared.js -> showModal = true; isUploading = true;
         dispatch(startUploading());
 
-        if (images.length)
+        if (geotaggedImages.length)
         {
-            // async loop
-            for (const img of images)
+            for (let i = 0; i < geotaggedImages.length; i++)
             {
+                const img = geotaggedImages[i];
+
                 if (isUploadCancelled.current) {
                     dispatch(cancelUploadImages());
                     break;
                 }
 
+                dispatch(setCurrentUploadIndex(i));
+
                 const [imageData, photoHasTags, isGeoTagged] = getImageDataForUpload(img);
+
+                const hasV5Tags = img.tagsV5 && img.tagsV5.length > 0;
 
                 if (img.type === 'gallery' && isGeoTagged)
                 {
-                    await dispatch(uploadImage({
+                    dispatch(setUploadPhase('uploading'));
+
+                    const result = await dispatch(uploadImage({
                         token,
                         imageData,
                         imageId: img.id,
                         enableAdminTagging: user.enable_admin_tagging,
-                        photoHasTags
+                        photoHasTags: hasV5Tags ? false : photoHasTags
                     }));
+
+                    // If upload succeeded and image has v5 tags, post them
+                    if (hasV5Tags && result.payload?.photo_id) {
+                        dispatch(setUploadPhase('tagging'));
+
+                        const v5Payload = buildV5TagsPayload(img);
+                        if (v5Payload && v5Payload.length > 0) {
+                            await dispatch(postTagsToPhoto({
+                                token,
+                                photoId: result.payload.photo_id,
+                                tags: v5Payload,
+                                pickedUp: img.picked_up
+                            }));
+                        }
+                    }
                 }
-                else if (img.type=== 'web' && photoHasTags)
+                else if (img.type === 'web' && hasV5Tags)
                 {
-                    /**
-                     * Upload tags for already uploaded image
-                     * Updates picked_up
-                     */
+                    dispatch(setUploadPhase('tagging'));
+
+                    const v5Payload = buildV5TagsPayload(img);
+                    if (v5Payload && v5Payload.length > 0) {
+                        await dispatch(postTagsToPhoto({
+                            token,
+                            photoId: img.id,
+                            tags: v5Payload,
+                            pickedUp: img.picked_up
+                        }));
+                    }
+                }
+                else if (img.type === 'web' && photoHasTags)
+                {
+                    dispatch(setUploadPhase('tagging'));
+
                     await dispatch(uploadTagsToWebImage({ token, img }));
                 }
             }
         }
 
+        dispatch(setUploadPhase('idle'));
         dispatch(showThankYouMessagesAfterUpload());
+    };
+
+    /**
+     * Retry only the failed uploads (images still in state)
+     */
+    const retryFailedUploads = () => {
+        dispatch(closeThankYouMessages());
+        dispatch(resetUploadState());
+        // Small delay to let modal close, then re-trigger
+        setTimeout(() => uploadPhotos(), 300);
     };
 
     /**
@@ -387,6 +513,47 @@ const HomeScreen = ({ navigation }) => {
     const hideThankYouMessages = () => {
         dispatch(closeThankYouMessages());
     }
+
+    /**
+     * Render the upload progress text based on current phase
+     */
+    const renderProgressText = () => {
+        const current = currentUploadIndex + 1;
+        const total = totalToUpload;
+
+        if (uploadPhase === 'tagging') {
+            return `Tagging ${current} of ${total}...`;
+        }
+        return `Uploading ${current} of ${total}...`;
+    };
+
+    /**
+     * Render failure details in the thank-you modal
+     */
+    const renderFailureDetails = () => {
+        const items = [];
+
+        if (failedCounts.network > 0)
+            items.push(`${failedCounts.network} failed — no internet connection`);
+        if (failedCounts.timeout > 0)
+            items.push(`${failedCounts.timeout} failed — connection timed out`);
+        if (failedCounts.server > 0)
+            items.push(`${failedCounts.server} failed — server error`);
+        if (failedCounts.alreadyUploaded > 0)
+            items.push(`${failedCounts.alreadyUploaded} already uploaded`);
+        if (failedCounts.invalidCoordinates > 0)
+            items.push(`${failedCounts.invalidCoordinates} invalid coordinates`);
+        if (failedCounts.unknown > 0)
+            items.push(`${failedCounts.unknown} failed — unknown error`);
+
+        return items.map((text, i) => (
+            <Text key={i} style={{ fontSize: SCREEN_HEIGHT * 0.016, marginBottom: 2 }}>
+                {text}
+            </Text>
+        ));
+    };
+
+    const totalFailed = uploadFailed + taggedFailed;
 
     return (
         <>
@@ -397,23 +564,17 @@ const HomeScreen = ({ navigation }) => {
             <View style={styles.container}>
                 {/* INFO: modal to show during image upload */}
                 <Modal animationType="slide" transparent={true} visible={showModal}>
-                    {/* Waiting spinner to show during upload */}
+                    {/* Uploading spinner with phase-aware progress */}
                     {isUploading && (
                         <View style={styles.modal}>
                             <Text style={styles.uploadText}>
-                                { t('leftpage.please-wait-uploading') }
+                                {totalToUpload > 0
+                                    ? renderProgressText()
+                                    : t('leftpage.please-wait-uploading')
+                                }
                             </Text>
 
                             <ActivityIndicator style={{marginBottom: 10}} />
-
-                            {/* Total of images to upload */}
-                            {
-                                totalToUpload > 0 && (
-                                    <Text style={styles.uploadCount}>
-                                        {uploaded} / {totalToUpload}
-                                    </Text>
-                                )
-                            }
 
                             <Button
                                 onPress={cancelUploadWrapper}
@@ -437,48 +598,35 @@ const HomeScreen = ({ navigation }) => {
                                     </Text>
                                 )}
 
-                                {/* For uploaded and now tagged */}
+                                {/* Tagging success */}
                                 {tagged > 0 && (
                                     <Text style={{ fontSize: SCREEN_HEIGHT * 0.02, marginBottom: 5 }}>
                                         { t('leftpage.you-have-tagged', { count: tagged }) }
                                     </Text>
                                 )}
 
-                                {uploadFailed > 0 && (
-                                    <View>
-                                        <Text style={{ fontSize: SCREEN_HEIGHT * 0.02, marginBottom: 5}}>
-                                            {uploadFailed} uploads failed
+                                {/* Failure details */}
+                                {totalFailed > 0 && (
+                                    <View style={{ marginBottom: 5 }}>
+                                        <Text style={{ fontSize: SCREEN_HEIGHT * 0.02, fontWeight: 'bold', marginBottom: 3 }}>
+                                            {totalFailed} {totalFailed === 1 ? 'item' : 'items'} failed
                                         </Text>
-
-                                        {failedCounts.alreadyUploaded > 0 && (
-                                            <Text>
-                                                {failedCounts.alreadyUploaded}{' '}
-                                                already uploaded
-                                            </Text>
-                                        )}
-
-                                        {failedCounts.invalidCoordinates > 0 && (
-                                            <Text>
-                                                {failedCounts.invalidCoordinates}{' '}
-                                                invalid coordinates (lat=0, lon=0)
-                                            </Text>
-                                        )}
-
-                                        {failedCounts.unknown > 0 && (
-                                            <Text>
-                                                {failedCounts.unknown} unknown)
-                                            </Text>
-                                        )}
+                                        {renderFailureDetails()}
                                     </View>
                                 )}
 
-                                {taggedFailed > 0 && (
-                                    <Text style={{ fontSize: SCREEN_HEIGHT * 0.02, marginBottom: 5}}>
-                                        {taggedFailed} tags failed
-                                    </Text>
-                                )}
+                                <View style={{flexDirection: 'row', gap: 10}}>
+                                    {/* Retry button — only when there are failures */}
+                                    {totalFailed > 0 && (
+                                        <TouchableWithoutFeedback onPress={retryFailedUploads}>
+                                            <View style={[styles.thankYouButton, { backgroundColor: Colors.accent }]}>
+                                                <Text style={styles.normalWhiteText}>
+                                                    Retry
+                                                </Text>
+                                            </View>
+                                        </TouchableWithoutFeedback>
+                                    )}
 
-                                <View style={{flexDirection: 'row'}}>
                                     <TouchableWithoutFeedback onPress={hideThankYouMessages}>
                                         <View style={styles.thankYouButton}>
                                             <Text style={styles.normalWhiteText}>
@@ -543,13 +691,6 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center'
     },
-    uploadedImagesNotTaggedContainer: {
-        padding: 5,
-        backgroundColor: 'white',
-        justifyContent: 'center',
-        alignItems: 'center',
-        maWidth: SCREEN_WIDTH * 0.8
-    },
     photo: {
         height: 100,
         width: SCREEN_WIDTH * 0.325,
@@ -560,28 +701,10 @@ const styles = StyleSheet.create({
         marginLeft: 2,
         width: SCREEN_WIDTH * 0.99
     },
-    progress: {
-        alignItems: 'flex-end'
-    },
-    progressTop: {
-        color: 'grey',
-        fontSize: 7
-    },
-    progressBottom: {
-        fontSize: 7,
-        marginBottom: 15
-    },
-    // Litter Modal
-    litterModal: {
-        backgroundColor: 'rgba(255,255,255,1)',
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center'
-    },
     thankYouButton: {
         backgroundColor: 'green',
         borderRadius: 3,
-        flex: 0.8,
+        flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
         padding: 10
@@ -589,13 +712,13 @@ const styles = StyleSheet.create({
     thankYouModalInner: {
         backgroundColor: 'rgba(255,255,255,1)',
         borderRadius: 6,
-        flex: 0.2,
         justifyContent: 'center',
         alignItems: 'center',
-        width: SCREEN_WIDTH * 0.7,
-        paddingTop: 10,
-        paddingLeft: 10,
-        paddingRight: 10
+        width: SCREEN_WIDTH * 0.75,
+        paddingTop: 16,
+        paddingBottom: 16,
+        paddingLeft: 16,
+        paddingRight: 16
     },
     uploadCount: {
         color: 'white',

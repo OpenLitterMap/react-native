@@ -3,8 +3,7 @@ import { Dimensions, FlatList, Image, Pressable, Text, View } from 'react-native
 import { useDispatch } from "react-redux";
 import { Body, SubTitle } from '../../components';
 import { isTagged } from '../../../utils/isTagged';
-import { toggleSelectedImages } from "../../../reducers/images_reducer";
-import { changeSwiperIndex } from "../../../reducers/litter_reducer";
+import { changeSwiperIndex, toggleSelectedImages } from "../../../reducers/images_reducer";
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 

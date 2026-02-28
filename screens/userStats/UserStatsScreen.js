@@ -1,10 +1,12 @@
-import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import React, { useCallback, useState } from 'react';
+import { ActivityIndicator, Dimensions, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { Body, Colors, Header, StatsGrid, Title } from '../components';
+import { useFocusEffect } from '@react-navigation/native';
+import { Body, Caption, Colors, Header, IconStatsCard, StatsGrid, SubTitle, Title } from '../components';
 import { ProgressCircleCard } from './userComponents';
 import { fetchUser } from "../../reducers/auth_reducer";
+import { getStats } from "../../reducers/stats_reducer";
 import { useDispatch, useSelector } from "react-redux";
 import ShowMyUploadsButton from "./userComponents/ShowMyUploadsButton";
 
@@ -14,6 +16,12 @@ const UserStatsScreen = ({ navigation }) => {
 
     const token = useSelector(state => state.auth.token);
     const user = useSelector(state => state.auth.user);
+    const totalTags = useSelector(state => state.stats.totalTags);
+    const totalImages = useSelector(state => state.stats.totalImages);
+    const totalUsers = useSelector(state => state.stats.totalUsers);
+    const newUsersToday = useSelector(state => state.stats.newUsersToday);
+    const newUsersLast7Days = useSelector(state => state.stats.newUsersLast7Days);
+    const newUsersLast30Days = useSelector(state => state.stats.newUsersLast30Days);
 
     const [xpStart, setXpStart] = useState(0);
     const [positionStart, setPositionStart] = useState(0);
@@ -25,19 +33,18 @@ const UserStatsScreen = ({ navigation }) => {
     const [littercoinPercentageStart, setLittercoinPercentageStart] = useState(0);
     const [isLoading, setIsLoading] = useState(true);
 
-    useEffect(() => {
+    useFocusEffect(
+        useCallback(() => {
+            const fetchData = async () => {
+                await getDataFromStorage();
+                await dispatch(fetchUser(token));
+                await dispatch(getStats());
+                await fetchUserData();
+            };
 
-        const fetchData = async () => {
-            await getDataFromStorage();
-
-            await dispatch(fetchUser(token));
-
-            await fetchUserData();
-        }
-
-        fetchData();
-
-    }, []);
+            fetchData();
+        }, [token])
+    );
 
     const getDataFromStorage = async () => {
 
@@ -89,6 +96,51 @@ const UserStatsScreen = ({ navigation }) => {
         }
     }
 
+    const globalStatsData = [
+        {
+            value: totalTags || 0,
+            title: `stats.total-litter`,
+            icon: 'pricetags-outline',
+            color: '#14B8A6',
+            bgColor: '#CCFBF1'
+        },
+        {
+            value: totalImages || 0,
+            title: `stats.total-photos`,
+            icon: 'images-outline',
+            color: '#A855F7',
+            bgColor: '#F3E8FF'
+        },
+        {
+            value: totalUsers || 0,
+            title: `stats.total-users`,
+            icon: 'people-outline',
+            color: '#F59E0B',
+            bgColor: '#FEF9C3'
+        },
+        {
+            value: newUsersToday || 0,
+            title: `stats.new-today`,
+            icon: 'person-add-outline',
+            color: '#0EA5E9',
+            bgColor: '#E0F2FE'
+        },
+        {
+            value: newUsersLast7Days || 0,
+            title: `stats.new-7-days`,
+            icon: 'calendar-outline',
+            color: '#EC4899',
+            bgColor: '#FCE7F3'
+        },
+        {
+            value: newUsersLast30Days || 0,
+            title: `stats.new-30-days`,
+            icon: 'calendar-outline',
+            color: '#8B5CF6',
+            bgColor: '#EDE9FE'
+        }
+    ];
+
     const statsData = [
         {
             value: user?.xp_redis || xpStart,
@@ -128,6 +180,7 @@ const UserStatsScreen = ({ navigation }) => {
     return (
         <>
             <Header
+
                 leftContent={
                     <View>
                         <Title
@@ -137,6 +190,7 @@ const UserStatsScreen = ({ navigation }) => {
                         <Body color="white">{user?.username}</Body>
                     </View>
                 }
+                leftContainerStyle={{flex: 3}}
                 rightContent={
                     <Pressable>
                         <Icon
@@ -147,6 +201,7 @@ const UserStatsScreen = ({ navigation }) => {
                         />
                     </Pressable>
                 }
+                rightContainerStyle={{flex: 0}}
             />
             {user === null || user === undefined || isLoading ? (
                 <View
@@ -165,24 +220,52 @@ const UserStatsScreen = ({ navigation }) => {
             ) : (
                 <ScrollView
                     style={styles.container}
+                    contentContainerStyle={{paddingTop: 12}}
                     showsVerticalScrollIndicator={false}
                     alwaysBounceVertical={false}
                 >
+                    <SubTitle style={styles.sectionTitle}>Global</SubTitle>
+                    <ScrollView
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
+                        contentContainerStyle={styles.globalRow}>
+                        {globalStatsData.map(stat => (
+                            <IconStatsCard
+                                key={stat.title}
+                                imageContent={
+                                    <Icon
+                                        name={stat.icon}
+                                        size={20}
+                                        color={stat.color}
+                                    />
+                                }
+                                value={stat.value}
+                                title={stat.title}
+                                contentCenter
+                                backgroundColor={stat.bgColor}
+                                fontColor={stat.color}
+                                width={120}
+                            />
+                        ))}
+                    </ScrollView>
+
+                    <SubTitle style={styles.sectionTitle}>Your Stats</SubTitle>
                     <ProgressCircleCard
                         level={user?.level}
                         levelStart={levelStart}
                         levelPercentage={user?.targetPercentage}
-                        levelPercentageStart={levelPercentageStart}
                         xpRequired={user?.xpRequired}
-                        totalLittercoin={user?.totalLittercoin}
-                        littercoinStart={littercoinStart}
-                        littercoinPercentage={user?.total_images % 100}
-                        littercoinPercentageStart={littercoinPercentageStart}
                     />
 
                     <StatsGrid
                         statsData={statsData}
                     />
+
+                    <Caption
+                        color="muted"
+                        style={styles.littercoinText}>
+                        Littercoin: {(user?.totalLittercoin || 0).toLocaleString()}
+                    </Caption>
 
                     <ShowMyUploadsButton
                         navigation={navigation}
@@ -197,6 +280,19 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: 'white'
+    },
+    sectionTitle: {
+        paddingHorizontal: 20,
+        paddingTop: 20,
+        paddingBottom: 4
+    },
+    globalRow: {
+        paddingHorizontal: 10
+    },
+    littercoinText: {
+        textAlign: 'center',
+        marginTop: 4,
+        marginBottom: 8
     },
     statsContainer: {
         marginTop: 20,

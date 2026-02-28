@@ -1243,8 +1243,27 @@ PODS:
     - React-Core
   - RNCClipboard (1.14.2):
     - React-Core
-  - RNCMaskedView (0.1.11):
-    - React
+  - RNCMaskedView (0.3.2):
+    - DoubleConversion
+    - glog
+    - hermes-engine
+    - RCT-Folly (= 2024.01.01.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Codegen
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
   - RNCPicker (2.7.7):
     - React-Core
   - RNDateTimePicker (8.2.0):
@@ -1340,11 +1359,29 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - RNSentry (5.24.1):
+  - RNSentry (5.36.0):
+    - DoubleConversion
+    - glog
     - hermes-engine
+    - RCT-Folly (= 2024.01.01.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Codegen
     - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
     - React-hermes
-    - Sentry/HybridSDK (= 8.29.1)
+    - React-ImageManager
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Sentry/HybridSDK (= 8.46.0)
+    - Yoga
   - RNSVG (15.3.0):
     - React-Core
   - RNVectorIcons (10.1.0):
@@ -1368,7 +1405,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
-  - Sentry/HybridSDK (8.29.1)
+  - Sentry/HybridSDK (8.46.0)
   - SocketRocket (0.7.0)
   - Yoga (0.0.0)
 
@@ -1437,7 +1474,7 @@ DEPENDENCIES:
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
   - "RNCAsyncStorage (from `../node_modules/@react-native-async-storage/async-storage`)"
   - "RNCClipboard (from `../node_modules/@react-native-clipboard/clipboard`)"
-  - "RNCMaskedView (from `../node_modules/@react-native-community/masked-view`)"
+  - "RNCMaskedView (from `../node_modules/@react-native-masked-view/masked-view`)"
   - "RNCPicker (from `../node_modules/@react-native-picker/picker`)"
   - "RNDateTimePicker (from `../node_modules/@react-native-community/datetimepicker`)"
   - RNDeviceInfo (from `../node_modules/react-native-device-info`)
@@ -1585,7 +1622,7 @@ EXTERNAL SOURCES:
   RNCClipboard:
     :path: "../node_modules/@react-native-clipboard/clipboard"
   RNCMaskedView:
-    :path: "../node_modules/@react-native-community/masked-view"
+    :path: "../node_modules/@react-native-masked-view/masked-view"
   RNCPicker:
     :path: "../node_modules/@react-native-picker/picker"
   RNDateTimePicker:
@@ -1677,7 +1714,7 @@ SPEC CHECKSUMS:
   ReactCommon: f00e436b3925a7ae44dfa294b43ef360fbd8ccc4
   RNCAsyncStorage: 826b603ae9c0f88b5ac4e956801f755109fa4d5c
   RNCClipboard: 5e503962f0719ace8f7fdfe9c60282b526305c85
-  RNCMaskedView: 0e1bc4bfa8365eba5fbbb71e07fbdc0555249489
+  RNCMaskedView: da52ec927af4b4c3f3f6b5b5e816a69be62fe642
   RNCPicker: b7873ba797dc586bfaf3307d737cbdc620a9ff3e
   RNDateTimePicker: 40ffda97d071a98a10fdca4fa97e3977102ccd14
   RNDeviceInfo: b899ce37a403a4dea52b7cb85e16e49c04a5b88e
@@ -1687,13 +1724,13 @@ SPEC CHECKSUMS:
   RNPermissions: 9611557f7289c271e442b481523a19452aefca1f
   RNReanimated: 9c213184c27dc4a2ed7e9ff41a4b0b9258bb54f0
   RNScreens: 5aeecbb09aa7285379b6e9f3c8a3c859bb16401c
-  RNSentry: e9aa15bb2f3e18c822c002eea13bbd3b222ab493
+  RNSentry: bd24510e679253fcfc216e5e433dab3ac03f2ed0
   RNSVG: a48668fd382115bc89761ce291a81c4ca5f2fd2e
   RNVectorIcons: 2a2f79274248390b80684ea3c4400bd374a15c90
-  Sentry: c446963245407030e17f1b926a83c6337dc99f4e
+  Sentry: da60d980b197a46db0b35ea12cb8f39af48d8854
   SocketRocket: abac6f5de4d4d62d24e11868d7a2f427e0ef940d
-  Yoga: 88480008ccacea6301ff7bf58726e27a72931c8d
+  Yoga: 04f1db30bb810187397fa4c37dd1868a27af229c
 
 PODFILE CHECKSUM: 7a045df7b5e0a3f9e650ce2fe341f6680cc9560d
 
-COCOAPODS: 1.15.2
+COCOAPODS: 1.16.2

@@ -2,7 +2,7 @@ import axios from "axios";
 import { URL } from '../actions/types';
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import {changeUsersPickedUp, updateUserObject} from './auth_reducer';
+import { updateUserObject } from './auth_reducer';
 import { clearUploadedWebImages } from './images_reducer';
 
 const initialState = {
@@ -31,8 +31,7 @@ export const deleteAccount = createAsyncThunk(
     async ({ password, token }, { rejectWithValue }) => {
         try {
             const response = await axios.post(`${URL}/api/settings/delete-account/`, {
-                password,
-                token
+                password
             }, {
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -50,7 +49,7 @@ export const deleteAccount = createAsyncThunk(
             }
         } catch (error) {
             console.error('ERROR DELETE_ACCOUNT', error);
-            return rejectWithValue(error.response.data);
+            return rejectWithValue(error.response?.data?.message || 'Failed to delete account');
         }
     }
 );
@@ -111,7 +110,7 @@ export const saveSettings = createAsyncThunk(
                     clearUploadedImages: key === 'enable_admin_tagging' && dataValue
                 };
             } else {
-                rejectWithValue('Failed to update settings');
+                return rejectWithValue('Failed to update settings');
             }
         }
         catch (error)
@@ -150,7 +149,7 @@ export const saveSocialAccounts = createAsyncThunk(
 
                 return 'SUCCESS';
             } else {
-                rejectWithValue('ERROR');
+                return rejectWithValue('ERROR');
             }
         }
         catch (error)
@@ -204,7 +203,7 @@ export const toggleSettingsSwitch = createAsyncThunk(
 
                 return response.data;
             } else {
-                rejectWithValue('Failed to update settings');
+                return rejectWithValue('Failed to update settings');
             }
         } catch (error) {
             // console.log('Error: toggleSettingsSwitch', error);
@@ -333,8 +332,6 @@ export const {
     setDeleteAccountError,
     setModel,
     settingsInit,
-    updateSettingsStatusMessage,
-    startUpdatingSettings,
     toggleSettingsModal,
     toggleSettingsWait,
     updateSettingsProp

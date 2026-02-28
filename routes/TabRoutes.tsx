@@ -3,9 +3,7 @@ import { View, SafeAreaView } from 'react-native';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import {
     HomeScreen,
-    LeaderboardsScreen,
-    GlobalDataScreen,
-    UserStatsScreen
+    ProfileScreen
 } from '../screens';
 import TeamStack from './TeamStack';
 // @ts-ignore
@@ -34,29 +32,6 @@ const TabRoutes: React.FC = () => (
 
                         case 'TEAM':
                             iconName = focused ? 'people' : 'people-outline';
-                            break;
-
-                        case 'GLOBAL_DATA':
-                            iconName = focused ? 'trending-up' : 'trending-up-outline';
-                            break;
-
-                        // case 'RANKING':
-                        //     iconName = focused
-                        //         ? 'trophy'
-                        //         : 'trophy-outline';
-                        //     break;
-
-                        case 'LEADERBOARDS':
-                            iconName = focused ? 'trophy' : 'trophy-outline';
-                            break;
-
-                        // case 'MAP':
-                        //     iconName = focused ? 'map' : 'map-outline';
-                        //
-                        //     break;
-
-                        case 'CAMERA':
-                            iconName = focused ? 'camera' : 'camera-outline';
                             break;
 
                         case 'USER_STATS':
@@ -115,10 +90,7 @@ const TabRoutes: React.FC = () => (
             {/*    options={{ unmountOnBlur: true }}*/}
             {/*/>*/}
             <Tab.Screen name="TEAM" component={TeamStack} />
-            <Tab.Screen name="GLOBAL_DATA" component={GlobalDataScreen} />
-            <Tab.Screen name="LEADERBOARDS" component={LeaderboardsScreen} />
-            {/*<Tab.Screen name="MAP" component={MapScreen} />*/}
-            <Tab.Screen name="USER_STATS" component={UserStatsScreen} />
+            <Tab.Screen name="USER_STATS" component={ProfileScreen} />
         </Tab.Navigator>
         <SafeAreaView />
     </>

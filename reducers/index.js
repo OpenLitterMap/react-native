@@ -6,12 +6,12 @@ import gallery from './gallery_reducer';
 import images from './images_reducer';
 import my_uploads_reducer from "./my_uploads_reducer";
 import leaderboard from './leaderboards_reducer';
-import litter from './litter_reducer';
+import locations from './locations_reducer';
 import shared from './shared_reducer';
 import settings from './settings_reducer';
 import stats from './stats_reducer';
+import tags from './tags_reducer';
 import teams from './team_reducer';
-import web from './web_reducer';
 
 export const rootReducer = combineReducers({
     auth,
@@ -20,10 +20,10 @@ export const rootReducer = combineReducers({
     images,
     my_uploads_reducer,
     leaderboard,
-    litter,
+    locations,
     shared,
     settings,
     stats,
-    teams,
-    web
+    tags,
+    teams
 });

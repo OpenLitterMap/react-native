@@ -24,7 +24,7 @@ import { useTranslation } from "react-i18next";
 import { Swipeable } from 'react-native-gesture-handler';
 import { URL } from '../../../actions/types';
 import Clipboard from '@react-native-clipboard/clipboard';
-import moment from 'moment';
+import dayjs from '../../../utils/dayjs';
 
 const MyUploads = ({ navigation }) => {
 
@@ -94,6 +94,19 @@ const MyUploads = ({ navigation }) => {
         }));
 
         closeFilterModal();
+    };
+
+    const summaryToString = (summary) => {
+        if (!summary || typeof summary !== 'object') return '';
+        let parts = [];
+        for (const [category, items] of Object.entries(summary)) {
+            if (items && typeof items === 'object') {
+                for (const [item, count] of Object.entries(items)) {
+                    parts.push(`${category}.${item} ${count}`);
+                }
+            }
+        }
+        return parts.length > 0 ? parts.join(',') + ',' : '';
     };
 
     const parseTags = (tagsString, customTags, isTrustedUser) => {
@@ -186,14 +199,18 @@ const MyUploads = ({ navigation }) => {
     // };
 
     // Render each upload item
-    const renderItem = ({ item }) => (
+    const renderItem = ({ item }) => {
+        const tagsString = item.result_string
+            || (typeof item.summary === 'string' ? item.summary : summaryToString(item.summary));
+
+        return (
         <Swipeable
             renderRightActions={(progress, dragX) => renderRightActions(progress, dragX, item)}
         >
             <View style={styles.uploadItem}>
                 <View style={styles.details}>
 
-                    {parseTags(item.result_string).map((tag, index) => (
+                    {parseTags(tagsString, item.custom_tags).map((tag, index) => (
                         <View key={index}>
                             <Text>{tag}</Text>
                         </View>
@@ -211,12 +228,13 @@ const MyUploads = ({ navigation }) => {
                         )
                     }
 
-                    <Text style={{ marginTop: 5 }}>Taken: {moment(item.datetime).format("h:mma Do MMM. YYYY")}</Text>
-                    <Text>Uploaded: {moment(item.created_at).format("h:mma Do MMM. YYYY")}</Text>
+                    <Text style={{ marginTop: 5 }}>Taken: {dayjs(item.datetime).format("h:mma Do MMM. YYYY")}</Text>
+                    <Text>Uploaded: {dayjs(item.created_at).format("h:mma Do MMM. YYYY")}</Text>
                 </View>
             </View>
         </Swipeable>
     );
+    };
 
     return (
         <>

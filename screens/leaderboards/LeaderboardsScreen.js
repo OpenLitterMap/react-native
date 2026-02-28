@@ -26,12 +26,11 @@ const LeaderboardsScreen = () => {
     ]);
 
     const paginated = useSelector(state => state.leaderboard.paginated);
-
     useEffect(() => {
         setFlags(flags);
 
         const fetchData = async () => {
-            await dispatch(getLeaderboardData('today'));
+            await dispatch(getLeaderboardData({timeFilter: 'today', page: 1}));
 
             setLoading(false);
         };
@@ -45,7 +44,7 @@ const LeaderboardsScreen = () => {
 
         setLoading(true);
 
-        await dispatch(getLeaderboardData(value));
+        await dispatch(getLeaderboardData({timeFilter: value, page: 1}));
 
         setLoading(false);
     };

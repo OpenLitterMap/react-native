@@ -1,8 +1,9 @@
 import { StyleSheet, Pressable, View, TextInput } from 'react-native';
 import React from 'react';
+import Icon from 'react-native-vector-icons/Ionicons';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
-import { Body, Button, Colors, Caption } from '../../components';
+import { Body, Button, Colors, Caption, SubTitle } from '../../components';
 import { useDispatch, useSelector } from "react-redux";
 import { joinTeam } from "../../../reducers/team_reducer";
 
@@ -17,25 +18,27 @@ const JoinTeamForm = ({ backPress }) => {
 
     const dispatch = useDispatch();
 
-    const teamsFormError = useSelector(state => state.teams);
+    const token = useSelector(state => state.auth.token);
+    const teamsFormError = useSelector(state => state.teams.teamsFormError);
 
     return (
         <View>
-            <View
-                style={styles.joinTeamContainer}
-            >
-                <Body>Join team by identifier</Body>
-
-                <Pressable onPress={backPress}>
-                    <Body color="accent">Back</Body>
+            <View style={styles.headerRow}>
+                <SubTitle>Join a Team</SubTitle>
+                <Pressable onPress={backPress} style={styles.closeButton}>
+                    <Icon name="close" size={22} color={Colors.text} />
                 </Pressable>
             </View>
+
+            <Caption color="muted" style={styles.description}>
+                Enter the team identifier shared by your team leader.
+            </Caption>
 
             <Formik
                 initialValues={{ id: '' }}
                 validationSchema={JoinTeamSchema}
                 onSubmit={async values => {
-                    await dispatch(joinTeam({ token, id: values.id }));
+                    await dispatch(joinTeam({ token, identifier: values.id }));
                 }}>
                 {({
                     isValid,
@@ -46,6 +49,7 @@ const JoinTeamForm = ({ backPress }) => {
                     handleChange
                 }) => (
                     <>
+                        <Body style={styles.label}>Team Identifier</Body>
                         <TextInput
                             name="id"
                             autoFocus={false}
@@ -57,30 +61,28 @@ const JoinTeamForm = ({ backPress }) => {
                             style={styles.input}
                             onSubmitEditing={handleSubmit}
                             returnKeyType="go"
-                            placeholder="Enter ID to join a team"
+                            placeholder="e.g. CleanUpCrew"
+                            placeholderTextColor={Colors.muted}
                         />
                         {touched.id && errors.id && (
-                            <Caption color="error">{errors.id}</Caption>
+                            <Caption color="error" style={styles.errorText}>
+                                {errors.id}
+                            </Caption>
                         )}
 
-                        <View
-                            style={{
-                                height: 30,
-                                justifyContent: 'center',
-                                alignItems: 'center'
-                            }}>
-                            <Caption color="error">
+                        {teamsFormError ? (
+                            <Caption color="error" style={styles.serverError}>
                                 {teamsFormError}
                             </Caption>
-                        </View>
+                        ) : null}
 
                         <Button
                             disabled={!isValid}
                             loading={isSubmitting}
                             onPress={handleSubmit}
-                            style={{ marginVertical: 20 }}
+                            style={styles.submitButton}
                         >
-                            <Body color="white">JOIN TEAM</Body>
+                            <Body color="white">Join Team</Body>
                         </Button>
                     </>
                 )}
@@ -90,24 +92,47 @@ const JoinTeamForm = ({ backPress }) => {
 }
 
 const styles = StyleSheet.create({
-    joinTeamContainer: {
+    headerRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 4
+    },
+    closeButton: {
+        width: 32,
+        height: 32,
+        borderRadius: 16,
+        backgroundColor: '#f0f1f3',
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
+    description: {
         marginBottom: 20
     },
+    label: {
+        marginBottom: 6
+    },
     input: {
-        marginTop: 10,
-        padding: 10,
+        padding: 14,
         fontSize: 16,
-        letterSpacing: 0.5,
-        backgroundColor: Colors.white,
+        letterSpacing: 0.3,
+        backgroundColor: '#f9fafb',
         borderWidth: 1,
-        borderColor: Colors.muted,
-        borderRadius: 8,
+        borderColor: '#e5e7eb',
+        borderRadius: 10,
         color: Colors.text,
-        fontFamily: 'Poppins-Regular',
-        textAlignVertical: 'top',
-        height: 60
+        fontFamily: 'Poppins-Regular'
+    },
+    errorText: {
+        marginTop: 6
+    },
+    serverError: {
+        textAlign: 'center',
+        marginTop: 12
+    },
+    submitButton: {
+        marginTop: 20,
+        marginBottom: 10
     }
 });
 

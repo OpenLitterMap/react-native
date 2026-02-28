@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef } from 'react';
 import { Animated, Easing, Pressable, StyleSheet, View } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 
@@ -10,7 +10,7 @@ import { Body, Caption, Colors, Title } from '../../components';
  */
 const TeamTitle = ({ identifier, teamName }) => {
 
-    const [opacityAnimation, setOpacityAnimation] = useState(new Animated.Value(0));
+    const opacityAnimation = useRef(new Animated.Value(0)).current;
 
     /**
      * copy team unique identifier to Clipboard

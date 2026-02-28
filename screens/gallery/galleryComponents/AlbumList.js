@@ -13,14 +13,14 @@ const AlbumList = () => {
         dispatch(getPhotosFromCameraroll())
     }, [])
 
-    const { imagesLoading, geotaggedImages } = useSelector(state => state.gallery);
+    const { imagesLoading, galleryImages } = useSelector(state => state.gallery);
 
-    if (geotaggedImages?.length > 0) {
+    if (galleryImages?.length > 0) {
         return (
             <AlbumCard
-                albumName="Geotagged"
-                thumbnail={geotaggedImages[0]?.uri}
-                counter={geotaggedImages.length}
+                albumName="All Photos"
+                thumbnail={galleryImages[0]?.uri}
+                counter={galleryImages.length}
                 navigation={navigation}
             />
         );
@@ -36,11 +36,11 @@ const AlbumList = () => {
             </View>
         );
     }
-    else if (geotaggedImages?.length === 0)
+    else if (galleryImages?.length === 0)
     {
         return (
             <View style={styles.container}>
-                <Body>No geotagged photos found</Body>
+                <Body>No photos found</Body>
             </View>
         );
     }

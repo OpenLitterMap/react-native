@@ -1,0 +1,57 @@
+# Mobile Permissions
+> OpenLitterMap React Native v7.0
+
+## Overview
+The app requests camera, photo library, and location permissions using `react-native-permissions`. Platform-specific permission handling covers iOS and Android (including Android 13+ changes). On Android 13+, `ACCESS_MEDIA_LOCATION` is checked at runtime to ensure GPS metadata is accessible from photos.
+
+## Files
+- `utils/permissions/index.js` — Barrel exports
+- `utils/permissions/cameraPermission.js` — Camera permission check/request
+- `utils/permissions/cameraRollPermission.js` — Photo library permission check/request (includes ACCESS_MEDIA_LOCATION)
+- `utils/permissions/locationPermission.js` — Location permission check/request
+- `screens/permission/CameraPermissionScreen.js` — Camera permission request UI
+- `screens/permission/GalleryPermissionScreen.js` — Gallery permission request UI
+
+## Declared Permissions (package.json `reactNativePermissionsIOS`)
+- Camera
+- LocationAccuracy
+- LocationWhenInUse
+- PhotoLibrary
+
+## Platform Handling
+
+### Camera Roll
+| Platform | Permission | Notes |
+|----------|-----------|-------|
+| iOS | `PERMISSIONS.IOS.PHOTO_LIBRARY` | GPS metadata accessible with this permission alone |
+| Android 13+ (API 33+) | `READ_MEDIA_IMAGES` + `ACCESS_MEDIA_LOCATION` | Both required for GPS data from MediaStore |
+| Android 12- | `READ_EXTERNAL_STORAGE` | |
+
+### Android 13+ ACCESS_MEDIA_LOCATION Flow
+`checkCameraRollPermission()` on Android 13+:
+1. Checks `READ_MEDIA_IMAGES` — if not granted, returns `'denied'`
+2. Checks `ACCESS_MEDIA_LOCATION` — if granted, returns `'granted'`
+3. If not granted, requests `ACCESS_MEDIA_LOCATION`
+4. If request granted, returns `'granted'`
+5. If request denied, returns `'limited'` (photos accessible but no GPS metadata)
+
+This ensures the app knows whether GPS data will be available from CameraRoll.
+
+### Camera
+| Platform | Permission |
+|----------|-----------|
+| iOS | `PERMISSIONS.IOS.CAMERA` |
+| Android | `PERMISSIONS.ANDROID.CAMERA` |
+
+### Location
+| Platform | Permission |
+|----------|-----------|
+| iOS | `PERMISSIONS.IOS.LOCATION_WHEN_IN_USE` |
+| Android | `PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION` |
+
+## Permission Flow
+1. HomeScreen checks gallery permission on mount
+2. If denied, navigates to `PERMISSION` stack → appropriate permission screen
+3. Permission screen explains why the permission is needed and provides a request button
+4. On grant, navigates back to the requesting screen
+5. GalleryPermissionScreen also requests `ACCESS_MEDIA_LOCATION` on Android 13+ after gallery access is granted

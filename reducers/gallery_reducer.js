@@ -1,10 +1,13 @@
+import { Platform } from 'react-native';
 import { createSlice } from '@reduxjs/toolkit';
 import { CameraRoll } from "@react-native-camera-roll/camera-roll";
 import { createAsyncThunk } from '@reduxjs/toolkit';
 
 const initialState = {
     imagesLoading: false,
-    geotaggedImages: [],
+    galleryImages: [],
+    geotaggedCount: 0,
+    nonGeotaggedCount: 0,
     camerarollImageFetched: false,
     lastFetchTime: null,
     isNextPageAvailable: false,
@@ -33,7 +36,7 @@ export const getPhotosFromCameraroll = createAsyncThunk(
 
         const {
             gallery: {
-                geotaggedImages,
+                galleryImages,
                 camerarollImageFetched,
                 lastFetchTime,
                 imagesLoading,
@@ -70,7 +73,7 @@ export const getPhotosFromCameraroll = createAsyncThunk(
         {
             if (fetchType === 'LOAD' && isNextPageAvailable && lastImageCursor !== null) {
                 camerarollData = await CameraRoll.getPhotos(loadParams);
-            } else if (geotaggedImages?.length === 0 && !camerarollImageFetched && lastFetchTime === null) {
+            } else if (galleryImages?.length === 0 && !camerarollImageFetched && lastFetchTime === null) {
                 camerarollData = await CameraRoll.getPhotos(initialParams);
                 fetchType = 'INITIAL';
             } else if (lastFetchTime !== null) {
@@ -83,38 +86,63 @@ export const getPhotosFromCameraroll = createAsyncThunk(
             }
 
             let id = 1;
-            let geotagged = [];
+            let photos = [];
             const imagesArray = camerarollData.edges;
             const { has_next_page: hasNextPage, end_cursor: endCursor } = camerarollData.page_info;
 
             imagesArray.forEach(item => {
                 id++;
-                if (
-                    item.node.location?.longitude &&
-                    item.node.location.latitude &&
-                    item.node.location.latitude !== 0 &&
-                    item.node.location.longitude !== 0
-                ) {
-                    const image = item.node.image;
+                const image = item.node.image;
+                const loc = item.node.location;
 
-                    geotagged.push({
-                        id,
-                        date: item.node.timestamp,
-                        lat: item.node.location.latitude,
-                        lon: item.node.location.longitude,
-                        filename: image.filename,
-                        uri: image.uri,
-                        type: 'gallery',
-                        platform: 'mobile',
-                        tags: {},
-                        customTags: [],
-                        selected: false,
-                        uploaded: false
-                    });
-                }
+                const hasGps = !!(
+                    loc?.latitude &&
+                    loc?.longitude &&
+                    loc.latitude !== 0 &&
+                    loc.longitude !== 0
+                );
+
+                photos.push({
+                    id,
+                    date: item.node.timestamp,
+                    lat: hasGps ? loc.latitude : null,
+                    lon: hasGps ? loc.longitude : null,
+                    hasGps,
+                    filename: image.filename,
+                    uri: image.uri,
+                    type: 'gallery',
+                    platform: 'mobile',
+                    tags: {},
+                    customTags: [],
+                    selected: false,
+                    uploaded: false
+                });
             });
 
-            return { geotagged, fetchType, hasNextPage, endCursor };
+            if (__DEV__) {
+                const total = imagesArray.length;
+                const withLocation = imagesArray.filter(i => i.node.location?.latitude && i.node.location?.longitude).length;
+                const withNull = imagesArray.filter(i => !i.node.location || i.node.location.latitude == null).length;
+                const withZero = imagesArray.filter(i => i.node.location?.latitude === 0 && i.node.location?.longitude === 0).length;
+
+                console.log('[GPS Debug] ===== CameraRoll Fetch Summary =====');
+                console.log(`[GPS Debug] Platform: ${Platform.OS} ${Platform.Version}`);
+                console.log(`[GPS Debug] FetchType: ${fetchType}`);
+                console.log(`[GPS Debug] Total photos: ${total}`);
+                console.log(`[GPS Debug] With valid location: ${withLocation}`);
+                console.log(`[GPS Debug] With null/undefined location: ${withNull}`);
+                console.log(`[GPS Debug] With 0,0 location: ${withZero}`);
+
+                // Log first 5 photos for diagnosis
+                imagesArray.slice(0, 5).forEach((item, idx) => {
+                    const uri = item.node.image.uri?.substring(0, 50);
+                    console.log(`[GPS Debug] Photo ${idx}: uri=${uri}...`);
+                    console.log(`[GPS Debug] Photo ${idx}: location=${JSON.stringify(item.node.location)}`);
+                    console.log(`[GPS Debug] Photo ${idx}: filename=${item.node.image.filename}`);
+                });
+            }
+
+            return { photos, fetchType, hasNextPage, endCursor };
 
         } catch (error) {
             console.error('Error fetching photos from camera roll:', error);
@@ -166,15 +194,18 @@ const gallerySlice = createSlice({
             })
 
             .addCase(getPhotosFromCameraroll.fulfilled, (state, action) => {
-                const newImages = action.payload.geotagged;
-                const existingImages = state.geotaggedImages;
+                const newImages = action.payload.photos;
+                const existingImages = state.galleryImages;
 
                 // Filter out new images that are already in existingImages
                 const uniqueNewImages = newImages.filter(
                     newImage => !existingImages.some(existingImage => existingImage.uri === newImage.uri)
                 );
 
-                state.geotaggedImages = [...existingImages, ...uniqueNewImages];
+                const allImages = [...existingImages, ...uniqueNewImages];
+                state.galleryImages = allImages;
+                state.geotaggedCount = allImages.filter(img => img.hasGps).length;
+                state.nonGeotaggedCount = allImages.filter(img => !img.hasGps).length;
                 state.camerarollImageFetched = true;
                 state.lastFetchTime = Math.floor(new Date().getTime());
                 state.hasNextPage = action.payload.hasNextPage;

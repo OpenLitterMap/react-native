@@ -60,7 +60,7 @@ const TeamDetailsScreen = ({ navigation }) => {
             bgColor: '#CCFBF1'
         },
         {
-            value: selectedTeam?.members || 0,
+            value: selectedTeam?.total_members || 0,
             title: `team.total-members`,
             icon: 'person-outline',
             color: '#F59E0B',
@@ -113,7 +113,7 @@ const TeamDetailsScreen = ({ navigation }) => {
                         </Body>
                     </Button>
 
-                    {selectedTeam?.members > 1 && (
+                    {(selectedTeam?.total_members || 0) > 1 && (
                         <Button
                             onPress={() =>
                                 actionSheetRef.current?.setModalVisible()

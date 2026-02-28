@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { ScrollView, Pressable, StyleSheet, View, ActivityIndicator } from 'react-native';
 import { useSelector } from "react-redux";
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -7,14 +7,8 @@ import { TopTeamsList } from './teamComponents';
 
 const TopTeamsScreen = ({ navigation }) => {
 
-    const [isLoading, setIsLoading] = useState(true);
     const topTeams = useSelector(state => state.teams.topTeams);
-
-    useEffect(() => {
-        setTimeout(() => {
-            setIsLoading(false);
-        }, 3000);
-    }, []);
+    const isLoading = !topTeams || topTeams.length === 0;
 
     return (
         <>

@@ -1,4 +1,5 @@
 export { default as UserStatsScreen } from './userStats/UserStatsScreen';
+export { default as ProfileScreen } from './profile/ProfileScreen';
 export { default as GlobalDataScreen } from './globalData/GlobalDataScreen';
 export { default as SettingScreen } from './setting/SettingsScreen';
 export { default as HomeScreen } from './home/HomeScreen';

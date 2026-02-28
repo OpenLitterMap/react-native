@@ -1,15 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
     ActivityIndicator,
-    Animated,
     Dimensions,
     FlatList,
     Pressable,
     SafeAreaView,
     StyleSheet,
+    ToastAndroid,
+    Platform,
     View
 } from 'react-native';
-import moment from 'moment';
+import dayjs from '../../utils/dayjs';
 import _ from 'lodash';
 import { PanGestureHandler, State } from 'react-native-gesture-handler';
 import { useSelector, useDispatch } from 'react-redux';
@@ -29,23 +30,30 @@ import { addImages } from "../../reducers/images_reducer";
  *
  */
 export const placeInTime = date => {
-    let today = moment().startOf('day');
-    let thisWeek = moment().startOf('week');
-    let thisMonth = moment().startOf('month');
-    let thisYear = moment().startOf('year');
-    const momentOfFile = moment(date);
+    let today = dayjs().startOf('day');
+    let thisWeek = dayjs().startOf('week');
+    let thisMonth = dayjs().startOf('month');
+    let thisYear = dayjs().startOf('year');
+    const dateOfFile = dayjs(date);
 
-    if (momentOfFile.isSameOrAfter(today)) {
+    if (dateOfFile.isSameOrAfter(today)) {
         return 'today';
-    } else if (momentOfFile.isSameOrAfter(thisWeek)) {
+    } else if (dateOfFile.isSameOrAfter(thisWeek)) {
         return 'week';
-    } else if (momentOfFile.isSameOrAfter(thisMonth)) {
+    } else if (dateOfFile.isSameOrAfter(thisMonth)) {
         return 'month';
-    } else if (momentOfFile.isSameOrAfter(thisYear)) {
-        return momentOfFile.month() + 1;
+    } else if (dateOfFile.isSameOrAfter(thisYear)) {
+        return dateOfFile.month() + 1;
     } else {
-        return momentOfFile.year();
+        return dateOfFile.year();
     }
+};
+
+const showToast = (message) => {
+    if (Platform.OS === 'android') {
+        ToastAndroid.show(message, ToastAndroid.SHORT);
+    }
+    // iOS: no built-in toast — the visual indicator is enough
 };
 
 const GalleryScreen = ({ navigation }) => {
@@ -64,10 +72,11 @@ const GalleryScreen = ({ navigation }) => {
 
     const [selectedImages, setSelectedImages] = useState([]);
     const [sortedData, setSortedData] = useState([]);
-    const [loading, setLoading] = useState(false);
     const [hasPermission, setHasPermission] = useState(false);
 
-    const geotaggedImages = useSelector(state => state.gallery.geotaggedImages);
+    const galleryImages = useSelector(state => state.gallery.galleryImages);
+    const nonGeotaggedCount = useSelector(state => state.gallery.nonGeotaggedCount);
+    const imagesLoading = useSelector(state => state.gallery.imagesLoading);
     const { user } = useSelector(state => state.auth);
 
     useEffect(() => {
@@ -75,10 +84,10 @@ const GalleryScreen = ({ navigation }) => {
     }, []);
 
     useEffect(() => {
-        if (geotaggedImages.length) {
-            splitIntoRows(geotaggedImages);
+        if (galleryImages.length) {
+            splitIntoRows(galleryImages);
         }
-    }, [geotaggedImages]);
+    }, [galleryImages]);
 
     const onGestureEvent = event => {
         const { x, y } = event.nativeEvent;
@@ -109,7 +118,7 @@ const GalleryScreen = ({ navigation }) => {
 
                 if (index >= 0 && index < section.data.length) {
                     const image = section.data[index];
-                    if (image && !processedImages.current.has(image.uri)) {
+                    if (image && image.hasGps && !processedImages.current.has(image.uri)) {
                         processedImages.current.add(image.uri);
                         toggleSelection(image);
                     }
@@ -150,11 +159,9 @@ const GalleryScreen = ({ navigation }) => {
         {
             dispatch(getPhotosFromCameraroll());
 
-            await splitIntoRows(geotaggedImages);
+            await splitIntoRows(galleryImages);
 
             setHasPermission(true);
-
-            setLoading(false);
         }
         else
         {
@@ -189,7 +196,7 @@ const GalleryScreen = ({ navigation }) => {
         let final = [];
         let order = ['today', 'week', 'month'];
         let allTimeTags = Object.keys(temp).map(prop => Number.isInteger(parseInt(prop)) ? parseInt(prop) : prop);
-        let allMonths = allTimeTags.filter(prop => Number.isInteger(prop) && prop < 12).sort((a, b) => b - a);
+        let allMonths = allTimeTags.filter(prop => Number.isInteger(prop) && prop >= 1 && prop <= 12).sort((a, b) => b - a);
         let allYears = allTimeTags.filter(prop => Number.isInteger(prop) && !allMonths.includes(prop)).sort((a, b) => b - a);
 
         order = [...order, ...allMonths, ...allYears];
@@ -226,6 +233,10 @@ const GalleryScreen = ({ navigation }) => {
      * @param  item - The image object
      */
     const selectImage = (item) => {
+        if (!item.hasGps) {
+            showToast('This photo has no location data');
+            return;
+        }
 
         const index = selectedImages.indexOf(item);
 
@@ -243,8 +254,8 @@ const GalleryScreen = ({ navigation }) => {
 
         let headerTitle = item?.title;
 
-        if (Number.isInteger(headerTitle) && headerTitle < 12) {
-            headerTitle = moment(headerTitle.toString(), 'MM').format('MMMM');
+        if (Number.isInteger(headerTitle) && headerTitle >= 1 && headerTitle <= 12) {
+            headerTitle = dayjs(headerTitle.toString(), 'MM').format('MMMM');
         }
 
         const titleMap = {
@@ -265,14 +276,14 @@ const GalleryScreen = ({ navigation }) => {
                 <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
                     {item.data.map(image => {
                         const selected = selectedImages.includes(image);
-                        const isImageGeotagged = isGeotagged(image);
+                        const imageHasGps = image.hasGps;
 
                         return (
                             <AnimatedImage
                                 key={image.uri + ":"}
-                                onPress={() => isImageGeotagged && selectImage(image)}
+                                onPress={() => selectImage(image)}
                                 image={image}
-                                isImageGeotagged={isImageGeotagged}
+                                isImageGeotagged={imageHasGps}
                                 selected={selected}
                             />
                         );
@@ -289,7 +300,6 @@ const GalleryScreen = ({ navigation }) => {
                     <Pressable
                         onPress={() => {
                             navigation.navigate('HOME');
-                            // setImageLoading;
                         }}>
                         <Body
                             color="white"
@@ -310,16 +320,33 @@ const GalleryScreen = ({ navigation }) => {
                     >
                         <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center'}}>
                             <Body color="white" dictionary={'leftpage.next'} />
-                            <Body color="white">
-                                {selectedImages?.length > 0 && ` : ${selectedImages?.length}`}
-                            </Body>
+                            {selectedImages?.length > 0 && (
+                                <View style={styles.selectionBadge}>
+                                    <Body color="white" style={{ fontWeight: '600' }}>
+                                        {selectedImages.length}
+                                    </Body>
+                                </View>
+                            )}
                         </View>
                     </Pressable>
                 }
             />
 
-            {hasPermission && !loading ? (
+            {hasPermission ? (
                 <View style={{ flex: 1 }}>
+                    {nonGeotaggedCount > 0 && (
+                        <View style={styles.gpsBanner}>
+                            <Icon
+                                name="location-outline"
+                                size={16}
+                                color={Colors.warn}
+                            />
+                            <Caption style={{ color: Colors.warn, marginLeft: 4 }}>
+                                {nonGeotaggedCount} {nonGeotaggedCount === 1 ? 'photo has' : 'photos have'} no GPS data and cannot be uploaded
+                            </Caption>
+                        </View>
+                    )}
+
                     <View style={{ flexDirection: 'row', marginTop: 4, justifyContent: 'center' }}>
                         <Icon
                             name="information-circle-outline"
@@ -337,7 +364,7 @@ const GalleryScreen = ({ navigation }) => {
                         >
                             <FlatList
                                 ref={flatListRef}
-                                contentContainerStyle={{ paddingBottom: 40 }}
+                                contentContainerStyle={sortedData.length === 0 ? { flex: 1 } : { paddingBottom: 40 }}
                                 style={{ flexDirection: 'column' }}
                                 alwaysBounceVertical={false}
                                 data={sortedData}
@@ -349,6 +376,32 @@ const GalleryScreen = ({ navigation }) => {
                                 onEndReachedThreshold={0.05}
                                 onScroll={handleScroll}
                                 scrollEventThrottle={16}
+                                ListEmptyComponent={
+                                    imagesLoading ? (
+                                        <View style={styles.emptyState}>
+                                            <ActivityIndicator color={Colors.accent} />
+                                        </View>
+                                    ) : (
+                                        <View style={styles.emptyState}>
+                                            <Icon
+                                                name="images-outline"
+                                                size={64}
+                                                color={Colors.muted}
+                                            />
+                                            <Body style={styles.emptyStateTitle}>
+                                                No geotagged photos found
+                                            </Body>
+                                            <Caption style={styles.emptyStateText}>
+                                                Photos need GPS data to be uploaded. Make sure Location Services are enabled when taking photos.
+                                            </Caption>
+                                            {nonGeotaggedCount > 0 && (
+                                                <Caption style={[styles.emptyStateText, { color: Colors.warn, marginTop: 12 }]}>
+                                                    {nonGeotaggedCount} {nonGeotaggedCount === 1 ? 'photo' : 'photos'} found without GPS data
+                                                </Caption>
+                                            )}
+                                        </View>
+                                    )
+                                }
                             />
                         </PanGestureHandler>
                     </SafeAreaView>
@@ -374,6 +427,41 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center'
+    },
+    gpsBanner: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#fff3cd',
+        paddingVertical: 6,
+        paddingHorizontal: 12
+    },
+    selectionBadge: {
+        backgroundColor: 'rgba(255,255,255,0.3)',
+        borderRadius: 12,
+        minWidth: 24,
+        height: 24,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginLeft: 6,
+        paddingHorizontal: 6
+    },
+    emptyState: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingHorizontal: 40,
+        paddingTop: 60
+    },
+    emptyStateTitle: {
+        marginTop: 16,
+        fontSize: 16,
+        textAlign: 'center'
+    },
+    emptyStateText: {
+        marginTop: 8,
+        textAlign: 'center',
+        color: '#888'
     }
 });
 

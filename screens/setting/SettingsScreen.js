@@ -11,6 +11,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { logout } from "../../reducers/auth_reducer";
 import { saveSettings, toggleSettingsModal, toggleSettingsSwitch } from "../../reducers/settings_reducer";
 import { changeLitterStatus, getUntaggedImages } from "../../reducers/images_reducer";
+import { fetchAllTags } from "../../reducers/tags_reducer";
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
@@ -38,6 +39,24 @@ const SettingsScreen = ({ navigation }) => {
      * show values else show toggle switch
      */
     const renderRow = (item) => {
+        // Special row: refresh tags
+        if (item?.key === 'refresh-tags') {
+            return (
+                <Pressable
+                    style={{flex: 1, padding: 10}}
+                    onPress={() => {
+                        dispatch(fetchAllTags({ token, forceRefresh: true }));
+                        Alert.alert('Tags Refreshed', 'Tag data has been updated.');
+                    }}
+                >
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                        <Body>Refresh Tags</Body>
+                        <Icon name="refresh-outline" color={Colors.accent} size={24} />
+                    </View>
+                </Pressable>
+            );
+        }
+
         const dataKeys = [
             'name',
             'username',
@@ -227,7 +246,7 @@ const SettingsScreen = ({ navigation }) => {
                 },
                 {
                     text: cancel,
-                    onPress: () => console.log('cancel pressed')
+                    onPress: () => {}
                 }
             ],
             {
@@ -379,6 +398,11 @@ const SettingsScreen = ({ navigation }) => {
                                         id: 12,
                                         key: 'enable_admin_tagging',
                                         title: 'settings.enable_admin_tagging'
+                                    },
+                                    {
+                                        id: 14,
+                                        key: 'refresh-tags',
+                                        title: 'Refresh Tags'
                                     }
                                 ]
                             },

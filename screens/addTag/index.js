@@ -1,1 +1,1 @@
-export { default as AddTags } from './AddTags';
+export { default as AddTagScreen } from './AddTagScreen';

@@ -1,6 +1,6 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import moment from 'moment';
+import dayjs from '../../../utils/dayjs';
 import { Body, Caption, SubTitle } from '../../components';
 import RankingMedal from './RankingMedal';
 
@@ -8,7 +8,7 @@ const MemberCard = ({ data, teamId, index }) => {
 
     const isActiveTeam = teamId === data?.team?.id;
     const lastActivity = data?.pivot?.updated_at
-        ? moment(data?.pivot?.updated_at).fromNow()
+        ? dayjs(data?.pivot?.updated_at).fromNow()
         : '-';
 
     return (

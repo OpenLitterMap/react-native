@@ -6,7 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { getUserTeams, setSelectedTeam } from "../../../reducers/team_reducer";
 import TeamListCard from './TeamListCard';
 
-const UserTeamsList = ({ navigation }) => {
+const UserTeamsList = ({ navigation, onCreateTeam, onJoinTeam }) => {
 
     const dispatch = useDispatch();
     const token = useSelector(state => state.auth.token);
@@ -31,9 +31,30 @@ const UserTeamsList = ({ navigation }) => {
 
     return (
         <>
-            {/* Users Teams */}
             <View style={[styles.headingRow, { marginTop: 20 }]}>
                 <SubTitle>My Teams</SubTitle>
+                <View style={styles.actionRow}>
+                    <Pressable
+                        onPress={onCreateTeam}
+                        style={styles.actionButton}>
+                        <Icon
+                            name="add-circle-outline"
+                            size={16}
+                            color={Colors.accent}
+                        />
+                        <Caption color="accent">Create</Caption>
+                    </Pressable>
+                    <Pressable
+                        onPress={onJoinTeam}
+                        style={styles.actionButton}>
+                        <Icon
+                            name="log-in-outline"
+                            size={16}
+                            color={Colors.accent}
+                        />
+                        <Caption color="accent">Join</Caption>
+                    </Pressable>
+                </View>
             </View>
 
             {userTeams?.map((team, index) => (
@@ -70,10 +91,17 @@ const styles = StyleSheet.create({
     headingRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        alignItems: 'baseline'
+        alignItems: 'center'
     },
-    alignRight: {
-        textAlign: 'right'
+    actionRow: {
+        flexDirection: 'row',
+        gap: 12
+    },
+    actionButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+        padding: 4
     }
 });
 

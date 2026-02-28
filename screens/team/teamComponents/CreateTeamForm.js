@@ -8,7 +8,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { Body, Colors, Caption, SubTitle, Button } from '../../components';
 import StatusModal from './StatusModal';
 
-const JoinTeamSchema = Yup.object().shape({
+const CreateTeamSchema = Yup.object().shape({
     identifier: Yup.string()
         .required('Enter identifier')
         .min(3, 'Minimum 3 characters long')
@@ -31,7 +31,7 @@ const CreateTeamForm = ({ backPress }) => {
         <View>
             <Formik
                 initialValues={{ name: '', identifier: '' }}
-                validationSchema={JoinTeamSchema}
+                validationSchema={CreateTeamSchema}
                 onSubmit={async values => {
                     await dispatch(createTeam({
                         name: values.name,
@@ -56,36 +56,31 @@ const CreateTeamForm = ({ backPress }) => {
                             />
                         ) : (
                             <>
-                                <View
-                                    style={{
-                                        flexDirection: 'row',
-                                        justifyContent: 'space-between'
-                                    }}>
+                                <View style={styles.headerRow}>
                                     <SubTitle>Create a Team</SubTitle>
-
-                                    <Pressable onPress={backPress}>
-                                        <Body color="accent">Back</Body>
+                                    <Pressable
+                                        onPress={backPress}
+                                        style={styles.closeButton}>
+                                        <Icon
+                                            name="close"
+                                            size={22}
+                                            color={Colors.text}
+                                        />
                                     </Pressable>
                                 </View>
-                                <View
-                                    style={{
-                                        flexDirection: 'row',
-                                        alignItems: 'center',
-                                        marginTop: 8,
-                                        marginBottom: 20
-                                    }}>
+
+                                <View style={styles.infoRow}>
                                     <Icon
-                                        name="information-circle-sharp"
-                                        style={{ marginRight: 8 }}
-                                        size={18}
+                                        name="information-circle-outline"
+                                        size={16}
                                         color={Colors.muted}
                                     />
-                                    <Caption>
-                                        You are allowed to create{' '}
-                                        {user?.remaining_teams} team(s)
+                                    <Caption color="muted">
+                                        {user?.remaining_teams} team{user?.remaining_teams !== 1 ? 's' : ''} remaining
                                     </Caption>
                                 </View>
-                                <Body>Team Name</Body>
+
+                                <Body style={styles.label}>Team Name</Body>
                                 <TextInput
                                     name="name"
                                     autoFocus={false}
@@ -97,19 +92,20 @@ const CreateTeamForm = ({ backPress }) => {
                                     style={styles.input}
                                     onSubmitEditing={() => identifierRef.current.focus()}
                                     returnKeyType="next"
-                                    placeholder="My Litterpicker Team"
+                                    placeholder="e.g. Beach Cleanup Crew"
+                                    placeholderTextColor={Colors.muted}
                                 />
                                 {touched.name && errors.name && (
-                                    <Caption color="error">
+                                    <Caption color="error" style={styles.errorText}>
                                         {errors.name}
                                     </Caption>
                                 )}
-                                <Body style={{ marginTop: 20 }}>
-                                    Unique Team Identifier
+
+                                <Body style={styles.identifierLabel}>
+                                    Unique Identifier
                                 </Body>
-                                <Caption>
-                                    Anyone with this ID will be able to join
-                                    your team.
+                                <Caption color="muted" style={styles.identifierHint}>
+                                    Share this with others so they can join your team.
                                 </Caption>
                                 <TextInput
                                     ref={identifierRef}
@@ -125,36 +121,29 @@ const CreateTeamForm = ({ backPress }) => {
                                     style={styles.input}
                                     onSubmitEditing={handleSubmit}
                                     returnKeyType="go"
-                                    placeholder="LitterTeam2022"
+                                    placeholder="e.g. BeachCrew"
+                                    placeholderTextColor={Colors.muted}
                                 />
                                 {touched.identifier &&
                                     errors.identifier && (
-                                        <Caption color="error">
+                                        <Caption color="error" style={styles.errorText}>
                                             {errors.identifier}
                                         </Caption>
                                     )}
 
-                                <View
-                                    style={{
-                                        height: 30,
-                                        justifyContent: 'center',
-                                        alignItems: 'center'
-                                    }}>
-                                    <Caption color="error">
+                                {teamsFormError ? (
+                                    <Caption color="error" style={styles.serverError}>
                                         {teamsFormError}
                                     </Caption>
-                                </View>
+                                ) : null}
 
                                 <Button
                                     disabled={!isValid}
                                     loading={isSubmitting}
                                     onPress={handleSubmit}
-                                    style={{
-                                        backgroundColor: Colors.accent,
-                                        marginVertical: 20
-                                    }}
+                                    style={styles.submitButton}
                                 >
-                                    <Body color="white">CREATE TEAM</Body>
+                                    <Body color="white">Create Team</Body>
                                 </Button>
                             </>
                         )}
@@ -166,19 +155,57 @@ const CreateTeamForm = ({ backPress }) => {
 }
 
 const styles = StyleSheet.create({
+    headerRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 4
+    },
+    closeButton: {
+        width: 32,
+        height: 32,
+        borderRadius: 16,
+        backgroundColor: '#f0f1f3',
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
+    infoRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+        marginBottom: 20
+    },
+    label: {
+        marginBottom: 6
+    },
+    identifierLabel: {
+        marginTop: 20,
+        marginBottom: 2
+    },
+    identifierHint: {
+        marginBottom: 6
+    },
     input: {
-        marginTop: 10,
-        padding: 10,
+        padding: 14,
         fontSize: 16,
-        letterSpacing: 0.5,
-        backgroundColor: Colors.white,
+        letterSpacing: 0.3,
+        backgroundColor: '#f9fafb',
         borderWidth: 1,
-        borderColor: Colors.muted,
-        borderRadius: 8,
+        borderColor: '#e5e7eb',
+        borderRadius: 10,
         color: Colors.text,
-        fontFamily: 'Poppins-Regular',
-        textAlignVertical: 'top',
-        height: 60
+        fontFamily: 'Poppins-Regular'
+    },
+    errorText: {
+        marginTop: 6
+    },
+    serverError: {
+        textAlign: 'center',
+        marginTop: 12
+    },
+    submitButton: {
+        marginTop: 20,
+        marginBottom: 10
     }
 });
 

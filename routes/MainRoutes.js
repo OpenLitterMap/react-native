@@ -9,7 +9,7 @@ import AuthStack from './AuthStack';
 import TabRoutes from './TabRoutes';
 import PermissionStack from './PermissionStack';
 import { GalleryScreen, NewUpdateScreen,  SettingScreen } from '../screens';
-import AddTags from '../screens/addTag/AddTags';
+import AddTagScreen from '../screens/addTag/AddTagScreen';
 import MyUploads from "../screens/userStats/userComponents/MyUploads";
 
 const Stack = createStackNavigator();
@@ -52,7 +52,7 @@ const MainRoutes = () => {
                     <>
                         <Stack.Screen name="APP" component={TabRoutes} />
                         <Stack.Screen name="PERMISSION" component={PermissionStack} />
-                        <Stack.Screen name="ADD_TAGS" component={AddTags} />
+                        <Stack.Screen name="ADD_TAGS" component={AddTagScreen} />
                         <Stack.Screen name="ALBUM" component={GalleryScreen} />
                         <Stack.Screen name="SETTING" component={SettingScreen} />
                         <Stack.Screen name="UPDATE" component={NewUpdateScreen} />

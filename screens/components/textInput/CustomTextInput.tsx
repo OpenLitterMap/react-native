@@ -4,32 +4,30 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import {
     StyleProp,
     StyleSheet,
+    Text,
     TextInput,
     TextStyle,
     View,
     ViewStyle
 } from 'react-native';
-import { Caption } from '../typography';
-import { Colors } from '../theme';
+import {Colors} from '../theme';
 
 interface CustomTextInputProps {
     autoCorrect?: boolean;
-    label?: string;
-    defaultValue?: string;
     inputStyle?: TextStyle;
     style?: StyleProp<ViewStyle>;
-    labelStyle: TextStyle;
-    editable?: boolean;
     touched?: boolean;
     error?: string;
+    errorText?: string;
     value?: string;
-    name: string;
+    name?: string;
     placeholder?: string;
     leftIconName?: string;
     rightIconName?: string;
     rightContent?: React.ReactElement;
     leftContent?: React.ReactElement;
-    placeholderTextColor?: any; // type of Color
+    placeholderTextColor?: string;
+    variant?: 'light' | 'dark';
 }
 
 const CustomTextInput: React.ForwardRefRenderFunction<
@@ -37,40 +35,61 @@ const CustomTextInput: React.ForwardRefRenderFunction<
     CustomTextInputProps
 > = (
     {
-        // label,
-        //defaultValue,
         style,
         inputStyle,
-        // labelStyle,
-        // editable = true,
-        // name,
         value,
         touched,
         error,
+        errorText,
         placeholder,
         leftIconName,
         leftContent,
         rightIconName,
         rightContent,
+        variant = 'dark',
         ...rest
     },
     ref
 ) => {
+    const hasError = touched && error;
+    const isDark = variant === 'dark';
+
+    const errorColor = isDark ? '#ff8a80' : Colors.error;
+    const mutedColor = isDark ? 'rgba(255,255,255,0.5)' : Colors.muted;
+    const iconColor = hasError ? errorColor : mutedColor;
+
     return (
-        <>
+        <View style={[styles.wrapper, style]}>
+            {hasError && (
+                <View style={styles.errorLabelContainer}>
+                    <Icon
+                        name="alert-circle-outline"
+                        size={14}
+                        color={errorColor}
+                    />
+                    <Text
+                        style={[
+                            styles.errorLabel,
+                            isDark && styles.errorLabelDark
+                        ]}>
+                        {errorText || error}
+                    </Text>
+                </View>
+            )}
             <View
                 style={[
                     styles.textFieldContainer,
-                    style
-                    // touched && error && styles.errorBorder,
+                    isDark && styles.textFieldDark,
+                    hasError &&
+                        (isDark ? styles.errorBorderDark : styles.errorBorder)
                 ]}>
                 {leftContent}
                 {leftIconName && (
                     <Icon
                         style={styles.textFieldIcon}
                         name={leftIconName}
-                        size={28}
-                        color={touched && error ? Colors.error : Colors.muted}
+                        size={22}
+                        color={iconColor}
                     />
                 )}
 
@@ -79,41 +98,32 @@ const CustomTextInput: React.ForwardRefRenderFunction<
                     ref={ref}
                     style={[
                         styles.input,
+                        isDark && styles.inputDark,
                         inputStyle
-                        // touched && error && styles.errorText,
                     ]}
                     placeholder={placeholder}
-                    placeholderTextColor={Colors.muted}
+                    placeholderTextColor={
+                        isDark ? 'rgba(255,255,255,0.4)' : Colors.muted
+                    }
                     value={value}
                     autoFocus={false}
                     autoCorrect={false}
-                    autoCapitalize={'none'}
+                    autoCapitalize="none"
                     autoComplete="off"
                     textContentType="none"
                     underlineColorAndroid="transparent"
-                    // name={name}
                 />
                 {rightContent}
                 {rightIconName && (
                     <Icon
                         style={styles.textFieldIcon}
                         name={rightIconName}
-                        size={28}
-                        color={Colors.muted}
+                        size={22}
+                        color={mutedColor}
                     />
                 )}
             </View>
-            <View style={styles.errorMessage}>
-                {touched && error && (
-                    <View style={styles.errorContainer}>
-                        <Caption
-                            color="white"
-                            dictionary={error}
-                        />
-                    </View>
-                )}
-            </View>
-        </>
+        </View>
     );
 };
 
@@ -122,46 +132,57 @@ export default React.forwardRef<TextInput, CustomTextInputProps>(
 );
 
 const styles = StyleSheet.create({
+    wrapper: {},
     textFieldContainer: {
-        flex: 1,
         flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#fff',
-        borderRadius: 8,
-        borderWidth: 2,
-        borderColor: Colors.white
+        backgroundColor: Colors.white,
+        borderRadius: 14,
+        borderWidth: 1.5,
+        borderColor: '#e8e8e8',
+        height: 52
+    },
+    textFieldDark: {
+        backgroundColor: 'rgba(255,255,255,0.12)',
+        borderColor: 'rgba(255,255,255,0.2)'
     },
     textFieldIcon: {
-        padding: 10
+        paddingHorizontal: 12
     },
     input: {
         flex: 1,
         paddingVertical: 10,
-        paddingRight: 10,
+        paddingRight: 12,
         fontSize: 16,
-        letterSpacing: 0.5,
-        backgroundColor: Colors.white,
+        letterSpacing: 0.3,
+        backgroundColor: 'transparent',
         color: Colors.text,
-        fontFamily: 'Poppins-Regular',
-        textAlignVertical: 'top'
+        fontFamily: 'Poppins-Regular'
+    },
+    inputDark: {
+        color: Colors.white
     },
     errorBorder: {
         borderColor: Colors.error
     },
-    errorText: {
-        color: Colors.error
+    errorBorderDark: {
+        borderColor: '#ff8a80'
     },
-    errorMessage: {
-        height: 0,
+    errorLabelContainer: {
         flexDirection: 'row',
-        justifyContent: 'center'
-    },
-    errorContainer: {
-        backgroundColor: 'red',
-        borderBottomLeftRadius: 12,
-        borderBottomRightRadius: 12,
-        paddingHorizontal: 12,
+        alignItems: 'center',
+        paddingLeft: 4,
         marginBottom: 4
+    },
+    errorLabel: {
+        color: Colors.error,
+        fontSize: 13,
+        fontFamily: 'Poppins-Medium',
+        marginLeft: 4,
+        letterSpacing: 0.3
+    },
+    errorLabelDark: {
+        color: '#ff8a80'
     }
 });

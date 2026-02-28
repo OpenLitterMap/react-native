@@ -1,90 +1,77 @@
-import React, { useState, useEffect, FC } from 'react';
+import React, {useState, useEffect, useRef, FC} from 'react';
 import {
+    Animated,
     Dimensions,
     Image,
     Keyboard,
     KeyboardAvoidingView,
-    ImageStyle,
     Platform,
     Pressable,
     ScrollView,
+    StatusBar,
     StyleSheet,
     View
 } from 'react-native';
-import { useDispatch } from 'react-redux';
-import { ForgotPasswordForm, SigninForm, SignupForm } from './authComponents';
-import { loginOrSignupReset } from "../../reducers/auth_reducer";
-import { Body, Colors } from '../components';
+import LinearGradient from 'react-native-linear-gradient';
+import Icon from 'react-native-vector-icons/Ionicons';
+import {useDispatch} from 'react-redux';
+import {ForgotPasswordForm, SigninForm, SignupForm} from './authComponents';
+import {loginOrSignupReset} from '../../reducers/auth_reducer';
+import {Body, Caption, Colors} from '../components';
 
 interface AuthScreenProps {
     route: any;
     navigation: any;
 }
 
-const AuthScreen: FC<AuthScreenProps> = ({ route, navigation }) => {
-
+const AuthScreen: FC<AuthScreenProps> = ({route, navigation}) => {
     const [formMode, setFormMode] = useState(route.params.screen);
-    const [isLogoDisplayed, setIsLogoDisplayed] = useState(true);
-
     const dispatch = useDispatch();
 
-    const handleOrientationChange = () => {
-        const { width, height } = Dimensions.get('window');
-
-        return {
-            screenWidth: width,
-            screenHeight: height,
-            isPortrait: width <= height
-        };
-    };
-
-    const [screenDimensions, setScreenDimensions] = useState(handleOrientationChange());
+    // Animated logo height for smooth keyboard transition
+    const logoHeight = useRef(new Animated.Value(1)).current;
 
     useEffect(() => {
-        const updateSizeVariables = () => {
-            setScreenDimensions(handleOrientationChange());
-        };
+        const showEvent =
+            Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+        const hideEvent =
+            Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
 
-        const keyboardShowListener = Keyboard.addListener(
-            Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow', () => setIsLogoDisplayed(false)
-        );
-        const keyboardHideListener = Keyboard.addListener(
-            Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide', () => setIsLogoDisplayed(true)
-        );
+        const showListener = Keyboard.addListener(showEvent, () => {
+            Animated.timing(logoHeight, {
+                toValue: 0,
+                duration: Platform.OS === 'ios' ? 250 : 150,
+                useNativeDriver: false
+            }).start();
+        });
 
-        const dimensionsListener = Dimensions.addEventListener('change', updateSizeVariables);
+        const hideListener = Keyboard.addListener(hideEvent, () => {
+            Animated.timing(logoHeight, {
+                toValue: 1,
+                duration: Platform.OS === 'ios' ? 250 : 150,
+                useNativeDriver: false
+            }).start();
+        });
 
-        const focusListener = navigation.addListener('focus', () => { dispatch(loginOrSignupReset()); });
+        const focusListener = navigation.addListener('focus', () => {
+            dispatch(loginOrSignupReset());
+        });
 
         return () => {
-            keyboardShowListener.remove();
-            keyboardHideListener.remove();
-            dimensionsListener.remove();
+            showListener.remove();
+            hideListener.remove();
             focusListener();
         };
-    }, [navigation]);
+    }, [navigation, dispatch, logoHeight]);
 
     const changeFormType = (screenType: 'login' | 'signup' | 'reset') => {
-
         dispatch(loginOrSignupReset());
-
-        let newFormMode = 'LOGIN';
-
-        switch (screenType) {
-            case 'login':
-                newFormMode = 'LOGIN';
-                break;
-            case 'signup':
-                newFormMode = 'CREATE_ACCOUNT';
-                break;
-            case 'reset':
-                newFormMode = 'FORGOT_PASSWORD';
-                break;
-            default:
-                break;
-        }
-
-        setFormMode(newFormMode);
+        const modes = {
+            login: 'LOGIN',
+            signup: 'CREATE_ACCOUNT',
+            reset: 'FORGOT_PASSWORD'
+        };
+        setFormMode(modes[screenType] || 'LOGIN');
     };
 
     const toggleFormMode = () => {
@@ -95,131 +82,211 @@ const AuthScreen: FC<AuthScreenProps> = ({ route, navigation }) => {
         }
     };
 
-    const getText = () => {
-        switch (formMode) {
-            case 'CREATE_ACCOUNT':
-                return 'auth.already-have';
-            case 'LOGIN':
-                return 'auth.create-account';
-            case 'FORGOT_PASSWORD':
-                return 'auth.back-to-login';
-            default:
-                return '';
-        }
+    const toggleTexts: Record<string, string> = {
+        CREATE_ACCOUNT: 'auth.already-have',
+        LOGIN: 'auth.create-account',
+        FORGOT_PASSWORD: 'auth.back-to-login'
+    };
+
+    const formTitles: Record<string, string> = {
+        CREATE_ACCOUNT: 'auth.create-account',
+        LOGIN: 'auth.login',
+        FORGOT_PASSWORD: 'auth.forgot-password'
     };
 
     const renderForm = () => {
-        switch (formMode) {
-            case 'CREATE_ACCOUNT':
-                return <SignupForm />;
-            case 'LOGIN':
-                return <SigninForm changeFormType={changeFormType} />;
-            case 'FORGOT_PASSWORD':
-                return <ForgotPasswordForm />;
-            default:
-                return <SignupForm />;
+        if (formMode === 'LOGIN') {
+            return <SigninForm changeFormType={changeFormType} />;
         }
+        if (formMode === 'FORGOT_PASSWORD') {
+            return <ForgotPasswordForm />;
+        }
+        return <SignupForm />;
     };
 
+    const {height: screenHeight, width: screenWidth} = Dimensions.get('window');
+
+    const logoMaxHeight = screenHeight * 0.18;
+
+    const animatedLogoHeight = logoHeight.interpolate({
+        inputRange: [0, 1],
+        outputRange: [0, logoMaxHeight]
+    });
+
+    const animatedLogoOpacity = logoHeight.interpolate({
+        inputRange: [0, 0.5, 1],
+        outputRange: [0, 0, 1]
+    });
+
     return (
-        <View style={styles.container}>
+        <LinearGradient
+            colors={['#1a6b3c', '#1b8a4a', '#27ae60', '#2ecc71']}
+            locations={[0, 0.3, 0.7, 1]}
+            start={{x: 0, y: 0}}
+            end={{x: 1, y: 1}}
+            style={styles.gradient}>
+            <StatusBar
+                barStyle="light-content"
+                backgroundColor="transparent"
+                translucent
+            />
             <KeyboardAvoidingView
-                style={styles.outerContainer}
-                behavior={Platform.select({ android: 'height', ios: 'padding' })}
-                onLayout={handleOrientationChange}
-            >
+                style={styles.flex}
+                behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+                keyboardVerticalOffset={0}>
                 <ScrollView
-                    contentContainerStyle={styles.scrollContainer}
+                    contentContainerStyle={styles.scrollContent}
                     showsVerticalScrollIndicator={false}
-                    keyboardShouldPersistTaps={'handled'}
-                >
-                    <View style={styles.authContainer}>
-                        {screenDimensions.isPortrait && isLogoDisplayed && (
+                    keyboardShouldPersistTaps="handled"
+                    bounces={false}>
+                    <View style={styles.content}>
+                        {/* Back button */}
+                        <View style={styles.topBar}>
+                            <Pressable
+                                onPress={() => navigation.goBack()}
+                                style={styles.backButton}
+                                hitSlop={8}>
+                                <Icon
+                                    name="arrow-back"
+                                    size={22}
+                                    color={Colors.white}
+                                />
+                            </Pressable>
+                        </View>
+
+                        {/* Animated logo */}
+                        <Animated.View
+                            style={[
+                                styles.logoContainer,
+                                {
+                                    height: animatedLogoHeight,
+                                    opacity: animatedLogoOpacity
+                                }
+                            ]}>
                             <Image
                                 source={require('../../assets/logo/logo.png')}
-                                style={[styles.logo, {
-                                    height: screenDimensions.screenHeight / 4,
-                                    width: screenDimensions.screenWidth * 0.8,
-                                    left: screenDimensions.screenWidth * 0.1
-                                } as ImageStyle]}
+                                style={[
+                                    styles.logo,
+                                    {width: screenWidth * 0.55}
+                                ]}
                             />
-                        )}
-                        <View style={styles.contentContainer}>
+                        </Animated.View>
+
+                        {/* Form card */}
+                        <View style={styles.formCard}>
+                            <Caption
+                                color="muted"
+                                family="semiBold"
+                                style={styles.formLabel}
+                                dictionary={formTitles[formMode] || ''}
+                            />
 
                             {renderForm()}
-
-                            <View style={styles.buttonContainer}>
-                                <View style={{ flexDirection: 'row' }}>
-                                    <View
-                                        style={{
-                                            backgroundColor: Colors.white,
-                                            height: 1,
-                                            flex: 1,
-                                            alignSelf: 'center'
-                                        }}
-                                    />
-                                    <Body
-                                        style={styles.divider}
-                                        dictionary={'auth.or'}
-                                    />
-                                    <View
-                                        style={{
-                                            backgroundColor: Colors.white,
-                                            height: 1,
-                                            flex: 1,
-                                            alignSelf: 'center'
-                                        }}
-                                    />
-                                </View>
-                                <Pressable onPress={toggleFormMode} style={{ paddingTop: 10 }}>
-                                    <Body
-                                        color="white"
-                                        dictionary={getText()}
-                                    />
-                                </Pressable>
-                            </View>
                         </View>
+
+                        {/* Divider + toggle */}
+                        <View style={styles.dividerRow}>
+                            <View style={styles.dividerLine} />
+                            <Body
+                                color="white"
+                                style={styles.dividerText}
+                                dictionary="auth.or"
+                            />
+                            <View style={styles.dividerLine} />
+                        </View>
+
+                        <Pressable
+                            onPress={toggleFormMode}
+                            style={styles.toggleButton}>
+                            <Body
+                                color="white"
+                                family="medium"
+                                style={styles.toggleText}
+                                dictionary={toggleTexts[formMode] || ''}
+                            />
+                        </Pressable>
                     </View>
                 </ScrollView>
             </KeyboardAvoidingView>
-        </View>
+        </LinearGradient>
     );
-}
+};
 
 const styles = StyleSheet.create({
-    outerContainer: {
+    gradient: {
         flex: 1
     },
-    scrollContainer: {
-        flexGrow: 1,
-        flexDirection: 'column'
+    flex: {
+        flex: 1
     },
-    container: {
+    scrollContent: {
+        flexGrow: 1
+    },
+    content: {
         flex: 1,
-        backgroundColor: Colors.info
+        justifyContent: 'center',
+        paddingHorizontal: 24,
+        paddingBottom: Platform.OS === 'android' ? 32 : 16
     },
-    authContainer: {
-        flex: 1,
-        flexDirection: 'column',
-        justifyContent: 'center'
+    topBar: {
+        paddingTop:
+            Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 8 : 8,
+        paddingBottom: 8
     },
-    contentContainer: {
-        flexDirection: 'column',
-        padding: 20
+    backButton: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: 'rgba(255,255,255,0.15)',
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
+    logoContainer: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        overflow: 'hidden'
     },
     logo: {
         resizeMode: 'contain',
-        alignItems: 'center',
-        justifyContent: 'center'
+        height: '100%'
     },
-    buttonContainer: {
-        alignItems: 'center',
-        justifyContent: 'center'
+    formCard: {
+        backgroundColor: 'rgba(255,255,255,0.12)',
+        borderRadius: 20,
+        padding: 20,
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.15)'
     },
-    divider: {
-        color: Colors.white,
-        alignSelf: 'center',
-        paddingHorizontal: 5
+    formLabel: {
+        fontSize: 12,
+        textTransform: 'uppercase',
+        letterSpacing: 1.5,
+        color: 'rgba(255,255,255,0.7)',
+        marginBottom: 16,
+        textAlign: 'center'
+    },
+    dividerRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginTop: 20,
+        paddingHorizontal: 8
+    },
+    dividerLine: {
+        flex: 1,
+        height: 1,
+        backgroundColor: 'rgba(255,255,255,0.25)'
+    },
+    dividerText: {
+        paddingHorizontal: 12,
+        fontSize: 14,
+        opacity: 0.8
+    },
+    toggleButton: {
+        alignItems: 'center',
+        paddingVertical: 16
+    },
+    toggleText: {
+        fontSize: 15
     }
 });
 

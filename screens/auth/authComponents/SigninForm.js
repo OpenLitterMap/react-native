@@ -1,195 +1,239 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
-import { Formik } from 'formik';
+import React, {useState, useRef, useEffect} from 'react';
+import {
+    ActivityIndicator,
+    Pressable,
+    StyleSheet,
+    Text,
+    View
+} from 'react-native';
+import {Formik} from 'formik';
 import * as Yup from 'yup';
-import { useDispatch, useSelector } from 'react-redux';
+import {useDispatch, useSelector} from 'react-redux';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { useTranslation } from "react-i18next";
-import { clearStatusText, userLogin } from '../../../reducers/auth_reducer';
-import { Body, Colors, CustomTextInput, SubTitle } from '../../components';
+import {useTranslation} from 'react-i18next';
+import {clearStatusText, userLogin} from '../../../reducers/auth_reducer';
+import {Colors, CustomTextInput, Body} from '../../components';
 
-/**
- * Form field validation with keys for translation
- * using Yup for validation
- */
 const SigninSchema = Yup.object().shape({
-    email: Yup.string().email('email-not-valid').required('enter-email'),
+    login: Yup.string().required('enter-email-or-username'),
     password: Yup.string().required('enter-password')
 });
 
-const SigninForm = ({ changeFormType }) => {
-
+const SigninFormInner = ({
+    setFieldValue,
+    handleSubmit,
+    values,
+    errors,
+    touched,
+    changeFormType,
+    isPasswordVisible,
+    handlePasswordVisibility,
+    hasSubmitted,
+    setHasSubmitted
+}) => {
     const dispatch = useDispatch();
-    const { serverStatusText, isSubmitting } = useSelector(state => state.auth);
+    const {serverStatusText, isSubmitting} = useSelector(state => state.auth);
 
-    const emailRef = useRef(null);
+    const loginRef = useRef(null);
     const passwordRef = useRef(null);
+
+    const {t} = useTranslation();
+    const loginTranslation = t('auth.email-or-username');
+    const passwordTranslation = t('auth.password');
+
+    useEffect(() => {
+        dispatch(clearStatusText());
+    }, [values.login, values.password, dispatch]);
+
+    const handleFormSubmit = () => {
+        setHasSubmitted(true);
+        handleSubmit();
+    };
+
+    const showLoginError = hasSubmitted && touched?.login && errors?.login;
+    const showPasswordError =
+        hasSubmitted && touched?.password && errors?.password;
+
+    const isCredentialError = /credential|incorrect|invalid|unauthorized/i.test(
+        serverStatusText
+    );
+    let serverMessage = '';
+    if (serverStatusText !== '') {
+        serverMessage = isCredentialError
+            ? t('auth.invalid-credentials')
+            : serverStatusText;
+    }
+
+    return (
+        <View>
+            <CustomTextInput
+                ref={loginRef}
+                style={styles.inputSpacing}
+                onSubmitEditing={() => passwordRef?.current?.focus()}
+                onChangeText={e => setFieldValue('login', e.trim())}
+                value={values.login}
+                name="login"
+                error={showLoginError ? errors.login : undefined}
+                errorText={
+                    showLoginError ? t(`auth.${errors.login}`) : undefined
+                }
+                touched={hasSubmitted ? touched?.login : false}
+                placeholder={loginTranslation}
+                leftIconName="person-outline"
+                returnKeyType="next"
+                variant="dark"
+            />
+
+            <CustomTextInput
+                ref={passwordRef}
+                style={styles.inputSpacing}
+                onChangeText={e => setFieldValue('password', e)}
+                value={values.password}
+                name="password"
+                error={showPasswordError ? errors.password : undefined}
+                errorText={
+                    showPasswordError ? t(`auth.${errors.password}`) : undefined
+                }
+                touched={hasSubmitted ? touched?.password : false}
+                placeholder={passwordTranslation}
+                leftIconName="lock-closed-outline"
+                secureTextEntry={!isPasswordVisible}
+                returnKeyType="done"
+                variant="dark"
+                rightContent={
+                    <Pressable
+                        onPress={handlePasswordVisibility}
+                        style={styles.eyeButton}>
+                        <Icon
+                            name={isPasswordVisible ? 'eye' : 'eye-off'}
+                            size={22}
+                            color="rgba(255,255,255,0.5)"
+                        />
+                    </Pressable>
+                }
+            />
+
+            <Pressable
+                style={styles.forgotRow}
+                onPress={() => changeFormType('reset')}>
+                <Body
+                    color="white"
+                    family="medium"
+                    dictionary="auth.forgot-password"
+                    style={styles.forgotText}
+                />
+            </Pressable>
+
+            {serverMessage !== '' && (
+                <View style={styles.serverError}>
+                    <Icon
+                        name="alert-circle-outline"
+                        size={16}
+                        color="#ff8a80"
+                    />
+                    <Text style={styles.serverErrorText}>{serverMessage}</Text>
+                </View>
+            )}
+
+            <Pressable
+                disabled={isSubmitting}
+                onPress={handleFormSubmit}
+                style={({pressed}) => [
+                    styles.buttonStyle,
+                    isSubmitting && styles.buttonDisabled,
+                    pressed && !isSubmitting && styles.buttonPressed
+                ]}>
+                {isSubmitting ? (
+                    <ActivityIndicator color={Colors.accent} />
+                ) : (
+                    <Body
+                        color="accent"
+                        family="semiBold"
+                        dictionary="auth.login"
+                        style={styles.buttonText}
+                    />
+                )}
+            </Pressable>
+        </View>
+    );
+};
+
+const SigninForm = ({changeFormType}) => {
+    const dispatch = useDispatch();
 
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
     const [hasSubmitted, setHasSubmitted] = useState(false);
 
-    const { t } = useTranslation();
-    const emailTranslation = t('auth.email-address');
-    const passwordTranslation = t('auth.password');
-
     const handlePasswordVisibility = () => setIsPasswordVisible(prev => !prev);
-
-    const handleFormSubmit = (handleSubmit) => {
-        return () => {
-            setHasSubmitted(true);
-            handleSubmit();
-        };
-    };
-
-    let infoMessage = "";
 
     return (
         <Formik
-            initialValues={{ email: '', password: '' }}
-            validationSchema={__DEV__ ? null : SigninSchema}
-            onSubmit={({ email, password }) => {
-                setHasSubmitted(true);
-                dispatch(userLogin({ email, password }));
-            }}
-        >
-            {({
-                handleChange,
-                setFieldValue,
-                handleSubmit,
-                values,
-                errors,
-                touched
-            }) => {
-
-                // Clear status text when email or password is changed
-                useEffect(() => {
-                    dispatch(clearStatusText());
-                }, [values.email, values.password, dispatch]);
-
-                if (serverStatusText === "The user credentials were incorrect.") {
-                    infoMessage = t('auth.invalid-credentials');
-                } else if (serverStatusText !== "") {
-                    infoMessage = serverStatusText
-                } else if (errors?.username) {
-                    infoMessage = t(`auth.${errors.username}`);
-                } else if (errors?.email) {
-                    infoMessage = t(`auth.${errors.email}`);
-                } else if (errors?.password) {
-                    infoMessage = t(`auth.${errors.password}`);
-                } else {
-                    infoMessage = "";
-                }
-
-                return (
-                    <View style={{ flex: 1, justifyContent: 'center' }}>
-                        {/* email input */}
-                        <CustomTextInput
-                            ref={emailRef}
-                            style={{ marginBottom: 10 }}
-                            onSubmitEditing={() => passwordRef?.current?.focus()}
-                            onChangeText={e => setFieldValue('email', e.trim().toLowerCase())}
-                            value={values.email}
-                            name="email"
-                            error={errors?.email}
-                            touched={touched?.email}
-                            placeholder={emailTranslation}
-                            leftIconName="mail-outline"
-                            // returnKeyType="next"
-                            keyboardType="email-address"
-                            multiline
-                        />
-
-                        {/* password input */}
-                        <CustomTextInput
-                            ref={passwordRef}
-                            onChangeText={handleChange('password')}
-                            style={{marginBottom: 10}}
-                            value={values.password}
-                            name="password"
-                            error={errors?.password}
-                            touched={touched?.password}
-                            placeholder={passwordTranslation}
-                            leftIconName="key-outline"
-                            secureTextEntry={!isPasswordVisible}
-                            returnKeyType="done"
-                            rightContent={
-                                <Pressable
-                                    onPress={handlePasswordVisibility}
-                                >
-                                    <Icon
-                                        style={styles.textFieldIcon}
-                                        name={isPasswordVisible ? 'eye' : 'eye-off'}
-                                        size={28}
-                                        color={Colors.muted}
-                                    />
-                                </Pressable>
-                            }
-                        />
-
-                        <Pressable
-                            style={{alignItems: 'flex-end'}}
-                            onPress={() => changeFormType('reset')}>
-                            <Body
-                                color="white"
-                                dictionary={'auth.forgot-password'}
-                            />
-                        </Pressable>
-
-                        {
-                            hasSubmitted && infoMessage !== '' && (
-                                <Text style={styles.statusMessageTempFix}>
-                                    { infoMessage }
-                                </Text>
-                            )
-                        }
-
-                        <Pressable
-                            disabled={isSubmitting}
-                            onPress={handleFormSubmit(handleSubmit)}
-                            style={[
-                                styles.buttonStyle,
-                                isSubmitting && styles.buttonDisabled
-                            ]}>
-                            {isSubmitting ? (
-                                <ActivityIndicator color="white" />
-                            ) : (
-                                <SubTitle
-                                    color="accentLight"
-                                    dictionary={'auth.login'}
-                                >
-                                    Create Account
-                                </SubTitle>
-                            )}
-                        </Pressable>
-                    </View>
-                )
-            }}
+            initialValues={{login: '', password: ''}}
+            validationSchema={SigninSchema}
+            onSubmit={({login, password}) => {
+                dispatch(userLogin({login, password}));
+            }}>
+            {formikProps => (
+                <SigninFormInner
+                    {...formikProps}
+                    changeFormType={changeFormType}
+                    isPasswordVisible={isPasswordVisible}
+                    handlePasswordVisibility={handlePasswordVisibility}
+                    hasSubmitted={hasSubmitted}
+                    setHasSubmitted={setHasSubmitted}
+                />
+            )}
         </Formik>
     );
-}
+};
 
 const styles = StyleSheet.create({
-    buttonStyle: {
-        alignItems: 'center',
-        backgroundColor: Colors.accent,
-        borderRadius: 6,
-        height: 60,
-        opacity: 1,
-        marginBottom: 10,
-        justifyContent: 'center',
-        width: '100%',
-        marginTop: 20
+    inputSpacing: {
+        marginBottom: 12
     },
-    textFieldIcon: {
-        padding: 10
+    eyeButton: {
+        paddingHorizontal: 12,
+        paddingVertical: 8
     },
-    buttonDisabled: {
+    forgotRow: {
+        alignItems: 'flex-end',
+        marginBottom: 4
+    },
+    forgotText: {
+        fontSize: 14,
         opacity: 0.8
     },
-    statusMessageTempFix: {
-        color: 'white',
-        textAlign: 'center',
-        paddingTop: 10
+    serverError: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingLeft: 4,
+        marginTop: 8,
+        marginBottom: 4
+    },
+    serverErrorText: {
+        color: '#ff8a80',
+        fontSize: 14,
+        fontFamily: 'Poppins-Medium',
+        marginLeft: 6,
+        letterSpacing: 0.3
+    },
+    buttonStyle: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: Colors.white,
+        borderRadius: 100,
+        height: 52,
+        marginTop: 16
+    },
+    buttonPressed: {
+        backgroundColor: '#f0f0f0'
+    },
+    buttonDisabled: {
+        opacity: 0.7
+    },
+    buttonText: {
+        fontSize: 16,
+        letterSpacing: 0.3
     }
 });
 
