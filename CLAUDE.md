@@ -84,7 +84,15 @@ Uses `react-native-config` to load `.env` variables. Key env vars defined in `ac
 
 ### Internationalization
 
-i18next with `react-i18next`. Translation files in `assets/langs/` (en, ar, de, es, fr, ie, nl, pt). Default language auto-detected from device locale via `react-native-localize`, falling back to English. Configured in `i18n.js`.
+i18next with `react-i18next`. Configured in `i18n.js`. Translation keys are **full British English string literals** (key = English display text). All translation files use a single flat JSON structure with keys sorted alphabetically A-Z. See `Translations.md` for full architecture details.
+
+Translation files live in `assets/langs/` with 8 languages: en, ar, de, es, fr, ie, nl, pt. Each language directory contains `{lang}.json` (flat UI strings), `litter.json` (nested litter taxonomy), and `index.js`.
+
+The `litter.json` files use a nested structure with 15 sections (categories, 12 litter categories, materials, types) derived from the backend `TagsConfig`. Keys are snake_case identifiers matching the backend. Access via `t('litter.smoking.butts')`, `t('litter.materials.plastic')`, etc. Unlike UI strings, litter keys are **translated per language** — each language has its own `litter.json` with identical keys but translated values (174 key-value pairs per language).
+
+**When adding a new user-facing string:** Add the key to `en/en.json` (key = value for English), then translate and add it to ALL other language files (`ar.json`, `de.json`, `es.json`, `fr.json`, `ie.json`, `nl.json`, `pt.json`). Keep all files sorted alphabetically A-Z by key. Use `t('Your new string')` or `dictionary="Your new string"` in code.
+
+**When adding a new litter key:** Add it to `en/litter.json` in the appropriate section, then translate and add it to ALL other `litter.json` files. Keep keys sorted alphabetically within each section.
 
 ### Litter Data Model
 

@@ -105,13 +105,13 @@ const GalleryPermissionScreen = ({navigation}) => {
 
                 <Title
                     style={styles.title}
-                    dictionary="permission.allow-gallery-access"
+                    dictionary="Allow Gallery Access"
                 />
 
                 <Body
                     color="muted"
                     style={styles.bodyText}
-                    dictionary="permission.gallery-body">
+                    dictionary="Please provide us access to your gallery, which is required to upload geotagged images from your device">
                     Please provide us access to your gallery, which is required
                     if you want to upload geotagged images from gallery.
                 </Body>
@@ -130,7 +130,7 @@ const GalleryPermissionScreen = ({navigation}) => {
                     <Body
                         color="white"
                         family="semiBold"
-                        dictionary="permission.allow-gallery-access"
+                        dictionary="Allow Gallery Access"
                         style={styles.buttonText}
                     />
                 </Pressable>
@@ -141,7 +141,7 @@ const GalleryPermissionScreen = ({navigation}) => {
                     <Caption
                         color="muted"
                         family="medium"
-                        dictionary="permission.not-now"
+                        dictionary="Not now, Later"
                     />
                 </Pressable>
             </View>

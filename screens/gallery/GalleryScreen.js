@@ -303,14 +303,14 @@ const GalleryScreen = ({ navigation }) => {
                         }}>
                         <Body
                             color="white"
-                            dictionary={'leftpage.cancel'}
+                            dictionary={'Cancel'}
                         />
                     </Pressable>
                 }
                 centerContent={
                     <SubTitle
                         color="white"
-                        dictionary={'leftpage.geotagged'}
+                        dictionary={'Geotagged'}
                     />
                 }
                 centerContainerStyle={{ flex: 2 }}
@@ -319,7 +319,7 @@ const GalleryScreen = ({ navigation }) => {
                         onPress={handleDoneClick}
                     >
                         <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center'}}>
-                            <Body color="white" dictionary={'leftpage.next'} />
+                            <Body color="white" dictionary={'Next'} />
                             {selectedImages?.length > 0 && (
                                 <View style={styles.selectionBadge}>
                                     <Body color="white" style={{ fontWeight: '600' }}>

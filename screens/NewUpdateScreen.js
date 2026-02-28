@@ -20,22 +20,22 @@ const NewUpdateScreen = ({ navigation }) => {
                 source={require('../assets/illustrations/new_update.png')}
                 style={styles.imageStyle}
             />
-            <Title dictionary={'permission.new-version'} />
+            <Title dictionary={'New Version Available'} />
             <Body
                 color="muted"
                 style={styles.bodyText}
-                dictionary={'permission.please-update-app'}
+                dictionary={'Please update the app for an improved experience'}
             />
             <Pressable
                 style={styles.buttonStyle}
                 onPress={handleButtonClick}>
                 <Body
                     color="white"
-                    dictionary={'permission.update-now'}
+                    dictionary={'Update Now'}
                 />
             </Pressable>
             <Pressable onPress={() => navigation.navigate('HOME')}>
-                <Body dictionary={'permission.not-now'} />
+                <Body dictionary={'Not now, Later'} />
             </Pressable>
         </View>
     );

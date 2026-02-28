@@ -15,8 +15,8 @@ import {clearStatusText, userLogin} from '../../../reducers/auth_reducer';
 import {Colors, CustomTextInput, Body} from '../../components';
 
 const SigninSchema = Yup.object().shape({
-    login: Yup.string().required('enter-email-or-username'),
-    password: Yup.string().required('enter-password')
+    login: Yup.string().required('Please enter your email or username'),
+    password: Yup.string().required('Please enter a password')
 });
 
 const SigninFormInner = ({
@@ -38,8 +38,8 @@ const SigninFormInner = ({
     const passwordRef = useRef(null);
 
     const {t} = useTranslation();
-    const loginTranslation = t('auth.email-or-username');
-    const passwordTranslation = t('auth.password');
+    const loginTranslation = t('Email or Username');
+    const passwordTranslation = t('Password');
 
     useEffect(() => {
         dispatch(clearStatusText());
@@ -60,7 +60,7 @@ const SigninFormInner = ({
     let serverMessage = '';
     if (serverStatusText !== '') {
         serverMessage = isCredentialError
-            ? t('auth.invalid-credentials')
+            ? t('The login details are incorrect')
             : serverStatusText;
     }
 
@@ -75,7 +75,7 @@ const SigninFormInner = ({
                 name="login"
                 error={showLoginError ? errors.login : undefined}
                 errorText={
-                    showLoginError ? t(`auth.${errors.login}`) : undefined
+                    showLoginError ? t(errors.login) : undefined
                 }
                 touched={hasSubmitted ? touched?.login : false}
                 placeholder={loginTranslation}
@@ -92,7 +92,7 @@ const SigninFormInner = ({
                 name="password"
                 error={showPasswordError ? errors.password : undefined}
                 errorText={
-                    showPasswordError ? t(`auth.${errors.password}`) : undefined
+                    showPasswordError ? t(errors.password) : undefined
                 }
                 touched={hasSubmitted ? touched?.password : false}
                 placeholder={passwordTranslation}
@@ -119,7 +119,7 @@ const SigninFormInner = ({
                 <Body
                     color="white"
                     family="medium"
-                    dictionary="auth.forgot-password"
+                    dictionary="Forgot password?"
                     style={styles.forgotText}
                 />
             </Pressable>
@@ -149,7 +149,7 @@ const SigninFormInner = ({
                     <Body
                         color="accent"
                         family="semiBold"
-                        dictionary="auth.login"
+                        dictionary="Log In"
                         style={styles.buttonText}
                     />
                 )}

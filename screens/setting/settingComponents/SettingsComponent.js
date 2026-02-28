@@ -97,7 +97,7 @@ const SettingsComponent = () => {
                                     value={values[`${formDataToEdit.key}`]}
                                     name={`${formDataToEdit.key}`}
                                     autoCapitalize="none"
-                                    error={errors[`${formDataToEdit.key}`] && `auth.${errors[`${formDataToEdit.key}`]}`}
+                                    error={errors[`${formDataToEdit.key}`]}
                                     touched={touched[`${formDataToEdit.key}`]}
                                 />
                             </View>
@@ -162,7 +162,7 @@ const SettingsComponent = () => {
                                         value={settingsEditProp && settingsEditProp[`${field}`]}
                                         name={`${field}`}
                                         autoCapitalize="none"
-                                        error={errors[`${field}`] && `settings.${errors[`${field}`]}`}
+                                        error={errors[`${field}`]}
                                         touched={touched[`${field}`]}
                                         placeholder={`${placeholders[index]}`}
                                     />
@@ -244,29 +244,29 @@ const SettingsComponent = () => {
          */
         const NameSchema = {
             name: Yup.string()
-                .min(3, 'name-min-max')
-                .max(20, 'name-min-max')
-                .required('enter-name')
+                .min(3, 'Name should be between 3-20 characters')
+                .max(20, 'Name should be between 3-20 characters')
+                .required('Please enter a name')
         };
 
         const UsernameSchema = {
             username: Yup.string()
-                .min(3, 'username-min-max')
-                .max(20, 'username-min-max')
-                .required('enter-username')
+                .min(3, 'Username should be between 3-20 characters')
+                .max(20, 'Username should be between 3-20 characters')
+                .required('Please enter a username')
         };
 
         const EmailSchema = {
-            email: Yup.string().email('email-not-valid').required('enter-email')
+            email: Yup.string().email('This is not a valid email address').required('Please enter an email address')
         };
 
         const SocialSchema = {
-            twitter: Yup.string().url('url-not-valid'),
-            facebook: Yup.string().url('url-not-valid'),
-            instagram: Yup.string().url('url-not-valid'),
-            linkedin: Yup.string().url('url-not-valid'),
-            reddit: Yup.string().url('url-not-valid'),
-            personal: Yup.string().url('url-not-valid')
+            twitter: Yup.string().url('Please enter a valid url'),
+            facebook: Yup.string().url('Please enter a valid url'),
+            instagram: Yup.string().url('Please enter a valid url'),
+            linkedin: Yup.string().url('Please enter a valid url'),
+            reddit: Yup.string().url('Please enter a valid url'),
+            personal: Yup.string().url('Please enter a valid url')
         };
 
         switch (key) {
@@ -289,12 +289,12 @@ const SettingsComponent = () => {
         const success = status === 'SUCCESS';
         const error = status === 'ERROR';
 
-        const successTitle = t(`settings.success`);
-        const successMessage = t(`settings.value-updated`);
-        const errorTitle = t(`settings.error`);
-        const errorMessage = t(`settings.value-not-updated`);
+        const successTitle = t('Success!');
+        const successMessage = t('Value updated');
+        const errorTitle = t('Error!');
+        const errorMessage = t('Value not updated');
 
-        const goBackMessage = t(`settings.go-back`);
+        const goBackMessage = t('Go Back');
 
         if (success || error)
         {
@@ -345,10 +345,10 @@ const SettingsComponent = () => {
         const text = t(`${dataToEdit.title}`);
 
         if (dataToEdit.key === 'delete-account') {
-            return t(`settings.warning`);
+            return t('Warning');
         }
 
-        const edit = t(`settings.edit`);
+        const edit = t('Edit');
 
         return edit + ' ' + text;
     }
@@ -420,7 +420,7 @@ const SettingsComponent = () => {
                         <Pressable onPress={handleSaveSettings}>
                             <Body
                                 color="white"
-                                dictionary={`settings.save`}
+                                dictionary={'Save'}
                             />
                         </Pressable>
                     ) : (

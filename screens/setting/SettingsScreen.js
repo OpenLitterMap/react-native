@@ -182,8 +182,8 @@ const SettingsScreen = ({ navigation }) => {
         let title = '';
         let subtitle = '';
 
-        const ok = t(`settings.ok`);
-        const cancel = t(`settings.cancel`);
+        const ok = t('OK');
+        const cancel = t('Cancel');
 
         // Needs translation
         if (key === 'enable_admin_tagging') {
@@ -313,7 +313,7 @@ const SettingsScreen = ({ navigation }) => {
                 centerContent={
                     <Title
                         color="white"
-                        dictionary={`settings.settings`}
+                        dictionary={'Settings'}
                     />
                 }
                 centerContainerStyle={{flex: 2}}
@@ -321,7 +321,7 @@ const SettingsScreen = ({ navigation }) => {
                     <Pressable onPress={() => dispatch(logout())}>
                         <Body
                             color="white"
-                            dictionary={`settings.logout`}
+                            dictionary={'Logout'}
                         />
                     </Pressable>
                 }
@@ -357,47 +357,47 @@ const SettingsScreen = ({ navigation }) => {
                         )}
                         sections={[
                             {
-                                title: 'settings.my-account',
+                                title: 'MY ACCOUNT',
                                 data: [
                                     {
                                         id: 1,
                                         key: 'name',
-                                        title: 'settings.name'
+                                        title: 'Name'
                                     },
                                     {
                                         id: 2,
                                         key: 'username',
-                                        title: 'settings.username'
+                                        title: 'Username'
                                     },
                                     {
                                         id: 3,
                                         key: 'email',
-                                        title: 'settings.email'
+                                        title: 'Email'
                                     },
                                     {
                                         id: 4,
                                         key: 'social',
-                                        title: 'settings.social'
+                                        title: 'Social Accounts'
                                     }
                                 ]
                             },
                             {
-                                title: 'settings.picked-up',
+                                title: 'Picked Up',
                                 data: [
                                     {
                                         id: 11,
                                         key: 'picked-up',
-                                        title: 'settings.litter-picked-up'
+                                        title: 'Litter is picked up'
                                     }
                                 ]
                             },
                             {
-                                title: 'settings.tagging',
+                                title: 'TAGGING',
                                 data: [
                                     {
                                         id: 12,
                                         key: 'enable_admin_tagging',
-                                        title: 'settings.enable_admin_tagging'
+                                        title: 'Enable crowdsourced tagging'
                                     },
                                     {
                                         id: 14,
@@ -407,60 +407,50 @@ const SettingsScreen = ({ navigation }) => {
                                 ]
                             },
                             {
-                                title: 'settings.privacy',
+                                title: 'PRIVACY',
                                 data: [
                                     {
                                         id: 4,
                                         key: 'name-maps',
-                                        title: 'settings.show-name-maps'
+                                        title: 'Show Name on Maps'
                                     },
                                     {
                                         id: 5,
                                         key: 'username-maps',
-                                        title: 'settings.show-username-maps'
+                                        title: 'Show Username on Maps'
                                     },
                                     {
                                         id: 6,
                                         key: 'name-leaderboard',
-                                        title: 'settings.show-name-leaderboards'
+                                        title: 'Show Name on Leaderboards'
                                     },
                                     {
                                         id: 7,
                                         key: 'username-leaderboard',
-                                        title: 'settings.show-username-leaderboards'
+                                        title: 'Show Username on Leaderboards'
                                     },
                                     {
                                         id: 8,
                                         key: 'name-createdby',
-                                        title: 'settings.show-name-createdby'
+                                        title: 'Show Name on Created By'
                                     },
                                     {
                                         id: 9,
                                         key: 'username-createdby',
-                                        title: 'settings.show-username-createdby'
+                                        title: 'Show Username on Created By'
                                     }
                                 ]
                             },
                             {
-                                title: 'settings.delete-account',
+                                title: 'Delete Account',
                                 data: [
                                     {
                                         id: 13,
                                         key: 'delete-account',
-                                        title: 'settings.delete-your-account'
+                                        title: 'Delete your account'
                                     }
                                 ]
                             }
-                            // Temp commented out. This feature will be fixed in a future release.
-                            // {
-                            //     title: 'settings.tags',
-                            //     data: [
-                            //         {
-                            //             id: 10,
-                            //             title: 'settings.show-previous-tags'
-                            //         }
-                            //     ]
-                            // }
                         ]}
                         renderItem={({item, index, section}) => (
                             <View style={styles.sectionRow} key={index}>

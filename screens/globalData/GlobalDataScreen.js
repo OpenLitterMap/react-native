@@ -91,7 +91,7 @@ const GlobalDataScreen = ({ navigation }) => {
         {
             value: totalLitter || litterStart,
             startValue: litterStart,
-            title: `stats.total-litter`,
+            title: 'Total Tags',
             icon: 'trash-outline',
             color: '#14B8A6',
             bgColor: '#CCFBF1'
@@ -99,7 +99,7 @@ const GlobalDataScreen = ({ navigation }) => {
         {
             value: totalPhotos || photosStart,
             startValue: photosStart,
-            title: `stats.total-photos`,
+            title: 'Total Photos',
             icon: 'images-outline',
             color: '#A855F7',
             bgColor: '#F3E8FF'
@@ -107,7 +107,7 @@ const GlobalDataScreen = ({ navigation }) => {
         {
             value: totalLittercoin || littercoinStart,
             startValue: littercoinStart,
-            title: `stats.total-littercoin`,
+            title: 'Total Littercoin',
             icon: 'server-outline',
             color: '#F59E0B',
             bgColor: '#FEF9C3'
@@ -115,7 +115,7 @@ const GlobalDataScreen = ({ navigation }) => {
         {
             value: totalUsers || usersStart,
             startValue: usersStart,
-            title: `stats.total-users`,
+            title: 'Total Users',
             icon: 'people-outline',
             color: '#0EA5E9',
             bgColor: '#E0F2FE'
@@ -157,7 +157,7 @@ const GlobalDataScreen = ({ navigation }) => {
                 leftContent={
                     <Title
                         color="white"
-                        dictionary={`stats.global-data`}
+                        dictionary={'Global Data'}
                     />
                 }
             />
@@ -192,7 +192,7 @@ const GlobalDataScreen = ({ navigation }) => {
                             delay={0}
                             duration={5000}
                             radius={160}
-                            tagline={`stats.next-target`}
+                            tagline={'Next Target\n{{count}} Litter'}
                             nextTarget={litterTarget.nextTarget.toLocaleString()}
                             valueSuffix="%"
                         />

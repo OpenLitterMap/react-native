@@ -15,8 +15,8 @@ import {useDispatch, useSelector} from 'react-redux';
 import {Colors, CustomTextInput, Body} from '../../components';
 
 const SignupSchema = Yup.object().shape({
-    email: Yup.string().email('email-not-valid').required('enter-email'),
-    password: Yup.string().required('enter-password').min(6, 'must-contain')
+    email: Yup.string().email('This is not a valid email address').required('Please enter an email address'),
+    password: Yup.string().required('Please enter a password').min(6, 'Password must be at least 6 characters')
 });
 
 const PasswordStrength = ({password}) => {
@@ -76,8 +76,8 @@ const SignupForm = () => {
     const {serverStatusText, isSubmitting} = useSelector(state => state.auth);
 
     const {t} = useTranslation();
-    const emailTranslation = t('auth.email-address');
-    const passwordTranslation = t('auth.password');
+    const emailTranslation = t('Email Address');
+    const passwordTranslation = t('Password');
 
     return (
         <Formik
@@ -103,7 +103,7 @@ const SignupForm = () => {
                         error={errors?.email}
                         errorText={
                             errors?.email
-                                ? t(`auth.${errors.email}`)
+                                ? t(errors.email)
                                 : undefined
                         }
                         touched={touched?.email}
@@ -123,7 +123,7 @@ const SignupForm = () => {
                         error={errors?.password}
                         errorText={
                             errors?.password
-                                ? t(`auth.${errors.password}`)
+                                ? t(errors.password)
                                 : undefined
                         }
                         touched={touched?.password}
@@ -176,7 +176,7 @@ const SignupForm = () => {
                             <Body
                                 color="accent"
                                 family="semiBold"
-                                dictionary="auth.create-account"
+                                dictionary="Create Account"
                                 style={styles.buttonText}
                             />
                         )}

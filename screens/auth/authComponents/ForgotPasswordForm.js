@@ -15,7 +15,7 @@ import {Colors, Body, CustomTextInput} from '../../components';
 import {sendResetPasswordRequest} from '../../../reducers/auth_reducer';
 
 const ForgotPasswordSchema = Yup.object().shape({
-    email: Yup.string().email('email-not-valid').required('enter-email')
+    email: Yup.string().email('This is not a valid email address').required('Please enter an email address')
 });
 
 const ForgotPasswordForm = () => {
@@ -24,7 +24,7 @@ const ForgotPasswordForm = () => {
     const {serverStatusText, isSubmitting} = useSelector(state => state.auth);
 
     const {t} = useTranslation();
-    const emailTranslation = t('auth.email-address');
+    const emailTranslation = t('Email Address');
 
     return (
         <Formik
@@ -44,7 +44,7 @@ const ForgotPasswordForm = () => {
                         error={errors?.email}
                         errorText={
                             errors?.email
-                                ? t(`auth.${errors.email}`)
+                                ? t(errors.email)
                                 : undefined
                         }
                         touched={touched?.email}

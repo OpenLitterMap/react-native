@@ -102,11 +102,11 @@ const UploadImagesGrid = ({ images, isSelecting, navigation, uniqueValue }) => {
                 />
                 <SubTitle
                     style={styles.exptyStateText}
-                    dictionary={'leftpage.no-images'}
+                    dictionary={'No images to upload'}
                 />
                 <Body
                     style={styles.exptyStateText}
-                    dictionary={'leftpage.take-photo'}
+                    dictionary={'Take a photo and select it from the gallery'}
                 />
             </View>
         );

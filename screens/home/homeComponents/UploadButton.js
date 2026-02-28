@@ -15,7 +15,7 @@ const UploadButton = ({ onPress }) => {
             />
             <SubTitle
                 color="white"
-                dictionary={'leftpage.upload'}
+                dictionary={'Upload'}
             />
         </Pressable>
     );

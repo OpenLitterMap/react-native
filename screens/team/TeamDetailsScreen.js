@@ -47,21 +47,21 @@ const TeamDetailsScreen = ({ navigation }) => {
     const teamStats = [
         {
             value: selectedTeam?.total_images || 0,
-            title: `stats.total-photos`,
+            title: 'Total Photos',
             icon: 'images-outline',
             color: '#A855F7',
             bgColor: '#F3E8FF'
         },
         {
             value: selectedTeam?.total_litter || 0,
-            title: `stats.total-litter`,
+            title: 'Total Tags',
             icon: 'trash-outline',
             color: '#14B8A6',
             bgColor: '#CCFBF1'
         },
         {
             value: selectedTeam?.total_members || 0,
-            title: `team.total-members`,
+            title: 'Total People',
             icon: 'person-outline',
             color: '#F59E0B',
             bgColor: '#FEF9C3'
@@ -156,7 +156,7 @@ const TeamDetailsScreen = ({ navigation }) => {
                             }
                             style={[styles.actionButtonStyle]}
                         >
-                            <Body dictionary={`tag.cancel`} />
+                            <Body dictionary={'Cancel'} />
                         </Pressable>
                         <Pressable
                             onPress={leave}

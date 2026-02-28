@@ -40,7 +40,7 @@ export const deleteAccount = createAsyncThunk(
             });
 
             if (!response.data.success && response.data.msg === 'password does not match') {
-                return rejectWithValue('settings.password-incorrect');
+                return rejectWithValue('Your password did not match');
             } else {
                 // Consider handling side effects like AsyncStorage outside of the redux flow or use middleware
                 await AsyncStorage.clear();

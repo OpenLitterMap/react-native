@@ -83,15 +83,15 @@ const AuthScreen: FC<AuthScreenProps> = ({route, navigation}) => {
     };
 
     const toggleTexts: Record<string, string> = {
-        CREATE_ACCOUNT: 'auth.already-have',
-        LOGIN: 'auth.create-account',
-        FORGOT_PASSWORD: 'auth.back-to-login'
+        CREATE_ACCOUNT: 'Already have an account?',
+        LOGIN: 'Create Account',
+        FORGOT_PASSWORD: 'Back to Login'
     };
 
     const formTitles: Record<string, string> = {
-        CREATE_ACCOUNT: 'auth.create-account',
-        LOGIN: 'auth.login',
-        FORGOT_PASSWORD: 'auth.forgot-password'
+        CREATE_ACCOUNT: 'Create Account',
+        LOGIN: 'Log In',
+        FORGOT_PASSWORD: 'Forgot password?'
     };
 
     const renderForm = () => {
@@ -190,7 +190,7 @@ const AuthScreen: FC<AuthScreenProps> = ({route, navigation}) => {
                             <Body
                                 color="white"
                                 style={styles.dividerText}
-                                dictionary="auth.or"
+                                dictionary="or"
                             />
                             <View style={styles.dividerLine} />
                         </View>

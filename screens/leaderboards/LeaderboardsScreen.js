@@ -63,7 +63,7 @@ const LeaderboardsScreen = () => {
                 leftContent={
                     <Title
                         color="white"
-                        dictionary={`leftpage.leaderboard`}
+                        dictionary={'Leaderboard'}
                     />
                 }
             />

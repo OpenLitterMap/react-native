@@ -9,7 +9,7 @@ import {
     View
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
-import {LanguageFlags, Slides} from './authComponents';
+import {Slides} from './authComponents';
 import {Body, Colors} from '../components';
 
 const {width: SCREEN_WIDTH} = Dimensions.get('window');
@@ -19,19 +19,19 @@ const SLIDE_DATA = [
         id: 1,
         image: require('../../assets/illustrations/click_image.png'),
         titleText: 'Easy',
-        text: 'welcome.just-tag-and-upload'
+        text: 'Just tag litter and upload it'
     },
     {
         id: 2,
         image: require('../../assets/illustrations/rankup.png'),
         titleText: 'Fun',
-        text: 'welcome.climb-leaderboards'
+        text: 'Climb the leaderboards'
     },
     {
         id: 3,
         image: require('../../assets/illustrations/open_data.png'),
         titleText: 'Open Source',
-        text: 'welcome.open-source-dpg'
+        text: 'UN Digital Public Good'
     }
 ];
 
@@ -69,7 +69,6 @@ const WelcomeScreen: FC<{navigation: any}> = ({navigation}) => {
                                 onScroll={handleScroll}
                                 showDots={false}
                             />
-                            <LanguageFlags />
                         </View>
 
                         <View style={styles.buttons}>
@@ -82,7 +81,7 @@ const WelcomeScreen: FC<{navigation: any}> = ({navigation}) => {
                                 <Body
                                     family="semiBold"
                                     color="white"
-                                    dictionary="welcome.get-started"
+                                    dictionary="Get Started!"
                                     style={styles.primaryButtonText}
                                 />
                             </Pressable>
@@ -93,7 +92,7 @@ const WelcomeScreen: FC<{navigation: any}> = ({navigation}) => {
                                 <Body
                                     color="muted"
                                     style={styles.secondaryText}
-                                    dictionary="auth.already-have"
+                                    dictionary="Already have an account?"
                                 />
                                 <Body
                                     color="accent"
@@ -105,7 +104,7 @@ const WelcomeScreen: FC<{navigation: any}> = ({navigation}) => {
                                     color="accent"
                                     family="semiBold"
                                     style={styles.secondaryText}
-                                    dictionary="auth.login"
+                                    dictionary="Log In"
                                 />
                             </Pressable>
                         </View>

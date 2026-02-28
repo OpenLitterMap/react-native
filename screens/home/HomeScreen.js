@@ -135,8 +135,8 @@ const HomeScreen = ({ navigation }) => {
     }, [token]);
 
     const { t } = useTranslation();
-    const cancelText = t('leftpage.cancel');
-    const deleteText = t('leftpage.delete');
+    const cancelText = t('Cancel');
+    const deleteText = t('Delete');
 
     const cancelUploadWrapper = () => {
         isUploadCancelled.current = true;
@@ -241,7 +241,7 @@ const HomeScreen = ({ navigation }) => {
                     <Body
                         style={{marginLeft: 10}}
                         color="muted"
-                        dictionary={'leftpage.select-to-delete'}
+                        dictionary={'Select the images you want to delete'}
                     />
                 </View>
             );
@@ -558,7 +558,7 @@ const HomeScreen = ({ navigation }) => {
     return (
         <>
             <Header
-                leftContent={<Title color="white" dictionary={'leftpage.upload'} />}
+                leftContent={<Title color="white" dictionary={'Upload'} />}
                 rightContent={renderDeleteButton()}
             />
             <View style={styles.container}>
@@ -570,7 +570,7 @@ const HomeScreen = ({ navigation }) => {
                             <Text style={styles.uploadText}>
                                 {totalToUpload > 0
                                     ? renderProgressText()
-                                    : t('leftpage.please-wait-uploading')
+                                    : t('Please wait while your photos upload')
                                 }
                             </Text>
 
@@ -588,20 +588,20 @@ const HomeScreen = ({ navigation }) => {
                         <View style={styles.modal}>
                             <View style={styles.thankYouModalInner}>
                                 <Text style={{ fontSize: SCREEN_HEIGHT * 0.03, marginBottom: 5 }}>
-                                    { t('leftpage.thank-you') }
+                                    { t('Thank you!!!') }
                                 </Text>
 
                                 {/* Upload success */}
                                 {uploaded > 0 && (
                                     <Text style={{ fontSize: SCREEN_HEIGHT * 0.02, marginBottom: 5 }}>
-                                        { t('leftpage.you-have-uploaded', { count: uploaded }) }
+                                        { t('You have uploaded {{count}} photos', { count: uploaded }) }
                                     </Text>
                                 )}
 
                                 {/* Tagging success */}
                                 {tagged > 0 && (
                                     <Text style={{ fontSize: SCREEN_HEIGHT * 0.02, marginBottom: 5 }}>
-                                        { t('leftpage.you-have-tagged', { count: tagged }) }
+                                        { t('You have tagged {{count}} photos', { count: tagged }) }
                                     </Text>
                                 )}
 
@@ -630,7 +630,7 @@ const HomeScreen = ({ navigation }) => {
                                     <TouchableWithoutFeedback onPress={hideThankYouMessages}>
                                         <View style={styles.thankYouButton}>
                                             <Text style={styles.normalWhiteText}>
-                                                { t('leftpage.close') }
+                                                { t('Close') }
                                             </Text>
                                         </View>
                                     </TouchableWithoutFeedback>

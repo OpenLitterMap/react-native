@@ -99,42 +99,42 @@ const UserStatsScreen = ({ navigation }) => {
     const globalStatsData = [
         {
             value: totalTags || 0,
-            title: `stats.total-litter`,
+            title: 'Total Tags',
             icon: 'pricetags-outline',
             color: '#14B8A6',
             bgColor: '#CCFBF1'
         },
         {
             value: totalImages || 0,
-            title: `stats.total-photos`,
+            title: 'Total Photos',
             icon: 'images-outline',
             color: '#A855F7',
             bgColor: '#F3E8FF'
         },
         {
             value: totalUsers || 0,
-            title: `stats.total-users`,
+            title: 'Total Users',
             icon: 'people-outline',
             color: '#F59E0B',
             bgColor: '#FEF9C3'
         },
         {
             value: newUsersToday || 0,
-            title: `stats.new-today`,
+            title: 'New Today',
             icon: 'person-add-outline',
             color: '#0EA5E9',
             bgColor: '#E0F2FE'
         },
         {
             value: newUsersLast7Days || 0,
-            title: `stats.new-7-days`,
+            title: 'This Week',
             icon: 'calendar-outline',
             color: '#EC4899',
             bgColor: '#FCE7F3'
         },
         {
             value: newUsersLast30Days || 0,
-            title: `stats.new-30-days`,
+            title: 'This Month',
             icon: 'calendar-outline',
             color: '#8B5CF6',
             bgColor: '#EDE9FE'
@@ -145,7 +145,7 @@ const UserStatsScreen = ({ navigation }) => {
         {
             value: user?.xp_redis || xpStart,
             startValue: xpStart,
-            title: `user.XP`,
+            title: 'XP',
             icon: 'medal-outline',
             color: '#14B8A6',
             bgColor: '#CCFBF1'
@@ -153,7 +153,7 @@ const UserStatsScreen = ({ navigation }) => {
         {
             value: user?.position || positionStart,
             startValue: positionStart,
-            title: `user.rank`,
+            title: 'Rank',
             icon: 'podium-outline',
             color: '#A855F7',
             bgColor: '#F3E8FF',
@@ -162,7 +162,7 @@ const UserStatsScreen = ({ navigation }) => {
         {
             value: user?.total_images || totalImagesStart,
             startValue: totalImagesStart,
-            title: `user.photos`,
+            title: 'Photos',
             icon: 'images-outline',
             color: '#F59E0B',
             bgColor: '#FEF9C3'
@@ -170,7 +170,7 @@ const UserStatsScreen = ({ navigation }) => {
         {
             value: user?.totalTags || totalTagsStart,
             startValue: totalTagsStart,
-            title: `user.tags`,
+            title: 'Tags',
             icon: 'pricetags-outline',
             color: '#0EA5E9',
             bgColor: '#E0F2FE'
@@ -185,7 +185,7 @@ const UserStatsScreen = ({ navigation }) => {
                     <View>
                         <Title
                             color="white"
-                            dictionary={`user.welcome`}
+                            dictionary={'Welcome'}
                         />
                         <Body color="white">{user?.username}</Body>
                     </View>

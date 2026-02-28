@@ -77,7 +77,7 @@ const CameraPermissionScreen = ({navigation}) => {
 
                 <Title
                     style={styles.title}
-                    dictionary="permission.please-give-permissions"
+                    dictionary="Please Give Permissions"
                 />
 
                 <View style={styles.permissionContainer}>
@@ -92,11 +92,11 @@ const CameraPermissionScreen = ({navigation}) => {
                         <View style={styles.itemBody}>
                             <Body
                                 family="medium"
-                                dictionary="permission.camera-access"
+                                dictionary="Camera Access"
                             />
                             <Caption
                                 color="muted"
-                                dictionary="permission.camera-access-body"
+                                dictionary="To capture litter images from app camera"
                             />
                         </View>
                     </View>
@@ -111,11 +111,11 @@ const CameraPermissionScreen = ({navigation}) => {
                         <View style={styles.itemBody}>
                             <Body
                                 family="medium"
-                                dictionary="permission.location-access"
+                                dictionary="Location Access"
                             />
                             <Caption
                                 color="muted"
-                                dictionary="permission.location-body"
+                                dictionary="To get exact geolocation of where the litter is"
                             />
                         </View>
                     </View>
@@ -135,7 +135,7 @@ const CameraPermissionScreen = ({navigation}) => {
                     <Body
                         color="white"
                         family="semiBold"
-                        dictionary="permission.allow-permission"
+                        dictionary="Allow Permissions"
                         style={styles.buttonText}
                     />
                 </Pressable>
@@ -146,7 +146,7 @@ const CameraPermissionScreen = ({navigation}) => {
                     <Caption
                         color="muted"
                         family="medium"
-                        dictionary="permission.not-now"
+                        dictionary="Not now, Later"
                     />
                 </Pressable>
             </View>
