@@ -115,7 +115,6 @@ Session is regenerated after login. `remember` sets 2-week persistent cookie.
 
 ### POST /api/auth/register
 
-**Aliases:** `POST /api/register` (legacy mobile)
 **Auth:** None (guest)
 
 **Request:**
@@ -158,7 +157,9 @@ Returns 401 if token is invalid/expired.
 
 ---
 
-### GET /api/user — Get Authenticated User
+### GET /api/user — Get Authenticated User (DEPRECATED)
+
+> **Deprecated:** Use `GET /api/user/profile/index` instead. This endpoint has an expensive `position` table scan. The profile endpoint provides the same data plus rank, level, achievements, and locations — all from Redis (fast).
 
 **Auth:** Required (Sanctum)
 
@@ -188,7 +189,9 @@ Returns the full User model with `position` and `xp_redis` appended, plus `litte
 }
 ```
 
-### GET /api/current-user — Get Authenticated User (Legacy)
+### GET /api/current-user — Get Authenticated User (DEPRECATED)
+
+> **Deprecated:** Use `GET /api/user/profile/index` instead. Only returns user + roles + xp_redis, no context (rank, level, achievements).
 
 **Auth:** Required (session `auth`)
 
@@ -427,20 +430,79 @@ Returns user's untagged photos (`verified = 0`), selecting only `id` and `filena
 
 **Auth:** None (public)
 
+This is the primary endpoint for building a tag search UI. Returns 7 flat collections that the client must join locally to build a searchable index.
+
 **Response (200):**
 ```json
 {
-  "categories": [{ "id": 1, "key": "smoking" }],
-  "objects": [{ "id": 5, "key": "cigarette_butt", "categories": [...] }],
-  "materials": [{ "id": 10, "key": "paper" }],
-  "brands": [{ "id": 100, "key": "marlboro" }],
-  "types": [{ "id": 20, "key": "aluminum", "name": "Aluminum Can" }],
-  "category_objects": [{ "id": 1, "category_id": 1, "litter_object_id": 5 }],
-  "category_object_types": [{ "category_litter_object_id": 1, "litter_object_type_id": 20 }]
+  "categories": [
+    { "id": 1, "key": "smoking" },
+    { "id": 2, "key": "alcohol" },
+    { "id": 3, "key": "soft_drinks" }
+  ],
+  "objects": [
+    { "id": 5, "key": "cigarette_butt", "categories": [{ "id": 1, "key": "smoking" }] },
+    { "id": 12, "key": "bottle", "categories": [{ "id": 2, "key": "alcohol" }, { "id": 3, "key": "soft_drinks" }] }
+  ],
+  "materials": [
+    { "id": 10, "key": "plastic" },
+    { "id": 11, "key": "glass" }
+  ],
+  "brands": [
+    { "id": 1, "key": "coca_cola" },
+    { "id": 2, "key": "marlboro" }
+  ],
+  "types": [
+    { "id": 1, "key": "wine" },
+    { "id": 2, "key": "beer" },
+    { "id": 3, "key": "spirits" }
+  ],
+  "category_objects": [
+    { "id": 42, "category_id": 2, "litter_object_id": 12 },
+    { "id": 87, "category_id": 3, "litter_object_id": 12 }
+  ],
+  "category_object_types": [
+    { "category_litter_object_id": 42, "litter_object_type_id": 1 },
+    { "category_litter_object_id": 42, "litter_object_type_id": 2 },
+    { "category_litter_object_id": 42, "litter_object_type_id": 3 }
+  ]
 }
 ```
 
-Note: `category_object_types` has no `id` column — use composite key for dedup.
+**How to build a search index from this data:**
+
+The 7 collections relate as follows:
+
+```
+categories ←──────── category_objects ────────→ objects
+                         (CLO)                    ↑
+                          ↑                       │
+              category_object_types          objects.categories[]
+                          ↓                  (same relationship,
+                        types                 eager-loaded)
+```
+
+**Step 1: Build object entries.** Each object can belong to multiple categories. Create one searchable entry per (object, category) pair, pre-resolving the `cloId` from `category_objects`:
+
+```
+bottle (alcohol)     → cloId: 42   (from category_objects where category_id=2, litter_object_id=12)
+bottle (soft_drinks) → cloId: 87   (from category_objects where category_id=3, litter_object_id=12)
+cigarette_butt (smoking) → cloId: 15
+```
+
+**Step 2: Build type entries.** Types add specificity to objects. Join `category_object_types` → `types` → `category_objects` → `objects`:
+
+```
+wine   → cloId: 42, typeId: 1   (wine bottle under alcohol)
+beer   → cloId: 42, typeId: 2   (beer bottle under alcohol)
+spirits → cloId: 42, typeId: 3  (spirits bottle under alcohol)
+```
+
+When a user selects "wine", you submit `category_litter_object_id: 42, litter_object_type_id: 1`. This is how "bottle" becomes "wine bottle".
+
+**Step 3: Brands and materials** are standalone — no joining needed.
+
+**Important:** `category_object_types` has no `id` column — use composite key `(category_litter_object_id, litter_object_type_id)` for dedup.
 
 ---
 
@@ -454,29 +516,41 @@ Note: `category_object_types` has no `id` column — use composite key for dedup
   "photo_id": 12345,
   "tags": [
     {
-      "category_litter_object_id": 1,
-      "litter_object_type_id": null,
-      "quantity": 1,
+      "category_litter_object_id": 42,
+      "litter_object_type_id": 1,
+      "quantity": 2,
       "picked_up": true,
-      "materials": [1, 2],
-      "brands": [4],
+      "materials": [10, 11],
+      "brands": [{ "id": 1, "quantity": 1 }],
       "custom_tags": ["found on bench"]
     }
   ]
 }
 ```
 
-| Field | Type | Rules |
-|-------|------|-------|
-| `photo_id` | int | required, must exist (not soft-deleted), owned by user |
-| `tags` | array | required, min 1 |
-| `tags.*.category_litter_object_id` | int | FK to `category_litter_object` |
-| `tags.*.litter_object_type_id` | int/null | FK to `litter_object_types` |
-| `tags.*.quantity` | int | min 1 |
-| `tags.*.picked_up` | bool/null | optional |
-| `tags.*.materials` | array | material IDs |
-| `tags.*.brands` | array | brand IDs |
-| `tags.*.custom_tags` | array | string tags |
+| Field | Type | Rules | Notes |
+|-------|------|-------|-------|
+| `photo_id` | int | required | Must exist (not soft-deleted), owned by user |
+| `tags` | array | required, min 1 | |
+| `tags.*.category_litter_object_id` | int | required | FK to `category_litter_object` — resolved from `category_objects` in `/api/tags/all` |
+| `tags.*.litter_object_type_id` | int/null | optional | FK to `litter_object_types` — this is what makes "bottle" → "wine bottle" |
+| `tags.*.quantity` | int | required, min 1 | |
+| `tags.*.picked_up` | bool/null | optional | |
+| `tags.*.materials` | int[] | optional | Array of material IDs from `/api/tags/all` |
+| `tags.*.brands` | object[] | optional | Array of `{ id, quantity }` objects |
+| `tags.*.custom_tags` | string[] | optional | Free-text tags, max 100 chars each |
+
+**Standalone tag types** (no `category_litter_object_id`):
+
+```json
+{
+  "tags": [
+    { "brand_only": true, "brand": { "id": 1, "key": "coca_cola" }, "quantity": 1, "picked_up": true },
+    { "material_only": true, "material": { "id": 10, "key": "plastic" }, "quantity": 1, "picked_up": true },
+    { "custom": true, "key": "broken_glass", "quantity": 1, "picked_up": true }
+  ]
+}
+```
 
 **Gates:**
 - 403 if user doesn't own photo
@@ -486,11 +560,11 @@ Note: `category_object_types` has no `id` column — use composite key for dedup
 ```json
 {
   "success": true,
-  "photoTags": [{ "id": 1, "photo_id": 12345, "category_litter_object_id": 1, ... }]
+  "photoTags": [{ "id": 1, "photo_id": 12345, "category_litter_object_id": 42, "litter_object_type_id": 1, ... }]
 }
 ```
 
-Category is auto-resolved from `category_litter_object_id`. Generates summary, calculates XP, triggers metrics processing via `TagsVerifiedByAdmin` event.
+Category is auto-resolved from `category_litter_object_id`. Generates summary, calculates XP, triggers metrics processing via `TagsVerifiedByAdmin` event if user is trusted.
 
 ---
 
@@ -506,7 +580,9 @@ Same request format as POST. Key differences:
 
 ---
 
-### POST /api/add-tags — Legacy Mobile Tagging
+### POST /api/add-tags — Legacy Mobile Tagging (DEPRECATED)
+
+> **Deprecated:** Use `POST /api/v3/tags` instead. This endpoint uses the v4 tag format which does NOT support object types (`litter_object_type_id`). Tags like "wine bottle" are impossible with this format.
 
 **Auth:** Required (Sanctum)
 
@@ -514,14 +590,14 @@ Same request format as POST. Key differences:
 ```json
 {
   "photo_id": 123,
-  "litter": [{ /* v4 tag objects */ }],
+  "litter": { "smoking": { "cigarette_butt": 5 } },
   "custom_tags": ["tag1"],
   "picked_up": true
 }
 ```
 
 Also accepts `tags` field instead of `litter`.
-Auto-converts v4 format to v5 via `ConvertV4TagsAction`.
+Auto-converts v4 format to v5 via `ConvertV4TagsAction` (sets `litter_object_type_id` to null).
 
 **Response:** `{ "success": true, "msg": "tags-added" }`
 
@@ -1008,7 +1084,7 @@ All POST, auth required. Each toggles a single boolean and returns the new value
 
 ### GET /api/leaderboard
 
-Returns ranked users by XP. Requires authentication.
+Returns ranked users by XP. Public endpoint (no auth required). Authenticated users also receive `currentUserRank`; unauthenticated users receive `currentUserRank: null`.
 
 **Query Parameters:**
 
@@ -1282,21 +1358,47 @@ Supports ETag-based caching (`If-None-Match` header returns 304 if unchanged). R
 
 ---
 
-### GET /api/global/stats-data — Global Statistics (Deprecated)
+### GET /api/global/stats-data — Global Statistics
 
 **Auth:** None (public)
 
-**Response:**
+World totals from the metrics table (all-time, timescale=0, location_type=Global). User growth stats from `users.created_at`.
+
+**Response (200):**
 ```json
 {
-  "total_litter": 500000,
-  "total_photos": 50000,
-  "previousXp": 250000,
-  "nextXp": 500000,
-  "littercoin": 1000,
-  "total_users": 10000
+  "total_tags": 150000,
+  "total_images": 50000,
+  "total_users": 10000,
+  "new_users_today": 12,
+  "new_users_last_7_days": 85,
+  "new_users_last_30_days": 320
 }
 ```
+
+**Controller:** `App\Http\Controllers\API\GlobalStatsController@index`
+**Test:** `tests/Feature/Api/GlobalStatsTest.php`
+
+---
+
+### GET /api/levels — Level Thresholds
+
+**Auth:** None (public)
+
+Returns the XP threshold config for all levels. Used by mobile to render level progression UI.
+
+**Response (200):**
+```json
+{
+  "0": { "title": "Complete Noob" },
+  "100": { "title": "Still A Noob" },
+  "500": { "title": "Post-Noob" },
+  "1000": { "title": "Litter Wizard" },
+  ...
+}
+```
+
+**Test:** `tests/Feature/Api/LevelsEndpointTest.php`
 
 ---
 
@@ -1340,17 +1442,18 @@ Supports ETag-based caching (`If-None-Match` header returns 304 if unchanged). R
     "id": 1,
     "name": "United States",
     "shortcode": "US",
-    "photos": 20000,
-    "tags": 60000,
+    "total_images": 20000,
+    "total_tags": 60000,
     "xp": 1000000,
-    "contributors": 2000,
+    "total_members": 2000,
     "pct_tags": 40.0,
     "pct_photos": 40.0,
     "avg_tags_per_person": 30.0,
     "avg_photos_per_person": 10.0,
-    "created_at": "2015-01-01T00:00:00Z",
+    "created_at": "2015-01-01 00:00:00",
+    "updated_at": "2025-02-28 10:30:00",
     "created_by": "John Doe",
-    "last_updated_at": "2025-02-28T10:30:00Z",
+    "last_updated_at": "2025-02-28 10:30:00",
     "last_updated_by": "Jane Smith"
   }],
   "location_type": "country",
@@ -1474,7 +1577,25 @@ Sets active team to null.
 
 **Auth:** Required (Sanctum)
 
-**Response:** `{ "success": true, "teams": [ ... ] }`
+**Response (200):**
+```json
+{
+  "success": true,
+  "teams": [
+    {
+      "id": 1,
+      "name": "My Team",
+      "identifier": "abc123",
+      "type_name": "community",
+      "total_members": 5,
+      "total_tags": 1200,
+      "total_images": 300,
+      "created_at": "2025-01-15T10:00:00.000000Z",
+      "updated_at": "2026-02-28T14:30:00.000000Z"
+    }
+  ]
+}
+```
 
 ---
 
@@ -1527,7 +1648,26 @@ School teams apply safeguarding: deterministic pseudonyms ("Student 1", "Student
 
 **Auth:** Required (Sanctum)
 
-Teams ranked by total litter. Only teams with `leaderboards=true` shown.
+Teams ranked by `total_litter` (descending). Only teams with `leaderboards=true` shown.
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "teams": [
+    {
+      "id": 1,
+      "name": "Top Team",
+      "type_name": "community",
+      "total_members": 25,
+      "total_tags": 5000,
+      "total_images": 1200,
+      "created_at": "2024-06-01T00:00:00.000000Z",
+      "updated_at": "2026-02-28T14:30:00.000000Z"
+    }
+  ]
+}
+```
 
 ---
 
@@ -1586,8 +1726,22 @@ Use `"all": true` instead of `team_id` to apply to all user's teams.
       "is_public": false,
       "verified": 1,
       "team_approved_at": null,
-      "photoTags": [{ ... }],
-      "user": { "id": 123, "name": "Student Name" }
+      "user": { "id": 42, "name": "Student 1", "username": null },
+      "new_tags": [
+        {
+          "id": 456,
+          "category_litter_object_id": 42,
+          "litter_object_type_id": 1,
+          "quantity": 3,
+          "picked_up": true,
+          "category": { "id": 2, "key": "alcohol" },
+          "object": { "id": 12, "key": "bottle" },
+          "extra_tags": [
+            { "type": "brand", "quantity": 1, "tag": { "id": 5, "key": "heineken" } },
+            { "type": "material", "quantity": 1, "tag": { "id": 11, "key": "glass" } }
+          ]
+        }
+      ]
     }],
     "total": 50,
     "current_page": 1
@@ -1596,14 +1750,48 @@ Use `"all": true` instead of `team_id` to apply to all user's teams.
 }
 ```
 
+The `new_tags` array contains CLO-based tags with full category/object/extra_tags — same format used by the web frontend's `hydrateTagsForPhoto()`. Student names are masked to pseudonyms when safeguarding is active and viewer is not the team leader.
+
 ---
 
 ### GET /api/teams/photos/{photo} — Single Team Photo
 
 **Auth:** Required (team member)
 
-**Response:** `{ "success": true, "photo": { ... } }`
+**Response:** `{ "success": true, "photo": { ..., "new_tags": [...] } }`
+
+Same `new_tags` format as the index endpoint.
+
 **Errors:** `{ "success": false, "message": "not-a-team-photo" }` (404), `{ "success": false, "message": "not-a-member" }` (403)
+
+---
+
+### GET /api/teams/photos/member-stats?team_id=X — Per-Student Stats
+
+**Auth:** Required (team leader / `manage school team` permission)
+
+Returns stats for each team member (excluding leader). Applies safeguarding pseudonyms when enabled.
+
+**Response:**
+```json
+{
+  "success": true,
+  "members": [
+    {
+      "user_id": 42,
+      "name": "Student 1",
+      "username": null,
+      "total_photos": 15,
+      "pending": 3,
+      "approved": 12,
+      "litter_count": 87,
+      "last_active": "2026-02-28 14:30:00"
+    }
+  ]
+}
+```
+
+When safeguarding is off, `name` and `username` show real values.
 
 ---
 
@@ -1611,7 +1799,26 @@ Use `"all": true` instead of `team_id` to apply to all user's teams.
 
 **Auth:** Required (team leader / `manage school team` permission)
 
-Deletes existing tags, recreates with new data, regenerates summary + XP.
+Accepts the same CLO-based format as `POST /api/v3/tags`. Deletes existing tags, resets summary/xp/verified, calls `AddTagsToPhotoAction` to recreate.
+
+**Request:**
+```json
+{
+  "tags": [
+    {
+      "category_litter_object_id": 42,
+      "litter_object_type_id": 1,
+      "quantity": 3,
+      "picked_up": true,
+      "materials": [{ "id": 10, "quantity": 1 }],
+      "brands": [{ "id": 5, "quantity": 1 }],
+      "custom_tags": [{ "tag": "stained", "quantity": 1 }]
+    }
+  ]
+}
+```
+
+**Response:** `{ "success": true, "photo": { ..., "new_tags": [...] } }`
 
 ---
 
@@ -1977,7 +2184,295 @@ Not yet implemented.
 
 ## Admin Endpoints
 
-Admin endpoints under `/api/admin/` require the `admin` middleware. These are internal and not documented for mobile use. Includes: photo queue, verification, tag management, merchant approval.
+Admin endpoints under `/api/admin/` require the `admin` middleware (`hasRole('admin')` or `hasRole('superadmin')`). Internal use — not for mobile clients.
+
+### GET /api/admin/photos — Photo Review Queue
+
+**Auth:** Admin middleware (admin or superadmin)
+
+**Query params:**
+
+| Param | Type | Description |
+|-------|------|-------------|
+| `country_id` | int | Filter by country |
+| `user_id` | int | Filter by uploader |
+| `photo_id` | int | Find specific photo |
+| `date_from` | date | Created after (YYYY-MM-DD) |
+| `date_to` | date | Created before (YYYY-MM-DD) |
+| `per_page` | int | Results per page (default 20, max 50) |
+| `page` | int | Page number |
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "photos": {
+    "data": [
+      {
+        "id": 123,
+        "user_id": 42,
+        "filename": "photos/abc123.jpg",
+        "country_id": 1,
+        "state_id": 5,
+        "city_id": 10,
+        "verified": 1,
+        "summary": {"smoking": {"cigarette_butt": 3}},
+        "total_tags": 3,
+        "xp": 18,
+        "created_at": "2025-02-27T10:00:00.000000Z",
+        "user": {"id": 42, "name": "John"},
+        "country_relation": {"id": 1, "country": "United States", "shortcode": "us"},
+        "new_tags": [
+          {
+            "category_litter_object_id": 45,
+            "litter_object_type_id": null,
+            "category": "smoking",
+            "object": "cigarette_butt",
+            "quantity": 3,
+            "picked_up": false,
+            "extra_tags": []
+          }
+        ]
+      }
+    ],
+    "current_page": 1,
+    "per_page": 20,
+    "total": 342
+  },
+  "stats": {"total_pending": 342}
+}
+```
+
+**Query:** `is_public=true`, `verified < ADMIN_APPROVED`, `summary NOT NULL`, ordered by `created_at ASC`.
+
+---
+
+### POST /api/admin/verify — Approve Photo
+
+**Auth:** Admin middleware
+
+**Request:**
+```json
+{ "photoId": 123 }
+```
+
+**Response (200):**
+```json
+{ "success": true, "approved": true }
+```
+
+Returns `"approved": false` if already approved (idempotent). Returns 422 if `summary` is null.
+
+---
+
+### POST /api/admin/contentsupdatedelete — Edit Tags + Approve
+
+**Auth:** Admin middleware
+
+**Request:**
+```json
+{
+  "photoId": 123,
+  "tags": [
+    {
+      "category_litter_object_id": 45,
+      "quantity": 3,
+      "picked_up": true,
+      "materials": [{"id": 1, "quantity": 1}],
+      "brands": [{"id": 5, "quantity": 1}],
+      "custom_tags": ["tag_text"]
+    }
+  ]
+}
+```
+
+**Response (200):**
+```json
+{ "success": true, "approved": true, "photo": {...} }
+```
+
+Wrapped in `DB::transaction()`: deletes existing PhotoTags, creates new via `AddTagsToPhotoAction`, then approves.
+
+---
+
+### POST /api/admin/destroy — Delete Photo
+
+**Auth:** Admin middleware
+
+**Request:**
+```json
+{ "photoId": 123 }
+```
+
+**Response (200):**
+```json
+{ "success": true }
+```
+
+Calls `MetricsService::deletePhoto()` before soft delete (if `processed_at` set).
+
+---
+
+### POST /api/admin/reset-tags — Reset Tags
+
+**Auth:** Admin middleware
+
+**Request:**
+```json
+{ "photoId": 123 }
+```
+
+**Response (200):**
+```json
+{ "success": true }
+```
+
+Reverses metrics, deletes PhotoTags, resets `verified=0`, `summary=null`, `xp=0`. Skips already-approved photos.
+
+---
+
+### GET /api/admin/get-countries-with-photos — Countries with Pending
+
+**Auth:** Admin middleware
+
+**Response (200):** Array of `{id, country, total}` — countries with pending public photos.
+
+---
+
+### GET /api/admin/stats — Dashboard Stats
+
+**Auth:** Admin middleware
+**Cache:** 60 seconds (`admin:dashboard:stats`)
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "stats": {
+    "queue_total": 342,
+    "queue_today": 15,
+    "by_verification": {
+      "Unverified": 50,
+      "Verified": 292,
+      "Admin Approved": 0
+    },
+    "by_country": {
+      "United States": 128,
+      "Ireland": 42
+    },
+    "total_users": 5420,
+    "users_today": 3,
+    "flagged_usernames": 7
+  }
+}
+```
+
+`by_verification` uses `VerificationStatus::label()` enum labels. `by_country` shows top 20.
+
+---
+
+### GET /api/admin/users — List Users
+
+**Auth:** Admin middleware
+
+**Query params:**
+
+| Param | Type | Description |
+|-------|------|-------------|
+| `search` | string | Search name/username/email (LIKE) |
+| `sort_by` | string | `created_at` (default), `photos_count`, `xp` |
+| `sort_dir` | string | `asc` or `desc` (default) |
+| `trust_filter` | string | `all` (default), `trusted`, `untrusted` |
+| `flagged` | bool | Show only `username_flagged=true` users |
+| `per_page` | int | Results per page (default 25, max 100) |
+| `page` | int | Page number |
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "users": {
+    "data": [
+      {
+        "id": 1,
+        "name": "John Doe",
+        "username": "john-doe",
+        "email": "john@example.com",
+        "created_at": "2025-01-15",
+        "photos_count": 42,
+        "xp": 500,
+        "verification_required": true,
+        "pending_photos": 5,
+        "roles": ["user"],
+        "is_trusted": false,
+        "username_flagged": false
+      }
+    ],
+    "current_page": 1,
+    "per_page": 25,
+    "total": 250
+  }
+}
+```
+
+`pending_photos` = public photos where `verified < ADMIN_APPROVED`.
+
+---
+
+### POST /api/admin/users/{user}/trust — Toggle Trust
+
+**Auth:** Superadmin only (403 for admin/helper)
+
+**Request:**
+```json
+{ "trusted": true }
+```
+
+**Response (200):**
+```json
+{
+  "user_id": 42,
+  "trusted": true,
+  "verification_required": false
+}
+```
+
+Sets `verification_required = !trusted`. Does NOT retroactively approve existing photos.
+
+---
+
+### POST /api/admin/users/{user}/approve-all — Bulk Approve
+
+**Auth:** Superadmin only (403 for admin/helper)
+
+**Response (200):**
+```json
+{ "approved_count": 15 }
+```
+
+Approves all pending public photos for user (max 500). Same atomic WHERE + `TagsVerifiedByAdmin` event as `verify()`.
+
+---
+
+### PATCH /api/admin/users/{user}/username — Moderate Username
+
+**Auth:** Superadmin only (403 for admin/helper)
+
+**Request:**
+```json
+{ "username": "new-username" }
+```
+
+**Response (200):**
+```json
+{
+  "user_id": 42,
+  "username": "new-username",
+  "previous_username": "old-flagged-name"
+}
+```
+
+Validation: 3–30 chars, alphanumeric + hyphens, unique. Clears `username_flagged`.
 
 ---
 
@@ -1987,17 +2482,34 @@ Bbox endpoints under `/api/bbox/` require the `can_bbox` middleware. Used for bo
 
 ---
 
-## Legacy Mobile Endpoints (v2)
+## Mobile Endpoints (v2)
 
-These remain for backward compatibility with older app versions:
+Active endpoints for the mobile app:
 
-### GET /api/v2/photos/get-untagged-uploads — Untagged Photos (Deprecated)
+### GET /api/v2/photos/get-untagged-uploads — Untagged Photos
 
 **Auth:** Required (Sanctum)
 
-**Response:** `{ "count": 5, "photos": [{ "id": 1, "filename": "...", "remaining": 1, "platform": "web" }] }`
+**Query params (optional):**
 
-Returns first 100 untagged photos (`verification = 0`). `photos` is `null` if count is 0.
+| Param | Type | Description |
+|-------|------|-------------|
+| `platform` | string | Filter by upload source: `web` or `mobile`. Omit for all. |
+
+**Response (200):**
+```json
+{
+  "count": 5,
+  "photos": [
+    { "id": 1, "filename": "https://s3.../photo.jpg", "remaining": 1, "platform": "web" },
+    { "id": 2, "filename": "https://s3.../photo2.jpg", "remaining": 0, "platform": "mobile" }
+  ]
+}
+```
+
+Paginated (100 per page). Returns untagged photos (`verified = 0`) for the authenticated user. `count` reflects the filtered total. `filename` is the full S3 URL.
+
+**Mobile web photo support:** The mobile app can use `?platform=web` to list photos uploaded via the web SPA that still need tagging. Tag them with `POST /api/v3/tags` and delete them with `DELETE /api/photos/delete` — both work on any user-owned photo regardless of platform.
 
 ---
 

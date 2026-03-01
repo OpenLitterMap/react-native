@@ -1,6 +1,7 @@
 import axios from 'axios';
 import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
 import {URL} from '../actions/types';
+import {logout} from './auth_reducer';
 
 const initialState = {
     countries: [],
@@ -86,7 +87,8 @@ const locationsSlice = createSlice({
             })
             .addCase(fetchLocationChildren.rejected, (state, action) => {
                 state.childrenStatus = 'failed';
-            });
+            })
+            .addCase(logout, () => initialState);
     }
 });
 

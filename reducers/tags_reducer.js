@@ -3,6 +3,7 @@ import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {URL} from '../actions/types';
 import {formatKey} from '../utils/formatKey';
+import {logout} from './auth_reducer';
 
 const CACHE_KEY = 'tags_cache_v4';
 const CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
@@ -13,6 +14,8 @@ const initialState = {
     entriesByCloId: {}, // { cloId: entry } for fast lookup (base entries only)
     typeEntriesByKey: {}, // { 'cloId-typeId': entry } for fast type entry lookup
     typesById: {}, // { id: { id, key, name } }
+    materialsById: {}, // { id: { id, key, name } }
+    brandsById: {}, // { id: { id, key, name } }
     loading: false,
     lastFetchedAt: null
 };
@@ -161,6 +164,30 @@ export const fetchAllTags = createAsyncThunk(
                 };
             }
 
+            // Build materialsById from data.materials
+            const materialsById = {};
+            if (data.materials) {
+                for (const m of data.materials) {
+                    materialsById[m.id] = {
+                        id: m.id,
+                        key: m.key,
+                        name: formatKey(m.key)
+                    };
+                }
+            }
+
+            // Build brandsById from data.brands
+            const brandsById = {};
+            if (data.brands) {
+                for (const b of data.brands) {
+                    brandsById[b.id] = {
+                        id: b.id,
+                        key: b.key,
+                        name: formatKey(b.key)
+                    };
+                }
+            }
+
             if (__DEV__) {
                 const bottleMatches = objectEntries.filter(e =>
                     e.searchText.includes('bottle')
@@ -182,16 +209,14 @@ export const fetchAllTags = createAsyncThunk(
                 );
             }
 
-            // Clear legacy cache keys
-            await AsyncStorage.removeItem('tags_cache').catch(() => {});
-            await AsyncStorage.removeItem('tags_cache_v2').catch(() => {});
-
             const result = {
                 objectEntries,
                 categoriesById,
                 entriesByCloId,
                 typeEntriesByKey,
                 typesById,
+                materialsById,
+                brandsById,
                 lastFetchedAt: Date.now()
             };
 
@@ -222,12 +247,15 @@ const tagsSlice = createSlice({
                 state.entriesByCloId = action.payload.entriesByCloId;
                 state.typeEntriesByKey = action.payload.typeEntriesByKey || {};
                 state.typesById = action.payload.typesById || {};
+                state.materialsById = action.payload.materialsById || {};
+                state.brandsById = action.payload.brandsById || {};
                 state.lastFetchedAt = action.payload.lastFetchedAt;
                 state.loading = false;
             })
             .addCase(fetchAllTags.rejected, state => {
                 state.loading = false;
-            });
+            })
+            .addCase(logout, () => initialState);
     }
 });
 

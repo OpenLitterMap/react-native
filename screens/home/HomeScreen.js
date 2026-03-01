@@ -6,9 +6,9 @@ import {
     Dimensions,
     Modal,
     Platform,
+    Pressable,
     StyleSheet,
     Text,
-    TouchableWithoutFeedback,
     View
 } from 'react-native';
 import {useDispatch, useSelector} from 'react-redux';
@@ -24,7 +24,6 @@ import {
 import {
     cancelUploadImages,
     deleteImage,
-    deleteWebImage,
     deselectAllImages,
     getUntaggedImages,
     postTagsToPhoto,
@@ -33,11 +32,11 @@ import {
     setTotalToUpload,
     setUploadAbortReason,
     setUploadPhase,
-    uploadImage,
-    uploadTagsToWebImage
+    uploadImage
 } from '../../reducers/images_reducer';
 import {getPhotosFromCameraroll} from '../../reducers/gallery_reducer';
 import {fetchAllTags} from '../../reducers/tags_reducer';
+import {deleteUploadPhoto} from '../../reducers/my_uploads_reducer';
 
 import Icon from 'react-native-vector-icons/Ionicons';
 import {Body, Colors, Header, Title} from '../components';
@@ -129,7 +128,7 @@ const HomeScreen = ({navigation}) => {
 
         const checkPermissionsAndFetchData = async () => {
             if (!user?.enable_admin_tagging && token) {
-                await dispatch(getUntaggedImages(token));
+                await dispatch(getUntaggedImages({token}));
             }
 
             // Pre-fetch tags for the v5 tagging UI
@@ -320,22 +319,23 @@ const HomeScreen = ({navigation}) => {
      * else
      * delete images from state based on id
      */
-    const deleteImages = () => {
-        images.map(async image => {
-            if (image.selected) {
-                if (image.type === 'web' && image.uploaded) {
-                    await dispatch(
-                        deleteWebImage({
-                            token,
-                            photoId: image.id,
-                            enableAdminTagging: user.enable_admin_tagging
-                        })
-                    );
-                } else {
-                    dispatch(deleteImage(image.id));
-                }
+    const deleteImages = async () => {
+        const selectedImages = images.filter(img => img.selected);
+
+        for (const image of selectedImages) {
+            if (image.type === 'web') {
+                const result = await dispatch(
+                    deleteUploadPhoto({
+                        token,
+                        photoId: image.id
+                    })
+                );
+
+                if (result.meta?.requestStatus === 'rejected') continue;
             }
-        });
+
+            dispatch(deleteImage(image.id));
+        }
 
         setIsSelectingImagesToDelete(false);
     };
@@ -349,21 +349,32 @@ const HomeScreen = ({navigation}) => {
             return null;
         }
 
-        return img.tagsV5.map(tag => ({
+        const v5Tags = img.tagsV5.map(tag => ({
             category_litter_object_id: tag.cloId,
             litter_object_type_id: tag.typeId || null,
             quantity: tag.quantity,
             picked_up: img.picked_up ? true : false,
-            materials: [],
-            brands: [],
-            custom_tags: []
+            materials: tag.materials || [],
+            brands: (tag.brands || []).map(b => ({
+                id: b.id,
+                quantity: b.quantity || 1
+            })),
+            custom_tags: tag.customTags || []
         }));
+
+        // Attach image-level custom tags to the first tag entry (deduplicated)
+        if (v5Tags.length > 0 && img.customTags && img.customTags.length > 0) {
+            const existing = new Set(v5Tags[0].custom_tags);
+            const newTags = img.customTags.filter(ct => !existing.has(ct));
+            v5Tags[0].custom_tags = [...v5Tags[0].custom_tags, ...newTags];
+        }
+
+        return v5Tags;
     };
 
     const getImageDataForUpload = img => {
         const isGeoTagged = isGeotagged(img);
         const photoHasTags = isTagged(img);
-        const hasV5Tags = img.tagsV5 && img.tagsV5.length > 0;
 
         // Upload any new image that is tagged or not
         if (img.type === 'gallery' && isGeoTagged) {
@@ -381,27 +392,13 @@ const HomeScreen = ({navigation}) => {
             imageData.append('picked_up', img.picked_up ? 1 : 0);
             imageData.append('model', model);
 
-            // V4 tags go in FormData; V5 tags are posted separately
-            if (!hasV5Tags && photoHasTags) {
-                if (img.tags && Object.keys(img.tags).length > 0) {
-                    imageData.append('tags', JSON.stringify(img.tags));
-                }
-
-                if (
-                    img.hasOwnProperty('customTags') &&
-                    img.customTags.length > 0
-                ) {
-                    imageData.append(
-                        'custom_tags',
-                        JSON.stringify(img.customTags)
-                    );
-                }
-            }
-
+            // Tags are always posted separately via POST /api/v3/tags
             return [imageData, photoHasTags, isGeoTagged];
         } else if (img.type === 'web') {
             return [null, photoHasTags, true];
         }
+
+        return [null, false, false];
     };
 
     /**
@@ -461,10 +458,10 @@ const HomeScreen = ({navigation}) => {
 
                 dispatch(setCurrentUploadIndex(i));
 
-                const [imageData, photoHasTags, isGeoTagged] =
+                const [imageData, , isGeoTagged] =
                     getImageDataForUpload(img);
 
-                const hasV5Tags = img.tagsV5 && img.tagsV5.length > 0;
+                const v5Payload = buildV5TagsPayload(img);
 
                 if (img.type === 'gallery' && isGeoTagged) {
                     dispatch(setUploadPhase('uploading'));
@@ -474,45 +471,45 @@ const HomeScreen = ({navigation}) => {
                             token,
                             imageData,
                             imageId: img.id,
-                            enableAdminTagging: user.enable_admin_tagging,
-                            photoHasTags: hasV5Tags ? false : photoHasTags
+                            imageUri: img.uri,
+                            enableAdminTagging: user?.enable_admin_tagging,
+                            photoHasTags: false // tags always posted separately
                         })
                     );
 
-                    // If upload succeeded and image has v5 tags, post them
-                    if (hasV5Tags && result.payload?.photo_id) {
+                    if (
+                        v5Payload &&
+                        v5Payload.length > 0 &&
+                        result.payload?.photo_id
+                    ) {
                         dispatch(setUploadPhase('tagging'));
 
-                        const v5Payload = buildV5TagsPayload(img);
-                        if (v5Payload && v5Payload.length > 0) {
-                            await dispatch(
-                                postTagsToPhoto({
-                                    token,
-                                    photoId: result.payload.photo_id,
-                                    tags: v5Payload,
-                                    pickedUp: img.picked_up
-                                })
-                            );
-                        }
-                    }
-                } else if (img.type === 'web' && hasV5Tags) {
-                    dispatch(setUploadPhase('tagging'));
-
-                    const v5Payload = buildV5TagsPayload(img);
-                    if (v5Payload && v5Payload.length > 0) {
                         await dispatch(
                             postTagsToPhoto({
                                 token,
-                                photoId: img.id,
+                                photoId: result.payload.photo_id,
                                 tags: v5Payload,
                                 pickedUp: img.picked_up
                             })
                         );
+                    } else if (result.payload?.photo_id) {
+                        dispatch(deleteImage(result.payload.photo_id));
                     }
-                } else if (img.type === 'web' && photoHasTags) {
+                } else if (
+                    img.type === 'web' &&
+                    v5Payload &&
+                    v5Payload.length > 0
+                ) {
                     dispatch(setUploadPhase('tagging'));
 
-                    await dispatch(uploadTagsToWebImage({token, img}));
+                    await dispatch(
+                        postTagsToPhoto({
+                            token,
+                            photoId: img.id,
+                            tags: v5Payload,
+                            pickedUp: img.picked_up
+                        })
+                    );
                 }
             }
         }
@@ -583,7 +580,12 @@ const HomeScreen = ({navigation}) => {
         return items.map((text, i) => (
             <Text
                 key={i}
-                style={{fontSize: SCREEN_HEIGHT * 0.016, marginBottom: 2}}>
+                style={{
+                    fontSize: 12,
+                    fontFamily: 'Poppins-Regular',
+                    color: '#92400e',
+                    marginBottom: 2
+                }}>
                 {text}
             </Text>
         ));
@@ -621,54 +623,72 @@ const HomeScreen = ({navigation}) => {
                         </View>
                     )}
 
-                    {/* Thank You + Messages */}
+                    {/* Upload result */}
                     {showThankYouMessages && (
                         <View style={styles.modal}>
-                            <View style={styles.thankYouModalInner}>
-                                <Text
-                                    style={{
-                                        fontSize: SCREEN_HEIGHT * 0.03,
-                                        marginBottom: 5
-                                    }}>
-                                    {t('Thank you!!!')}
-                                </Text>
-
-                                {/* Upload success */}
-                                {uploaded > 0 && (
-                                    <Text
-                                        style={{
-                                            fontSize: SCREEN_HEIGHT * 0.02,
-                                            marginBottom: 5
-                                        }}>
-                                        {t(
-                                            'You have uploaded {{count}} photos',
-                                            {count: uploaded}
-                                        )}
-                                    </Text>
+                            <View style={styles.resultCard}>
+                                {/* Success state */}
+                                {totalFailed === 0 && (
+                                    <>
+                                        <Icon
+                                            name="checkmark-circle"
+                                            size={48}
+                                            color={Colors.accent}
+                                            style={{marginBottom: 8}}
+                                        />
+                                        <Text style={styles.resultTitle}>
+                                            {t('Thank you!!!')}
+                                        </Text>
+                                    </>
                                 )}
 
-                                {/* Tagging success */}
-                                {tagged > 0 && (
-                                    <Text
-                                        style={{
-                                            fontSize: SCREEN_HEIGHT * 0.02,
-                                            marginBottom: 5
-                                        }}>
-                                        {t('You have tagged {{count}} photos', {
-                                            count: tagged
-                                        })}
-                                    </Text>
+                                {/* Partial failure state */}
+                                {totalFailed > 0 && (
+                                    <>
+                                        <Icon
+                                            name="alert-circle"
+                                            size={48}
+                                            color="#f59e0b"
+                                            style={{marginBottom: 8}}
+                                        />
+                                        <Text style={styles.resultTitle}>
+                                            Upload incomplete
+                                        </Text>
+                                    </>
                                 )}
+
+                                {/* Stats row */}
+                                <View style={styles.resultStats}>
+                                    {uploaded > 0 && (
+                                        <View style={styles.resultStatItem}>
+                                            <Text style={styles.resultStatNumber}>
+                                                {uploaded}
+                                            </Text>
+                                            <Text style={styles.resultStatLabel}>
+                                                {uploaded === 1
+                                                    ? 'photo uploaded'
+                                                    : 'photos uploaded'}
+                                            </Text>
+                                        </View>
+                                    )}
+                                    {tagged > 0 && (
+                                        <View style={styles.resultStatItem}>
+                                            <Text style={styles.resultStatNumber}>
+                                                {tagged}
+                                            </Text>
+                                            <Text style={styles.resultStatLabel}>
+                                                {tagged === 1
+                                                    ? 'photo tagged'
+                                                    : 'photos tagged'}
+                                            </Text>
+                                        </View>
+                                    )}
+                                </View>
 
                                 {/* Failure details */}
                                 {totalFailed > 0 && (
-                                    <View style={{marginBottom: 5}}>
-                                        <Text
-                                            style={{
-                                                fontSize: SCREEN_HEIGHT * 0.02,
-                                                fontWeight: 'bold',
-                                                marginBottom: 3
-                                            }}>
+                                    <View style={styles.resultFailure}>
+                                        <Text style={styles.resultFailureTitle}>
                                             {totalFailed}{' '}
                                             {totalFailed === 1
                                                 ? 'item'
@@ -679,38 +699,35 @@ const HomeScreen = ({navigation}) => {
                                     </View>
                                 )}
 
-                                <View style={{flexDirection: 'row', gap: 10}}>
-                                    {/* Retry button — only when there are failures */}
+                                {/* Buttons */}
+                                <View style={styles.resultButtons}>
                                     {totalFailed > 0 && (
-                                        <TouchableWithoutFeedback
+                                        <Pressable
+                                            style={styles.resultActionButton}
                                             onPress={retryFailedUploads}>
-                                            <View
-                                                style={[
-                                                    styles.thankYouButton,
-                                                    {
-                                                        backgroundColor:
-                                                            Colors.accent
-                                                    }
-                                                ]}>
-                                                <Text
-                                                    style={
-                                                        styles.normalWhiteText
-                                                    }>
-                                                    Retry
-                                                </Text>
-                                            </View>
-                                        </TouchableWithoutFeedback>
-                                    )}
-
-                                    <TouchableWithoutFeedback
-                                        onPress={hideThankYouMessages}>
-                                        <View style={styles.thankYouButton}>
-                                            <Text
-                                                style={styles.normalWhiteText}>
-                                                {t('Close')}
+                                            <Text style={styles.resultActionText}>
+                                                Retry
                                             </Text>
-                                        </View>
-                                    </TouchableWithoutFeedback>
+                                        </Pressable>
+                                    )}
+                                    <Pressable
+                                        style={[
+                                            styles.resultActionButton,
+                                            totalFailed === 0 &&
+                                                styles.resultCloseButtonSuccess
+                                        ]}
+                                        onPress={hideThankYouMessages}>
+                                        <Text
+                                            style={[
+                                                styles.resultActionText,
+                                                totalFailed === 0 &&
+                                                    styles.resultCloseTextSuccess
+                                            ]}>
+                                            {totalFailed === 0
+                                                ? 'Done'
+                                                : t('Close')}
+                                        </Text>
+                                    </Pressable>
                                 </View>
                             </View>
                         </View>
@@ -780,30 +797,82 @@ const styles = StyleSheet.create({
         marginLeft: 2,
         width: SCREEN_WIDTH * 0.99
     },
-    thankYouButton: {
-        backgroundColor: 'green',
-        borderRadius: 3,
+    resultCard: {
+        backgroundColor: '#ffffff',
+        borderRadius: 16,
+        width: SCREEN_WIDTH * 0.8,
+        paddingVertical: 28,
+        paddingHorizontal: 24,
+        alignItems: 'center'
+    },
+    resultTitle: {
+        fontSize: 20,
+        fontFamily: 'Poppins-SemiBold',
+        fontWeight: '600',
+        color: '#1a1a1a',
+        marginBottom: 16
+    },
+    resultStats: {
+        flexDirection: 'row',
+        gap: 24,
+        marginBottom: 16
+    },
+    resultStatItem: {
+        alignItems: 'center'
+    },
+    resultStatNumber: {
+        fontSize: 28,
+        fontFamily: 'Poppins-SemiBold',
+        fontWeight: '600',
+        color: Colors.accent
+    },
+    resultStatLabel: {
+        fontSize: 13,
+        fontFamily: 'Poppins-Regular',
+        fontWeight: '400',
+        color: '#888888',
+        marginTop: 2
+    },
+    resultFailure: {
+        backgroundColor: '#fef3c7',
+        borderRadius: 8,
+        paddingHorizontal: 16,
+        paddingVertical: 10,
+        width: '100%',
+        marginBottom: 16
+    },
+    resultFailureTitle: {
+        fontSize: 14,
+        fontFamily: 'Poppins-SemiBold',
+        fontWeight: '600',
+        color: '#92400e',
+        marginBottom: 4
+    },
+    resultButtons: {
+        flexDirection: 'row',
+        gap: 10,
+        width: '100%'
+    },
+    resultActionButton: {
         flex: 1,
+        backgroundColor: '#f0f0f0',
+        borderRadius: 10,
+        paddingVertical: 14,
         alignItems: 'center',
         justifyContent: 'center',
-        padding: 10
+        minHeight: 48
     },
-    thankYouModalInner: {
-        backgroundColor: 'rgba(255,255,255,1)',
-        borderRadius: 6,
-        justifyContent: 'center',
-        alignItems: 'center',
-        width: SCREEN_WIDTH * 0.75,
-        paddingTop: 16,
-        paddingBottom: 16,
-        paddingLeft: 16,
-        paddingRight: 16
+    resultActionText: {
+        fontSize: 16,
+        fontFamily: 'Poppins-SemiBold',
+        fontWeight: '600',
+        color: '#333333'
     },
-    uploadCount: {
-        color: 'white',
-        fontSize: SCREEN_HEIGHT * 0.02,
-        fontWeight: 'bold',
-        marginBottom: 20
+    resultCloseButtonSuccess: {
+        backgroundColor: Colors.accent
+    },
+    resultCloseTextSuccess: {
+        color: '#ffffff'
     },
     uploadText: {
         color: 'white',

@@ -111,7 +111,7 @@ const LeaderboardsTab = () => {
                                 color="accent"
                                 family="semiBold"
                                 style={styles.xp}>
-                                {item.xp} XP
+                                {(item.xp || 0).toLocaleString()} XP
                             </Body>
                         </View>
                     )}

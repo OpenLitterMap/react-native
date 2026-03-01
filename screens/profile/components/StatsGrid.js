@@ -28,6 +28,8 @@ const StatCell = ({
         startValue !== undefined &&
         startValue !== value;
 
+    const hasValue = value != null && value > 0;
+
     return (
         <View
             style={styles.cell}
@@ -36,7 +38,9 @@ const StatCell = ({
             accessibilityRole="text"
         >
             <Text style={[styles.number, { color }]}>
-                {shouldAnimate ? (
+                {!hasValue ? (
+                    '\u2013'
+                ) : shouldAnimate ? (
                     <CountUp
                         isCounting
                         start={startValue}

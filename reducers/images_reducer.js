@@ -2,6 +2,19 @@ import axios from 'axios';
 import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
 import * as Sentry from '@sentry/react-native';
 import {URL} from '../actions/types';
+import {logout} from './auth_reducer';
+
+/** Find a tag in tagsV5 by (cloId, typeId). */
+const findTagV5 = (tagsV5, cloId, typeId) =>
+    tagsV5.find(
+        t => t.cloId === cloId && (t.typeId || null) === (typeId || null)
+    );
+
+/** Filter out a tag from tagsV5 by (cloId, typeId). */
+const filterOutTagV5 = (tagsV5, cloId, typeId) =>
+    tagsV5.filter(
+        t => !(t.cloId === cloId && (t.typeId || null) === (typeId || null))
+    );
 
 /**
  * Classify an axios error into a structured { errorType, userMessage } object.
@@ -88,60 +101,33 @@ const initialState = {
 
 /**
  * API Requests
- * - deleteWebImage
  * - getUntaggedImages
  * - uploadImage
- * - uploadTagsToWebImage
  * - postTagsToPhoto
+ * - editTagsOnPhoto
  */
-
-export const deleteWebImage = createAsyncThunk(
-    'images/deleteWebImage',
-    async ({token, photoId, enableAdminTagging}, {rejectWithValue}) => {
-        try {
-            const response = await axios({
-                url: `${URL}/api/photos/delete`,
-                method: 'DELETE',
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                params: {photoId}
-            });
-
-            if (response.data.success) {
-                return photoId;
-            } else {
-                return rejectWithValue(
-                    'Failed to delete image, no success flag'
-                );
-            }
-        } catch (error) {
-            console.error('delete web image.error', error);
-            return rejectWithValue(
-                error.response?.data?.message ||
-                    'An error occurred during deletion'
-            );
-        }
-    }
-);
 
 export const getUntaggedImages = createAsyncThunk(
     'images/getUntaggedImages',
-    async (token, {rejectWithValue}) => {
+    async ({token, platform}, {rejectWithValue}) => {
         try {
+            const params = {};
+            if (platform) {
+                params.platform = platform;
+            }
+
             const response = await axios({
                 url: `${URL}/api/v2/photos/get-untagged-uploads`,
                 method: 'GET',
                 headers: {
                     Authorization: `Bearer ${token}`
-                }
+                },
+                params
             });
 
             if (response?.data?.photos?.length > 0) {
                 return {
-                    images: response.data.photos,
-                    type: 'WEB'
+                    images: response.data.photos
                 };
             } else {
                 return rejectWithValue('No photos found');
@@ -157,7 +143,7 @@ export const getUntaggedImages = createAsyncThunk(
 export const uploadImage = createAsyncThunk(
     'images/uploadImage',
     async (
-        {token, imageData, imageId, enableAdminTagging, photoHasTags},
+        {token, imageData, imageId, imageUri, enableAdminTagging, photoHasTags},
         {rejectWithValue}
     ) => {
         try {
@@ -174,6 +160,7 @@ export const uploadImage = createAsyncThunk(
             if (response.data?.success) {
                 return {
                     imageId,
+                    imageUri,
                     photo_id: response.data.photo_id,
                     enableAdminTagging,
                     photoHasTags
@@ -186,38 +173,6 @@ export const uploadImage = createAsyncThunk(
             }
         } catch (error) {
             return rejectWithValue(classifyError(error, 'image_upload'));
-        }
-    }
-);
-
-export const uploadTagsToWebImage = createAsyncThunk(
-    'images/uploadTagsToWebImage',
-    async ({token, img}, {rejectWithValue}) => {
-        try {
-            const response = await axios({
-                url: `${URL}/api/v2/add-tags-to-uploaded-image`,
-                method: 'POST',
-                headers: {
-                    Authorization: `Bearer ${token}`
-                },
-                data: {
-                    photo_id: img.id,
-                    tags: img.tags,
-                    custom_tags: img.customTags,
-                    picked_up: img.picked_up ? 1 : 0
-                }
-            });
-
-            if (response.data.success) {
-                return img.id;
-            } else {
-                return rejectWithValue({
-                    errorType: 'unknown',
-                    userMessage: 'Failed to add tags to the image'
-                });
-            }
-        } catch (error) {
-            return rejectWithValue(classifyError(error, 'upload_tags_v2'));
         }
     }
 );
@@ -247,7 +202,8 @@ export const postTagsToPhoto = createAsyncThunk(
                 }
             );
 
-            if (response.data?.success) {
+            // Accept any 2xx or explicit success flag
+            if (response.status >= 200 && response.status < 300) {
                 return {photoId};
             } else {
                 return rejectWithValue({
@@ -257,6 +213,44 @@ export const postTagsToPhoto = createAsyncThunk(
             }
         } catch (error) {
             return rejectWithValue(classifyError(error, 'post_tags_v3'));
+        }
+    }
+);
+
+/**
+ * Replace ALL tags on a photo using PUT /api/v3/tags (full replace, not merge).
+ * The backend deletes existing tags, resets XP, then adds the new set atomically.
+ * Send the COMPLETE set of tags — not just changes.
+ */
+export const editTagsOnPhoto = createAsyncThunk(
+    'images/editTagsOnPhoto',
+    async ({token, photoId, tags, pickedUp}, {rejectWithValue}) => {
+        try {
+            const response = await axios.put(
+                `${URL}/api/v3/tags`,
+                {
+                    photo_id: photoId,
+                    tags,
+                    picked_up: pickedUp ? 1 : 0
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+
+            if (response.status >= 200 && response.status < 300) {
+                return {photoId, photoTags: response.data.photoTags};
+            } else {
+                return rejectWithValue({
+                    errorType: 'unknown',
+                    userMessage: 'Failed to edit tags'
+                });
+            }
+        } catch (error) {
+            return rejectWithValue(classifyError(error, 'edit_tags_v3'));
         }
     }
 );
@@ -272,52 +266,40 @@ const imagesSlice = createSlice({
          */
         addImages(state, action) {
             const images = action.payload.images;
+            if (!images) return;
 
-            images &&
-                images.map(image => {
-                    let index = -1;
+            const existingIds = new Set(state.imagesArray.map(img => img.id));
+            const existingUris = new Set(
+                state.imagesArray.filter(img => img.uri).map(img => img.uri)
+            );
 
-                    if (image.platform === 'mobile') {
-                        // image type can be gallery or camera
+            images.forEach(image => {
+                const isDuplicate =
+                    image.platform === 'mobile' && !image.uploaded
+                        ? existingUris.has(image.uri)
+                        : existingIds.has(image.id);
 
-                        if (image.uploaded) {
-                            index = state.imagesArray.findIndex(
-                                img => img.id === image.id
-                            );
-                        } else {
-                            index = state.imagesArray.findIndex(
-                                img => img.uri === image.uri
-                            );
-                        }
-                    } else {
-                        // Web images: check by server id
-                        index = state.imagesArray.findIndex(
-                            img => img.id === image.id
-                        );
-                    }
+                if (!isDuplicate) {
+                    state.imagesArray.push({
+                        id: image.id,
+                        date: image.date ?? null,
+                        lat: image.lat ?? null,
+                        lon: image.lon ?? null,
+                        filename: image.filename,
+                        uri: image.uri,
+                        type: image.type, // gallery, camera, or web
+                        platform: image.platform, // web or mobile
 
-                    // If index is -1, it was not found
-                    if (index === -1) {
-                        state.imagesArray.push({
-                            id: image.id,
-                            date: image.date ?? null,
-                            lat: image.lat ?? null,
-                            lon: image.lon ?? null,
-                            filename: image.filename,
-                            uri: image.uri,
-                            type: image.type, // gallery, camera, or web
-                            platform: image.platform, // web or mobile
+                        tags: image.tags,
+                        tagsV5: [],
+                        customTags: image.customTags,
+                        picked_up: action.payload.picked_up,
 
-                            tags: image.tags,
-                            tagsV5: [],
-                            customTags: image.customTags,
-                            picked_up: action.payload.picked_up,
-
-                            selected: false,
-                            uploaded: image.uploaded
-                        });
-                    }
-                });
+                        selected: false,
+                        uploaded: image.uploaded
+                    });
+                }
+            });
         },
 
         /**
@@ -343,14 +325,17 @@ const imagesSlice = createSlice({
                 image.tagsV5 = [];
             }
 
-            const existing = image.tagsV5.find(
-                t =>
-                    t.cloId === cloId && (t.typeId || null) === (typeId || null)
-            );
+            const existing = findTagV5(image.tagsV5, cloId, typeId);
             if (existing) {
                 existing.quantity += 1;
             } else {
-                const tag = {cloId, quantity: 1};
+                const tag = {
+                    cloId,
+                    quantity: 1,
+                    materials: [],
+                    brands: [],
+                    customTags: []
+                };
                 if (typeId) {
                     tag.typeId = typeId;
                 }
@@ -369,13 +354,7 @@ const imagesSlice = createSlice({
                 return;
             }
 
-            image.tagsV5 = image.tagsV5.filter(
-                t =>
-                    !(
-                        t.cloId === cloId &&
-                        (t.typeId || null) === (typeId || null)
-                    )
-            );
+            image.tagsV5 = filterOutTagV5(image.tagsV5, cloId, typeId);
         },
 
         /**
@@ -391,19 +370,9 @@ const imagesSlice = createSlice({
             }
 
             if (quantity <= 0) {
-                image.tagsV5 = image.tagsV5.filter(
-                    t =>
-                        !(
-                            t.cloId === cloId &&
-                            (t.typeId || null) === (typeId || null)
-                        )
-                );
+                image.tagsV5 = filterOutTagV5(image.tagsV5, cloId, typeId);
             } else {
-                const tag = image.tagsV5.find(
-                    t =>
-                        t.cloId === cloId &&
-                        (t.typeId || null) === (typeId || null)
-                );
+                const tag = findTagV5(image.tagsV5, cloId, typeId);
                 if (tag) {
                     tag.quantity = quantity;
                 }
@@ -421,6 +390,125 @@ const imagesSlice = createSlice({
             }
         },
 
+        /**
+         * Toggle a material on/off for a specific tag.
+         * payload = { imageIndex, cloId, typeId?, materialId }
+         */
+        toggleMaterialOnTag(state, action) {
+            const {imageIndex, cloId, typeId, materialId} = action.payload;
+            const image = state.imagesArray[imageIndex];
+            if (!image?.tagsV5) return;
+
+            const tag = findTagV5(image.tagsV5, cloId, typeId);
+            if (!tag) return;
+
+            if (!tag.materials) tag.materials = [];
+            const idx = tag.materials.indexOf(materialId);
+            if (idx !== -1) {
+                tag.materials.splice(idx, 1);
+            } else {
+                tag.materials.push(materialId);
+            }
+        },
+
+        /**
+         * Add a brand to a specific tag.
+         * payload = { imageIndex, cloId, typeId?, brandId }
+         */
+        addBrandToTag(state, action) {
+            const {imageIndex, cloId, typeId, brandId} = action.payload;
+            const image = state.imagesArray[imageIndex];
+            if (!image?.tagsV5) return;
+
+            const tag = findTagV5(image.tagsV5, cloId, typeId);
+            if (!tag) return;
+
+            if (!tag.brands) tag.brands = [];
+            if (!tag.brands.some(b => b.id === brandId)) {
+                tag.brands.push({id: brandId, quantity: 1});
+            }
+        },
+
+        /**
+         * Remove a brand from a specific tag.
+         * payload = { imageIndex, cloId, typeId?, brandId }
+         */
+        removeBrandFromTag(state, action) {
+            const {imageIndex, cloId, typeId, brandId} = action.payload;
+            const image = state.imagesArray[imageIndex];
+            if (!image?.tagsV5) return;
+
+            const tag = findTagV5(image.tagsV5, cloId, typeId);
+            if (!tag?.brands) return;
+
+            tag.brands = tag.brands.filter(b => b.id !== brandId);
+        },
+
+        /**
+         * Add a custom tag string to a specific tag.
+         * payload = { imageIndex, cloId, typeId?, text }
+         */
+        addCustomTagToTag(state, action) {
+            const {imageIndex, cloId, typeId, text} = action.payload;
+            const image = state.imagesArray[imageIndex];
+            if (!image?.tagsV5 || !text?.trim()) return;
+
+            const tag = findTagV5(image.tagsV5, cloId, typeId);
+            if (!tag) return;
+
+            if (!tag.customTags) tag.customTags = [];
+            const trimmed = text.trim();
+            if (!tag.customTags.includes(trimmed)) {
+                tag.customTags.push(trimmed);
+            }
+        },
+
+        /**
+         * Remove a custom tag string from a specific tag.
+         * payload = { imageIndex, cloId, typeId?, text }
+         */
+        removeCustomTagFromTag(state, action) {
+            const {imageIndex, cloId, typeId, text} = action.payload;
+            const image = state.imagesArray[imageIndex];
+            if (!image?.tagsV5) return;
+
+            const tag = findTagV5(image.tagsV5, cloId, typeId);
+            if (!tag?.customTags) return;
+
+            tag.customTags = tag.customTags.filter(t => t !== text);
+        },
+
+        /**
+         * Add an image-level custom tag string.
+         * payload = { imageIndex, text }
+         */
+        addImageCustomTag(state, action) {
+            const {imageIndex, text} = action.payload;
+            const image = state.imagesArray[imageIndex];
+            if (!image || !text?.trim()) return;
+
+            if (!image.customTags) {
+                image.customTags = [];
+            }
+
+            const trimmed = text.trim();
+            if (!image.customTags.includes(trimmed)) {
+                image.customTags.push(trimmed);
+            }
+        },
+
+        /**
+         * Remove an image-level custom tag string.
+         * payload = { imageIndex, text }
+         */
+        removeImageCustomTag(state, action) {
+            const {imageIndex, text} = action.payload;
+            const image = state.imagesArray[imageIndex];
+            if (!image?.customTags) return;
+
+            image.customTags = image.customTags.filter(t => t !== text);
+        },
+
         cancelUploadImages(state) {
             state.isUploading = false;
         },
@@ -429,7 +517,7 @@ const imagesSlice = createSlice({
          * Changes litter picked up status of all images
          */
         changeLitterStatus(state, action) {
-            state.imagesArray.map(img => (img.picked_up = action.payload));
+            state.imagesArray.forEach(img => (img.picked_up = action.payload));
         },
 
         /**
@@ -474,7 +562,7 @@ const imagesSlice = createSlice({
          * Change selected value on every image to false
          */
         deselectAllImages(state) {
-            state.imagesArray.map(image => {
+            state.imagesArray.forEach(image => {
                 image.selected = false;
             });
         },
@@ -558,65 +646,42 @@ const imagesSlice = createSlice({
     extraReducers: builder => {
         builder
 
-            .addCase(deleteWebImage.pending, state => {
-                // nothing yet
-            })
-            .addCase(deleteWebImage.fulfilled, (state, action) => {
-                const index = state.imagesArray.findIndex(
-                    delImg => delImg.id === action.payload
+            .addCase(getUntaggedImages.fulfilled, (state, action) => {
+                if (!action.payload.images) return;
+
+                const existingIds = new Set(state.imagesArray.map(img => img.id));
+                const existingUris = new Set(
+                    state.imagesArray.filter(img => img.uri).map(img => img.uri)
                 );
 
-                if (index !== -1) {
-                    state.imagesArray.splice(index, 1);
-                }
-            })
-            .addCase(deleteWebImage.rejected, (state, action) => {
-                // no error handling yet
-            })
+                action.payload.images.forEach(image => {
+                    // Check if already present
+                    const isDuplicate =
+                        image.platform === 'mobile' && !image.uploaded
+                            ? existingUris.has(image.uri)
+                            : existingIds.has(image.id);
 
-            .addCase(getUntaggedImages.fulfilled, (state, action) => {
-                action.payload.images &&
-                    action.payload.images.map(image => {
-                        let index = -1;
+                    if (!isDuplicate) {
+                        state.imagesArray.push({
+                            id: image.id,
+                            date: image.date ?? null,
+                            lat: image.lat ?? null,
+                            lon: image.lon ?? null,
+                            filename: image.filename,
+                            uri: null,
+                            type: image.type || image.platform || 'web',
+                            platform: image.platform ?? 'web',
 
-                        if (image.platform === 'mobile') {
-                            if (image.uploaded) {
-                                index = state.imagesArray.findIndex(
-                                    img => img.id === image.id
-                                );
-                            } else {
-                                index = state.imagesArray.findIndex(
-                                    img => img.uri === image.uri
-                                );
-                            }
-                        } else {
-                            // Web images: check by server id
-                            index = state.imagesArray.findIndex(
-                                img => img.id === image.id
-                            );
-                        }
+                            tags: {},
+                            tagsV5: [],
+                            customTags: [],
+                            picked_up: image.remaining === 0,
 
-                        if (index === -1) {
-                            state.imagesArray.push({
-                                id: image.id,
-                                date: image.date ?? null,
-                                lat: image.lat ?? null,
-                                lon: image.lon ?? null,
-                                filename: image.filename,
-                                uri: null,
-                                type: image.type,
-                                platform: image.platform,
-
-                                tags: {},
-                                tagsV5: [],
-                                customTags: [],
-                                picked_up: action.payload.picked_up,
-
-                                selected: false,
-                                uploaded: image.uploaded
-                            });
-                        }
-                    });
+                            selected: false,
+                            uploaded: true
+                        });
+                    }
+                });
             })
 
             // Upload Image
@@ -624,22 +689,20 @@ const imagesSlice = createSlice({
                 // nothing yet
             })
             .addCase(uploadImage.fulfilled, (state, action) => {
-                const {imageId, photo_id, enableAdminTagging, photoHasTags} =
-                    action.payload;
+                const {imageId, imageUri, photo_id} = action.payload;
 
-                if (enableAdminTagging || photoHasTags) {
-                    state.imagesArray = state.imagesArray.filter(
-                        img => img.id !== imageId
-                    );
-                } else {
-                    state.imagesArray = state.imagesArray.map(img => {
-                        if (img.type === 'gallery' && img.id === imageId) {
-                            img.id = photo_id;
-                            img.type = 'web';
-                            img.uploaded = true;
-                        }
-                        return img;
-                    });
+                // Find the exact image — match by URI (unique) when
+                // available, falling back to ID for web images.
+                const index = state.imagesArray.findIndex(img =>
+                    imageUri
+                        ? img.uri === imageUri
+                        : img.id === imageId
+                );
+
+                if (index !== -1) {
+                    state.imagesArray[index].id = photo_id;
+                    state.imagesArray[index].type = 'web';
+                    state.imagesArray[index].uploaded = true;
                 }
 
                 state.uploaded++;
@@ -671,22 +734,6 @@ const imagesSlice = createSlice({
                 }
             })
 
-            // UploadTagsToWebImage (v4 legacy)
-            .addCase(uploadTagsToWebImage.pending, state => {
-                // nothing yet
-            })
-            .addCase(uploadTagsToWebImage.fulfilled, (state, action) => {
-                state.imagesArray = state.imagesArray.filter(
-                    img => img.id !== action.payload
-                );
-                state.tagged++;
-            })
-            .addCase(uploadTagsToWebImage.rejected, (state, action) => {
-                const {errorType} = action.payload || {errorType: 'unknown'};
-                state.taggedFailed++;
-                state.errorMessage = errorType;
-            })
-
             // Post Tags V3
             .addCase(postTagsToPhoto.fulfilled, (state, action) => {
                 const {photoId} = action.payload;
@@ -699,11 +746,26 @@ const imagesSlice = createSlice({
                 const {errorType} = action.payload || {errorType: 'unknown'};
                 state.taggedFailed++;
                 state.errorMessage = errorType;
-            });
+            })
+
+            // Edit Tags V3 (PUT — full replace)
+            .addCase(editTagsOnPhoto.fulfilled, (state, action) => {
+                // Photo stays in uploads — tags were replaced, not removed
+            })
+            .addCase(editTagsOnPhoto.rejected, (state, action) => {
+                const {errorType} = action.payload || {errorType: 'unknown'};
+                state.errorMessage = errorType;
+            })
+
+            // Clear all images on logout
+            .addCase(logout, () => initialState);
     }
 });
 
 export const {
+    addBrandToTag,
+    addCustomTagToTag,
+    addImageCustomTag,
     addImages,
     addTagV5,
     cancelUploadImages,
@@ -713,12 +775,16 @@ export const {
     deleteImage,
     deleteSelectedImages,
     deselectAllImages,
+    removeBrandFromTag,
+    removeCustomTagFromTag,
+    removeImageCustomTag,
     removeTagV5,
     resetUploadState,
     setCurrentUploadIndex,
     setTotalToUpload,
     setUploadAbortReason,
     setUploadPhase,
+    toggleMaterialOnTag,
     togglePickedUp,
     togglePickedUpByIndex,
     toggleSelecting,

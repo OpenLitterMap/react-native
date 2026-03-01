@@ -2,6 +2,7 @@ import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {
     Animated,
     KeyboardAvoidingView,
+    PanResponder,
     Platform,
     Pressable,
     SafeAreaView,
@@ -19,14 +20,23 @@ import TagSearchBar from './components/TagSearchBar';
 import TagSuggestions from './components/TagSuggestions';
 import CategoryBrowser from './components/CategoryBrowser';
 import ImageProgressDots from './components/ImageProgressDots';
+import TagDetailSheet from './components/TagDetailSheet';
 import {
+    addBrandToTag,
+    addCustomTagToTag,
+    addImageCustomTag,
     addTagV5,
     changeSwiperIndex,
+    removeBrandFromTag,
+    removeCustomTagFromTag,
+    removeImageCustomTag,
     removeTagV5,
+    toggleMaterialOnTag,
     togglePickedUpByIndex,
     updateTagQuantityV5
 } from '../../reducers/images_reducer';
 import {fetchAllTags} from '../../reducers/tags_reducer';
+import {isTagged} from '../../utils/isTagged';
 
 const AddTagScreen = ({navigation}) => {
     const dispatch = useDispatch();
@@ -41,18 +51,34 @@ const AddTagScreen = ({navigation}) => {
         categoriesById,
         entriesByCloId,
         typeEntriesByKey,
+        materialsById,
+        brandsById,
         loading: tagsLoading
     } = useSelector(state => state.tags);
 
     // Focus mode: hides overlays so user can see full image
     const [focusMode, setFocusMode] = useState(false);
     const [showBrowser, setShowBrowser] = useState(false);
+    const [detailTag, setDetailTag] = useState(null);
 
     // Overlay opacity for focus mode transitions
     const overlayOpacity = useRef(new Animated.Value(1)).current;
 
     // XP badge pulse animation
     const xpScale = useRef(new Animated.Value(1)).current;
+
+    // Swipe down to dismiss
+    const swipeDismiss = useRef(
+        PanResponder.create({
+            onMoveShouldSetPanResponder: (_, gs) =>
+                gs.dy > 30 && Math.abs(gs.dy) > Math.abs(gs.dx * 2),
+            onPanResponderRelease: (_, gs) => {
+                if (gs.dy > 100) {
+                    navigation.navigate('HOME');
+                }
+            }
+        })
+    ).current;
 
     // Fetch tags on mount if not loaded
     useEffect(() => {
@@ -67,19 +93,28 @@ const AddTagScreen = ({navigation}) => {
         () => currentImage?.tagsV5 || [],
         [currentImage?.tagsV5]
     );
+    const currentCustomTags = useMemo(
+        () => currentImage?.customTags || [],
+        [currentImage?.customTags]
+    );
     const pickedUp = currentImage?.picked_up || false;
 
     // XP estimate: 5 (upload) + sum(quantities) + 5 if picked_up
+    // + 2 per material + 3 per brand + 1 per custom tag (per-tag and image-level)
     const xpEstimate = useMemo(() => {
         let xp = 5;
         for (const tag of currentTags) {
             xp += tag.quantity;
+            xp += (tag.materials?.length || 0) * 2;
+            xp += (tag.brands?.length || 0) * 3;
+            xp += tag.customTags?.length || 0;
         }
+        xp += currentCustomTags.length;
         if (pickedUp) {
             xp += 5;
         }
         return xp;
-    }, [currentTags, pickedUp]);
+    }, [currentTags, currentCustomTags, pickedUp]);
 
     // Pulse XP badge when estimate changes
     const prevXp = useRef(xpEstimate);
@@ -187,9 +222,140 @@ const AddTagScreen = ({navigation}) => {
         dispatch(togglePickedUpByIndex(swiperIndex));
     }, [dispatch, swiperIndex]);
 
+    // Image-level custom tag handlers
+    const handleAddImageCustomTag = useCallback(
+        text => {
+            dispatch(addImageCustomTag({imageIndex: swiperIndex, text}));
+        },
+        [dispatch, swiperIndex]
+    );
+
+    const handleRemoveImageCustomTag = useCallback(
+        text => {
+            dispatch(removeImageCustomTag({imageIndex: swiperIndex, text}));
+        },
+        [dispatch, swiperIndex]
+    );
+
+    // Materials and brands as sorted arrays for TagDetailSheet
+    const materialsArray = useMemo(
+        () =>
+            Object.values(materialsById).sort((a, b) =>
+                a.name.localeCompare(b.name)
+            ),
+        [materialsById]
+    );
+
+    const brandsArray = useMemo(
+        () =>
+            Object.values(brandsById).sort((a, b) =>
+                a.name.localeCompare(b.name)
+            ),
+        [brandsById]
+    );
+
+    // Tag detail sheet handlers — store key string instead of full object
+    const handleOpenDetail = useCallback(tag => {
+        setDetailTag(`${tag.cloId}-${tag.typeId || ''}`);
+    }, []);
+
+    const handleCloseDetail = useCallback(() => {
+        setDetailTag(null);
+    }, []);
+
+    // Parse detailTag key back to cloId/typeId
+    const [detailCloId, detailTypeId] = useMemo(() => {
+        if (!detailTag) return [null, null];
+        const parts = detailTag.split('-');
+        return [Number(parts[0]), parts[1] ? Number(parts[1]) : null];
+    }, [detailTag]);
+
+    // Find the current tag entry for the detail sheet (stays in sync after edits)
+    const detailTagCurrent = useMemo(() => {
+        if (!detailTag) return null;
+        return currentTags.find(
+            t =>
+                t.cloId === detailCloId &&
+                (t.typeId || null) === (detailTypeId || null)
+        );
+    }, [detailTag, detailCloId, detailTypeId, currentTags]);
+
+    const detailTagEntry = useMemo(() => {
+        if (!detailTag) return null;
+        if (detailTypeId) {
+            return (
+                typeEntriesByKey?.[`${detailCloId}-${detailTypeId}`] ||
+                entriesByCloId[detailCloId]
+            );
+        }
+        return entriesByCloId[detailCloId];
+    }, [
+        detailTag,
+        detailCloId,
+        detailTypeId,
+        typeEntriesByKey,
+        entriesByCloId
+    ]);
+
+    // Factory for detail sheet dispatch handlers
+    const dispatchDetailAction = useCallback(
+        (actionCreator, extraPayload) => {
+            if (!detailTag) return;
+            dispatch(
+                actionCreator({
+                    imageIndex: swiperIndex,
+                    cloId: detailCloId,
+                    typeId: detailTypeId,
+                    ...extraPayload
+                })
+            );
+        },
+        [dispatch, swiperIndex, detailTag, detailCloId, detailTypeId]
+    );
+
+    const handleToggleMaterial = useCallback(
+        materialId => dispatchDetailAction(toggleMaterialOnTag, {materialId}),
+        [dispatchDetailAction]
+    );
+
+    const handleAddBrand = useCallback(
+        brandId => dispatchDetailAction(addBrandToTag, {brandId}),
+        [dispatchDetailAction]
+    );
+
+    const handleRemoveBrand = useCallback(
+        brandId => dispatchDetailAction(removeBrandFromTag, {brandId}),
+        [dispatchDetailAction]
+    );
+
+    const handleAddCustomTag = useCallback(
+        text => dispatchDetailAction(addCustomTagToTag, {text}),
+        [dispatchDetailAction]
+    );
+
+    const handleRemoveCustomTag = useCallback(
+        text => dispatchDetailAction(removeCustomTagFromTag, {text}),
+        [dispatchDetailAction]
+    );
+
+    const allTagged = useMemo(
+        () => images.every(img => isTagged(img)),
+        [images]
+    );
+
     const handleDone = useCallback(() => {
-        navigation.navigate('HOME');
-    }, [navigation]);
+        if (allTagged) {
+            navigation.navigate('HOME');
+        } else if (swiperIndex < images.length - 1) {
+            dispatch(changeSwiperIndex(swiperIndex + 1));
+        } else {
+            // On last image but not all tagged — loop to first untagged
+            const firstUntagged = images.findIndex(img => !isTagged(img));
+            if (firstUntagged !== -1) {
+                dispatch(changeSwiperIndex(firstUntagged));
+            }
+        }
+    }, [allTagged, navigation, dispatch, swiperIndex, images]);
 
     const handleBrowsePress = useCallback(() => {
         setShowBrowser(prev => !prev);
@@ -217,7 +383,7 @@ const AddTagScreen = ({navigation}) => {
     }
 
     return (
-        <View style={styles.container}>
+        <View style={styles.container} {...swipeDismiss.panHandlers}>
             <StatusBar barStyle="light-content" />
 
             {/* Full-screen image viewer */}
@@ -244,7 +410,7 @@ const AddTagScreen = ({navigation}) => {
                     <SafeAreaView>
                         <View style={styles.topBar}>
                             <Pressable
-                                onPress={handleDone}
+                                onPress={() => navigation.navigate('HOME')}
                                 style={styles.backButton}
                                 hitSlop={8}>
                                 <Icon
@@ -324,10 +490,13 @@ const AddTagScreen = ({navigation}) => {
                         {/* Tag pills */}
                         <TagPills
                             tags={currentTags}
+                            customTags={currentCustomTags}
                             entriesByCloId={entriesByCloId}
                             typeEntriesByKey={typeEntriesByKey}
                             onRemove={handleRemoveTag}
+                            onRemoveCustomTag={handleRemoveImageCustomTag}
                             onUpdateQuantity={handleUpdateQuantity}
+                            onOpenDetail={handleOpenDetail}
                         />
 
                         {/* Tag suggestions from other images */}
@@ -346,7 +515,9 @@ const AddTagScreen = ({navigation}) => {
                             entriesByCloId={entriesByCloId}
                             categoriesById={categoriesById}
                             currentTags={currentTags}
+                            customTags={currentCustomTags}
                             onAddTag={handleAddTag}
+                            onAddCustomTag={handleAddImageCustomTag}
                             onBrowsePress={handleBrowsePress}
                             showBrowser={showBrowser}
                         />
@@ -413,7 +584,7 @@ const AddTagScreen = ({navigation}) => {
                                     ]}
                                     onPress={handleDone}>
                                     <Icon
-                                        name="checkmark"
+                                        name={allTagged ? 'checkmark' : 'arrow-forward'}
                                         size={18}
                                         color={Colors.white}
                                     />
@@ -421,7 +592,7 @@ const AddTagScreen = ({navigation}) => {
                                         color="white"
                                         family="semiBold"
                                         style={styles.doneText}>
-                                        Done
+                                        {allTagged ? 'Done' : 'Next'}
                                     </Body>
                                 </Pressable>
                             </View>
@@ -429,6 +600,23 @@ const AddTagScreen = ({navigation}) => {
                     </LinearGradient>
                 </KeyboardAvoidingView>
             </Animated.View>
+
+            {/* Tag detail sheet for materials, brands, custom tags */}
+            <TagDetailSheet
+                visible={detailTagCurrent != null}
+                tag={detailTagCurrent}
+                tagEntry={detailTagEntry}
+                materials={materialsArray}
+                brands={brandsArray}
+                brandsById={brandsById}
+                onToggleMaterial={handleToggleMaterial}
+                onAddBrand={handleAddBrand}
+                onRemoveBrand={handleRemoveBrand}
+                onAddCustomTag={handleAddCustomTag}
+                onRemoveCustomTag={handleRemoveCustomTag}
+                onUpdateQuantity={handleUpdateQuantity}
+                onClose={handleCloseDetail}
+            />
         </View>
     );
 };

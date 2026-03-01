@@ -14,7 +14,7 @@ if (CURRENT_ENVIRONMENT === 'production') {
     ENDPOINT = OLM_ENDPOINT;
 }
 else if (CURRENT_ENVIRONMENT === 'local') {
-    ENDPOINT = 'http://olm.test';
+    ENDPOINT = 'http://localhost:8000';
 }
 
 export const URL = ENDPOINT;

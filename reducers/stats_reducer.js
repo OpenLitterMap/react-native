@@ -1,6 +1,7 @@
 import axios from "axios";
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { URL } from '../actions/types';
+import { logout } from './auth_reducer';
 
 const initialState = {
     statsErrorMessage: null,
@@ -68,7 +69,7 @@ const statsSlice = createSlice({
             .addCase(getStats.rejected, (state, action) => {
                 state.statsErrorMessage = action.payload;
             })
-;
+            .addCase(logout, () => initialState);
     }
 });
 

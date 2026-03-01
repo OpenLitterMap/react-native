@@ -2,6 +2,7 @@ import axios from 'axios';
 import { URL } from '../actions/types';
 import { createSlice } from '@reduxjs/toolkit';
 import { createAsyncThunk } from '@reduxjs/toolkit';
+import { logout } from './auth_reducer';
 
 const initialState = {
     appVersion: null,
@@ -94,7 +95,8 @@ const sharedSlice = createSlice({
 
             .addCase(checkAppVersion.fulfilled, (state, action) => {
                 state.appVersion = action.payload;
-            });
+            })
+            .addCase(logout, () => initialState);
     }
 });
 

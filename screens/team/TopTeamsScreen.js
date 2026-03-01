@@ -1,14 +1,14 @@
 import React from 'react';
-import { ScrollView, Pressable, StyleSheet, View, ActivityIndicator } from 'react-native';
+import { FlatList, Pressable, StyleSheet, View, ActivityIndicator } from 'react-native';
 import { useSelector } from "react-redux";
 import Icon from 'react-native-vector-icons/Ionicons';
 import { Header, Title, Colors } from '../components';
-import { TopTeamsList } from './teamComponents';
+import { TeamListCard } from './teamComponents';
 
 const TopTeamsScreen = ({ navigation }) => {
 
     const topTeams = useSelector(state => state.teams.topTeams);
-    const isLoading = !topTeams || topTeams.length === 0;
+    const loading = useSelector(state => state.teams.topTeamsLoading);
 
     return (
         <>
@@ -26,24 +26,22 @@ const TopTeamsScreen = ({ navigation }) => {
                 centerContainerStyle={{ flex: 2 }}
             />
 
-            {
-                isLoading ? (
-                    <View style={styles.loadingContainer}>
-                        <ActivityIndicator color={Colors.accent} />
-                    </View>
-                ) : (
-                    <ScrollView
-                        style={styles.container}
-                        alwaysBounceVertical={false}
-                        contentContainerStyle={{ paddingBottom: 20 }}
-                    >
-                        {/* list of top 5 teams */}
-                        <TopTeamsList
-                            topTeams={topTeams}
-                        />
-                    </ScrollView>
-                )
-            }
+            {loading ? (
+                <View style={styles.loadingContainer}>
+                    <ActivityIndicator color={Colors.accent} />
+                </View>
+            ) : (
+                <FlatList
+                    data={topTeams}
+                    keyExtractor={(item, index) => `${item?.id || item?.name}${index}`}
+                    renderItem={({ item, index }) => (
+                        <TeamListCard team={item} index={index} />
+                    )}
+                    style={styles.container}
+                    contentContainerStyle={{ paddingBottom: 20 }}
+                    initialNumToRender={15}
+                />
+            )}
         </>
     );
 }
@@ -57,7 +55,8 @@ const styles = StyleSheet.create({
     loadingContainer: {
         flex: 1,
         justifyContent: 'center',
-        alignItems: 'center'
+        alignItems: 'center',
+        backgroundColor: 'white'
     }
 });
 

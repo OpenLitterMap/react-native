@@ -90,8 +90,8 @@ Both permission screens share a consistent layout:
 | Thunk | Method | Endpoint | Payload | Notes |
 |-------|--------|----------|---------|-------|
 | `userLogin` | POST | `/api/auth/token` | `{identifier, password}` | `identifier` is email or username. Emails lowercased, usernames case-preserved. Returns `{token, user}` |
-| `createAccount` | POST | `/api/register` | `{email, password}` | Backend auto-generates username. Returns `{token, user}` |
-| `fetchUser` | GET | `/api/user` | — | Returns full user profile |
+| `createAccount` | POST | `/api/auth/register` | `{email, password}` | Backend auto-generates username. Returns `{token, user}` |
+| `fetchUser` | GET | `/api/user/profile/index` | — | Returns full user profile (nested: user, stats, level, rank, team) |
 | `checkValidToken` | POST | `/api/validate-token` | — | Token in header. Returns `{message: "valid"}` |
 | `sendResetPasswordRequest` | POST | `/api/password/email` | `{email}` | |
 

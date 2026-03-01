@@ -2,10 +2,12 @@ import { Platform } from 'react-native';
 import { createSlice } from '@reduxjs/toolkit';
 import { CameraRoll } from "@react-native-camera-roll/camera-roll";
 import { createAsyncThunk } from '@reduxjs/toolkit';
+import { logout } from './auth_reducer';
 
 const initialState = {
     imagesLoading: false,
     galleryImages: [],
+    nextGalleryId: 0,
     geotaggedCount: 0,
     nonGeotaggedCount: 0,
     camerarollImageFetched: false,
@@ -37,6 +39,7 @@ export const getPhotosFromCameraroll = createAsyncThunk(
         const {
             gallery: {
                 galleryImages,
+                nextGalleryId,
                 camerarollImageFetched,
                 lastFetchTime,
                 imagesLoading,
@@ -85,7 +88,7 @@ export const getPhotosFromCameraroll = createAsyncThunk(
                 return rejectWithValue('No new photos fetched');
             }
 
-            let id = 1;
+            let id = nextGalleryId;
             let photos = [];
             const imagesArray = camerarollData.edges;
             const { has_next_page: hasNextPage, end_cursor: endCursor } = camerarollData.page_info;
@@ -195,15 +198,21 @@ const gallerySlice = createSlice({
 
             .addCase(getPhotosFromCameraroll.fulfilled, (state, action) => {
                 const newImages = action.payload.photos;
-                const existingImages = state.galleryImages;
+                const existingUris = new Set(state.galleryImages.map(img => img.uri));
 
                 // Filter out new images that are already in existingImages
                 const uniqueNewImages = newImages.filter(
-                    newImage => !existingImages.some(existingImage => existingImage.uri === newImage.uri)
+                    newImage => !existingUris.has(newImage.uri)
                 );
 
-                const allImages = [...existingImages, ...uniqueNewImages];
+                const allImages = [...state.galleryImages, ...uniqueNewImages];
                 state.galleryImages = allImages;
+
+                // Track highest assigned ID for next fetch
+                if (newImages.length > 0) {
+                    const maxId = newImages.reduce((max, img) => Math.max(max, img.id || 0), 0);
+                    state.nextGalleryId = Math.max(state.nextGalleryId, maxId);
+                }
                 state.geotaggedCount = allImages.filter(img => img.hasGps).length;
                 state.nonGeotaggedCount = allImages.filter(img => !img.hasGps).length;
                 state.camerarollImageFetched = true;
@@ -222,7 +231,8 @@ const gallerySlice = createSlice({
             .addCase(getPhotosFromCameraroll.rejected, (state, action) => {
                 state.imagesLoading = false;
                 state.error = action.payload || 'Failed to fetch images';
-            });
+            })
+            .addCase(logout, () => initialState);
 
     }
 });

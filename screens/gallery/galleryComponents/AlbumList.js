@@ -5,7 +5,7 @@ import { Colors, Body } from '../../components';
 import AlbumCard from './AlbumCard';
 import { getPhotosFromCameraroll } from "../../../reducers/gallery_reducer";
 
-const AlbumList = () => {
+const AlbumList = ({ navigation }) => {
 
     const dispatch = useDispatch();
 

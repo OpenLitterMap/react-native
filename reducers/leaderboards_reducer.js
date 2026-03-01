@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { URL } from '../actions/types';
+import { logout } from './auth_reducer';
 
 const initialState = {
     paginated: {
@@ -75,6 +76,7 @@ const leaderboardsSlice = createSlice({
                 state.loading = false;
                 state.loadingMore = false;
             })
+            .addCase(logout, () => initialState);
     }
 });
 

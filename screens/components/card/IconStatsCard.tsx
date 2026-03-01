@@ -1,10 +1,8 @@
 import React from 'react';
-import {Dimensions, StyleSheet, View} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 import {CountUp} from 'use-count-up';
 import {Caption, Title} from '../typography';
 import {Colors} from '../theme';
-
-const {width} = Dimensions.get('window');
 
 interface IconStatsCardProps {
     value: number;

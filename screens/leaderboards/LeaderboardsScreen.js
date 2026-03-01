@@ -129,7 +129,7 @@ const LeaderboardsScreen = () => {
                                 <Text style={styles.username}>
                                     {item.username || item.name || 'Anon'}
                                 </Text>
-                                <Text style={styles.xp}>{item.xp} XP</Text>
+                                <Text style={styles.xp}>{(item.xp || 0).toLocaleString()} XP</Text>
                             </View>
                         )}
                     />

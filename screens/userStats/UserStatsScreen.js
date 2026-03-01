@@ -151,7 +151,7 @@ const UserStatsScreen = ({ navigation }) => {
             bgColor: '#CCFBF1'
         },
         {
-            value: user?.position || positionStart,
+            value: user?.position ?? positionStart,
             startValue: positionStart,
             title: 'Rank',
             icon: 'podium-outline',

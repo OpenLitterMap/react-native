@@ -187,11 +187,11 @@ const SettingsScreen = ({ navigation }) => {
 
         // Needs translation
         if (key === 'enable_admin_tagging') {
-            title = user.enable_admin_tagging
+            title = user?.enable_admin_tagging
                 ? 'Turn off'
                 : 'Turn on';
 
-            subtitle += user.enable_admin_tagging
+            subtitle += user?.enable_admin_tagging
                 ? ' \n' + 'Only you will be able to tag your uploads'
                 : ' \n' + 'Our volunteers will tag your uploads';
         } else {
@@ -227,13 +227,13 @@ const SettingsScreen = ({ navigation }) => {
                         }
                         else if (key === 'enable_admin_tagging')
                         {
-                            if (user.enable_admin_tagging) {
-                                await dispatch(getUntaggedImages(token));
+                            if (user?.enable_admin_tagging) {
+                                await dispatch(getUntaggedImages({token}));
                             }
 
                             await dispatch(saveSettings({
                                 dataKey: 'enable_admin_tagging',
-                                dataValue: !user.enable_admin_tagging,
+                                dataValue: !user?.enable_admin_tagging,
                                 token
                             }));
                         }
@@ -457,7 +457,7 @@ const SettingsScreen = ({ navigation }) => {
                                 {renderRow(item)}
                             </View>
                         )}
-                        keyExtractor={(item, index) => item + index}
+                        keyExtractor={item => item.key}
                         showsVerticalScrollIndicator={false}
                         ListFooterComponent={
                             <Caption

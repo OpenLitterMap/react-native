@@ -18,7 +18,9 @@ const TagSearchBar = ({
     entriesByCloId,
     categoriesById,
     currentTags,
+    customTags,
     onAddTag,
+    onAddCustomTag,
     onBrowsePress,
     showBrowser
 }) => {
@@ -90,6 +92,21 @@ const TagSearchBar = ({
         },
         [onAddTag]
     );
+
+    const handleCreateCustomTag = useCallback(() => {
+        const trimmed = query.trim();
+        if (trimmed && onAddCustomTag) {
+            onAddCustomTag(trimmed);
+            setQuery('');
+            Keyboard.dismiss();
+        }
+    }, [query, onAddCustomTag]);
+
+    const handleSubmitEditing = useCallback(() => {
+        if (results.length === 0) {
+            handleCreateCustomTag();
+        }
+    }, [results, handleCreateCustomTag]);
 
     const handleClear = useCallback(() => {
         setQuery('');
@@ -228,6 +245,7 @@ const TagSearchBar = ({
                     onChangeText={setQuery}
                     onFocus={handleFocus}
                     onBlur={handleBlur}
+                    onSubmitEditing={handleSubmitEditing}
                     returnKeyType="search"
                     autoCorrect={false}
                     autoCapitalize="none"
@@ -249,6 +267,18 @@ const TagSearchBar = ({
                     <Caption color="muted" family="medium">
                         No results for &ldquo;{query.trim()}&rdquo;
                     </Caption>
+                    <Pressable
+                        onPress={handleCreateCustomTag}
+                        style={styles.createCustomTag}>
+                        <Icon
+                            name="add-circle-outline"
+                            size={16}
+                            color={Colors.white}
+                        />
+                        <Caption color="white" family="medium">
+                            Create &ldquo;{query.trim()}&rdquo;
+                        </Caption>
+                    </Pressable>
                     <Pressable
                         onPress={handleBrowse}
                         style={styles.browseSuggestion}>
@@ -425,6 +455,15 @@ const styles = StyleSheet.create({
         borderColor: '#e8e8e8',
         alignItems: 'center',
         gap: 8
+    },
+    createCustomTag: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+        paddingHorizontal: 14,
+        paddingVertical: 8,
+        borderRadius: 100,
+        backgroundColor: Colors.accent
     },
     browseSuggestion: {
         flexDirection: 'row',

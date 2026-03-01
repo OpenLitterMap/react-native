@@ -19,15 +19,18 @@ const MAX_QUANTITY = 10;
 
 const TagPills = ({
     tags,
+    customTags,
     entriesByCloId,
     typeEntriesByKey,
     onRemove,
-    onUpdateQuantity
+    onRemoveCustomTag,
+    onUpdateQuantity,
+    onOpenDetail
 }) => {
     const [expandedKey, setExpandedKey] = useState(null);
     const prevTagCount = useRef(tags?.length || 0);
 
-    const tagCount = tags?.length || 0;
+    const tagCount = (tags?.length || 0) + (customTags?.length || 0);
     useEffect(() => {
         if (tagCount !== prevTagCount.current) {
             LayoutAnimation.configureNext(
@@ -73,7 +76,9 @@ const TagPills = ({
         [onRemove, onUpdateQuantity]
     );
 
-    if (!tags || tags.length === 0) {
+    const hasCustomTags = customTags && customTags.length > 0;
+
+    if ((!tags || tags.length === 0) && !hasCustomTags) {
         return null;
     }
 
@@ -174,6 +179,19 @@ const TagPills = ({
                                 </Pressable>
 
                                 <Pressable
+                                    style={styles.detailBtn}
+                                    onPress={() =>
+                                        onOpenDetail && onOpenDetail(tag)
+                                    }
+                                    hitSlop={4}>
+                                    <Icon
+                                        name="ellipsis-horizontal"
+                                        size={14}
+                                        color={Colors.white}
+                                    />
+                                </Pressable>
+
+                                <Pressable
                                     style={styles.removeBtn}
                                     onPress={() =>
                                         handleRemove(tag.cloId, tag.typeId)
@@ -227,9 +245,44 @@ const TagPills = ({
                                     </Caption>
                                 </View>
                             )}
+                            {(tag.materials?.length > 0 ||
+                                tag.brands?.length > 0 ||
+                                tag.customTags?.length > 0) && (
+                                <View style={styles.extrasDot} />
+                            )}
                         </View>
                     );
                 })}
+                {hasCustomTags &&
+                    customTags.map(ct => (
+                        <View key={`custom-${ct}`} style={styles.pillWrapper}>
+                            <View style={[styles.pill, styles.customPillColor]}>
+                                <Icon
+                                    name="pricetag-outline"
+                                    size={12}
+                                    color="rgba(255,255,255,0.8)"
+                                />
+                                <Caption
+                                    color="white"
+                                    family="medium"
+                                    style={styles.pillText}>
+                                    {ct}
+                                </Caption>
+                                <Pressable
+                                    onPress={() =>
+                                        onRemoveCustomTag && onRemoveCustomTag(ct)
+                                    }
+                                    hitSlop={6}
+                                    style={styles.closeBtn}>
+                                    <Icon
+                                        name="close"
+                                        size={13}
+                                        color="rgba(255,255,255,0.7)"
+                                    />
+                                </Pressable>
+                            </View>
+                        </View>
+                    ))}
             </View>
         </View>
     );
@@ -259,6 +312,10 @@ const styles = StyleSheet.create({
         paddingVertical: 6,
         height: 34,
         gap: 4
+    },
+    customPillColor: {
+        backgroundColor: '#6366f1',
+        borderLeftWidth: 0
     },
     pillPressed: {
         backgroundColor: '#229954'
@@ -333,6 +390,15 @@ const styles = StyleSheet.create({
     stepperBtnDisabled: {
         opacity: 0.5
     },
+    detailBtn: {
+        width: 24,
+        height: 24,
+        borderRadius: 12,
+        backgroundColor: 'rgba(255,255,255,0.2)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginLeft: 2
+    },
     removeBtn: {
         width: 24,
         height: 24,
@@ -341,6 +407,17 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         marginLeft: 2
+    },
+    extrasDot: {
+        position: 'absolute',
+        bottom: -3,
+        right: -3,
+        width: 8,
+        height: 8,
+        borderRadius: 4,
+        backgroundColor: '#f59e0b',
+        borderWidth: 1.5,
+        borderColor: Colors.accent
     }
 });
 

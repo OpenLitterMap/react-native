@@ -17,7 +17,7 @@ const TeamsHomeTab = ({onCreateTeam, onJoinTeam}) => {
     const navigation = useNavigation();
     const topTeams = useSelector(state => state.teams.topTeams);
     const userTeams = useSelector(state => state.teams.userTeams);
-    const isLoading = !topTeams || topTeams.length === 0;
+    const isLoading = useSelector(state => state.teams.topTeamsLoading);
 
     const hasNoTeams = !userTeams || userTeams.length === 0;
 

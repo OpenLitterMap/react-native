@@ -62,7 +62,7 @@ export const createAccount = createAsyncThunk(
     async ({ email, password }, { rejectWithValue, dispatch }) => {
         try
         {
-            const response = await axios.post(`${URL}/api/register`, {
+            const response = await axios.post(`${URL}/api/auth/register`, {
                 email,
                 password
             }, {
@@ -128,8 +128,8 @@ export const fetchUser = createAsyncThunk(
 
             if (response.status === 200 && response.data) {
                 Sentry.setUser({
-                    id: response.data.id,
-                    email: response.data?.email,
+                    id: response.data.user?.id,
+                    email: response.data.user?.email,
                 });
 
                 return response.data;
@@ -229,7 +229,9 @@ const authSlice = createSlice({
     reducers: {
 
         changeUsersActiveTeam (state, action) {
-            state.user.active_team = action.payload;
+            if (state.user) {
+                state.user.active_team = action.payload;
+            }
         },
 
         clearStatusText (state) {
@@ -294,21 +296,45 @@ const authSlice = createSlice({
             })
 
 
-            // Fetch User Profile
+            // Fetch User Profile (GET /api/user/profile/index)
+            // Response is nested: { user, stats, level, rank, global_stats, achievements, locations, team }
+            // We flatten into a single state object that screens expect.
             .addCase(fetchUser.fulfilled, (state, action) => {
 
                 const data = action.payload;
+                const profile = data.user || {};
+                const stats = data.stats || {};
                 const levelData = data.level || {};
+                const rankData = data.rank || {};
 
                 const user = {
-                    ...data,
+                    // Core user fields (includes settings like show_name, picked_up, etc.)
+                    ...profile,
+
+                    // Stats → flat field names screens expect
+                    total_images: stats.uploads || 0,
+                    totalTags: stats.litter || 0,
+                    totalLittercoin: stats.littercoin || 0,
+                    xp_redis: stats.xp || 0,
+                    streak: stats.streak || 0,
+
+                    // Level → flat field names
                     level: levelData.level || 0,
                     levelTitle: levelData.title || '',
-                    xp_redis: levelData.xp || data.stats?.xp || 0,
-                    xpRequired: levelData.xp_remaining || 0,
                     targetPercentage: levelData.progress_percent || 0,
-                    totalTags: data.total_tags,
-                    totalLittercoin: (data.littercoin_allowance || 0) + (data.littercoin_owed || 0)
+                    xpRequired: levelData.xp_remaining || 0,
+
+                    // Rank → flat field names (null = not ranked)
+                    position: rankData.global_position ?? null,
+                    percentile: rankData.percentile ?? null,
+
+                    // Team
+                    active_team: data.team?.id || null,
+                    team: data.team || null,
+
+                    // New data from profile/index
+                    achievements: data.achievements || null,
+                    locations: data.locations || null
                 };
 
                 AsyncStorage.setItem('user', JSON.stringify(user));

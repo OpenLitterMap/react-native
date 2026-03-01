@@ -10,31 +10,31 @@ OpenLitterMap is a React Native mobile app (iOS & Android) for crowdsourced litt
 
 ```bash
 # Install dependencies
-yarn install
+npm install
 
 # Start Metro bundler
-yarn start
+npm start
 
 # Run on iOS / Android
-yarn ios
-yarn android
+npm run ios
+npm run android
 
 # Install iOS native dependencies
 cd ios && bundle exec pod install && cd ..
 
 # Lint
-yarn lint
+npm run lint
 
 # Run tests
-yarn test
+npm test
 
 # Run a single test file
 npx jest path/to/test.js
 ```
 
-Runtime: **Node v22.12.0**, **npm 11.1.0**
+Runtime: **Node v20.20.0**, **npm 10.8.2**
 
-Package manager: **Yarn** (v3.6.4, specified in `packageManager` field). Both `yarn.lock` and `package-lock.json` exist; prefer yarn.
+Package manager: **npm** (v10.8.2). Both `yarn.lock` and `package-lock.json` exist; prefer npm.
 
 ## Architecture
 
@@ -96,7 +96,7 @@ The `litter.json` files use a nested structure with 15 sections (categories, 12 
 
 ### Litter Data Model
 
-Tag data is fetched from the API (`GET /api/tags/all`) and cached in AsyncStorage (7-day TTL) by `tags_reducer.js`. Per-image tags are stored as `tagsV5: [{ cloId, quantity }]` in `images_reducer`. The `cloId` (category_litter_object_id) uniquely identifies an (object, category) pair. Display names are resolved at render time from `entriesByCloId`.
+Tag data is fetched from the API (`GET /api/tags/all`) and cached in AsyncStorage (7-day TTL) by `tags_reducer.js`. Per-image tags are stored as `tagsV5: [{ cloId, quantity, materials, brands, customTags }]` in `images_reducer`. The `cloId` (category_litter_object_id) uniquely identifies an (object, category) pair. Display names are resolved at render time from `entriesByCloId`. Materials and brands are indexed by ID in `materialsById` and `brandsById`. Image-level custom tags (`image.customTags`) are stored separately and merged into the first tag's `custom_tags` on upload.
 
 ## Code Style
 
@@ -113,9 +113,9 @@ Tag data is fetched from the API (`GET /api/tags/all`) and cached in AsyncStorag
 - `lottie-react-native` for animations
 - `react-native-permissions` for camera/location/photo library permissions (iOS permissions listed in `reactNativePermissionsIOS` in package.json)
 - `@sentry/react-native` for error tracking (production only). Sentry Cocoa SDK version is overridden to 8.46.0+ via `postinstall` script for Xcode 26 compatibility
-- `moment` for date formatting
+- `dayjs` for date formatting
 
 ## Build Notes
 
-- **Xcode 26+/macOS Tahoe**: Sentry Cocoa SDK < 8.46.0 fails to compile (`std::allocator does not support const types`). The `postinstall` script in package.json patches the RNSentry podspec to use 8.46.0. After `npm install`, run `cd ios && pod update Sentry && cd ..` if the Podfile.lock still references an older version.
+- **Xcode 26+/macOS Tahoe**: Sentry Cocoa SDK < 8.46.0 fails to compile (`std::allocator does not support const types`). The `postinstall` script in package.json patches the RNSentry podspec to use 8.46.0. After `npm install`, run `cd ios && pod update Sentry && cd ..` if the `Podfile.lock` still references an older version.
 - After modifying native dependencies: clean Xcode build folder (Cmd+Shift+K) and rebuild

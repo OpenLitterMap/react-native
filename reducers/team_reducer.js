@@ -1,10 +1,11 @@
 import axios from "axios";
 import { URL } from "../actions/types";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import {changeUsersActiveTeam} from "./auth_reducer";
+import {changeUsersActiveTeam, logout} from "./auth_reducer";
 
 const initialState = {
     topTeams: [],
+    topTeamsLoading: false,
     userTeams: [],
     teamMembers: [],
     teamsRequestStatus: '',
@@ -434,23 +435,27 @@ const teamSlice = createSlice({
                 // no action yet
             })
             .addCase(getTeamMembers.fulfilled, (state, action) => {
-                state.teamMembers.push(...action.payload.data);
+                if (action.payload?.data) {
+                    state.teamMembers.push(...action.payload.data);
+                }
 
-                const nextPage = action.payload.next_page_url;
+                const nextPage = action.payload?.next_page_url;
 
-                state.memberNextPage = nextPage !== null ? nextPage.split('=')[1] : null;
+                state.memberNextPage = nextPage ? nextPage.split('=')[1] : null;
             })
             .addCase(getTeamMembers.rejected, (state, action) => {
-                // no action yet
+                state.teamsRequestStatus = action.payload;
             })
 
             .addCase(getTopTeams.pending, (state) => {
-                // no action yet
+                state.topTeamsLoading = true;
             })
             .addCase(getTopTeams.fulfilled, (state, action) => {
                 state.topTeams = action.payload;
+                state.topTeamsLoading = false;
             })
             .addCase(getTopTeams.rejected, (state, action) => {
+                state.topTeamsLoading = false;
                 state.teamsRequestStatus = action.payload;
                 state.teamFormStatus = 'ERROR';
             })
@@ -472,7 +477,9 @@ const teamSlice = createSlice({
             .addCase(joinTeam.fulfilled, (state, action) => {
                 // dispatch changeActiveTeam on auth_reducer.js
 
-                state.userTeams.push(action.payload.team);
+                if (action.payload?.team) {
+                    state.userTeams.push(action.payload.team);
+                }
 
                 // This was commented out on teams_actions
                 // state.teamFormStatus = 'SUCCESS';
@@ -483,7 +490,8 @@ const teamSlice = createSlice({
             })
             .addCase(joinTeam.rejected, (state, action) => {
                 state.teamsFormError = action.payload;
-            });
+            })
+            .addCase(logout, () => initialState);
     }
 });
 

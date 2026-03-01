@@ -12,6 +12,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useFocusEffect } from '@react-navigation/native';
 import { useDispatch, useSelector } from 'react-redux';
+import { useCountUp } from 'use-count-up';
 
 import { Header } from '../components';
 import { fetchUser } from '../../reducers/auth_reducer';
@@ -23,6 +24,7 @@ import StatsGrid from './components/StatsGrid';
 import DeltaBlock from './components/DeltaBlock';
 
 const CACHE_KEY = 'profile_stats_cache';
+const GLOBAL_CACHE_KEY = 'profile_global_stats_cache';
 const BRAND = '#27ae60';
 const TEXT_SECONDARY = '#888888';
 
@@ -39,6 +41,7 @@ const ProfileScreen = ({ navigation }) => {
     const newUsersLast30Days = useSelector(state => state.stats.newUsersLast30Days);
 
     const [prev, setPrev] = useState(null);
+    const [prevGlobal, setPrevGlobal] = useState(null);
     const [xpLevels, setXpLevels] = useState(null);
     const [initialLoad, setInitialLoad] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
@@ -56,8 +59,12 @@ const ProfileScreen = ({ navigation }) => {
     useFocusEffect(
         useCallback(() => {
             const load = async () => {
-                const cached = await AsyncStorage.getItem(CACHE_KEY);
+                const [cached, cachedGlobal] = await Promise.all([
+                    AsyncStorage.getItem(CACHE_KEY),
+                    AsyncStorage.getItem(GLOBAL_CACHE_KEY)
+                ]);
                 if (cached) setPrev(JSON.parse(cached));
+                if (cachedGlobal) setPrevGlobal(JSON.parse(cachedGlobal));
                 prevLoadedRef.current = true;
                 setInitialLoad(false);
 
@@ -80,7 +87,7 @@ const ProfileScreen = ({ navigation }) => {
         }, [token])
     );
 
-    // Save current stats for next visit
+    // Save current user stats for next visit
     useEffect(() => {
         if (!user || !prevLoadedRef.current) return;
 
@@ -95,6 +102,20 @@ const ProfileScreen = ({ navigation }) => {
             })
         );
     }, [user]);
+
+    // Save current global stats for next visit
+    useEffect(() => {
+        if (!totalTags || !prevLoadedRef.current) return;
+
+        AsyncStorage.setItem(
+            GLOBAL_CACHE_KEY,
+            JSON.stringify({
+                totalTags,
+                totalImages,
+                totalUsers
+            })
+        );
+    }, [totalTags, totalImages, totalUsers]);
 
     const onRefresh = useCallback(async () => {
         setRefreshing(true);
@@ -132,7 +153,7 @@ const ProfileScreen = ({ navigation }) => {
     // Resolve display values: prefer live, fall back to cached
     const xp = user?.xp_redis ?? prev?.xp ?? 0;
     const level = user?.level ?? 0;
-    const rank = user?.position ?? prev?.position ?? 0;
+    const rank = user?.position ?? prev?.position ?? null;
     const tags = user?.totalTags ?? prev?.totalTags ?? 0;
     const photos = user?.total_images ?? prev?.totalImages ?? 0;
     const littercoin = user?.totalLittercoin ?? prev?.littercoin ?? 0;
@@ -209,18 +230,24 @@ const ProfileScreen = ({ navigation }) => {
                 <View style={styles.communityGrid}>
                     <CommunityCell
                         value={totalTags}
+                        startValue={prevGlobal?.totalTags}
                         label="total litter"
                         color="#14b8a6"
+                        reduceMotion={reduceMotion}
                     />
                     <CommunityCell
                         value={totalImages}
+                        startValue={prevGlobal?.totalImages}
                         label="total photos"
                         color="#8b5cf6"
+                        reduceMotion={reduceMotion}
                     />
                     <CommunityCell
                         value={totalUsers}
+                        startValue={prevGlobal?.totalUsers}
                         label="total users"
                         color="#f59e0b"
+                        reduceMotion={reduceMotion}
                     />
                 </View>
 
@@ -271,14 +298,25 @@ const ProfileScreen = ({ navigation }) => {
 
                 {/* Action button */}
                 <Pressable
-                    style={styles.actionButton}
+                    style={[
+                        styles.actionButton,
+                        photos === 0 && styles.actionButtonDisabled
+                    ]}
                     onPress={() => navigation.navigate('MY_UPLOADS')}
+                    disabled={photos === 0}
                 >
-                    <Text style={styles.actionText}>View My Uploads</Text>
+                    <Text
+                        style={[
+                            styles.actionText,
+                            photos === 0 && styles.actionTextDisabled
+                        ]}
+                    >
+                        View My Uploads
+                    </Text>
                     <Icon
                         name="chevron-forward"
                         size={18}
-                        color={BRAND}
+                        color={photos === 0 ? '#cccccc' : BRAND}
                         style={{ marginLeft: 4 }}
                     />
                 </Pressable>
@@ -307,14 +345,38 @@ const ProfileHeader = ({ navigation, username }) => (
     />
 );
 
-const CommunityCell = ({ value, label, color }) => (
-    <View style={styles.communityCell}>
-        <Text style={[styles.communityNumber, { color }]}>
-            {(value || 0).toLocaleString()}
-        </Text>
-        <Text style={styles.communityLabel}>{label}</Text>
-    </View>
-);
+const CommunityCell = ({ value, startValue, label, color, reduceMotion }) => {
+    const hasValue = value > 0;
+    const hasStart = startValue != null && startValue > 0;
+
+    // Only count when we have both values and the new one is higher
+    const shouldCount = !reduceMotion && hasValue && hasStart && value > startValue;
+
+    const { value: displayValue } = useCountUp({
+        isCounting: shouldCount,
+        start: shouldCount ? startValue : value,
+        end: value,
+        duration: 3,
+        decimalPlaces: 0,
+        formatter: v => Math.floor(v).toLocaleString()
+    });
+
+    let text;
+    if (!hasValue && !hasStart) {
+        text = '\u2013';
+    } else if (shouldCount) {
+        text = displayValue;
+    } else {
+        text = (hasValue ? value : startValue).toLocaleString();
+    }
+
+    return (
+        <View style={styles.communityCell}>
+            <Text style={[styles.communityNumber, { color }]}>{text}</Text>
+            <Text style={styles.communityLabel}>{label}</Text>
+        </View>
+    );
+};
 
 const NewUsersBadge = ({ value, label }) => (
     <View style={styles.newUsersBadge}>
@@ -369,11 +431,17 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         minHeight: 48
     },
+    actionButtonDisabled: {
+        borderColor: '#cccccc'
+    },
     actionText: {
         fontSize: 16,
         fontFamily: 'Poppins-SemiBold',
         fontWeight: '600',
         color: BRAND
+    },
+    actionTextDisabled: {
+        color: '#cccccc'
     },
 
     // Community stats

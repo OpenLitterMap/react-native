@@ -2,7 +2,7 @@ import axios from "axios";
 import { URL } from '../actions/types';
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { updateUserObject } from './auth_reducer';
+import { updateUserObject, logout } from './auth_reducer';
 import { clearUploadedWebImages } from './images_reducer';
 
 const initialState = {
@@ -90,7 +90,7 @@ export const saveSettings = createAsyncThunk(
 
                 user = JSON.parse(user);
 
-                user[key] = dataValue;
+                user[dataKey] = dataValue;
 
                 // save updated user data
                 await AsyncStorage.setItem('user', JSON.stringify(user));
@@ -322,7 +322,8 @@ const settingsSlice = createSlice({
             })
             .addCase(toggleSettingsSwitch.rejected, (state, action) => {
                 state.wait = false;
-            });
+            })
+            .addCase(logout, () => initialState);
 
     }
 });
