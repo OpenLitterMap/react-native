@@ -4,13 +4,14 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {URL} from '../actions/types';
 import {formatKey} from '../utils/formatKey';
 
-const CACHE_KEY = 'tags_cache_v3';
+const CACHE_KEY = 'tags_cache_v4';
 const CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
 const initialState = {
     objectEntries: [], // One entry per (object, category) pair + type entries
     categoriesById: {}, // { id: { id, key, displayName } }
     entriesByCloId: {}, // { cloId: entry } for fast lookup (base entries only)
+    typeEntriesByKey: {}, // { 'cloId-typeId': entry } for fast type entry lookup
     typesById: {}, // { id: { id, key, name } }
     loading: false,
     lastFetchedAt: null
@@ -106,6 +107,8 @@ export const fetchAllTags = createAsyncThunk(
                 }
             }
 
+            const typeEntriesByKey = {};
+
             if (data.category_object_types) {
                 for (const cot of data.category_object_types) {
                     const parentEntry =
@@ -126,7 +129,7 @@ export const fetchAllTags = createAsyncThunk(
                         .replace(/_/g, ' ')
                         .toLowerCase();
 
-                    objectEntries.push({
+                    const typeEntry = {
                         cloId: parentEntry.cloId,
                         objectId: parentEntry.objectId,
                         objectKey: parentEntry.objectKey,
@@ -140,7 +143,11 @@ export const fetchAllTags = createAsyncThunk(
                         typeName,
                         parentDisplayName: parentEntry.displayName,
                         searchText: `${typeText} ${objectText} ${categoryText}`
-                    });
+                    };
+
+                    objectEntries.push(typeEntry);
+                    typeEntriesByKey[`${parentEntry.cloId}-${type.id}`] =
+                        typeEntry;
                 }
             }
 
@@ -183,6 +190,7 @@ export const fetchAllTags = createAsyncThunk(
                 objectEntries,
                 categoriesById,
                 entriesByCloId,
+                typeEntriesByKey,
                 typesById,
                 lastFetchedAt: Date.now()
             };
@@ -212,6 +220,7 @@ const tagsSlice = createSlice({
                 state.objectEntries = action.payload.objectEntries;
                 state.categoriesById = action.payload.categoriesById;
                 state.entriesByCloId = action.payload.entriesByCloId;
+                state.typeEntriesByKey = action.payload.typeEntriesByKey || {};
                 state.typesById = action.payload.typesById || {};
                 state.lastFetchedAt = action.payload.lastFetchedAt;
                 state.loading = false;

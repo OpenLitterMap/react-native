@@ -13,11 +13,11 @@ const CategoryBrowser = ({
 }) => {
     const [selectedCategoryId, setSelectedCategoryId] = useState(null);
 
-    const taggedCloIds = useMemo(() => {
+    const taggedKeys = useMemo(() => {
         const set = new Set();
         if (currentTags) {
             for (const t of currentTags) {
-                set.add(t.cloId);
+                set.add(`${t.cloId}-${t.typeId || ''}`);
             }
         }
         return set;
@@ -71,8 +71,8 @@ const CategoryBrowser = ({
     }, [filteredEntries]);
 
     const handleSelect = useCallback(
-        cloId => {
-            onAddTag(cloId);
+        (cloId, typeId) => {
+            onAddTag(cloId, typeId);
         },
         [onAddTag]
     );
@@ -83,7 +83,9 @@ const CategoryBrowser = ({
 
     const renderItem = useCallback(
         ({item}) => {
-            const isAdded = taggedCloIds.has(item.cloId);
+            const isAdded = taggedKeys.has(
+                `${item.cloId}-${item.typeId || ''}`
+            );
             const categoryColor = getCategoryColor(item.categoryKey);
 
             return (
@@ -93,7 +95,7 @@ const CategoryBrowser = ({
                         isAdded && styles.resultRowAdded,
                         pressed && styles.resultRowPressed
                     ]}
-                    onPress={() => handleSelect(item.cloId)}>
+                    onPress={() => handleSelect(item.cloId, item.typeId)}>
                     <View
                         style={[
                             styles.colorBar,
@@ -150,7 +152,7 @@ const CategoryBrowser = ({
                 </Pressable>
             );
         },
-        [taggedCloIds, handleSelect]
+        [taggedKeys, handleSelect]
     );
 
     const keyExtractor = useCallback((item, index) => {
@@ -233,7 +235,7 @@ const styles = StyleSheet.create({
         borderRadius: 14,
         marginHorizontal: 16,
         marginTop: 4,
-        maxHeight: 380,
+        maxHeight: 480,
         overflow: 'hidden',
         borderWidth: 1,
         borderColor: '#e8e8e8'
@@ -253,14 +255,16 @@ const styles = StyleSheet.create({
     },
     chipsRow: {
         paddingHorizontal: 10,
-        paddingVertical: 8,
+        paddingTop: 10,
+        paddingBottom: 18,
         gap: 6,
         borderBottomWidth: StyleSheet.hairlineWidth,
         borderBottomColor: '#f0f0f0'
     },
     chip: {
         paddingHorizontal: 12,
-        paddingVertical: 5,
+        height: 39,
+        justifyContent: 'center',
         borderRadius: 100,
         backgroundColor: '#f0f0f0'
     },
@@ -268,7 +272,8 @@ const styles = StyleSheet.create({
         backgroundColor: Colors.accent
     },
     chipText: {
-        fontSize: 12
+        fontSize: 13,
+        lineHeight: 18
     },
     list: {
         flexGrow: 0

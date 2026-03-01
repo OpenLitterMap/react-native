@@ -25,11 +25,11 @@ const TagSearchBar = ({
     const [query, setQuery] = useState('');
     const [isFocused, setIsFocused] = useState(false);
 
-    const taggedCloIds = useMemo(() => {
+    const taggedKeys = useMemo(() => {
         const set = new Set();
         if (currentTags) {
             for (const t of currentTags) {
-                set.add(t.cloId);
+                set.add(`${t.cloId}-${t.typeId || ''}`);
             }
         }
         return set;
@@ -83,8 +83,8 @@ const TagSearchBar = ({
     const showResults = showDropdown && sections.length > 0;
 
     const handleSelect = useCallback(
-        cloId => {
-            onAddTag(cloId);
+        (cloId, typeId) => {
+            onAddTag(cloId, typeId);
             setQuery('');
             Keyboard.dismiss();
         },
@@ -133,7 +133,9 @@ const TagSearchBar = ({
 
     const renderItem = useCallback(
         ({item}) => {
-            const isAdded = taggedCloIds.has(item.cloId);
+            const isAdded = taggedKeys.has(
+                `${item.cloId}-${item.typeId || ''}`
+            );
             const categoryColor = getCategoryColor(item.categoryKey);
 
             return (
@@ -143,7 +145,7 @@ const TagSearchBar = ({
                         isAdded && styles.resultRowAdded,
                         pressed && styles.resultRowPressed
                     ]}
-                    onPress={() => handleSelect(item.cloId)}>
+                    onPress={() => handleSelect(item.cloId, item.typeId)}>
                     <View
                         style={[
                             styles.colorBar,
@@ -185,7 +187,7 @@ const TagSearchBar = ({
                 </Pressable>
             );
         },
-        [taggedCloIds, handleSelect]
+        [taggedKeys, handleSelect]
     );
 
     const keyExtractor = useCallback((item, index) => {

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {
     ActivityIndicator,
     Alert,
@@ -11,8 +11,8 @@ import {
     TouchableWithoutFeedback,
     View
 } from 'react-native';
-import { useDispatch, useSelector } from 'react-redux';
-import { setModel } from '../../reducers/settings_reducer';
+import {useDispatch, useSelector} from 'react-redux';
+import {setModel} from '../../reducers/settings_reducer';
 import {
     cancelUpload,
     checkAppVersion,
@@ -36,48 +36,51 @@ import {
     uploadImage,
     uploadTagsToWebImage
 } from '../../reducers/images_reducer';
-import { getPhotosFromCameraroll } from "../../reducers/gallery_reducer";
-import { fetchAllTags } from "../../reducers/tags_reducer";
+import {getPhotosFromCameraroll} from '../../reducers/gallery_reducer';
+import {fetchAllTags} from '../../reducers/tags_reducer';
 
 import Icon from 'react-native-vector-icons/Ionicons';
-import { Body, Colors, Header, Title } from '../components';
+import {Body, Colors, Header, Title} from '../components';
 
-import { checkCameraRollPermission } from '../../utils/permissions';
-import { isGeotagged } from '../../utils/isGeotagged';
+import {checkCameraRollPermission} from '../../utils/permissions';
+import {isGeotagged} from '../../utils/isGeotagged';
 
 // Components
-import { ActionButton , UploadButton, UploadImagesGrid } from './homeComponents';
+import {ActionButton, UploadButton, UploadImagesGrid} from './homeComponents';
 import DeviceInfo from 'react-native-device-info';
-import { isTagged } from '../../utils/isTagged';
-import { useTranslation } from "react-i18next";
+import {isTagged} from '../../utils/isTagged';
+import {useTranslation} from 'react-i18next';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 
-const HomeScreen = ({ navigation }) => {
-
+const HomeScreen = ({navigation}) => {
     const dispatch = useDispatch();
 
     const isUploadCancelled = useRef(false);
-    const [isSelectingImagesToDelete, setIsSelectingImagesToDelete] = useState(false);
+    const [isSelectingImagesToDelete, setIsSelectingImagesToDelete] =
+        useState(false);
 
     const appVersion = useSelector(state => state.shared.appVersion);
     const images = useSelector(state => state.images.imagesArray);
     const lang = useSelector(state => state.auth.lang);
     const showModal = useSelector(state => state.shared.showModal);
     const model = useSelector(state => state.settings.model);
-    const showThankYouMessages = useSelector(state => state.shared.showThankYouMessages);
+    const showThankYouMessages = useSelector(
+        state => state.shared.showThankYouMessages
+    );
     const token = useSelector(state => state.auth.token);
     const user = useSelector(state => state.auth.user);
     const uniqueValue = useSelector(state => state.shared.uniqueValue);
     const isUploading = useSelector(state => state.shared.isUploading);
-    const entriesByCloId = useSelector(state => state.tags.entriesByCloId);
-    const categoriesById = useSelector(state => state.tags.categoriesById);
-
     // Upload progress
     const uploadPhase = useSelector(state => state.images.uploadPhase);
-    const currentUploadIndex = useSelector(state => state.images.currentUploadIndex);
-    const uploadAbortReason = useSelector(state => state.images.uploadAbortReason);
+    const currentUploadIndex = useSelector(
+        state => state.images.currentUploadIndex
+    );
+    const uploadAbortReason = useSelector(
+        state => state.images.uploadAbortReason
+    );
 
     // Number of selected images
     const selected = images.filter(img => img.selected).length;
@@ -99,11 +102,20 @@ const HomeScreen = ({ navigation }) => {
 
     // Show alert after re-login if upload was interrupted by token expiry
     useEffect(() => {
-        if (token && uploadAbortReason === 'token-expired' && images.length > 0) {
+        if (
+            token &&
+            uploadAbortReason === 'token-expired' &&
+            images.length > 0
+        ) {
             Alert.alert(
                 'Upload Interrupted',
                 'Your session expired during upload. Your photos are preserved — press Upload to continue.',
-                [{ text: 'OK', onPress: () => dispatch(setUploadAbortReason(null)) }]
+                [
+                    {
+                        text: 'OK',
+                        onPress: () => dispatch(setUploadAbortReason(null))
+                    }
+                ]
             );
         }
     }, [token]);
@@ -121,7 +133,7 @@ const HomeScreen = ({ navigation }) => {
             }
 
             // Pre-fetch tags for the v5 tagging UI
-            dispatch(fetchAllTags({ token }));
+            dispatch(fetchAllTags({token}));
 
             if (!__DEV__) {
                 await checkNewVersion();
@@ -134,26 +146,26 @@ const HomeScreen = ({ navigation }) => {
         checkPermissionsAndFetchData();
     }, [token]);
 
-    const { t } = useTranslation();
+    const {t} = useTranslation();
     const cancelText = t('Cancel');
     const deleteText = t('Delete');
 
     const cancelUploadWrapper = () => {
         isUploadCancelled.current = true;
         dispatch(cancelUpload());
-    }
+    };
 
-    async function checkGalleryPermission () {
+    async function checkGalleryPermission() {
         const result = await checkCameraRollPermission();
 
         if (result === 'granted' || result === 'limited') {
             await dispatch(getPhotosFromCameraroll());
         } else {
-            navigation.navigate('PERMISSION', { screen: 'GALLERY_PERMISSION' });
+            navigation.navigate('PERMISSION', {screen: 'GALLERY_PERMISSION'});
         }
     }
 
-    async function checkNewVersion () {
+    async function checkNewVersion() {
         if (appVersion === null) {
             await dispatch(checkAppVersion());
         }
@@ -181,13 +193,14 @@ const HomeScreen = ({ navigation }) => {
         const platform = Platform.OS;
         const currentVersion = DeviceInfo.getVersion();
 
-        if (appVersion)
-        {
+        if (appVersion) {
             const latestVersion = appVersion[platform]?.version;
 
-            if (latestVersion)
-            {
-                const comparisonResult = compareVersions(latestVersion, currentVersion);
+            if (latestVersion) {
+                const comparisonResult = compareVersions(
+                    latestVersion,
+                    currentVersion
+                );
 
                 if (comparisonResult > 0) {
                     navigation.navigate('UPDATE');
@@ -200,7 +213,7 @@ const HomeScreen = ({ navigation }) => {
      * Navigate to album screen
      */
     const loadGallery = async () => {
-        navigation.navigate('ALBUM', { screen: 'GALLERY' });
+        navigation.navigate('ALBUM', {screen: 'GALLERY'});
     };
 
     /**
@@ -224,7 +237,7 @@ const HomeScreen = ({ navigation }) => {
         }
 
         return <ActionButton status={status} onPress={fabFunction} />;
-    }
+    };
 
     /**
      * Render helper text when delete button is clicked
@@ -246,21 +259,23 @@ const HomeScreen = ({ navigation }) => {
                 </View>
             );
         }
-    }
+    };
 
     const renderUploadButton = () => {
-
         if (images?.length === 0 || isSelectingImagesToDelete) {
             return;
         }
 
         // if all images of type web with no tags, return
-        if (images?.length > 0 && images.every(img => img.type === 'web' && !isTagged(img))) {
+        if (
+            images?.length > 0 &&
+            images.every(img => img.type === 'web' && !isTagged(img))
+        ) {
             return;
         }
 
         return <UploadButton onPress={uploadPhotos} />;
-    }
+    };
 
     /**
      * Render Delete / Cancel Header Button
@@ -270,8 +285,9 @@ const HomeScreen = ({ navigation }) => {
             return (
                 <Text
                     style={styles.normalWhiteText}
-                    onPress={handleToggleSelecting}
-                >{cancelText}</Text>
+                    onPress={handleToggleSelecting}>
+                    {cancelText}
+                </Text>
             );
         }
 
@@ -279,13 +295,14 @@ const HomeScreen = ({ navigation }) => {
             return (
                 <Text
                     style={styles.normalWhiteText}
-                    onPress={handleToggleSelecting}
-                >{deleteText}</Text>
+                    onPress={handleToggleSelecting}>
+                    {deleteText}
+                </Text>
             );
         }
 
         return null;
-    }
+    };
 
     /**
      * Toggle Selecting - header right
@@ -294,7 +311,7 @@ const HomeScreen = ({ navigation }) => {
         dispatch(deselectAllImages());
 
         setIsSelectingImagesToDelete(!isSelectingImagesToDelete);
-    }
+    };
 
     /**
      * if image is of type WEB -- hit api to delete uploaded image
@@ -307,11 +324,13 @@ const HomeScreen = ({ navigation }) => {
         images.map(async image => {
             if (image.selected) {
                 if (image.type === 'web' && image.uploaded) {
-                    await dispatch(deleteWebImage({
-                        token,
-                        photoId: image.id,
-                        enableAdminTagging: user.enable_admin_tagging
-                    }));
+                    await dispatch(
+                        deleteWebImage({
+                            token,
+                            photoId: image.id,
+                            enableAdminTagging: user.enable_admin_tagging
+                        })
+                    );
                 } else {
                     dispatch(deleteImage(image.id));
                 }
@@ -319,44 +338,35 @@ const HomeScreen = ({ navigation }) => {
         });
 
         setIsSelectingImagesToDelete(false);
-    }
+    };
 
     /**
      * Build v5 tags payload from an image's tagsV5 array.
-     * Resolves cloId → full { object, category, quantity, picked_up } format.
+     * Uses CLO format: { category_litter_object_id, litter_object_type_id, ... }
      */
-    const buildV5TagsPayload = (img) => {
-        if (!img.tagsV5 || img.tagsV5.length === 0) return null;
+    const buildV5TagsPayload = img => {
+        if (!img.tagsV5 || img.tagsV5.length === 0) {
+            return null;
+        }
 
-        return img.tagsV5.map(tag => {
-            const entry = entriesByCloId[tag.cloId];
-            if (!entry) {
-                if (__DEV__) console.warn('[Upload] Unresolved cloId:', tag.cloId);
-                return null;
-            }
-
-            const cat = categoriesById[entry.categoryId];
-
-            return {
-                object: { id: entry.objectId, key: entry.objectKey },
-                category: { id: entry.categoryId, key: cat?.key || entry.categoryKey },
-                quantity: tag.quantity,
-                picked_up: img.picked_up ? true : false,
-                materials: [],
-                brands: [],
-                custom_tags: []
-            };
-        }).filter(Boolean);
+        return img.tagsV5.map(tag => ({
+            category_litter_object_id: tag.cloId,
+            litter_object_type_id: tag.typeId || null,
+            quantity: tag.quantity,
+            picked_up: img.picked_up ? true : false,
+            materials: [],
+            brands: [],
+            custom_tags: []
+        }));
     };
 
-    const getImageDataForUpload = (img) => {
+    const getImageDataForUpload = img => {
         const isGeoTagged = isGeotagged(img);
         const photoHasTags = isTagged(img);
         const hasV5Tags = img.tagsV5 && img.tagsV5.length > 0;
 
         // Upload any new image that is tagged or not
-        if (img.type === 'gallery' && isGeoTagged)
-        {
+        if (img.type === 'gallery' && isGeoTagged) {
             let imageData = new FormData();
 
             imageData.append('photo', {
@@ -377,18 +387,22 @@ const HomeScreen = ({ navigation }) => {
                     imageData.append('tags', JSON.stringify(img.tags));
                 }
 
-                if (img.hasOwnProperty('customTags') && img.customTags.length > 0) {
-                    imageData.append('custom_tags', JSON.stringify(img.customTags));
+                if (
+                    img.hasOwnProperty('customTags') &&
+                    img.customTags.length > 0
+                ) {
+                    imageData.append(
+                        'custom_tags',
+                        JSON.stringify(img.customTags)
+                    );
                 }
             }
 
             return [imageData, photoHasTags, isGeoTagged];
-        }
-        else if (img.type === 'web')
-        {
+        } else if (img.type === 'web') {
             return [null, photoHasTags, true];
         }
-    }
+    };
 
     /**
      * Upload photos, 1 photo per request.
@@ -396,8 +410,8 @@ const HomeScreen = ({ navigation }) => {
      */
     const uploadPhotos = async () => {
         // Pre-upload validation: filter out non-geotagged gallery images
-        const geotaggedImages = images.filter(img =>
-            img.type === 'web' || isGeotagged(img)
+        const geotaggedImages = images.filter(
+            img => img.type === 'web' || isGeotagged(img)
         );
         const skippedCount = images.length - geotaggedImages.length;
 
@@ -405,15 +419,25 @@ const HomeScreen = ({ navigation }) => {
             const confirmed = await new Promise(resolve => {
                 Alert.alert(
                     'Missing GPS Data',
-                    `${geotaggedImages.length} of ${images.length} photos will be uploaded. ${skippedCount} ${skippedCount === 1 ? 'photo' : 'photos'} skipped (no GPS data).`,
+                    `${geotaggedImages.length} of ${
+                        images.length
+                    } photos will be uploaded. ${skippedCount} ${
+                        skippedCount === 1 ? 'photo' : 'photos'
+                    } skipped (no GPS data).`,
                     [
-                        { text: 'Cancel', onPress: () => resolve(false), style: 'cancel' },
-                        { text: 'Continue', onPress: () => resolve(true) }
+                        {
+                            text: 'Cancel',
+                            onPress: () => resolve(false),
+                            style: 'cancel'
+                        },
+                        {text: 'Continue', onPress: () => resolve(true)}
                     ]
                 );
             });
 
-            if (!confirmed) return;
+            if (!confirmed) {
+                return;
+            }
         }
 
         dispatch(resetUploadState());
@@ -426,10 +450,8 @@ const HomeScreen = ({ navigation }) => {
         // shared.js -> showModal = true; isUploading = true;
         dispatch(startUploading());
 
-        if (geotaggedImages.length)
-        {
-            for (let i = 0; i < geotaggedImages.length; i++)
-            {
+        if (geotaggedImages.length) {
+            for (let i = 0; i < geotaggedImages.length; i++) {
                 const img = geotaggedImages[i];
 
                 if (isUploadCancelled.current) {
@@ -439,21 +461,23 @@ const HomeScreen = ({ navigation }) => {
 
                 dispatch(setCurrentUploadIndex(i));
 
-                const [imageData, photoHasTags, isGeoTagged] = getImageDataForUpload(img);
+                const [imageData, photoHasTags, isGeoTagged] =
+                    getImageDataForUpload(img);
 
                 const hasV5Tags = img.tagsV5 && img.tagsV5.length > 0;
 
-                if (img.type === 'gallery' && isGeoTagged)
-                {
+                if (img.type === 'gallery' && isGeoTagged) {
                     dispatch(setUploadPhase('uploading'));
 
-                    const result = await dispatch(uploadImage({
-                        token,
-                        imageData,
-                        imageId: img.id,
-                        enableAdminTagging: user.enable_admin_tagging,
-                        photoHasTags: hasV5Tags ? false : photoHasTags
-                    }));
+                    const result = await dispatch(
+                        uploadImage({
+                            token,
+                            imageData,
+                            imageId: img.id,
+                            enableAdminTagging: user.enable_admin_tagging,
+                            photoHasTags: hasV5Tags ? false : photoHasTags
+                        })
+                    );
 
                     // If upload succeeded and image has v5 tags, post them
                     if (hasV5Tags && result.payload?.photo_id) {
@@ -461,34 +485,34 @@ const HomeScreen = ({ navigation }) => {
 
                         const v5Payload = buildV5TagsPayload(img);
                         if (v5Payload && v5Payload.length > 0) {
-                            await dispatch(postTagsToPhoto({
-                                token,
-                                photoId: result.payload.photo_id,
-                                tags: v5Payload,
-                                pickedUp: img.picked_up
-                            }));
+                            await dispatch(
+                                postTagsToPhoto({
+                                    token,
+                                    photoId: result.payload.photo_id,
+                                    tags: v5Payload,
+                                    pickedUp: img.picked_up
+                                })
+                            );
                         }
                     }
-                }
-                else if (img.type === 'web' && hasV5Tags)
-                {
+                } else if (img.type === 'web' && hasV5Tags) {
                     dispatch(setUploadPhase('tagging'));
 
                     const v5Payload = buildV5TagsPayload(img);
                     if (v5Payload && v5Payload.length > 0) {
-                        await dispatch(postTagsToPhoto({
-                            token,
-                            photoId: img.id,
-                            tags: v5Payload,
-                            pickedUp: img.picked_up
-                        }));
+                        await dispatch(
+                            postTagsToPhoto({
+                                token,
+                                photoId: img.id,
+                                tags: v5Payload,
+                                pickedUp: img.picked_up
+                            })
+                        );
                     }
-                }
-                else if (img.type === 'web' && photoHasTags)
-                {
+                } else if (img.type === 'web' && photoHasTags) {
                     dispatch(setUploadPhase('tagging'));
 
-                    await dispatch(uploadTagsToWebImage({ token, img }));
+                    await dispatch(uploadTagsToWebImage({token, img}));
                 }
             }
         }
@@ -512,7 +536,7 @@ const HomeScreen = ({ navigation }) => {
      */
     const hideThankYouMessages = () => {
         dispatch(closeThankYouMessages());
-    }
+    };
 
     /**
      * Render the upload progress text based on current phase
@@ -533,21 +557,33 @@ const HomeScreen = ({ navigation }) => {
     const renderFailureDetails = () => {
         const items = [];
 
-        if (failedCounts.network > 0)
-            items.push(`${failedCounts.network} failed — no internet connection`);
-        if (failedCounts.timeout > 0)
+        if (failedCounts.network > 0) {
+            items.push(
+                `${failedCounts.network} failed — no internet connection`
+            );
+        }
+        if (failedCounts.timeout > 0) {
             items.push(`${failedCounts.timeout} failed — connection timed out`);
-        if (failedCounts.server > 0)
+        }
+        if (failedCounts.server > 0) {
             items.push(`${failedCounts.server} failed — server error`);
-        if (failedCounts.alreadyUploaded > 0)
+        }
+        if (failedCounts.alreadyUploaded > 0) {
             items.push(`${failedCounts.alreadyUploaded} already uploaded`);
-        if (failedCounts.invalidCoordinates > 0)
-            items.push(`${failedCounts.invalidCoordinates} invalid coordinates`);
-        if (failedCounts.unknown > 0)
+        }
+        if (failedCounts.invalidCoordinates > 0) {
+            items.push(
+                `${failedCounts.invalidCoordinates} invalid coordinates`
+            );
+        }
+        if (failedCounts.unknown > 0) {
             items.push(`${failedCounts.unknown} failed — unknown error`);
+        }
 
         return items.map((text, i) => (
-            <Text key={i} style={{ fontSize: SCREEN_HEIGHT * 0.016, marginBottom: 2 }}>
+            <Text
+                key={i}
+                style={{fontSize: SCREEN_HEIGHT * 0.016, marginBottom: 2}}>
                 {text}
             </Text>
         ));
@@ -563,15 +599,17 @@ const HomeScreen = ({ navigation }) => {
             />
             <View style={styles.container}>
                 {/* INFO: modal to show during image upload */}
-                <Modal animationType="slide" transparent={true} visible={showModal}>
+                <Modal
+                    animationType="slide"
+                    transparent={true}
+                    visible={showModal}>
                     {/* Uploading spinner with phase-aware progress */}
                     {isUploading && (
                         <View style={styles.modal}>
                             <Text style={styles.uploadText}>
                                 {totalToUpload > 0
                                     ? renderProgressText()
-                                    : t('Please wait while your photos upload')
-                                }
+                                    : t('Please wait while your photos upload')}
                             </Text>
 
                             <ActivityIndicator style={{marginBottom: 10}} />
@@ -587,29 +625,55 @@ const HomeScreen = ({ navigation }) => {
                     {showThankYouMessages && (
                         <View style={styles.modal}>
                             <View style={styles.thankYouModalInner}>
-                                <Text style={{ fontSize: SCREEN_HEIGHT * 0.03, marginBottom: 5 }}>
-                                    { t('Thank you!!!') }
+                                <Text
+                                    style={{
+                                        fontSize: SCREEN_HEIGHT * 0.03,
+                                        marginBottom: 5
+                                    }}>
+                                    {t('Thank you!!!')}
                                 </Text>
 
                                 {/* Upload success */}
                                 {uploaded > 0 && (
-                                    <Text style={{ fontSize: SCREEN_HEIGHT * 0.02, marginBottom: 5 }}>
-                                        { t('You have uploaded {{count}} photos', { count: uploaded }) }
+                                    <Text
+                                        style={{
+                                            fontSize: SCREEN_HEIGHT * 0.02,
+                                            marginBottom: 5
+                                        }}>
+                                        {t(
+                                            'You have uploaded {{count}} photos',
+                                            {count: uploaded}
+                                        )}
                                     </Text>
                                 )}
 
                                 {/* Tagging success */}
                                 {tagged > 0 && (
-                                    <Text style={{ fontSize: SCREEN_HEIGHT * 0.02, marginBottom: 5 }}>
-                                        { t('You have tagged {{count}} photos', { count: tagged }) }
+                                    <Text
+                                        style={{
+                                            fontSize: SCREEN_HEIGHT * 0.02,
+                                            marginBottom: 5
+                                        }}>
+                                        {t('You have tagged {{count}} photos', {
+                                            count: tagged
+                                        })}
                                     </Text>
                                 )}
 
                                 {/* Failure details */}
                                 {totalFailed > 0 && (
-                                    <View style={{ marginBottom: 5 }}>
-                                        <Text style={{ fontSize: SCREEN_HEIGHT * 0.02, fontWeight: 'bold', marginBottom: 3 }}>
-                                            {totalFailed} {totalFailed === 1 ? 'item' : 'items'} failed
+                                    <View style={{marginBottom: 5}}>
+                                        <Text
+                                            style={{
+                                                fontSize: SCREEN_HEIGHT * 0.02,
+                                                fontWeight: 'bold',
+                                                marginBottom: 3
+                                            }}>
+                                            {totalFailed}{' '}
+                                            {totalFailed === 1
+                                                ? 'item'
+                                                : 'items'}{' '}
+                                            failed
                                         </Text>
                                         {renderFailureDetails()}
                                     </View>
@@ -618,19 +682,32 @@ const HomeScreen = ({ navigation }) => {
                                 <View style={{flexDirection: 'row', gap: 10}}>
                                     {/* Retry button — only when there are failures */}
                                     {totalFailed > 0 && (
-                                        <TouchableWithoutFeedback onPress={retryFailedUploads}>
-                                            <View style={[styles.thankYouButton, { backgroundColor: Colors.accent }]}>
-                                                <Text style={styles.normalWhiteText}>
+                                        <TouchableWithoutFeedback
+                                            onPress={retryFailedUploads}>
+                                            <View
+                                                style={[
+                                                    styles.thankYouButton,
+                                                    {
+                                                        backgroundColor:
+                                                            Colors.accent
+                                                    }
+                                                ]}>
+                                                <Text
+                                                    style={
+                                                        styles.normalWhiteText
+                                                    }>
                                                     Retry
                                                 </Text>
                                             </View>
                                         </TouchableWithoutFeedback>
                                     )}
 
-                                    <TouchableWithoutFeedback onPress={hideThankYouMessages}>
+                                    <TouchableWithoutFeedback
+                                        onPress={hideThankYouMessages}>
                                         <View style={styles.thankYouButton}>
-                                            <Text style={styles.normalWhiteText}>
-                                                { t('Close') }
+                                            <Text
+                                                style={styles.normalWhiteText}>
+                                                {t('Close')}
                                             </Text>
                                         </View>
                                     </TouchableWithoutFeedback>
@@ -649,14 +726,16 @@ const HomeScreen = ({ navigation }) => {
                     isSelecting={isSelectingImagesToDelete}
                 />
 
-                <View style={styles.bottomContainer}>{renderHelperMessage()}</View>
+                <View style={styles.bottomContainer}>
+                    {renderHelperMessage()}
+                </View>
             </View>
 
             {renderActionButton()}
             {renderUploadButton()}
         </>
     );
-}
+};
 
 const styles = StyleSheet.create({
     bottomContainer: {

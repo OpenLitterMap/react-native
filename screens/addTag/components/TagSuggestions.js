@@ -8,10 +8,13 @@ const TagSuggestions = ({
     currentIndex,
     currentTags,
     entriesByCloId,
+    typeEntriesByKey,
     onAddTag
 }) => {
     const suggestions = useMemo(() => {
-        const currentCloIds = new Set((currentTags || []).map(t => t.cloId));
+        const currentKeys = new Set(
+            (currentTags || []).map(t => `${t.cloId}-${t.typeId || ''}`)
+        );
         const frequency = {};
 
         for (let i = 0; i < images.length; i++) {
@@ -20,8 +23,9 @@ const TagSuggestions = ({
             }
             const tags = images[i].tagsV5 || [];
             for (const tag of tags) {
-                if (!currentCloIds.has(tag.cloId)) {
-                    frequency[tag.cloId] = (frequency[tag.cloId] || 0) + 1;
+                const key = `${tag.cloId}-${tag.typeId || ''}`;
+                if (!currentKeys.has(key)) {
+                    frequency[key] = (frequency[key] || 0) + 1;
                 }
             }
         }
@@ -29,16 +33,21 @@ const TagSuggestions = ({
         return Object.entries(frequency)
             .sort((a, b) => b[1] - a[1])
             .slice(0, 10)
-            .map(([cloId]) => ({
-                cloId: Number(cloId),
-                entry: entriesByCloId[Number(cloId)]
-            }))
+            .map(([key]) => {
+                const [cloIdStr, typeIdStr] = key.split('-');
+                const cloId = Number(cloIdStr);
+                const typeId = typeIdStr ? Number(typeIdStr) : null;
+                const entry = typeId
+                    ? typeEntriesByKey?.[`${cloId}-${typeId}`]
+                    : entriesByCloId[cloId];
+                return {cloId, typeId, entry};
+            })
             .filter(s => s.entry);
-    }, [images, currentIndex, currentTags, entriesByCloId]);
+    }, [images, currentIndex, currentTags, entriesByCloId, typeEntriesByKey]);
 
     const handleAdd = useCallback(
-        cloId => {
-            onAddTag(cloId);
+        (cloId, typeId) => {
+            onAddTag(cloId, typeId);
         },
         [onAddTag]
     );
@@ -60,14 +69,14 @@ const TagSuggestions = ({
                 showsHorizontalScrollIndicator={false}
                 contentContainerStyle={styles.scrollContent}
                 keyboardShouldPersistTaps="handled">
-                {suggestions.map(({cloId, entry}) => (
+                {suggestions.map(({cloId, typeId, entry}) => (
                     <Pressable
-                        key={cloId}
+                        key={`${cloId}-${typeId || ''}`}
                         style={({pressed}) => [
                             styles.chip,
                             pressed && styles.chipPressed
                         ]}
-                        onPress={() => handleAdd(cloId)}>
+                        onPress={() => handleAdd(cloId, typeId)}>
                         <Icon name="add" size={14} color={Colors.accent} />
                         <Caption
                             color="white"

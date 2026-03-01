@@ -40,6 +40,7 @@ const AddTagScreen = ({navigation}) => {
         objectEntries,
         categoriesById,
         entriesByCloId,
+        typeEntriesByKey,
         loading: tagsLoading
     } = useSelector(state => state.tags);
 
@@ -151,28 +152,29 @@ const AddTagScreen = ({navigation}) => {
 
     // Tag actions
     const handleAddTag = useCallback(
-        cloId => {
-            dispatch(addTagV5({imageIndex: swiperIndex, cloId}));
+        (cloId, typeId) => {
+            dispatch(addTagV5({imageIndex: swiperIndex, cloId, typeId}));
         },
         [dispatch, swiperIndex]
     );
 
     const handleRemoveTag = useCallback(
-        cloId => {
-            dispatch(removeTagV5({imageIndex: swiperIndex, cloId}));
+        (cloId, typeId) => {
+            dispatch(removeTagV5({imageIndex: swiperIndex, cloId, typeId}));
         },
         [dispatch, swiperIndex]
     );
 
     const handleUpdateQuantity = useCallback(
-        (cloId, newQuantity) => {
+        (cloId, typeId, newQuantity) => {
             if (newQuantity <= 0) {
-                dispatch(removeTagV5({imageIndex: swiperIndex, cloId}));
+                dispatch(removeTagV5({imageIndex: swiperIndex, cloId, typeId}));
             } else {
                 dispatch(
                     updateTagQuantityV5({
                         imageIndex: swiperIndex,
                         cloId,
+                        typeId,
                         quantity: newQuantity
                     })
                 );
@@ -323,6 +325,7 @@ const AddTagScreen = ({navigation}) => {
                         <TagPills
                             tags={currentTags}
                             entriesByCloId={entriesByCloId}
+                            typeEntriesByKey={typeEntriesByKey}
                             onRemove={handleRemoveTag}
                             onUpdateQuantity={handleUpdateQuantity}
                         />
@@ -333,6 +336,7 @@ const AddTagScreen = ({navigation}) => {
                             currentIndex={swiperIndex}
                             currentTags={currentTags}
                             entriesByCloId={entriesByCloId}
+                            typeEntriesByKey={typeEntriesByKey}
                             onAddTag={handleAddTag}
                         />
 

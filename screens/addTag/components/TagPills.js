@@ -17,8 +17,14 @@ if (Platform.OS === 'android') {
 
 const MAX_QUANTITY = 10;
 
-const TagPills = ({tags, entriesByCloId, onRemove, onUpdateQuantity}) => {
-    const [expandedCloId, setExpandedCloId] = useState(null);
+const TagPills = ({
+    tags,
+    entriesByCloId,
+    typeEntriesByKey,
+    onRemove,
+    onUpdateQuantity
+}) => {
+    const [expandedKey, setExpandedKey] = useState(null);
     const prevTagCount = useRef(tags?.length || 0);
 
     const tagCount = tags?.length || 0;
@@ -31,37 +37,37 @@ const TagPills = ({tags, entriesByCloId, onRemove, onUpdateQuantity}) => {
         }
     }, [tagCount]);
 
-    const handlePillPress = useCallback(cloId => {
+    const handlePillPress = useCallback(key => {
         LayoutAnimation.configureNext(
             LayoutAnimation.create(150, 'easeInEaseOut', 'opacity')
         );
-        setExpandedCloId(prev => (prev === cloId ? null : cloId));
+        setExpandedKey(prev => (prev === key ? null : key));
     }, []);
 
     const handleRemove = useCallback(
-        cloId => {
-            setExpandedCloId(null);
-            onRemove(cloId);
+        (cloId, typeId) => {
+            setExpandedKey(null);
+            onRemove(cloId, typeId);
         },
         [onRemove]
     );
 
     const handleIncrement = useCallback(
-        (cloId, currentQty) => {
+        (cloId, typeId, currentQty) => {
             if (currentQty < MAX_QUANTITY) {
-                onUpdateQuantity(cloId, currentQty + 1);
+                onUpdateQuantity(cloId, typeId, currentQty + 1);
             }
         },
         [onUpdateQuantity]
     );
 
     const handleDecrement = useCallback(
-        (cloId, currentQty) => {
+        (cloId, typeId, currentQty) => {
             if (currentQty <= 1) {
-                setExpandedCloId(null);
-                onRemove(cloId);
+                setExpandedKey(null);
+                onRemove(cloId, typeId);
             } else {
-                onUpdateQuantity(cloId, currentQty - 1);
+                onUpdateQuantity(cloId, typeId, currentQty - 1);
             }
         },
         [onRemove, onUpdateQuantity]
@@ -75,20 +81,24 @@ const TagPills = ({tags, entriesByCloId, onRemove, onUpdateQuantity}) => {
         <View style={styles.container}>
             <View style={styles.pillsWrap}>
                 {tags.map(tag => {
-                    const entry = entriesByCloId[tag.cloId];
+                    const tagKey = `${tag.cloId}-${tag.typeId || ''}`;
+                    const entry = tag.typeId
+                        ? typeEntriesByKey?.[`${tag.cloId}-${tag.typeId}`] ||
+                          entriesByCloId[tag.cloId]
+                        : entriesByCloId[tag.cloId];
                     const name = entry?.displayName || `#${tag.cloId}`;
                     const category = entry?.isMultiCategory
                         ? entry.categoryDisplayName
                         : null;
                     const label = category ? `${name} · ${category}` : name;
                     const qty = tag.quantity;
-                    const isExpanded = expandedCloId === tag.cloId;
+                    const isExpanded = expandedKey === tagKey;
                     const categoryColor = getCategoryColor(entry?.categoryKey);
 
                     if (isExpanded) {
                         return (
                             <View
-                                key={tag.cloId}
+                                key={tagKey}
                                 style={[
                                     styles.pillExpanded,
                                     {borderLeftColor: categoryColor}
@@ -96,7 +106,11 @@ const TagPills = ({tags, entriesByCloId, onRemove, onUpdateQuantity}) => {
                                 <Pressable
                                     style={styles.stepperBtn}
                                     onPress={() =>
-                                        handleDecrement(tag.cloId, qty)
+                                        handleDecrement(
+                                            tag.cloId,
+                                            tag.typeId,
+                                            qty
+                                        )
                                     }
                                     hitSlop={4}>
                                     <Icon
@@ -116,7 +130,7 @@ const TagPills = ({tags, entriesByCloId, onRemove, onUpdateQuantity}) => {
 
                                 <Pressable
                                     style={styles.expandedBody}
-                                    onPress={() => handlePillPress(tag.cloId)}>
+                                    onPress={() => handlePillPress(tagKey)}>
                                     <Caption
                                         color="white"
                                         family="medium"
@@ -140,7 +154,11 @@ const TagPills = ({tags, entriesByCloId, onRemove, onUpdateQuantity}) => {
                                             styles.stepperBtnDisabled
                                     ]}
                                     onPress={() =>
-                                        handleIncrement(tag.cloId, qty)
+                                        handleIncrement(
+                                            tag.cloId,
+                                            tag.typeId,
+                                            qty
+                                        )
                                     }
                                     disabled={qty >= MAX_QUANTITY}
                                     hitSlop={4}>
@@ -157,7 +175,9 @@ const TagPills = ({tags, entriesByCloId, onRemove, onUpdateQuantity}) => {
 
                                 <Pressable
                                     style={styles.removeBtn}
-                                    onPress={() => handleRemove(tag.cloId)}
+                                    onPress={() =>
+                                        handleRemove(tag.cloId, tag.typeId)
+                                    }
                                     hitSlop={4}>
                                     <Icon
                                         name="close"
@@ -170,14 +190,14 @@ const TagPills = ({tags, entriesByCloId, onRemove, onUpdateQuantity}) => {
                     }
 
                     return (
-                        <View key={tag.cloId} style={styles.pillWrapper}>
+                        <View key={tagKey} style={styles.pillWrapper}>
                             <Pressable
                                 style={({pressed}) => [
                                     styles.pill,
                                     {borderLeftColor: categoryColor},
                                     pressed && styles.pillPressed
                                 ]}
-                                onPress={() => handlePillPress(tag.cloId)}>
+                                onPress={() => handlePillPress(tagKey)}>
                                 <Caption
                                     color="white"
                                     family="medium"
@@ -185,7 +205,9 @@ const TagPills = ({tags, entriesByCloId, onRemove, onUpdateQuantity}) => {
                                     {label}
                                 </Caption>
                                 <Pressable
-                                    onPress={() => handleRemove(tag.cloId)}
+                                    onPress={() =>
+                                        handleRemove(tag.cloId, tag.typeId)
+                                    }
                                     hitSlop={6}
                                     style={styles.closeBtn}>
                                     <Icon
