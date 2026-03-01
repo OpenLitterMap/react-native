@@ -101,7 +101,7 @@ export const deleteUploadPhoto = createAsyncThunk(
                     Accept: 'application/json',
                     'Content-Type': 'application/json'
                 },
-                data: { photoId }
+                data: { photoid: photoId }
             });
 
             return photoId;

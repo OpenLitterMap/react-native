@@ -109,20 +109,18 @@ const initialState = {
 
 export const getUntaggedImages = createAsyncThunk(
     'images/getUntaggedImages',
-    async ({token, platform}, {rejectWithValue}) => {
+    async ({token}, {rejectWithValue}) => {
         try {
-            const params = {};
-            if (platform) {
-                params.platform = platform;
-            }
-
             const response = await axios({
-                url: `${URL}/api/v2/photos/get-untagged-uploads`,
+                url: `${URL}/api/v3/user/photos`,
                 method: 'GET',
                 headers: {
                     Authorization: `Bearer ${token}`
                 },
-                params
+                params: {
+                    tagged: false,
+                    per_page: 100
+                }
             });
 
             if (response?.data?.photos?.length > 0) {
@@ -148,7 +146,7 @@ export const uploadImage = createAsyncThunk(
     ) => {
         try {
             const response = await axios({
-                url: URL + '/api/photos/upload/with-or-without-tags',
+                url: `${URL}/api/v3/upload`,
                 method: 'POST',
                 headers: {
                     Authorization: `Bearer ${token}`,
@@ -525,12 +523,9 @@ const imagesSlice = createSlice({
          *
          * We want to clear the users uploaded un-tagged images.
          */
-        clearUploadedWebImages(state) {
+        clearUploadedImages(state) {
             state.imagesArray = state.imagesArray.filter(img => {
-                return (
-                    img.type?.toLowerCase() === 'web' &&
-                    img.hasOwnProperty('photoId')
-                );
+                return img.uploaded && img.id !== undefined;
             });
         },
 
@@ -664,18 +659,18 @@ const imagesSlice = createSlice({
                     if (!isDuplicate) {
                         state.imagesArray.push({
                             id: image.id,
-                            date: image.date ?? null,
+                            date: image.datetime ?? null,
                             lat: image.lat ?? null,
                             lon: image.lon ?? null,
                             filename: image.filename,
                             uri: null,
-                            type: image.type || image.platform || 'web',
+                            type: image.platform || 'web',
                             platform: image.platform ?? 'web',
 
                             tags: {},
                             tagsV5: [],
                             customTags: [],
-                            picked_up: image.remaining === 0,
+                            picked_up: image.picked_up,
 
                             selected: false,
                             uploaded: true
@@ -692,7 +687,7 @@ const imagesSlice = createSlice({
                 const {imageId, imageUri, photo_id} = action.payload;
 
                 // Find the exact image — match by URI (unique) when
-                // available, falling back to ID for web images.
+                // available, falling back to ID for uploaded images.
                 const index = state.imagesArray.findIndex(img =>
                     imageUri
                         ? img.uri === imageUri
@@ -701,7 +696,6 @@ const imagesSlice = createSlice({
 
                 if (index !== -1) {
                     state.imagesArray[index].id = photo_id;
-                    state.imagesArray[index].type = 'web';
                     state.imagesArray[index].uploaded = true;
                 }
 
@@ -771,7 +765,7 @@ export const {
     cancelUploadImages,
     changeLitterStatus,
     changeSwiperIndex,
-    clearUploadedWebImages,
+    clearUploadedImages,
     deleteImage,
     deleteSelectedImages,
     deselectAllImages,

@@ -265,10 +265,10 @@ const HomeScreen = ({navigation}) => {
             return;
         }
 
-        // if all images of type web with no tags, return
+        // if all images are uploaded with no tags, return
         if (
             images?.length > 0 &&
-            images.every(img => img.type === 'web' && !isTagged(img))
+            images.every(img => img.uploaded && !isTagged(img))
         ) {
             return;
         }
@@ -323,7 +323,7 @@ const HomeScreen = ({navigation}) => {
         const selectedImages = images.filter(img => img.selected);
 
         for (const image of selectedImages) {
-            if (image.type === 'web') {
+            if (image.uploaded) {
                 const result = await dispatch(
                     deleteUploadPhoto({
                         token,
@@ -394,7 +394,7 @@ const HomeScreen = ({navigation}) => {
 
             // Tags are always posted separately via POST /api/v3/tags
             return [imageData, photoHasTags, isGeoTagged];
-        } else if (img.type === 'web') {
+        } else if (img.uploaded) {
             return [null, photoHasTags, true];
         }
 
@@ -407,9 +407,7 @@ const HomeScreen = ({navigation}) => {
      */
     const uploadPhotos = async () => {
         // Pre-upload validation: filter out non-geotagged gallery images
-        const geotaggedImages = images.filter(
-            img => img.type === 'web' || isGeotagged(img)
-        );
+        const geotaggedImages = images.filter(isGeotagged);
         const skippedCount = images.length - geotaggedImages.length;
 
         if (skippedCount > 0) {
@@ -496,7 +494,7 @@ const HomeScreen = ({navigation}) => {
                         dispatch(deleteImage(result.payload.photo_id));
                     }
                 } else if (
-                    img.type === 'web' &&
+                    img.uploaded &&
                     v5Payload &&
                     v5Payload.length > 0
                 ) {

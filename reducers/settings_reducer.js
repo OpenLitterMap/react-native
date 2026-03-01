@@ -3,7 +3,7 @@ import { URL } from '../actions/types';
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { updateUserObject, logout } from './auth_reducer';
-import { clearUploadedWebImages } from './images_reducer';
+import { clearUploadedImages } from './images_reducer';
 
 const initialState = {
     model: '',
@@ -99,7 +99,7 @@ export const saveSettings = createAsyncThunk(
 
                 if (key === 'enable_admin_tagging') {
                     if (dataValue) {
-                        dispatch(clearUploadedWebImages());
+                        dispatch(clearUploadedImages());
                     }
                 }
 

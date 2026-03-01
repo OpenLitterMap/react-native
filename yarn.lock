@@ -1457,6 +1457,11 @@
     "@jridgewell/resolve-uri" "^3.1.0"
     "@jridgewell/sourcemap-codec" "^1.4.14"
 
+"@lodev09/react-native-exify@^1.0.3":
+  version "1.0.3"
+  resolved "https://registry.npmjs.org/@lodev09/react-native-exify/-/react-native-exify-1.0.3.tgz"
+  integrity sha512-AlpkAMLCRENOwLnQLOU/HsI4rMakZVH0+gCT1Ja0H5WBd0jJAwLOQyvTCErzTWFte1BSSe2dTByTEOf2eTnmyQ==
+
 "@nicolo-ribaudo/eslint-scope-5-internals@5.1.1-v1":
   version "5.1.1-v1"
   resolved "https://registry.npmjs.org/@nicolo-ribaudo/eslint-scope-5-internals/-/eslint-scope-5-internals-5.1.1-v1.tgz"

@@ -167,27 +167,29 @@ Auth required. Returns GeoJSON for the authenticated user's photos.
 
 | Method | Route | Mobile File | Status |
 |--------|-------|-------------|--------|
-| POST | `/api/photos/upload/with-or-without-tags` | `images_reducer.js` → `uploadImage` | Active |
-| POST | `/api/photos/submit` | Not used | Simpler — upload only, no tag fields |
+| POST | `/api/v3/upload` | `images_reducer.js` → `uploadImage` | **Active** |
+| POST | `/api/photos/upload/with-or-without-tags` | — | **Removed** |
 
-All three upload aliases (`/api/photos/submit-with-tags`, `/api/photos/upload-with-tags`, `/api/photos/upload/with-or-without-tags`) hit the same controller.
-
-### Upload — `POST /api/photos/upload/with-or-without-tags`
+### Upload — `POST /api/v3/upload`
 
 ```
 Content-Type: multipart/form-data
 
-photo: <file>
-lat: 51.925
-lon: -7.872
-date: 1770561192 (Unix timestamp)
-picked_up: 0|1
-model: "iPhone"
+photo: <file>           (required)
+lat: 51.925             (optional — triggers mobile mode when all 3 present)
+lon: -7.872             (optional)
+date: 1770561192        (optional — unix timestamp or ISO string)
+picked_up: true|false   (optional — defaults to user's global preference)
+model: "iPhone"         (optional — defaults to EXIF Model or "Unknown")
 ```
+
+**Mobile mode**: When `lat`, `lon`, and `date` are all present, EXIF GPS/datetime validation is skipped and `platform` is set to `"mobile"`. The mobile app always sends all three.
+
+**Web mode**: When any of lat/lon/date are missing, GPS and datetime are extracted from EXIF. `platform` is set to `"web"`.
 
 Response: `{ "success": true, "photo_id": 515917 }`
 
-Errors: `"error-3"` (generic), `"photo-already-uploaded"`, `"invalid-coordinates"`
+Errors: `"photo-already-uploaded"`, `"invalid-coordinates"` (rejects 0,0)
 
 ---
 
@@ -316,36 +318,49 @@ After tagging, `photo.xp` is auto-calculated:
 
 ---
 
-## Photo Queue
+## Photo Queue (Untagged)
 
 | Method | Route | Mobile File | Status |
 |--------|-------|-------------|--------|
-| GET | `/api/v2/photos/get-untagged-uploads` | `images_reducer.js` → `getUntaggedImages` | Active |
+| GET | `/api/v3/user/photos?tagged=false` | `images_reducer.js` → `getUntaggedImages` | **Active** |
+| GET | `/api/v2/photos/get-untagged-uploads` | — | **Removed** |
 
-### Untagged Queue — `GET /api/v2/photos/get-untagged-uploads`
+### Untagged Photos — `GET /api/v3/user/photos?tagged=false&per_page=100`
 
-Returns all untagged photos for the authenticated user. Paginated (100/page). No platform filter — web and mobile uploads appear in the same queue.
+Uses the same user photos endpoint with `tagged=false` filter. Returns full photo objects (same shape as upload history).
 
 ```json
 // Response 200
 {
-  "count": 5,
-  "photos": [
-    {
-      "id": 123,
-      "filename": "https://s3-bucket.amazonaws.com/.../abc123.jpg",
-      "remaining": 1
-    }
-  ]
+  "photos": [{
+    "id": 123,
+    "filename": "https://s3.../photo.jpg",
+    "datetime": "2026-01-15T10:30:00Z",
+    "lat": 40.7128, "lon": -74.0060,
+    "model": "iPhone 12",
+    "picked_up": false,
+    "platform": "web",
+    "new_tags": [],
+    "summary": null,
+    "xp": 0,
+    "total_tags": 0
+  }],
+  "pagination": {
+    "current_page": 1,
+    "last_page": 1,
+    "per_page": 100,
+    "total": 42
+  }
 }
 ```
 
 - `filename` = full S3 URL, use directly as image source
-- `remaining`: 1 = litter left, 0 = picked up
-
-**How "untagged" is detected:** Uses `whereNull('summary')` — the `summary` column is set by `GeneratePhotoSummaryService` when tags are added, regardless of verification status. This correctly excludes photos tagged by untrusted users (whose `verified` stays at 0 for map visibility reasons but who do have a summary).
-
-**Breaking change (2026-03-01):** The `?platform=web|mobile` query parameter and `platform` response field have been removed. All untagged photos are now returned in one list. If the mobile app was filtering by platform, remove that filter.
+- `picked_up`: `true` = picked up, `false` = not picked up (always boolean at photo level; nullable at tag level in `new_tags[].picked_up`)
+- `remaining`: **deprecated** — inverse of `picked_up`, will be removed. Use `picked_up` only.
+- `summary`: `null` = untagged, array of strings = tagged
+- `new_tags`: empty array = untagged, populated = already tagged (use PUT to replace)
+- `platform`: `"web"` or `"mobile"` — origin of the upload
+- `xp`: earned XP for this photo
 
 ---
 
@@ -353,19 +368,19 @@ Returns all untagged photos for the authenticated user. Paginated (100/page). No
 
 | Method | Route | Mobile File | Status |
 |--------|-------|-------------|--------|
-| POST | `/api/profile/photos/delete` | `my_uploads_reducer.js` → `deleteUploadPhoto` | Active |
+| POST | `/api/profile/photos/delete` | `my_uploads_reducer.js` → `deleteUploadPhoto` | **Active** |
 
 ### Delete Photo — `POST /api/profile/photos/delete`
 
 ```json
 // Request
-{ "photoId": 123 }
+{ "photoid": 123 }
 
 // Response 200
 { "message": "Photo deleted successfully!" }
 ```
 
-Reverses metrics (XP, total_images decremented), removes S3 files, soft-deletes. 403 if not owned. Used from both HomeScreen (web image deletion) and MyUploads (swipe-to-delete).
+Note: the param is `photoid` (no underscore). Reverses metrics (XP, total_images decremented), removes S3 files, soft-deletes. 403 if not owned. Used from both HomeScreen (uploaded image deletion) and MyUploads (swipe-to-delete).
 
 ---
 

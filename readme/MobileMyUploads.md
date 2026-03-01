@@ -19,7 +19,7 @@ Shows the user's upload history with pagination, filtering, swipe actions (copy 
 |-------|--------|----------|---------|-------|
 | `fetchUploads` | GET | `/api/v3/user/photos` | params: page, tag, custom_tag, date_from, date_to | Auth required. 8 per page. |
 | `fetchUploadStats` | GET | `/api/v3/user/photos/stats` | — | Auth required. Returns total photos, tags, left to tag. |
-| `deleteUploadPhoto` | POST | `/api/profile/photos/delete` | `{ photoId }` | Auth required. Soft-deletes, reverses metrics. |
+| `deleteUploadPhoto` | POST | `/api/profile/photos/delete` | `{ "photoid": <id> }` | Auth required. Soft-deletes, reverses metrics. |
 
 ## Upload Card
 Each card shows:

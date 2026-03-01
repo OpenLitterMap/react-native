@@ -2,7 +2,33 @@ import { Platform } from 'react-native';
 import { createSlice } from '@reduxjs/toolkit';
 import { CameraRoll } from "@react-native-camera-roll/camera-roll";
 import { createAsyncThunk } from '@reduxjs/toolkit';
+import { read as readExif } from '@lodev09/react-native-exify';
 import { logout } from './auth_reducer';
+
+/**
+ * For photos where CameraRoll returns no GPS, attempt to read
+ * coordinates directly from the file's EXIF data.
+ *
+ * Uses @lodev09/react-native-exify which correctly calls
+ * MediaStore.setRequireOriginal() on Android 10+ for unredacted EXIF.
+ */
+const readGpsFromExif = async (uri) => {
+    try {
+        const tags = await readExif(uri);
+        if (
+            tags?.GPSLatitude != null &&
+            tags?.GPSLongitude != null &&
+            (tags.GPSLatitude !== 0 || tags.GPSLongitude !== 0)
+        ) {
+            return { latitude: tags.GPSLatitude, longitude: tags.GPSLongitude };
+        }
+    } catch (e) {
+        if (__DEV__) {
+            console.warn(`[GPS Debug] EXIF read failed for ${uri}:`, e.message);
+        }
+    }
+    return null;
+};
 
 const initialState = {
     imagesLoading: false,
@@ -122,27 +148,48 @@ export const getPhotosFromCameraroll = createAsyncThunk(
                 });
             });
 
+            // EXIF fallback: for photos where CameraRoll returned no GPS,
+            // attempt to read coordinates directly from the file's EXIF data.
+            // Only runs on Android where CameraRoll GPS is unreliable.
+            if (Platform.OS === 'android') {
+                const missingGps = photos.filter(p => !p.hasGps && p.uri);
+
+                if (missingGps.length > 0) {
+                    const BATCH_SIZE = 10;
+                    for (let i = 0; i < missingGps.length; i += BATCH_SIZE) {
+                        const batch = missingGps.slice(i, i + BATCH_SIZE);
+                        const results = await Promise.all(
+                            batch.map(p => readGpsFromExif(p.uri))
+                        );
+
+                        batch.forEach((photo, idx) => {
+                            const coords = results[idx];
+                            if (coords) {
+                                photo.lat = coords.latitude;
+                                photo.lon = coords.longitude;
+                                photo.hasGps = true;
+                            }
+                        });
+                    }
+
+                    if (__DEV__) {
+                        const recovered = missingGps.filter(p => p.hasGps).length;
+                        console.log(`[GPS Debug] EXIF fallback: recovered ${recovered}/${missingGps.length} photos`);
+                    }
+                }
+            }
+
             if (__DEV__) {
-                const total = imagesArray.length;
-                const withLocation = imagesArray.filter(i => i.node.location?.latitude && i.node.location?.longitude).length;
-                const withNull = imagesArray.filter(i => !i.node.location || i.node.location.latitude == null).length;
-                const withZero = imagesArray.filter(i => i.node.location?.latitude === 0 && i.node.location?.longitude === 0).length;
+                const total = photos.length;
+                const withLocation = photos.filter(p => p.hasGps).length;
+                const withoutLocation = total - withLocation;
 
                 console.log('[GPS Debug] ===== CameraRoll Fetch Summary =====');
                 console.log(`[GPS Debug] Platform: ${Platform.OS} ${Platform.Version}`);
                 console.log(`[GPS Debug] FetchType: ${fetchType}`);
                 console.log(`[GPS Debug] Total photos: ${total}`);
                 console.log(`[GPS Debug] With valid location: ${withLocation}`);
-                console.log(`[GPS Debug] With null/undefined location: ${withNull}`);
-                console.log(`[GPS Debug] With 0,0 location: ${withZero}`);
-
-                // Log first 5 photos for diagnosis
-                imagesArray.slice(0, 5).forEach((item, idx) => {
-                    const uri = item.node.image.uri?.substring(0, 50);
-                    console.log(`[GPS Debug] Photo ${idx}: uri=${uri}...`);
-                    console.log(`[GPS Debug] Photo ${idx}: location=${JSON.stringify(item.node.location)}`);
-                    console.log(`[GPS Debug] Photo ${idx}: filename=${item.node.image.filename}`);
-                });
+                console.log(`[GPS Debug] Without location: ${withoutLocation}`);
             }
 
             return { photos, fetchType, hasNextPage, endCursor };
@@ -214,7 +261,7 @@ const gallerySlice = createSlice({
                     state.nextGalleryId = Math.max(state.nextGalleryId, maxId);
                 }
                 state.geotaggedCount = allImages.filter(img => img.hasGps).length;
-                state.nonGeotaggedCount = allImages.filter(img => !img.hasGps).length;
+                state.nonGeotaggedCount = allImages.length - state.geotaggedCount;
                 state.camerarollImageFetched = true;
                 state.lastFetchTime = Math.floor(new Date().getTime());
                 state.hasNextPage = action.payload.hasNextPage;

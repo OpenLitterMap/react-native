@@ -1,14 +1,14 @@
 /**
  * Check if image is geotagged
  *
- * WEB images dont have lat/long properties but they are geotagged because
- * web app only accepts geotagged images.
+ * Uploaded images may not have lat/lon locally but they are geotagged because
+ * the server only accepts geotagged images.
  *
  * @param img
  * @returns boolean
  */
 export const isGeotagged = img => {
-    if (img.type?.toLowerCase() === 'web') return true;
+    if (img.uploaded) return true;
 
     const hasLat = img.lat !== undefined && img.lat !== null && typeof img.lat === 'number';
     const hasLon = img.lon !== undefined && img.lon !== null && typeof img.lon === 'number';

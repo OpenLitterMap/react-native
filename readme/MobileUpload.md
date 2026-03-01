@@ -18,10 +18,10 @@ The upload flow lets users select photos from their gallery, tag them with the v
 ## API Endpoints
 | Thunk | Method | Endpoint | Payload | Notes |
 |-------|--------|----------|---------|-------|
-| `uploadImage` | POST | `/api/photos/upload/with-or-without-tags` | FormData (photo, lat, lon, date, picked_up, model) | multipart/form-data, returns `photo_id` |
+| `uploadImage` | POST | `/api/v3/upload` | FormData (photo, lat, lon, date, picked_up, model) | multipart/form-data, returns `photo_id` |
 | `postTagsToPhoto` | POST | `/api/v3/tags` | `{photo_id, tags[], picked_up}` | v5 tags with CLO IDs, materials, brands, custom tags |
-| `getUntaggedImages` | GET | `/api/v2/photos/get-untagged-uploads` | — | Fetches user's untagged uploads |
-| `deleteUploadPhoto` | POST | `/api/profile/photos/delete` | `{photoId}` | Deletes photo from server and local state |
+| `getUntaggedImages` | GET | `/api/v3/user/photos?tagged=false&per_page=100` | — | Fetches user's untagged uploads |
+| `deleteUploadPhoto` | POST | `/api/profile/photos/delete` | `{ "photoid": <id> }` | Deletes photo from server and local state |
 
 ## Upload Flow (Two-Step)
 1. User selects photos from gallery (GalleryScreen)
@@ -34,11 +34,11 @@ The upload flow lets users select photos from their gallery, tag them with the v
 8. Modal shows with progress counter (`uploaded / totalToUpload`)
 9. **For each gallery image:**
    - **Step 1**: Upload photo via `uploadImage` (FormData with photo + GPS, NO tags)
-   - Image stays in state as "uploaded web" with server `photo_id`
+   - Image stays in state with `uploaded: true` and server `photo_id`
    - **Step 2**: POST tags via `postTagsToPhoto` (photo_id + resolved tags)
    - On success: image removed from state, `tagged++`
-   - On failure: image stays for retry (type=web, tagsV5 intact)
-10. **For web images with v5 tags**: POST tags directly via `postTagsToPhoto`
+   - On failure: image stays for retry (uploaded=true, tagsV5 intact)
+10. **For uploaded images with v5 tags**: POST tags directly via `postTagsToPhoto`
 11. On completion, result modal shows upload summary (success/failure counts)
 12. User can cancel mid-upload via cancel button
 
@@ -64,14 +64,15 @@ At upload time, `buildV5TagsPayload(img)` converts each tag into the POST format
 
 ## GPS Validation
 Before upload, `uploadPhotos()` filters images:
-- Gallery images must pass `isGeotagged()` — requires non-null, non-zero lat/lon
-- Web images (`type === 'web'`) are always considered valid (GPS managed server-side)
+- Non-uploaded images must pass `isGeotagged()` — requires non-null, non-zero lat/lon
+- Uploaded images (`uploaded === true`) are always considered valid (GPS managed server-side)
 - `isGeotagged()` rejects: null/undefined coordinates, 0,0 (Null Island)
 
-## Image Types
-- **gallery** — Selected from phone camera roll, has local URI
-- **web** — Previously uploaded to server (via web app or after first upload step), has server ID
-- **camera** — Taken with in-app camera (currently disabled)
+## Image Types & Upload State
+- **type** — Origin of the image: `'gallery'` (phone camera roll), `'camera'` (in-app capture), `'web'` (server/web app)
+- **uploaded** — Boolean. `true` = photo binary is on the server, `false` = local only
+
+After a gallery image is uploaded, `type` stays `'gallery'` but `uploaded` becomes `true`. All server-state routing (skip binary upload, tag-only path, server deletion, GPS bypass) uses the `uploaded` boolean, not `type`.
 
 ## Redux State (`state.images`)
 ```
@@ -101,9 +102,9 @@ Tag POST failures increment `taggedFailed`. The image stays in state for retry.
 
 ## Retry Behavior
 If tag POST fails after a successful photo upload:
-- Image stays in `imagesArray` as `type: 'web'` with `tagsV5` intact
-- On next upload attempt, the loop routes it to the "web + v5 tags" path
+- Image stays in `imagesArray` with `uploaded: true` and `tagsV5` intact
+- On next upload attempt, the loop routes it to the "uploaded + v5 tags" path
 - Tags are posted directly via `postTagsToPhoto` (no re-upload of the photo)
 
 ## Photo Deletion
-Web images on HomeScreen are deleted via `deleteUploadPhoto` (from `my_uploads_reducer.js`), which calls `POST /api/profile/photos/delete`. The image is also removed from local `imagesArray` via `deleteImage`. Gallery images are removed from local state only (no server call needed).
+Uploaded images on HomeScreen are deleted via `deleteUploadPhoto` (from `my_uploads_reducer.js`), which calls `POST /api/profile/photos/delete` with `{ "photoid": <id> }`. The image is also removed from local `imagesArray` via `deleteImage`. Non-uploaded images are removed from local state only (no server call needed).
