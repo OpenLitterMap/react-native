@@ -10,12 +10,11 @@ import {
 import Icon from 'react-native-vector-icons/Ionicons';
 import {Caption, Colors} from '../../components';
 import {getCategoryColor} from './categoryColors';
+import {makeTagKey, resolveTagEntry, MAX_QUANTITY} from './tagUtils';
 
 if (Platform.OS === 'android') {
     UIManager.setLayoutAnimationEnabledExperimental?.(true);
 }
-
-const MAX_QUANTITY = 10;
 
 const TagPills = ({
     tags,
@@ -86,19 +85,21 @@ const TagPills = ({
         <View style={styles.container}>
             <View style={styles.pillsWrap}>
                 {tags.map(tag => {
-                    const tagKey = `${tag.cloId}-${tag.typeId || ''}`;
-                    const entry = tag.typeId
-                        ? typeEntriesByKey?.[`${tag.cloId}-${tag.typeId}`] ||
-                          entriesByCloId[tag.cloId]
-                        : entriesByCloId[tag.cloId];
-                    const name = entry?.displayName || `#${tag.cloId}`;
+                    const tagKey = makeTagKey(tag.cloId, tag.typeId);
+                    const entry = resolveTagEntry(
+                        tag.cloId,
+                        tag.typeId,
+                        entriesByCloId,
+                        typeEntriesByKey
+                    );
+                    const name = entry?.displayName || tag._displayName || `#${tag.cloId}`;
                     const category = entry?.isMultiCategory
                         ? entry.categoryDisplayName
                         : null;
                     const label = category ? `${name} · ${category}` : name;
                     const qty = tag.quantity;
                     const isExpanded = expandedKey === tagKey;
-                    const categoryColor = getCategoryColor(entry?.categoryKey);
+                    const categoryColor = getCategoryColor(entry?.categoryKey || tag._categoryKey);
 
                     if (isExpanded) {
                         return (
@@ -270,7 +271,8 @@ const TagPills = ({
                                 </Caption>
                                 <Pressable
                                     onPress={() =>
-                                        onRemoveCustomTag && onRemoveCustomTag(ct)
+                                        onRemoveCustomTag &&
+                                        onRemoveCustomTag(ct)
                                     }
                                     hitSlop={6}
                                     style={styles.closeBtn}>

@@ -1,16 +1,25 @@
-import React, { useState, useRef } from 'react';
-import { StyleSheet, ScrollView, View, Dimensions, Pressable } from 'react-native';
+import React, {useState, useRef} from 'react';
+import {
+    StyleSheet,
+    ScrollView,
+    View,
+    Dimensions,
+    Pressable
+} from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import ActionSheet from 'react-native-actions-sheet';
-import { Header, Colors, Body, StatsGrid, Button } from '../components';
-import { TeamTitle } from './teamComponents';
-import { useDispatch, useSelector } from "react-redux";
-import { changeActiveTeam, inactivateTeam, leaveTeam } from "../../reducers/team_reducer";
+import {Header, Colors, Body, StatsGrid, Button} from '../components';
+import {TeamTitle} from './teamComponents';
+import {useDispatch, useSelector} from 'react-redux';
+import {
+    changeActiveTeam,
+    inactivateTeam,
+    leaveTeam
+} from '../../reducers/team_reducer';
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const {width: SCREEN_WIDTH} = Dimensions.get('window');
 
-const TeamDetailsScreen = ({ navigation }) => {
-
+const TeamDetailsScreen = ({navigation}) => {
     const dispatch = useDispatch();
     const actionSheetRef = useRef();
     const [isLoading, setIsLoading] = useState(false);
@@ -25,17 +34,19 @@ const TeamDetailsScreen = ({ navigation }) => {
     const activateDisableTeam = async (teamId, isActiveTeam) => {
         setIsLoading(true);
 
-        isActiveTeam
-            ? dispatch(inactivateTeam(token))
-            : dispatch(changeActiveTeam({ token, teamId }));
-
-        setIsLoading(false);
+        try {
+            isActiveTeam
+                ? await dispatch(inactivateTeam(token))
+                : await dispatch(changeActiveTeam({token, teamId}));
+        } finally {
+            setIsLoading(false);
+        }
     };
     /**
      * fn to leave a team and navigate back to Teams Home screen
      */
     const leave = async () => {
-        dispatch(leaveTeam(token, selectedTeam.id));
+        await dispatch(leaveTeam({token, teamId: selectedTeam.id}));
 
         actionSheetRef.current.hide();
 
@@ -53,7 +64,7 @@ const TeamDetailsScreen = ({ navigation }) => {
             bgColor: '#F3E8FF'
         },
         {
-            value: selectedTeam?.total_litter || 0,
+            value: selectedTeam?.total_tags || 0,
             title: 'Total Tags',
             icon: 'trash-outline',
             color: '#14B8A6',
@@ -81,44 +92,32 @@ const TeamDetailsScreen = ({ navigation }) => {
                     </Pressable>
                 }
             />
-            <ScrollView
-                style={styles.container}
-                alwaysBounceVertical={false}
-            >
+            <ScrollView style={styles.container} alwaysBounceVertical={false}>
                 <TeamTitle
                     teamName={selectedTeam?.name}
                     identifier={selectedTeam?.identifier}
                 />
 
-                <StatsGrid
-                    statsData={teamStats}
-                />
+                <StatsGrid statsData={teamStats} />
 
                 <View style={styles.buttonContainer}>
-
                     {/* Disable/Activate team button */}
                     <Button
-                        color='info'
+                        color="info"
                         loading={isLoading}
                         variant="outline"
                         onPress={() => {
-                            activateDisableTeam(
-                                selectedTeam?.id,
-                                isActiveTeam
-                            );
-                        }}
-                    >
+                            activateDisableTeam(selectedTeam?.id, isActiveTeam);
+                        }}>
                         <Body color="accent">
-                            {isActiveTeam ? 'DISABLE ACTIVE TEAM' : 'SET ACTIVE TEAM'}
+                            {isActiveTeam
+                                ? 'DISABLE ACTIVE TEAM'
+                                : 'SET ACTIVE TEAM'}
                         </Body>
                     </Button>
 
                     {(selectedTeam?.total_members || 0) > 1 && (
-                        <Button
-                            onPress={() =>
-                                actionSheetRef.current?.setModalVisible()
-                            }
-                        >
+                        <Button onPress={() => actionSheetRef.current?.show()}>
                             <Body color="white">LEAVE TEAM</Body>
                         </Button>
                     )}
@@ -141,28 +140,23 @@ const TeamDetailsScreen = ({ navigation }) => {
                 // onClose={() => setState({ showFormType: undefined })}
                 gestureEnabled
                 ref={actionSheetRef}>
-                <View style={{ padding: 20 }}>
-                    <Body style={{ textAlign: 'center' }}>
-                        Are you sure?
-                    </Body>
-                    <Body style={{ textAlign: 'center' }}>
+                <View style={{padding: 20}}>
+                    <Body style={{textAlign: 'center'}}>Are you sure?</Body>
+                    <Body style={{textAlign: 'center'}}>
                         You can always rejoin and your contribution will be
                         saved.
                     </Body>
                     <View style={styles.actionButtonContainer}>
                         <Pressable
-                            onPress={() =>
-                                actionSheetRef.current?.hide()
-                            }
-                            style={[styles.actionButtonStyle]}
-                        >
+                            onPress={() => actionSheetRef.current?.hide()}
+                            style={[styles.actionButtonStyle]}>
                             <Body dictionary={'Cancel'} />
                         </Pressable>
                         <Pressable
                             onPress={leave}
                             style={[
                                 styles.actionButtonStyle,
-                                { backgroundColor: Colors.error }
+                                {backgroundColor: Colors.error}
                             ]}>
                             <Body color="white">Yes, Leave</Body>
                         </Pressable>
@@ -171,7 +165,7 @@ const TeamDetailsScreen = ({ navigation }) => {
             </ActionSheet>
         </>
     );
-}
+};
 
 const styles = StyleSheet.create({
     container: {

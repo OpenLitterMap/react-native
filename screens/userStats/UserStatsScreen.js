@@ -51,25 +51,29 @@ const UserStatsScreen = ({ navigation }) => {
         const previousStats = await AsyncStorage.getItem('previousUserStats');
 
         if (previousStats !== undefined && previousStats !== null) {
-            const {
-                xp,
-                position,
-                totalImages,
-                totalTags,
-                level,
-                levelPercentage,
-                littercoin,
-                littercoinPercentage
-            } = JSON.parse(previousStats);
+            try {
+                const {
+                    xp,
+                    position,
+                    totalImages,
+                    totalTags,
+                    level,
+                    levelPercentage,
+                    littercoin,
+                    littercoinPercentage
+                } = JSON.parse(previousStats);
 
-            setXpStart(xp);
-            setPositionStart(position);
-            setTotalImagesStart(totalImages);
-            setTotalTagsStart(totalTags);
-            setLevelStart(level);
-            setLevelPercentageStart(levelPercentage);
-            setLittercoinStart(littercoin);
-            setLittercoinPercentageStart(littercoinPercentage);
+                setXpStart(xp);
+                setPositionStart(position);
+                setTotalImagesStart(totalImages);
+                setTotalTagsStart(totalTags);
+                setLevelStart(level);
+                setLevelPercentageStart(levelPercentage);
+                setLittercoinStart(littercoin);
+                setLittercoinPercentageStart(littercoinPercentage);
+            } catch (e) {
+                // Corrupted cache — ignore
+            }
         }
 
         setIsLoading(false);

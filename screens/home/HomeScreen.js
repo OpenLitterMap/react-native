@@ -48,6 +48,7 @@ import {isGeotagged} from '../../utils/isGeotagged';
 import {ActionButton, UploadButton, UploadImagesGrid} from './homeComponents';
 import DeviceInfo from 'react-native-device-info';
 import {isTagged} from '../../utils/isTagged';
+import buildV5TagsPayload from '../../utils/buildV5TagsPayload';
 import {useTranslation} from 'react-i18next';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -57,12 +58,20 @@ const HomeScreen = ({navigation}) => {
     const dispatch = useDispatch();
 
     const isUploadCancelled = useRef(false);
+    const retryTimerRef = useRef(null);
     const [isSelectingImagesToDelete, setIsSelectingImagesToDelete] =
         useState(false);
 
+    useEffect(() => {
+        return () => {
+            if (retryTimerRef.current) {
+                clearTimeout(retryTimerRef.current);
+            }
+        };
+    }, []);
+
     const appVersion = useSelector(state => state.shared.appVersion);
     const images = useSelector(state => state.images.imagesArray);
-    const lang = useSelector(state => state.auth.lang);
     const showModal = useSelector(state => state.shared.showModal);
     const model = useSelector(state => state.settings.model);
     const showThankYouMessages = useSelector(
@@ -70,7 +79,6 @@ const HomeScreen = ({navigation}) => {
     );
     const token = useSelector(state => state.auth.token);
     const user = useSelector(state => state.auth.user);
-    const uniqueValue = useSelector(state => state.shared.uniqueValue);
     const isUploading = useSelector(state => state.shared.isUploading);
     // Upload progress
     const uploadPhase = useSelector(state => state.images.uploadPhase);
@@ -117,6 +125,8 @@ const HomeScreen = ({navigation}) => {
                 ]
             );
         }
+        // Only trigger on re-login, not when images/abort state changes
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [token]);
 
     useEffect(() => {
@@ -143,6 +153,8 @@ const HomeScreen = ({navigation}) => {
 
         getModel();
         checkPermissionsAndFetchData();
+        // Mount + auth-change only — intentionally excludes user/navigation
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [token]);
 
     const {t} = useTranslation();
@@ -313,11 +325,7 @@ const HomeScreen = ({navigation}) => {
     };
 
     /**
-     * if image is of type WEB -- hit api to delete uploaded image
-     * then delete from state
-     *
-     * else
-     * delete images from state based on id
+     * Delete selected images. For uploaded images, also delete from server.
      */
     const deleteImages = async () => {
         const selectedImages = images.filter(img => img.selected);
@@ -331,7 +339,9 @@ const HomeScreen = ({navigation}) => {
                     })
                 );
 
-                if (result.meta?.requestStatus === 'rejected') continue;
+                if (result.meta?.requestStatus === 'rejected') {
+                    continue;
+                }
             }
 
             dispatch(deleteImage(image.id));
@@ -340,44 +350,12 @@ const HomeScreen = ({navigation}) => {
         setIsSelectingImagesToDelete(false);
     };
 
-    /**
-     * Build v5 tags payload from an image's tagsV5 array.
-     * Uses CLO format: { category_litter_object_id, litter_object_type_id, ... }
-     */
-    const buildV5TagsPayload = img => {
-        if (!img.tagsV5 || img.tagsV5.length === 0) {
-            return null;
-        }
-
-        const v5Tags = img.tagsV5.map(tag => ({
-            category_litter_object_id: tag.cloId,
-            litter_object_type_id: tag.typeId || null,
-            quantity: tag.quantity,
-            picked_up: img.picked_up ? true : false,
-            materials: tag.materials || [],
-            brands: (tag.brands || []).map(b => ({
-                id: b.id,
-                quantity: b.quantity || 1
-            })),
-            custom_tags: tag.customTags || []
-        }));
-
-        // Attach image-level custom tags to the first tag entry (deduplicated)
-        if (v5Tags.length > 0 && img.customTags && img.customTags.length > 0) {
-            const existing = new Set(v5Tags[0].custom_tags);
-            const newTags = img.customTags.filter(ct => !existing.has(ct));
-            v5Tags[0].custom_tags = [...v5Tags[0].custom_tags, ...newTags];
-        }
-
-        return v5Tags;
-    };
-
     const getImageDataForUpload = img => {
         const isGeoTagged = isGeotagged(img);
         const photoHasTags = isTagged(img);
 
-        // Upload any new image that is tagged or not
-        if (img.type === 'gallery' && isGeoTagged) {
+        // Upload any local image (gallery or camera) that has valid GPS
+        if (!img.uploaded && isGeoTagged) {
             let imageData = new FormData();
 
             imageData.append('photo', {
@@ -445,6 +423,8 @@ const HomeScreen = ({navigation}) => {
         // shared.js -> showModal = true; isUploading = true;
         dispatch(startUploading());
 
+        let failedUploads = 0;
+
         if (geotaggedImages.length) {
             for (let i = 0; i < geotaggedImages.length; i++) {
                 const img = geotaggedImages[i];
@@ -456,12 +436,11 @@ const HomeScreen = ({navigation}) => {
 
                 dispatch(setCurrentUploadIndex(i));
 
-                const [imageData, , isGeoTagged] =
-                    getImageDataForUpload(img);
+                const [imageData, , isGeoTagged] = getImageDataForUpload(img);
 
                 const v5Payload = buildV5TagsPayload(img);
 
-                if (img.type === 'gallery' && isGeoTagged) {
+                if (!img.uploaded && isGeoTagged) {
                     dispatch(setUploadPhase('uploading'));
 
                     const result = await dispatch(
@@ -482,7 +461,7 @@ const HomeScreen = ({navigation}) => {
                     ) {
                         dispatch(setUploadPhase('tagging'));
 
-                        await dispatch(
+                        const tagResult = await dispatch(
                             postTagsToPhoto({
                                 token,
                                 photoId: result.payload.photo_id,
@@ -490,17 +469,17 @@ const HomeScreen = ({navigation}) => {
                                 pickedUp: img.picked_up
                             })
                         );
+
+                        if (tagResult.meta?.requestStatus === 'rejected') {
+                            failedUploads++;
+                        }
                     } else if (result.payload?.photo_id) {
                         dispatch(deleteImage(result.payload.photo_id));
                     }
-                } else if (
-                    img.uploaded &&
-                    v5Payload &&
-                    v5Payload.length > 0
-                ) {
+                } else if (img.uploaded && v5Payload && v5Payload.length > 0) {
                     dispatch(setUploadPhase('tagging'));
 
-                    await dispatch(
+                    const tagResult = await dispatch(
                         postTagsToPhoto({
                             token,
                             photoId: img.id,
@@ -508,8 +487,19 @@ const HomeScreen = ({navigation}) => {
                             pickedUp: img.picked_up
                         })
                     );
+
+                    if (tagResult.meta?.requestStatus === 'rejected') {
+                        failedUploads++;
+                    }
                 }
             }
+        }
+
+        if (failedUploads > 0) {
+            Alert.alert(
+                t('Error!'),
+                t('Some tags failed to upload. You can retry from your uploads.')
+            );
         }
 
         dispatch(setUploadPhase('idle'));
@@ -523,7 +513,7 @@ const HomeScreen = ({navigation}) => {
         dispatch(closeThankYouMessages());
         dispatch(resetUploadState());
         // Small delay to let modal close, then re-trigger
-        setTimeout(() => uploadPhotos(), 300);
+        retryTimerRef.current = setTimeout(() => uploadPhotos(), 300);
     };
 
     /**
@@ -659,10 +649,12 @@ const HomeScreen = ({navigation}) => {
                                 <View style={styles.resultStats}>
                                     {uploaded > 0 && (
                                         <View style={styles.resultStatItem}>
-                                            <Text style={styles.resultStatNumber}>
+                                            <Text
+                                                style={styles.resultStatNumber}>
                                                 {uploaded}
                                             </Text>
-                                            <Text style={styles.resultStatLabel}>
+                                            <Text
+                                                style={styles.resultStatLabel}>
                                                 {uploaded === 1
                                                     ? 'photo uploaded'
                                                     : 'photos uploaded'}
@@ -671,10 +663,12 @@ const HomeScreen = ({navigation}) => {
                                     )}
                                     {tagged > 0 && (
                                         <View style={styles.resultStatItem}>
-                                            <Text style={styles.resultStatNumber}>
+                                            <Text
+                                                style={styles.resultStatNumber}>
                                                 {tagged}
                                             </Text>
-                                            <Text style={styles.resultStatLabel}>
+                                            <Text
+                                                style={styles.resultStatLabel}>
                                                 {tagged === 1
                                                     ? 'photo tagged'
                                                     : 'photos tagged'}
@@ -703,7 +697,8 @@ const HomeScreen = ({navigation}) => {
                                         <Pressable
                                             style={styles.resultActionButton}
                                             onPress={retryFailedUploads}>
-                                            <Text style={styles.resultActionText}>
+                                            <Text
+                                                style={styles.resultActionText}>
                                                 Retry
                                             </Text>
                                         </Pressable>
@@ -736,8 +731,6 @@ const HomeScreen = ({navigation}) => {
                 <UploadImagesGrid
                     navigation={navigation}
                     images={images}
-                    lang={lang}
-                    uniqueValue={uniqueValue}
                     isSelecting={isSelectingImagesToDelete}
                 />
 

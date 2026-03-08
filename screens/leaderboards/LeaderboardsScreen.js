@@ -1,20 +1,26 @@
 import React, {useEffect, useState} from 'react';
-import { ActivityIndicator, Dimensions, FlatList, Image, StyleSheet, Text, View} from 'react-native';
-import { Picker } from '@react-native-picker/picker';
-import { Header, Title } from '../components';
-import { flags } from '../../assets/icons/flags';
-import { useDispatch, useSelector } from "react-redux";
-import { getLeaderboardData } from "../../reducers/leaderboards_reducer";
+import {
+    ActivityIndicator,
+    Dimensions,
+    FlatList,
+    Image,
+    StyleSheet,
+    Text,
+    View
+} from 'react-native';
+import {Picker} from '@react-native-picker/picker';
+import {Header, Title} from '../components';
+import {flags} from '../../assets/icons/flags';
+import {useDispatch, useSelector} from 'react-redux';
+import {getLeaderboardData} from '../../reducers/leaderboards_reducer';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 
 const LeaderboardsScreen = () => {
-
     const dispatch = useDispatch();
 
     const [loading, setLoading] = useState(true);
-    const [flagsObj, setFlags] = useState({});
     const [selectedValue, setSelectedValue] = useState('today');
 
     const [pickerItems, setPickerItems] = useState([
@@ -27,8 +33,6 @@ const LeaderboardsScreen = () => {
 
     const paginated = useSelector(state => state.leaderboard.paginated);
     useEffect(() => {
-        setFlags(flags);
-
         const fetchData = async () => {
             await dispatch(getLeaderboardData({timeFilter: 'today', page: 1}));
 
@@ -38,8 +42,7 @@ const LeaderboardsScreen = () => {
         fetchData();
     }, []);
 
-    const setSelectedValueWrapper = async (value) => {
-
+    const setSelectedValueWrapper = async value => {
         setSelectedValue(value);
 
         setLoading(true);
@@ -60,12 +63,7 @@ const LeaderboardsScreen = () => {
     return (
         <>
             <Header
-                leftContent={
-                    <Title
-                        color="white"
-                        dictionary={'Leaderboard'}
-                    />
-                }
+                leftContent={<Title color="white" dictionary={'Leaderboard'} />}
             />
 
             <View style={styles.container}>
@@ -74,69 +72,69 @@ const LeaderboardsScreen = () => {
                     selectedValue={selectedValue}
                     style={styles.picker}
                     itemStyle={styles.pickerItem}
-                    onValueChange={itemValue => setSelectedValueWrapper(itemValue)}
-                    mode="dropdown"
-                >
-                    {
-                        pickerItems.map(
-                            item =>
-                                item.visible && (
-                                    <Picker.Item
-                                        key={item.value}
-                                        label={item.label}
-                                        value={item.value}
-                                    />
-                                )
-                        )
+                    onValueChange={itemValue =>
+                        setSelectedValueWrapper(itemValue)
                     }
+                    mode="dropdown">
+                    {pickerItems.map(
+                        item =>
+                            item.visible && (
+                                <Picker.Item
+                                    key={item.value}
+                                    label={item.label}
+                                    value={item.value}
+                                />
+                            )
+                    )}
                 </Picker>
             </View>
 
-            {
-                !paginated.users.length ? (
-                    <View style={styles.loadingContainer}>
-                        <Text>No data found</Text>
-                    </View>
-                ) :
-                    <FlatList
-                        data={paginated.users}
-                        keyExtractor={user => user.rank + user.username || user.rank + user.name}
-                        renderItem={({item}) => (
-                            <View style={styles.row}>
-                                <Text style={styles.rank}>{item.rank}</Text>
+            {!paginated?.users?.length ? (
+                <View style={styles.loadingContainer}>
+                    <Text>No data found</Text>
+                </View>
+            ) : (
+                <FlatList
+                    data={paginated.users}
+                    keyExtractor={(user, index) =>
+                        `${user.rank}-${user.username || user.name || index}`
+                    }
+                    renderItem={({item}) => (
+                        <View style={styles.row}>
+                            <Text style={styles.rank}>{item.rank}</Text>
 
-                                {
-                                    item.global_flag ? (
-                                        <Image
-                                            source={flagsObj[item.global_flag]}
-                                            resizeMethod="auto"
-                                            resizeMode="cover"
-                                            style={{
-                                                height: SCREEN_HEIGHT * 0.02,
-                                                width: SCREEN_WIDTH * 0.05
-                                            }}
-                                        />
-                                    ) : (
-                                        <View
-                                            style={{
-                                                height: SCREEN_HEIGHT * 0.02,
-                                                width: SCREEN_WIDTH * 0.05
-                                            }}
-                                        />
-                                    )
-                                }
+                            {item.global_flag ? (
+                                <Image
+                                    source={flags[item.global_flag]}
+                                    resizeMethod="auto"
+                                    resizeMode="cover"
+                                    style={{
+                                        height: SCREEN_HEIGHT * 0.02,
+                                        width: SCREEN_WIDTH * 0.05
+                                    }}
+                                />
+                            ) : (
+                                <View
+                                    style={{
+                                        height: SCREEN_HEIGHT * 0.02,
+                                        width: SCREEN_WIDTH * 0.05
+                                    }}
+                                />
+                            )}
 
-                                <Text style={styles.username}>
-                                    {item.username || item.name || 'Anon'}
-                                </Text>
-                                <Text style={styles.xp}>{(item.xp || 0).toLocaleString()} XP</Text>
-                            </View>
-                        )}
-                    />
-            }
+                            <Text style={styles.username}>
+                                {item.username || item.name || 'Anon'}
+                            </Text>
+                            <Text style={styles.xp}>
+                                {(item.xp || 0).toLocaleString()} XP
+                            </Text>
+                        </View>
+                    )}
+                />
+            )}
         </>
     );
-}
+};
 
 const styles = StyleSheet.create({
     container: {

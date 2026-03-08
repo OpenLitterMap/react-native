@@ -28,7 +28,7 @@ const TeamLeaderboardScreen = ({ navigation }) => {
         return (
             <MemberCard
                 data={item}
-                teamId={selectedTeam.id}
+                teamId={selectedTeam?.id}
                 index={index}
             />
         );
@@ -37,13 +37,15 @@ const TeamLeaderboardScreen = ({ navigation }) => {
     const loadTeamMembers = async () => {
         setIsLoading(true);
 
-        dispatch(getTeamMembers({
-            token,
-            teamId: selectedTeam.id,
-            page: memberNextPage
-        }));
-
-        setIsLoading(false);
+        try {
+            await dispatch(getTeamMembers({
+                token,
+                teamId: selectedTeam?.id,
+                page: memberNextPage
+            }));
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (

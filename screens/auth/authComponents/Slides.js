@@ -96,9 +96,11 @@ const Slides = ({data, activeIndex, onScroll, showDots = true}) => {
                                 transform: [{translateY: contentTranslateY}]
                             }
                         ]}>
-                        <Title color="accent" style={styles.slideTitle}>
-                            {slide.titleText}
-                        </Title>
+                        <Title
+                            color="accent"
+                            style={styles.slideTitle}
+                            dictionary={slide.titleText}
+                        />
                         <Body
                             color="muted"
                             style={styles.slideBody}

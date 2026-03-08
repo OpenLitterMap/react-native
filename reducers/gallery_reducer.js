@@ -1,78 +1,43 @@
-import { Platform } from 'react-native';
-import { createSlice } from '@reduxjs/toolkit';
-import { CameraRoll } from "@react-native-camera-roll/camera-roll";
-import { createAsyncThunk } from '@reduxjs/toolkit';
-import { read as readExif } from '@lodev09/react-native-exify';
-import { logout } from './auth_reducer';
+import {Platform} from 'react-native';
+import {createSlice, createAsyncThunk, createSelector} from '@reduxjs/toolkit';
+import {CameraRoll} from '@react-native-camera-roll/camera-roll';
+import {isValidGpsCoords} from '../utils/gps';
+import {readGpsFromExif} from '../utils/readGpsFromExif';
+import {logout} from './auth_reducer';
 
-/**
- * For photos where CameraRoll returns no GPS, attempt to read
- * coordinates directly from the file's EXIF data.
- *
- * Uses @lodev09/react-native-exify which correctly calls
- * MediaStore.setRequireOriginal() on Android 10+ for unredacted EXIF.
- */
-const readGpsFromExif = async (uri) => {
-    try {
-        const tags = await readExif(uri);
-        if (
-            tags?.GPSLatitude != null &&
-            tags?.GPSLongitude != null &&
-            (tags.GPSLatitude !== 0 || tags.GPSLongitude !== 0)
-        ) {
-            return { latitude: tags.GPSLatitude, longitude: tags.GPSLongitude };
-        }
-    } catch (e) {
-        if (__DEV__) {
-            console.warn(`[GPS Debug] EXIF read failed for ${uri}:`, e.message);
-        }
-    }
-    return null;
-};
+const CAMERAROLL_INCLUDE = ['location', 'filename'];
 
 const initialState = {
     imagesLoading: false,
     galleryImages: [],
     nextGalleryId: 0,
-    geotaggedCount: 0,
-    nonGeotaggedCount: 0,
     camerarollImageFetched: false,
     lastFetchTime: null,
     isNextPageAvailable: false,
-    lastImageCursor: null
+    lastImageCursor: null,
+    error: null
 };
 
 /**
  * Get Photos from the CameraRoll
  *
- * initial load -- Home Page -- fetch 1000
- *      sets state -- array of geotaggged
- *                 -- camerarollImageFetched - true
- *                 -- lastFetchTime
- *
- * next fetch - Album screen or Home screen
- * if lastFetch !== null fetch images between lastFetch and Date.now()
- *
- * @param {string} - fetchType --> "INITIAL" | "TIME" | "LOAD"
- * "INITIAL" -> first load
- * "TIME" -> images added to cameraroll/phone gallery after initial load
- * "LOAD" -> loads more images on scroll after initial load
+ * @param {string} fetchType - "INITIAL" | "TIME" | "LOAD"
+ * "INITIAL" -> first load (40 photos)
+ * "TIME" -> photos added after initial load (up to 1000)
+ * "LOAD" -> pagination on scroll (20 photos)
  */
 export const getPhotosFromCameraroll = createAsyncThunk(
     'gallery/getPhotosFromCameraroll',
-    async (fetchType = 'INITIAL', { getState, rejectWithValue }) => {
-
+    async (fetchType = 'INITIAL', {getState, rejectWithValue}) => {
         const {
             gallery: {
                 galleryImages,
                 nextGalleryId,
                 camerarollImageFetched,
                 lastFetchTime,
-                imagesLoading,
                 isNextPageAvailable,
                 lastImageCursor
-            },
-            auth: { user }
+            }
         } = getState();
 
         let camerarollData;
@@ -82,27 +47,34 @@ export const getPhotosFromCameraroll = createAsyncThunk(
             toTime: Math.floor(new Date().getTime()),
             fromTime: lastFetchTime,
             assetType: 'Photos',
-            include: ['location', 'filename', 'fileSize', 'imageSize']
+            include: CAMERAROLL_INCLUDE
         };
 
         const initialParams = {
             first: 40,
             assetType: 'Photos',
-            include: ['location', 'filename', 'fileSize', 'imageSize']
+            include: CAMERAROLL_INCLUDE
         };
 
         const loadParams = {
             first: 20,
             after: lastImageCursor,
             assetType: 'Photos',
-            include: ['location', 'filename', 'fileSize', 'imageSize']
+            include: CAMERAROLL_INCLUDE
         };
 
-        try
-        {
-            if (fetchType === 'LOAD' && isNextPageAvailable && lastImageCursor !== null) {
+        try {
+            if (
+                fetchType === 'LOAD' &&
+                isNextPageAvailable &&
+                lastImageCursor !== null
+            ) {
                 camerarollData = await CameraRoll.getPhotos(loadParams);
-            } else if (galleryImages?.length === 0 && !camerarollImageFetched && lastFetchTime === null) {
+            } else if (
+                galleryImages?.length === 0 &&
+                !camerarollImageFetched &&
+                lastFetchTime === null
+            ) {
                 camerarollData = await CameraRoll.getPhotos(initialParams);
                 fetchType = 'INITIAL';
             } else if (lastFetchTime !== null) {
@@ -115,21 +87,20 @@ export const getPhotosFromCameraroll = createAsyncThunk(
             }
 
             let id = nextGalleryId;
-            let photos = [];
-            const imagesArray = camerarollData.edges;
-            const { has_next_page: hasNextPage, end_cursor: endCursor } = camerarollData.page_info;
+            const photos = [];
+            const edges = camerarollData.edges;
+            const {has_next_page: hasNextPage, end_cursor: endCursor} =
+                camerarollData.page_info;
 
-            imagesArray.forEach(item => {
+            edges.forEach(item => {
                 id++;
                 const image = item.node.image;
                 const loc = item.node.location;
 
-                const hasGps = !!(
-                    loc?.latitude &&
-                    loc?.longitude &&
-                    loc.latitude !== 0 &&
-                    loc.longitude !== 0
-                );
+                const hasGps =
+                    loc?.latitude != null &&
+                    loc?.longitude != null &&
+                    isValidGpsCoords(loc.latitude, loc.longitude);
 
                 photos.push({
                     id,
@@ -149,21 +120,32 @@ export const getPhotosFromCameraroll = createAsyncThunk(
             });
 
             // EXIF fallback: for photos where CameraRoll returned no GPS,
-            // attempt to read coordinates directly from the file's EXIF data.
+            // read coordinates directly from EXIF data.
             // Only runs on Android where CameraRoll GPS is unreliable.
             if (Platform.OS === 'android') {
-                const missingGps = photos.filter(p => !p.hasGps && p.uri);
+                // Skip photos whose URIs already have GPS in state
+                const existingGpsUris = new Set(
+                    galleryImages.filter(img => img.hasGps).map(img => img.uri)
+                );
+
+                const missingGps = photos.filter(
+                    p => !p.hasGps && p.uri && !existingGpsUris.has(p.uri)
+                );
 
                 if (missingGps.length > 0) {
                     const BATCH_SIZE = 10;
                     for (let i = 0; i < missingGps.length; i += BATCH_SIZE) {
                         const batch = missingGps.slice(i, i + BATCH_SIZE);
-                        const results = await Promise.all(
+                        const results = await Promise.allSettled(
                             batch.map(p => readGpsFromExif(p.uri))
                         );
 
                         batch.forEach((photo, idx) => {
-                            const coords = results[idx];
+                            const result = results[idx];
+                            const coords =
+                                result.status === 'fulfilled'
+                                    ? result.value
+                                    : null;
                             if (coords) {
                                 photo.lat = coords.latitude;
                                 photo.lon = coords.longitude;
@@ -173,8 +155,12 @@ export const getPhotosFromCameraroll = createAsyncThunk(
                     }
 
                     if (__DEV__) {
-                        const recovered = missingGps.filter(p => p.hasGps).length;
-                        console.log(`[GPS Debug] EXIF fallback: recovered ${recovered}/${missingGps.length} photos`);
+                        const recovered = missingGps.filter(
+                            p => p.hasGps
+                        ).length;
+                        console.log(
+                            `[GPS Debug] EXIF fallback: recovered ${recovered}/${missingGps.length} photos`
+                        );
                     }
                 }
             }
@@ -182,72 +168,46 @@ export const getPhotosFromCameraroll = createAsyncThunk(
             if (__DEV__) {
                 const total = photos.length;
                 const withLocation = photos.filter(p => p.hasGps).length;
-                const withoutLocation = total - withLocation;
-
                 console.log('[GPS Debug] ===== CameraRoll Fetch Summary =====');
-                console.log(`[GPS Debug] Platform: ${Platform.OS} ${Platform.Version}`);
+                console.log(
+                    `[GPS Debug] Platform: ${Platform.OS} ${Platform.Version}`
+                );
                 console.log(`[GPS Debug] FetchType: ${fetchType}`);
-                console.log(`[GPS Debug] Total photos: ${total}`);
-                console.log(`[GPS Debug] With valid location: ${withLocation}`);
-                console.log(`[GPS Debug] Without location: ${withoutLocation}`);
+                console.log(`[GPS Debug] Total: ${total}`);
+                console.log(`[GPS Debug] With GPS: ${withLocation}`);
+                console.log(`[GPS Debug] Without GPS: ${total - withLocation}`);
             }
 
-            return { photos, fetchType, hasNextPage, endCursor };
-
+            return {photos, fetchType, hasNextPage, endCursor};
         } catch (error) {
-            console.error('Error fetching photos from camera roll:', error);
+            if (__DEV__) {
+                console.error('Error fetching photos from camera roll:', error);
+            }
             return rejectWithValue(error.message || 'Failed to fetch photos');
         }
     }
 );
 
-
 const gallerySlice = createSlice({
-
     name: 'gallery',
 
     initialState,
 
-    reducers: {
-        /**
-         * The users images have finished loading
-         */
-        toggleImagesLoading (state, action) {
-            state.imagesLoading = action.payload;
-        },
+    reducers: {},
 
-        // /**
-        //  * add array of geotagged images to state
-        // */
-        // addGeotaggedImages (state, action) {
-        //     state.geotaggedImages = [
-        //         ...action.payload.geotagged,
-        //         ...state.geotaggedImages
-        //     ];
-        //     state.camerarollImageFetched = true;
-        //     state.lastFetchTime = Math.floor(new Date().getTime());
-        //     state.imagesLoading = false;
-        //     if (action.payload.fetchType !== 'TIME') {
-        //         state.isNextPageAvailable = action.payload.hasNextPage;
-        //         state.lastImageCursor = action.payload.endCursor;
-        //     }
-        // }
-    },
-
-    extraReducers: (builder) => {
-
+    extraReducers: builder => {
         builder
-
-            .addCase(getPhotosFromCameraroll.pending, (state) => {
+            .addCase(getPhotosFromCameraroll.pending, state => {
                 state.imagesLoading = true;
                 state.error = null;
             })
 
             .addCase(getPhotosFromCameraroll.fulfilled, (state, action) => {
                 const newImages = action.payload.photos;
-                const existingUris = new Set(state.galleryImages.map(img => img.uri));
+                const existingUris = new Set(
+                    state.galleryImages.map(img => img.uri)
+                );
 
-                // Filter out new images that are already in existingImages
                 const uniqueNewImages = newImages.filter(
                     newImage => !existingUris.has(newImage.uri)
                 );
@@ -257,15 +217,15 @@ const gallerySlice = createSlice({
 
                 // Track highest assigned ID for next fetch
                 if (newImages.length > 0) {
-                    const maxId = newImages.reduce((max, img) => Math.max(max, img.id || 0), 0);
+                    const maxId = newImages.reduce(
+                        (max, img) => Math.max(max, img.id || 0),
+                        0
+                    );
                     state.nextGalleryId = Math.max(state.nextGalleryId, maxId);
                 }
-                state.geotaggedCount = allImages.filter(img => img.hasGps).length;
-                state.nonGeotaggedCount = allImages.length - state.geotaggedCount;
+
                 state.camerarollImageFetched = true;
                 state.lastFetchTime = Math.floor(new Date().getTime());
-                state.hasNextPage = action.payload.hasNextPage;
-                state.endCursor = action.payload.endCursor;
 
                 if (action.payload.fetchType !== 'TIME') {
                     state.isNextPageAvailable = action.payload.hasNextPage;
@@ -280,10 +240,12 @@ const gallerySlice = createSlice({
                 state.error = action.payload || 'Failed to fetch images';
             })
             .addCase(logout, () => initialState);
-
     }
 });
 
-export const { toggleImagesLoading, addGeotaggedImages } = gallerySlice.actions;
+export const selectNonGeotaggedCount = createSelector(
+    state => state.gallery.galleryImages,
+    images => images.filter(img => !img.hasGps).length
+);
 
 export default gallerySlice.reducer;

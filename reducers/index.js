@@ -1,7 +1,6 @@
 import { combineReducers } from '@reduxjs/toolkit';
 
 import auth from './auth_reducer';
-import camera from './camera_reducer';
 import gallery from './gallery_reducer';
 import images from './images_reducer';
 import my_uploads_reducer from "./my_uploads_reducer";
@@ -15,7 +14,6 @@ import teams from './team_reducer';
 
 export const rootReducer = combineReducers({
     auth,
-    camera,
     gallery,
     images,
     my_uploads_reducer,

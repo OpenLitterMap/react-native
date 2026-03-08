@@ -82,9 +82,9 @@ const ForgotPasswordForm = () => {
                             <Body
                                 color="accent"
                                 family="semiBold"
-                                style={styles.buttonText}>
-                                Send Reset Link
-                            </Body>
+                                style={styles.buttonText}
+                                dictionary="Send Reset Link"
+                            />
                         )}
                     </Pressable>
                 </View>

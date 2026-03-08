@@ -20,18 +20,16 @@ const MainRoutes = () => {
     const [isLoading, setIsLoading] = useState(true);
     const token = useSelector(state => state.auth.token);
 
-    async function bootstrapAuthentication (dispatch) {
-        const jwt = await AsyncStorage.getItem('jwt');
-
-        if (jwt) {
-            await dispatch(checkValidToken(jwt));
-        }
-
-        setIsLoading(false);
-    }
-
     useEffect(() => {
-        bootstrapAuthentication(dispatch, setIsLoading);
+        (async () => {
+            const jwt = await AsyncStorage.getItem('jwt');
+
+            if (jwt) {
+                await dispatch(checkValidToken(jwt));
+            }
+
+            setIsLoading(false);
+        })();
     }, []);
 
     if (isLoading) {

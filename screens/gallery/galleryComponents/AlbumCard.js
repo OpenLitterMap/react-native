@@ -1,20 +1,22 @@
-import React, { Component } from 'react';
-import { Text, StyleSheet, View, Pressable, Image } from 'react-native';
-import { Colors } from '../../components';
+import React, {Component} from 'react';
+import {Text, StyleSheet, View, Pressable, Image} from 'react-native';
+import {Colors} from '../../components';
 
-const AlbumCard = ({ albumName, thumbnail, counter, navigation }) => {
+const AlbumCard = ({albumName, thumbnail, counter, navigation}) => {
     return (
         <Pressable
             style={[styles.base]}
-            onPress={() => navigation.navigate('GALLERY')}>
-            <Image source={{ uri: thumbnail }} style={styles.thumb} />
+            onPress={() => navigation.navigate('ALBUM')}>
+            <Image source={{uri: thumbnail}} style={styles.thumb} />
             <View style={styles.textWrapper}>
                 <Text style={styles.name}>{albumName}</Text>
-                <Text style={styles.counter}>{`${counter} ${counter && counter > 1 ? 'Photos' : 'Photo'}`}</Text>
+                <Text style={styles.counter}>{`${counter} ${
+                    counter && counter > 1 ? 'Photos' : 'Photo'
+                }`}</Text>
             </View>
         </Pressable>
     );
-}
+};
 
 const styles = StyleSheet.create({
     base: {

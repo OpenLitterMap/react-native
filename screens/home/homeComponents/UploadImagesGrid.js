@@ -1,21 +1,22 @@
-import React, { } from 'react';
-import { Dimensions, FlatList, Image, Pressable, Text, View } from 'react-native';
-import { useDispatch } from "react-redux";
-import { Body, SubTitle } from '../../components';
-import { isTagged } from '../../../utils/isTagged';
-import { changeSwiperIndex, toggleSelectedImages } from "../../../reducers/images_reducer";
+import React from 'react';
+import {Dimensions, FlatList, Image, Pressable, Text, View} from 'react-native';
+import {useDispatch} from 'react-redux';
+import {Body, SubTitle} from '../../components';
+import {isTagged} from '../../../utils/isTagged';
+import {
+    changeSwiperIndex,
+    toggleSelectedImages
+} from '../../../reducers/images_reducer';
 
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
+const {width: SCREEN_WIDTH} = Dimensions.get('window');
 
-const UploadImagesGrid = ({ images, isSelecting, navigation, uniqueValue }) => {
-
+const UploadImagesGrid = ({images, isSelecting, navigation}) => {
     const dispatch = useDispatch();
 
-    const imagePressed = (index) => {
+    const imagePressed = index => {
         if (isSelecting) {
             dispatch(toggleSelectedImages(index));
-        }
-        else {
+        } else {
             // shared_reducer - Open LitterPicker modal
 
             // litter.js
@@ -23,7 +24,7 @@ const UploadImagesGrid = ({ images, isSelecting, navigation, uniqueValue }) => {
 
             navigation.navigate('ADD_TAGS');
         }
-    }
+    };
 
     /**
      * Render images for uploading & tagging
@@ -37,27 +38,20 @@ const UploadImagesGrid = ({ images, isSelecting, navigation, uniqueValue }) => {
      * Flatlist expects "item" as the first key.
      * Each "item" is an image.
      */
-    const renderImage = ({ item, index }) => {
-
+    const renderImage = ({item, index}) => {
         const imageHasTags = isTagged(item);
         const isPickedUp = item.picked_up ?? false;
         const pickedUpIcon = isPickedUp ? '⬆️' : '⬇️';
-        const isUploaded = item.hasOwnProperty('uploaded') && item.uploaded;
-
         return (
             <Pressable onPress={() => imagePressed(index)}>
                 <View style={styles.gridImageContainer}>
                     <Image
                         style={styles.gridImageStyle}
-                        source={{
-                            uri: item.hasOwnProperty('uri') && item.uri !== null
-                                ? item.uri
-                                : item.filename
-                        }}
+                        source={{uri: item.uri ?? item.filename}}
                         resizeMode="cover"
                     />
-                    {isUploaded && (
-                        <View style={{ position: 'absolute', top: 5, left: 5 }}>
+                    {item.uploaded && (
+                        <View style={{position: 'absolute', top: 5, left: 5}}>
                             <Text>☁</Text>
                         </View>
                     )}
@@ -92,10 +86,14 @@ const UploadImagesGrid = ({ images, isSelecting, navigation, uniqueValue }) => {
     };
 
     // Show empty state illustration when no images
-    if (images.length === 0)
-    {
+    if (images.length === 0) {
         return (
-            <View style={{ alignItems: 'center', justifyContent: 'center', flex: 0.75 }}>
+            <View
+                style={{
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flex: 0.75
+                }}>
                 <Image
                     style={styles.imageStyle}
                     source={require('../../../assets/illustrations/empty_image.png')}
@@ -113,23 +111,23 @@ const UploadImagesGrid = ({ images, isSelecting, navigation, uniqueValue }) => {
     }
 
     return (
-        <View style={{ paddingTop: 1, paddingHorizontal: 0.5 }}>
-            {
-                images && (
-                    <FlatList
-                        contentContainerStyle={{ paddingBottom: 100 }}
-                        data={images}
-                        extraData={uniqueValue}
-                        keyExtractor={(img, index) => img + index}
-                        numColumns={3}
-                        renderItem={renderImage}
-                        keyboardShouldPersistTaps="handled"
-                    />
-                )
-            }
+        <View style={{paddingTop: 1, paddingHorizontal: 0.5}}>
+            {images && (
+                <FlatList
+                    contentContainerStyle={{paddingBottom: 100}}
+                    data={images}
+                    extraData={images}
+                    keyExtractor={(img, index) =>
+                        (img.uri || img.id || index).toString()
+                    }
+                    numColumns={3}
+                    renderItem={renderImage}
+                    keyboardShouldPersistTaps="handled"
+                />
+            )}
         </View>
     );
-}
+};
 
 const styles = {
     exptyStateText: {

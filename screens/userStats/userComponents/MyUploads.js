@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
     ActivityIndicator,
     Alert,
@@ -7,16 +7,15 @@ import {
     Pressable,
     RefreshControl,
     StyleSheet,
-    TouchableOpacity,
     View
 } from 'react-native';
-import { Body, Caption, Colors, Header } from '../../components';
+import { Body, Colors, Header } from '../../components';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useDispatch, useSelector } from 'react-redux';
 import { clearUploads, deleteUploadPhoto, fetchUploads, fetchUploadStats } from '../../../reducers/my_uploads_reducer';
+import { loadPhotoForEditing } from '../../../reducers/images_reducer';
 import ActionButton from '../../home/homeComponents/ActionButton';
 import { useTranslation } from 'react-i18next';
-import { Swipeable } from 'react-native-gesture-handler';
 import { URL } from '../../../actions/types';
 import Clipboard from '@react-native-clipboard/clipboard';
 
@@ -54,9 +53,24 @@ const MyUploads = ({ navigation }) => {
         !!filters.filterDateFrom ||
         !!filters.filterDateTo;
 
+    const isInitialMount = useRef(true);
+
     useEffect(() => {
         loadData(false);
         dispatch(fetchUploadStats({ token }));
+
+        // Refresh data when returning from edit screen
+        const unsubscribe = navigation.addListener('focus', () => {
+            if (isInitialMount.current) {
+                isInitialMount.current = false;
+                return;
+            }
+            dispatch(clearUploads());
+            loadData(false, 1);
+            dispatch(fetchUploadStats({ token }));
+        });
+
+        return unsubscribe;
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
@@ -125,18 +139,24 @@ const MyUploads = ({ navigation }) => {
         applyFilters({ ...EMPTY_FILTERS });
     }, [applyFilters]);
 
-    const generateLink = (item) => {
+    const generateLink = useCallback(item => {
         const year = new Date(item.datetime).getFullYear();
         return `${URL}/global?year=${year}&lat=${item.lat}&lon=${item.lon}&zoom=14.59&photo=${item.id}`;
-    };
+    }, []);
 
-    const handleCopyLink = (item) => {
+    const handleCopyLink = useCallback((item) => {
         Clipboard.setString(generateLink(item));
-    };
+        Alert.alert(t('Link Copied'), t('The link has been copied to your clipboard.'));
+    }, [generateLink, t]);
 
-    const handleOpen = (item) => {
+    const handleEditTags = useCallback(item => {
+        dispatch(loadPhotoForEditing({ photo: item }));
+        navigation.navigate('ADD_TAGS');
+    }, [dispatch, navigation]);
+
+    const handleOpenOnWeb = useCallback(item => {
         Linking.openURL(generateLink(item));
-    };
+    }, [generateLink]);
 
     const handleDelete = useCallback(
         (item) => {
@@ -158,41 +178,15 @@ const MyUploads = ({ navigation }) => {
         [dispatch, token, t]
     );
 
-    const renderRightActions = (item) => (
-        <View style={styles.actionsContainer}>
-            <TouchableOpacity
-                style={styles.actionButton}
-                onPress={() => handleCopyLink(item)}
-            >
-                <Icon name="link" size={16} color="#000000" />
-                <Caption style={styles.actionText}>{t('Copy Link')}</Caption>
-            </TouchableOpacity>
-            <TouchableOpacity
-                style={styles.actionButton}
-                onPress={() => handleOpen(item)}
-            >
-                <Icon name="map" size={16} color="#000000" />
-                <Caption style={styles.actionText}>{t('Show on Map')}</Caption>
-            </TouchableOpacity>
-            <TouchableOpacity
-                style={[styles.actionButton, styles.deleteButton]}
-                onPress={() => handleDelete(item)}
-            >
-                <Icon name="trash-outline" size={16} color={Colors.error} />
-                <Caption style={[styles.actionText, styles.deleteText]}>
-                    {t('Delete')}
-                </Caption>
-            </TouchableOpacity>
-        </View>
-    );
-
-    const renderItem = ({ item }) => (
-        <Swipeable
-            renderRightActions={() => renderRightActions(item)}
-        >
-            <UploadCard item={item} />
-        </Swipeable>
-    );
+    const renderItem = useCallback(({ item }) => (
+        <UploadCard
+            item={item}
+            onEditTags={handleEditTags}
+            onDelete={handleDelete}
+            onCopyLink={handleCopyLink}
+            onOpenMap={handleOpenOnWeb}
+        />
+    ), [handleEditTags, handleOpenOnWeb, handleDelete, handleCopyLink]);
 
     const listHeader = useMemo(
         () => (
@@ -254,7 +248,7 @@ const MyUploads = ({ navigation }) => {
                 }
                 rightContent={
                     <Body color="white" style={{ fontWeight: '600' }}>
-                        My Uploads
+                        {t('My Uploads')}
                     </Body>
                 }
             />
@@ -278,6 +272,9 @@ const MyUploads = ({ navigation }) => {
                             onEndReached={onEndReached}
                             onEndReachedThreshold={0.5}
                             showsVerticalScrollIndicator={false}
+                            maxToRenderPerBatch={10}
+                            windowSize={5}
+                            removeClippedSubviews={true}
                             refreshControl={
                                 <RefreshControl
                                     refreshing={refreshing}
@@ -317,25 +314,6 @@ const styles = StyleSheet.create({
     },
     loadingSpinner: {
         marginTop: 40
-    },
-    actionsContainer: {
-        flexDirection: 'row',
-        alignItems: 'center'
-    },
-    actionButton: {
-        justifyContent: 'center',
-        alignItems: 'center',
-        paddingHorizontal: 20
-    },
-    actionText: {
-        color: '#000000',
-        marginTop: 2
-    },
-    deleteButton: {
-        backgroundColor: '#fff0f0'
-    },
-    deleteText: {
-        color: Colors.error
     },
     footer: {
         paddingVertical: 16

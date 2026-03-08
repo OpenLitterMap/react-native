@@ -97,13 +97,7 @@ const WelcomeScreen: FC<{navigation: any}> = ({navigation}) => {
                                 <Body
                                     color="accent"
                                     family="semiBold"
-                                    style={styles.secondaryText}>
-                                    {' '}
-                                </Body>
-                                <Body
-                                    color="accent"
-                                    family="semiBold"
-                                    style={styles.secondaryText}
+                                    style={styles.loginText}
                                     dictionary="Log In"
                                 />
                             </Pressable>
@@ -173,6 +167,10 @@ const styles = StyleSheet.create({
     },
     secondaryText: {
         fontSize: 15
+    },
+    loginText: {
+        fontSize: 15,
+        marginLeft: 4
     },
     dotSection: {
         position: 'absolute',

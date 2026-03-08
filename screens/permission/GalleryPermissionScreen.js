@@ -12,7 +12,6 @@ import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {Body, Caption, Colors, Title} from '../components';
 import {
-    checkAccessMediaLocation,
     checkCameraRollPermission,
     requestCameraRollPermission
 } from '../../utils/permissions';
@@ -20,6 +19,9 @@ import * as Sentry from '@sentry/react-native';
 
 const GalleryPermissionScreen = ({navigation}) => {
     useEffect(() => {
+        // Check on initial mount in case permissions were already granted
+        checkGalleryPermission();
+
         const handleAppStateChange = nextAppState => {
             if (
                 AppState.currentState.match(/inactive|background/) &&
@@ -41,7 +43,7 @@ const GalleryPermissionScreen = ({navigation}) => {
     const checkGalleryPermission = async () => {
         const result = await checkCameraRollPermission();
 
-        if (result.toLowerCase() === 'granted') {
+        if (result?.toLowerCase() === 'granted') {
             navigation.navigate('HOME');
         } else {
             Sentry.captureException(
@@ -61,16 +63,6 @@ const GalleryPermissionScreen = ({navigation}) => {
         const result = await requestCameraRollPermission();
 
         if (result === 'granted' || result === 'limited') {
-            if (Platform.OS === 'android' && Platform.Version >= 33) {
-                const accessMediaLocation = await checkAccessMediaLocation();
-                if (__DEV__) {
-                    console.log(
-                        'GalleryPermissionScreen.accessMediaLocation',
-                        accessMediaLocation
-                    );
-                }
-            }
-
             navigation.navigate('HOME');
         } else {
             Sentry.captureException(
@@ -111,10 +103,8 @@ const GalleryPermissionScreen = ({navigation}) => {
                 <Body
                     color="muted"
                     style={styles.bodyText}
-                    dictionary="Please provide us access to your gallery, which is required to upload geotagged images from your device">
-                    Please provide us access to your gallery, which is required
-                    if you want to upload geotagged images from gallery.
-                </Body>
+                    dictionary="Please provide us access to your gallery, which is required to upload geotagged images from your device"
+                />
 
                 <Pressable
                     style={({pressed}) => [

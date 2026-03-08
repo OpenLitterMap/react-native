@@ -20,6 +20,8 @@ const SignupSchema = Yup.object().shape({
 });
 
 const PasswordStrength = ({password}) => {
+    const {t} = useTranslation();
+
     if (!password) {
         return null;
     }
@@ -39,7 +41,7 @@ const PasswordStrength = ({password}) => {
     }
 
     const colors = ['#ff8800', '#ffbb00', Colors.accent, Colors.accent];
-    const labels = ['Short', 'OK', 'Good', 'Strong'];
+    const labels = [t('Short'), t('OK'), t('Good'), t('Strong')];
     const color = colors[strength - 1] || colors[0];
     const label = labels[strength - 1] || labels[0];
 

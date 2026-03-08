@@ -1,7 +1,7 @@
-import axios from "axios";
-import { URL } from "../actions/types";
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import {changeUsersActiveTeam, logout} from "./auth_reducer";
+import axios from 'axios';
+import {URL} from '../actions/types';
+import {createAsyncThunk, createSlice} from '@reduxjs/toolkit';
+import {changeUsersActiveTeam, logout} from './auth_reducer';
 
 const initialState = {
     topTeams: [],
@@ -31,7 +31,7 @@ const initialState = {
 
 export const changeActiveTeam = createAsyncThunk(
     'teams/changeActiveTeam',
-    async ({ token, teamId }, { rejectWithValue, dispatch }) => {
+    async ({token, teamId}, {rejectWithValue, dispatch}) => {
         try {
             const response = await axios({
                 url: `${URL}/api/teams/active`,
@@ -45,20 +45,16 @@ export const changeActiveTeam = createAsyncThunk(
                 }
             });
 
-            // check this
             if (!response.data?.success) {
                 return rejectWithValue('Max teams reached');
             }
 
-            if (response.data?.team?.id)
-            {
+            if (response.data?.team?.id) {
                 dispatch(changeUsersActiveTeam(response.data.team.id));
-
-                // dispatch TeamsFormSuccess
-
                 return response.data.team.id;
             }
 
+            return rejectWithValue('Failed to change active team');
         } catch (error) {
             return rejectWithValue(error.message);
         }
@@ -67,7 +63,7 @@ export const changeActiveTeam = createAsyncThunk(
 
 export const createTeam = createAsyncThunk(
     'teams/createTeam',
-    async ({ name, identifier, token }, { rejectWithValue }) => {
+    async ({name, identifier, token}, {rejectWithValue}) => {
         try {
             const response = await axios({
                 url: `${URL}/api/teams/create`,
@@ -92,13 +88,14 @@ export const createTeam = createAsyncThunk(
                 team: response.data.team,
                 type: 'CREATE'
             };
-        }
-        catch (error)
-        {
+        } catch (error) {
             if (error.response && error.response.status === 422) {
                 const errorData = error.response.data.errors;
 
-                const msg = errorData.name?.[0] || errorData.identifier?.[0] || 'Validation error';
+                const msg =
+                    errorData.name?.[0] ||
+                    errorData.identifier?.[0] ||
+                    'Validation error';
                 return rejectWithValue(msg);
             }
 
@@ -109,7 +106,7 @@ export const createTeam = createAsyncThunk(
 
 export const inactivateTeam = createAsyncThunk(
     'teams/inactivateTeam',
-    async (token, { rejectWithValue, dispatch }) => {
+    async (token, {rejectWithValue, dispatch}) => {
         try {
             const response = await axios({
                 url: `${URL}/api/teams/inactivate`,
@@ -127,11 +124,11 @@ export const inactivateTeam = createAsyncThunk(
 
             dispatch(changeUsersActiveTeam(null));
 
-            // dispatch TeamsFormSuccess
-
             return true;
         } catch (error) {
-            console.error(error);
+            if (__DEV__) {
+                console.error(error);
+            }
             return rejectWithValue(error.message);
         }
     }
@@ -139,9 +136,8 @@ export const inactivateTeam = createAsyncThunk(
 
 export const leaveTeam = createAsyncThunk(
     'teams/leaveTeam',
-    async ({ token, teamId }, { rejectWithValue, dispatch }) => {
-        try
-        {
+    async ({token, teamId}, {rejectWithValue, dispatch}) => {
+        try {
             const response = await axios({
                 url: `${URL}/api/teams/leave`,
                 method: 'POST',
@@ -165,13 +161,12 @@ export const leaveTeam = createAsyncThunk(
 
             // Returning the entire response data or just necessary parts for reducer logic
             return {
-                activeTeamID: response.data.activeTeam ? response.data.activeTeam.id : null,
+                activeTeamID: response.data.activeTeam
+                    ? response.data.activeTeam.id
+                    : null,
                 team: response.data.team
             };
-        }
-        catch (error)
-        {
-            // console.error(error.response || error);
+        } catch (error) {
             return rejectWithValue('Error while trying to leave the team');
         }
     }
@@ -179,7 +174,7 @@ export const leaveTeam = createAsyncThunk(
 
 export const getTeamMembers = createAsyncThunk(
     'teams/getTeamMembers',
-    async ({ token, teamId, page = 1 }, { rejectWithValue }) => {
+    async ({token, teamId, page = 1}, {rejectWithValue}) => {
         try {
             const response = await axios({
                 url: `${URL}/api/teams/members`,
@@ -201,7 +196,6 @@ export const getTeamMembers = createAsyncThunk(
 
             return response.data.result;
         } catch (error) {
-            // console.error(error);
             return rejectWithValue('Error fetching team members');
         }
     }
@@ -209,7 +203,7 @@ export const getTeamMembers = createAsyncThunk(
 
 export const getTopTeams = createAsyncThunk(
     'teams/getTopTeams',
-    async (token, { rejectWithValue }) => {
+    async (token, {rejectWithValue}) => {
         try {
             const response = await axios({
                 url: `${URL}/api/teams/leaderboard`,
@@ -228,7 +222,9 @@ export const getTopTeams = createAsyncThunk(
             return response.data;
         } catch (error) {
             if (error.response) {
-                return rejectWithValue('Something went wrong, please try again');
+                return rejectWithValue(
+                    'Something went wrong, please try again'
+                );
             } else {
                 return rejectWithValue('Network Error, please try again');
             }
@@ -238,7 +234,7 @@ export const getTopTeams = createAsyncThunk(
 
 export const getUserTeams = createAsyncThunk(
     'teams/getUserTeams',
-    async (token, { rejectWithValue }) => {
+    async (token, {rejectWithValue}) => {
         try {
             const response = await axios({
                 url: URL + '/api/teams/list',
@@ -252,11 +248,15 @@ export const getUserTeams = createAsyncThunk(
             if (response.data && response.data.success) {
                 return response.data.teams;
             } else {
-                return rejectWithValue('Something went wrong, please try again');
+                return rejectWithValue(
+                    'Something went wrong, please try again'
+                );
             }
         } catch (error) {
             if (error.response) {
-                return rejectWithValue('Something went wrong, please try again');
+                return rejectWithValue(
+                    'Something went wrong, please try again'
+                );
             } else {
                 return rejectWithValue('Network Error, please try again');
             }
@@ -266,7 +266,7 @@ export const getUserTeams = createAsyncThunk(
 
 export const joinTeam = createAsyncThunk(
     'teams/joinTeam',
-    async ({ token, identifier }, { rejectWithValue }) => {
+    async ({token, identifier}, {rejectWithValue}) => {
         try {
             const response = await axios({
                 url: URL + '/api/teams/join',
@@ -280,17 +280,17 @@ export const joinTeam = createAsyncThunk(
                     identifier
                 }
             });
-            if (response.data) {
-                if (!response.data.success) {
-                    return rejectWithValue('You have already joined this team.');
-                } else {
-                    return {
-                        activeTeamId: response.data?.activeTeam?.id,
-                        team: response.data?.team,
-                        type: 'JOIN'
-                    };
-                }
+            if (!response.data?.success) {
+                return rejectWithValue(
+                    'You have already joined this team.'
+                );
             }
+
+            return {
+                activeTeamId: response.data?.activeTeam?.id,
+                team: response.data?.team,
+                type: 'JOIN'
+            };
         } catch (error) {
             if (error.response) {
                 let payload = 'Something went wrong, please try again';
@@ -306,77 +306,49 @@ export const joinTeam = createAsyncThunk(
     }
 );
 
-const teamSlice = createSlice({
+/**
+ * Normalize a raw Team model from the backend to match the
+ * shape returned by /api/teams/list (which renames DB columns).
+ * join/create/leave endpoints return raw Eloquent models with
+ * DB column names (total_litter, members) instead of the renamed
+ * fields (total_tags, total_members) that list() provides.
+ */
+const normalizeTeam = team => {
+    if (!team) {
+        return team;
+    }
+    return {
+        ...team,
+        total_tags: team.total_tags ?? team.total_litter ?? 0,
+        total_members: team.total_members ?? team.members ?? 0
+    };
+};
 
+const teamSlice = createSlice({
     name: 'team',
 
     initialState,
 
     reducers: {
-
-        clearTeamsForm (state) {
+        clearTeamsForm(state) {
             state.teamsFormError = '';
             state.successMessage = '';
             state.teamFormStatus = null;
         },
 
-        // /**
-        //  * find team by index and remove from userTeams array
-        //  */
-        // leaveTeamReducer (state, action) {
-        //     const index = state.userTeams.findIndex(team => team.id === action.payload?.id);
-        //
-        //     if (index !== -1) {
-        //         state.userTeams.splice(index, 1);
-        //     }
-        // },
-
-        // /**
-        //  * add error messages of team forms --> JOIN/CREATE
-        //  */
-        // teamsFormError (state, action) {
-        //     state.teamsFormError = action.payload;
-        // },
-
-        // /**
-        //  * error message for user & top team request
-        //  */
-        // teamsRequestError (state, action) {
-        //     state.teamsRequestStatus = action.payload;
-        //     state.teamFormStatus = 'ERROR';
-        // },
-
-        /**
-         * add top teams to topTeams array
-         */
-        topTeamsRequestSuccess (state, action) {
-            state.topTeams = action.payload;
-        },
-
-        /**
-         * add users teams to userTeams array
-         */
-        userTeamsRequestSuccess (state, action) {
-            state.userTeams = action.payload;
-        },
-
         /**
          * Set selected team for showing in team details screen
          */
-        setSelectedTeam (state, action) {
+        setSelectedTeam(state, action) {
             state.selectedTeam = action.payload;
             state.teamMembers = [];
             state.memberNextPage = 1;
         }
     },
 
-    extraReducers: (builder) => {
-
+    extraReducers: builder => {
         builder
 
-            .addCase(changeActiveTeam.pending, (state) => {
-
-            })
             .addCase(changeActiveTeam.fulfilled, (state, action) => {
                 state.teamFormStatus = 'SUCCESS';
                 state.successMessage = 'Active team updated';
@@ -385,42 +357,31 @@ const teamSlice = createSlice({
                 state.teamsFormError = action.payload;
             })
 
-            .addCase(createTeam.pending, (state) => {
+            .addCase(createTeam.pending, state => {
                 state.teamsFormError = '';
                 state.teamFormStatus = '';
                 state.successMessage = '';
             })
             .addCase(createTeam.fulfilled, (state, action) => {
-
-                // dispatch changeActiveTeam on auth_reducer.js
-                state.userTeams.push(action.payload.team);
-
-                // This was commented out on teams_actions
+                if (action.payload?.team) {
+                    state.userTeams.push(normalizeTeam(action.payload.team));
+                }
                 state.teamFormStatus = 'SUCCESS';
-
-                action.payload.type === 'JOIN'
-                    ? (state.successMessage = 'Congrats! you have joined a new team')
-                    : (state.successMessage = 'Congrats! you created a new team');
+                state.successMessage = 'Congrats! you created a new team';
             })
             .addCase(createTeam.rejected, (state, action) => {
                 state.teamsFormError = action.payload;
             })
 
-            .addCase(inactivateTeam.pending, (state) => {
-                // no action yet
-            })
-            .addCase(inactivateTeam.fulfilled, (state) => {
-                // other code was commented out
-            })
+            .addCase(inactivateTeam.fulfilled, () => {})
             .addCase(inactivateTeam.rejected, (state, action) => {
                 state.teamsFormError = action.payload;
             })
 
-            .addCase(leaveTeam.pending, (state) => {
-                // no action yet
-            })
             .addCase(leaveTeam.fulfilled, (state, action) => {
-                const index = state.userTeams.findIndex(team => team.id === action.payload.team?.id);
+                const index = state.userTeams.findIndex(
+                    team => team.id === action.payload.team?.id
+                );
 
                 if (index !== -1) {
                     state.userTeams.splice(index, 1);
@@ -430,10 +391,6 @@ const teamSlice = createSlice({
                 state.teamsFormError = action.payload;
             })
 
-
-            .addCase(getTeamMembers.pending, (state) => {
-                // no action yet
-            })
             .addCase(getTeamMembers.fulfilled, (state, action) => {
                 if (action.payload?.data) {
                     state.teamMembers.push(...action.payload.data);
@@ -447,11 +404,11 @@ const teamSlice = createSlice({
                 state.teamsRequestStatus = action.payload;
             })
 
-            .addCase(getTopTeams.pending, (state) => {
+            .addCase(getTopTeams.pending, state => {
                 state.topTeamsLoading = true;
             })
             .addCase(getTopTeams.fulfilled, (state, action) => {
-                state.topTeams = action.payload;
+                state.topTeams = action.payload?.data ?? action.payload;
                 state.topTeamsLoading = false;
             })
             .addCase(getTopTeams.rejected, (state, action) => {
@@ -460,9 +417,6 @@ const teamSlice = createSlice({
                 state.teamFormStatus = 'ERROR';
             })
 
-            .addCase(getUserTeams.pending, (state) => {
-                // no action yet
-            })
             .addCase(getUserTeams.fulfilled, (state, action) => {
                 state.userTeams = action.payload;
             })
@@ -471,22 +425,10 @@ const teamSlice = createSlice({
                 state.teamFormStatus = 'ERROR';
             })
 
-            .addCase(joinTeam.pending, (state) => {
-                // no action yet
-            })
             .addCase(joinTeam.fulfilled, (state, action) => {
-                // dispatch changeActiveTeam on auth_reducer.js
-
                 if (action.payload?.team) {
-                    state.userTeams.push(action.payload.team);
+                    state.userTeams.push(normalizeTeam(action.payload.team));
                 }
-
-                // This was commented out on teams_actions
-                // state.teamFormStatus = 'SUCCESS';
-                //
-                // action.payload.type === 'JOIN'
-                //     ? (state.successMessage = 'Congrats! you have joined a new team')
-                //     : (state.successMessage = 'Congrats! you created a new team');
             })
             .addCase(joinTeam.rejected, (state, action) => {
                 state.teamsFormError = action.payload;
@@ -495,11 +437,6 @@ const teamSlice = createSlice({
     }
 });
 
-export const {
-    clearTeamsForm,
-    topTeamsRequestSuccess,
-    userTeamsRequestSuccess,
-    setSelectedTeam
-} = teamSlice.actions;
+export const {clearTeamsForm, setSelectedTeam} = teamSlice.actions;
 
 export default teamSlice.reducer;

@@ -1,9 +1,8 @@
-import axios from "axios";
-import { URL } from '../actions/types';
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { updateUserObject, logout } from './auth_reducer';
-import { clearUploadedImages } from './images_reducer';
+import axios from 'axios';
+import {URL} from '../actions/types';
+import {createAsyncThunk, createSlice} from '@reduxjs/toolkit';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {updateUserObject, logout} from './auth_reducer';
 
 const initialState = {
     model: '',
@@ -28,49 +27,51 @@ const initialState = {
 
 export const deleteAccount = createAsyncThunk(
     'account/delete',
-    async ({ password, token }, { rejectWithValue }) => {
+    async ({password, token}, {rejectWithValue, dispatch}) => {
         try {
-            const response = await axios.post(`${URL}/api/settings/delete-account/`, {
-                password
-            }, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    'Content-Type': 'application/json'
+            const response = await axios.post(
+                `${URL}/api/settings/delete-account/`,
+                {
+                    password
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
                 }
-            });
+            );
 
-            if (!response.data.success && response.data.msg === 'password does not match') {
-                return rejectWithValue('Your password did not match');
-            } else {
-                // Consider handling side effects like AsyncStorage outside of the redux flow or use middleware
-                await AsyncStorage.clear();
-
-                return response.data;
+            if (!response.data.success) {
+                const msg =
+                    response.data.msg === 'password does not match'
+                        ? 'Your password did not match'
+                        : 'Failed to delete account';
+                return rejectWithValue(msg);
             }
+
+            await AsyncStorage.clear();
+            dispatch(logout());
+            return response.data;
         } catch (error) {
-            console.error('ERROR DELETE_ACCOUNT', error);
-            return rejectWithValue(error.response?.data?.message || 'Failed to delete account');
+            if (__DEV__) {
+                console.error('ERROR DELETE_ACCOUNT', error);
+            }
+            return rejectWithValue(
+                error.response?.data?.message || 'Failed to delete account'
+            );
         }
     }
 );
 
 export const saveSettings = createAsyncThunk(
     'settings/save',
-    async ({ dataKey, dataValue, token }, { rejectWithValue, dispatch }) => {
+    async ({dataKey, dataValue, token}, {rejectWithValue, dispatch}) => {
+        // Backend ALLOWED_SETTINGS keys are all lowercase.
+        // enable_admin_tagging is NOT in the backend whitelist — omit it.
+        const key = dataKey;
 
-        const keyMap = {
-            name: 'Name',
-            username: 'Username',
-            email: 'Email',
-            picked_up: 'picked_up',
-            global_flag: 'global_flag',
-            enable_admin_tagging: 'enable_admin_tagging'
-        };
-
-        const key = keyMap[dataKey] || dataKey; // Default to the original key if not mapped
-
-        try
-        {
+        try {
             const response = await axios({
                 url: `${URL}/api/settings/update/`,
                 method: 'POST',
@@ -88,7 +89,7 @@ export const saveSettings = createAsyncThunk(
                 // Get user and parse json to Object
                 let user = await AsyncStorage.getItem('user');
 
-                user = JSON.parse(user);
+                user = user ? JSON.parse(user) : {};
 
                 user[dataKey] = dataValue;
 
@@ -97,25 +98,18 @@ export const saveSettings = createAsyncThunk(
 
                 dispatch(updateUserObject(user));
 
-                if (key === 'enable_admin_tagging') {
-                    if (dataValue) {
-                        dispatch(clearUploadedImages());
-                    }
-                }
-
                 return {
                     key: dataKey,
                     value: dataValue,
-                    message: 'SUCCESS',
-                    clearUploadedImages: key === 'enable_admin_tagging' && dataValue
+                    message: 'SUCCESS'
                 };
             } else {
                 return rejectWithValue('Failed to update settings');
             }
-        }
-        catch (error)
-        {
-            console.error('saveSettings', error);
+        } catch (error) {
+            if (__DEV__) {
+                console.error('saveSettings', error);
+            }
             return rejectWithValue('ERROR');
         }
     }
@@ -123,9 +117,8 @@ export const saveSettings = createAsyncThunk(
 
 export const saveSocialAccounts = createAsyncThunk(
     'settings/saveSocialAccounts',
-    async ({ values, token }, { rejectWithValue, dispatch }) => {
-        try
-        {
+    async ({values, token}, {rejectWithValue, dispatch}) => {
+        try {
             const response = await axios({
                 url: `${URL}/api/settings`,
                 method: 'PATCH',
@@ -139,9 +132,8 @@ export const saveSocialAccounts = createAsyncThunk(
             });
 
             if (response?.data?.message === 'success') {
-
                 let user = await AsyncStorage.getItem('user');
-                user = JSON.parse(user);
+                user = user ? JSON.parse(user) : {};
                 user.settings = values;
                 await AsyncStorage.setItem('user', JSON.stringify(user));
 
@@ -151,10 +143,7 @@ export const saveSocialAccounts = createAsyncThunk(
             } else {
                 return rejectWithValue('ERROR');
             }
-        }
-        catch (error)
-        {
-            // console.log('saveSocialAccounts', error);
+        } catch (error) {
             return rejectWithValue('ERROR');
         }
     }
@@ -162,7 +151,7 @@ export const saveSocialAccounts = createAsyncThunk(
 
 export const toggleSettingsSwitch = createAsyncThunk(
     'settings/toggleSwitch',
-    async ({ id, token }, { rejectWithValue, dispatch }) => {
+    async ({id, token}, {rejectWithValue, dispatch}) => {
         const endpointMap = {
             4: 'maps/name',
             5: 'maps/username',
@@ -175,14 +164,17 @@ export const toggleSettingsSwitch = createAsyncThunk(
 
         const endUrl = endpointMap[id] || '';
 
-        try
-        {
-            const response = await axios.post(`${URL}/api/settings/privacy/${endUrl}`, {}, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    'content-type': 'application/json'
+        try {
+            const response = await axios.post(
+                `${URL}/api/settings/privacy/${endUrl}`,
+                {},
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        'content-type': 'application/json'
+                    }
                 }
-            });
+            );
 
             if (response.status === 200) {
                 const key = Object.keys(response.data)[0];
@@ -194,7 +186,7 @@ export const toggleSettingsSwitch = createAsyncThunk(
                 }
 
                 let user = await AsyncStorage.getItem('user');
-                user = JSON.parse(user);
+                user = user ? JSON.parse(user) : {};
                 user[key] = value;
 
                 await AsyncStorage.setItem('user', JSON.stringify(user));
@@ -206,20 +198,17 @@ export const toggleSettingsSwitch = createAsyncThunk(
                 return rejectWithValue('Failed to update settings');
             }
         } catch (error) {
-            // console.log('Error: toggleSettingsSwitch', error);
             return rejectWithValue('Failed to toggle setting');
         }
     }
 );
 
 const settingsSlice = createSlice({
-
     name: 'settings',
 
     initialState,
 
     reducers: {
-
         closeSecondSettingModal(state) {
             state.updateSettingsStatusMessage = '';
             state.updatingSettings = false;
@@ -236,7 +225,7 @@ const settingsSlice = createSlice({
         /**
          * Sets current device modal
          */
-        setModel (state, action) {
+        setModel(state, action) {
             state.model = action.payload;
         },
 
@@ -246,14 +235,14 @@ const settingsSlice = createSlice({
          * when user selects a field to edit current value of that field is set in settingsEditProp
          * to be used as initial value in textfield in edit modal
          */
-        settingsInit (state, action) {
+        settingsInit(state, action) {
             state.settingsEditProp = action.payload;
         },
 
         /**
          * Change name / username / email component is inside a modal
          */
-        toggleSettingsModal (state, action) {
+        toggleSettingsModal(state, action) {
             state.settingsModalVisible = !state.settingsModalVisible;
             state.settingsEdit = !state.settingsEdit;
             state.dataToEdit = action.payload;
@@ -270,28 +259,21 @@ const settingsSlice = createSlice({
         /**
          * User wants to change text in SettingsComponent
          */
-        updateSettingsProp (state, action) {
+        updateSettingsProp(state, action) {
             state.settingsEditProp = action.payload;
         }
     },
 
-    extraReducers: (builder) => {
-
+    extraReducers: builder => {
         builder
 
             // Delete Account
-            .addCase(deleteAccount.pending, (state, action) => {
-                // loading => true
-            })
-            .addCase(deleteAccount.fulfilled, (state, action) => {
-                // return true and logout
-            })
             .addCase(deleteAccount.rejected, (state, action) => {
                 state.deleteAccountError = action.payload;
             })
 
             // Save Settings
-            .addCase(saveSettings.pending, (state) => {
+            .addCase(saveSettings.pending, state => {
                 state.secondSettingsModalVisible = true;
                 state.updatingSettings = true;
             })
@@ -303,7 +285,7 @@ const settingsSlice = createSlice({
             })
 
             // Save Social Accounts
-            .addCase(saveSocialAccounts.pending, (state) => {
+            .addCase(saveSocialAccounts.pending, state => {
                 state.secondSettingsModalVisible = true;
                 state.updatingSettings = true;
             })
@@ -324,7 +306,6 @@ const settingsSlice = createSlice({
                 state.wait = false;
             })
             .addCase(logout, () => initialState);
-
     }
 });
 

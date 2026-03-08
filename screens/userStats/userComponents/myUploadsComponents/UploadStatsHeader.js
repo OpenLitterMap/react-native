@@ -2,6 +2,7 @@ import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { Body, Caption } from '../../../components';
+import { useTranslation } from 'react-i18next';
 
 const StatCell = ({ icon, value, label, color }) => (
     <View style={styles.cell}>
@@ -13,38 +14,42 @@ const StatCell = ({ icon, value, label, color }) => (
     </View>
 );
 
-const UploadStatsHeader = ({ totalPhotos, totalTags, totalXp, leftToTag }) => {
+const UploadStatsHeader = React.memo(({ totalPhotos, totalTags, totalXp, leftToTag }) => {
+    const { t } = useTranslation();
+
     return (
         <View style={styles.container}>
             <StatCell
                 icon="camera-outline"
                 value={totalPhotos}
-                label="Photos"
+                label={t('Photos')}
                 color="#8b5cf6"
             />
             <StatCell
                 icon="pricetag-outline"
                 value={totalTags}
-                label="Tags"
+                label={t('Tags')}
                 color="#14b8a6"
             />
             <StatCell
                 icon="star-outline"
                 value={totalXp}
-                label="XP"
+                label={t('XP')}
                 color="#f59e0b"
             />
             {leftToTag > 0 && (
                 <StatCell
                     icon="time-outline"
                     value={leftToTag}
-                    label="To Tag"
+                    label={t('To Tag')}
                     color="#ef4444"
                 />
             )}
         </View>
     );
-};
+});
+
+UploadStatsHeader.displayName = 'UploadStatsHeader';
 
 const styles = StyleSheet.create({
     container: {
@@ -70,3 +75,4 @@ const styles = StyleSheet.create({
 });
 
 export default UploadStatsHeader;
+

@@ -11,7 +11,7 @@ Displays a global leaderboard of users ranked by their contributions. Supports t
 ## API Endpoints
 | Thunk | Method | Endpoint | Payload | Notes |
 |-------|--------|----------|---------|-------|
-| `getLeaderboardData` | GET | `/global/leaderboard?timeFilter={value}` | — | No `/api/` prefix. No auth required. |
+| `getLeaderboardData` | GET | `/api/leaderboard?timeFilter={value}` | — | No auth required. |
 
 ## Time Filters
 The `timeFilter` param controls the leaderboard period (e.g., all-time, this month, this year).

@@ -1,5 +1,7 @@
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {
+    ActivityIndicator,
+    Alert,
     Animated,
     KeyboardAvoidingView,
     PanResponder,
@@ -13,6 +15,7 @@ import {
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {useDispatch, useSelector} from 'react-redux';
+import {useTranslation} from 'react-i18next';
 import {Body, Caption, Colors} from '../components';
 import ImageViewer from './components/ImageViewer';
 import TagPills from './components/TagPills';
@@ -27,6 +30,7 @@ import {
     addImageCustomTag,
     addTagV5,
     changeSwiperIndex,
+    editTagsOnPhoto,
     removeBrandFromTag,
     removeCustomTagFromTag,
     removeImageCustomTag,
@@ -37,9 +41,12 @@ import {
 } from '../../reducers/images_reducer';
 import {fetchAllTags} from '../../reducers/tags_reducer';
 import {isTagged} from '../../utils/isTagged';
+import buildV5TagsPayload from '../../utils/buildV5TagsPayload';
+import {makeTagKey, resolveTagEntry} from './components/tagUtils';
 
 const AddTagScreen = ({navigation}) => {
     const dispatch = useDispatch();
+    const {t} = useTranslation();
 
     // Redux state
     const images = useSelector(state => state.images.imagesArray);
@@ -55,6 +62,8 @@ const AddTagScreen = ({navigation}) => {
         brandsById,
         loading: tagsLoading
     } = useSelector(state => state.tags);
+
+    const [isSaving, setIsSaving] = useState(false);
 
     // Focus mode: hides overlays so user can see full image
     const [focusMode, setFocusMode] = useState(false);
@@ -88,7 +97,13 @@ const AddTagScreen = ({navigation}) => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    const currentImage = images[swiperIndex];
+    // Clamp swiperIndex to valid range to prevent out-of-bounds access
+    const safeIndex = images.length > 0
+        ? Math.min(swiperIndex, images.length - 1)
+        : 0;
+    const currentImage = images[safeIndex];
+    const isEditMode = currentImage?.editing === true;
+
     const currentTags = useMemo(
         () => currentImage?.tagsV5 || [],
         [currentImage?.tagsV5]
@@ -119,21 +134,26 @@ const AddTagScreen = ({navigation}) => {
     // Pulse XP badge when estimate changes
     const prevXp = useRef(xpEstimate);
     useEffect(() => {
-        if (xpEstimate !== prevXp.current) {
-            Animated.sequence([
-                Animated.timing(xpScale, {
-                    toValue: 1.15,
-                    duration: 100,
-                    useNativeDriver: true
-                }),
-                Animated.timing(xpScale, {
-                    toValue: 1.0,
-                    duration: 100,
-                    useNativeDriver: true
-                })
-            ]).start();
-            prevXp.current = xpEstimate;
+        if (xpEstimate === prevXp.current) {
+            return;
         }
+
+        const anim = Animated.sequence([
+            Animated.timing(xpScale, {
+                toValue: 1.15,
+                duration: 100,
+                useNativeDriver: true
+            }),
+            Animated.timing(xpScale, {
+                toValue: 1.0,
+                duration: 100,
+                useNativeDriver: true
+            })
+        ]);
+        anim.start();
+        prevXp.current = xpEstimate;
+
+        return () => anim.stop();
     }, [xpEstimate, xpScale]);
 
     // Image navigation
@@ -256,7 +276,7 @@ const AddTagScreen = ({navigation}) => {
 
     // Tag detail sheet handlers — store key string instead of full object
     const handleOpenDetail = useCallback(tag => {
-        setDetailTag(`${tag.cloId}-${tag.typeId || ''}`);
+        setDetailTag(makeTagKey(tag.cloId, tag.typeId));
     }, []);
 
     const handleCloseDetail = useCallback(() => {
@@ -265,14 +285,18 @@ const AddTagScreen = ({navigation}) => {
 
     // Parse detailTag key back to cloId/typeId
     const [detailCloId, detailTypeId] = useMemo(() => {
-        if (!detailTag) return [null, null];
+        if (!detailTag) {
+            return [null, null];
+        }
         const parts = detailTag.split('-');
-        return [Number(parts[0]), parts[1] ? Number(parts[1]) : null];
+        return [Number(parts[0]), parts[1] !== '' ? Number(parts[1]) : null];
     }, [detailTag]);
 
     // Find the current tag entry for the detail sheet (stays in sync after edits)
     const detailTagCurrent = useMemo(() => {
-        if (!detailTag) return null;
+        if (!detailTag) {
+            return null;
+        }
         return currentTags.find(
             t =>
                 t.cloId === detailCloId &&
@@ -281,14 +305,15 @@ const AddTagScreen = ({navigation}) => {
     }, [detailTag, detailCloId, detailTypeId, currentTags]);
 
     const detailTagEntry = useMemo(() => {
-        if (!detailTag) return null;
-        if (detailTypeId) {
-            return (
-                typeEntriesByKey?.[`${detailCloId}-${detailTypeId}`] ||
-                entriesByCloId[detailCloId]
-            );
+        if (!detailTag) {
+            return null;
         }
-        return entriesByCloId[detailCloId];
+        return resolveTagEntry(
+            detailCloId,
+            detailTypeId,
+            entriesByCloId,
+            typeEntriesByKey
+        );
     }, [
         detailTag,
         detailCloId,
@@ -300,7 +325,9 @@ const AddTagScreen = ({navigation}) => {
     // Factory for detail sheet dispatch handlers
     const dispatchDetailAction = useCallback(
         (actionCreator, extraPayload) => {
-            if (!detailTag) return;
+            if (!detailTag) {
+                return;
+            }
             dispatch(
                 actionCreator({
                     imageIndex: swiperIndex,
@@ -343,7 +370,37 @@ const AddTagScreen = ({navigation}) => {
         [images]
     );
 
+    const handleUpdateTags = useCallback(async () => {
+        if (!currentImage?.photoId) return;
+
+        const payload = buildV5TagsPayload(currentImage);
+        if (!payload) {
+            Alert.alert(t('Error!'), t('Please add at least one tag before saving.'));
+            return;
+        }
+
+        setIsSaving(true);
+        const result = await dispatch(editTagsOnPhoto({
+            token,
+            photoId: currentImage.photoId,
+            tags: payload,
+            pickedUp: currentImage.picked_up
+        }));
+        setIsSaving(false);
+
+        if (result.meta?.requestStatus === 'rejected') {
+            Alert.alert(t('Error!'), t('Failed to update tags. Please try again.'));
+        } else {
+            navigation.goBack();
+        }
+    }, [dispatch, token, currentImage, navigation, t]);
+
     const handleDone = useCallback(() => {
+        if (isEditMode) {
+            handleUpdateTags();
+            return;
+        }
+
         if (allTagged) {
             navigation.navigate('HOME');
         } else if (swiperIndex < images.length - 1) {
@@ -355,7 +412,7 @@ const AddTagScreen = ({navigation}) => {
                 dispatch(changeSwiperIndex(firstUntagged));
             }
         }
-    }, [allTagged, navigation, dispatch, swiperIndex, images]);
+    }, [isEditMode, handleUpdateTags, allTagged, navigation, dispatch, swiperIndex, images]);
 
     const handleBrowsePress = useCallback(() => {
         setShowBrowser(prev => !prev);
@@ -410,7 +467,7 @@ const AddTagScreen = ({navigation}) => {
                     <SafeAreaView>
                         <View style={styles.topBar}>
                             <Pressable
-                                onPress={() => navigation.navigate('HOME')}
+                                onPress={() => isEditMode ? navigation.goBack() : navigation.navigate('HOME')}
                                 style={styles.backButton}
                                 hitSlop={8}>
                                 <Icon
@@ -513,7 +570,6 @@ const AddTagScreen = ({navigation}) => {
                         <TagSearchBar
                             objectEntries={objectEntries}
                             entriesByCloId={entriesByCloId}
-                            categoriesById={categoriesById}
                             currentTags={currentTags}
                             customTags={currentCustomTags}
                             onAddTag={handleAddTag}
@@ -576,24 +632,45 @@ const AddTagScreen = ({navigation}) => {
                                     </View>
                                 )}
 
-                                {/* Done button */}
+                                {/* Done / Update Tags button */}
                                 <Pressable
+                                    disabled={isSaving}
                                     style={({pressed}) => [
                                         styles.doneButton,
-                                        pressed && styles.doneButtonPressed
+                                        isEditMode && styles.updateButton,
+                                        pressed && styles.doneButtonPressed,
+                                        isSaving && styles.doneButtonDisabled
                                     ]}
                                     onPress={handleDone}>
-                                    <Icon
-                                        name={allTagged ? 'checkmark' : 'arrow-forward'}
-                                        size={18}
-                                        color={Colors.white}
-                                    />
-                                    <Body
-                                        color="white"
-                                        family="semiBold"
-                                        style={styles.doneText}>
-                                        {allTagged ? 'Done' : 'Next'}
-                                    </Body>
+                                    {isSaving ? (
+                                        <ActivityIndicator size="small" color={Colors.white} />
+                                    ) : (
+                                        <>
+                                            <Icon
+                                                name={
+                                                    isEditMode
+                                                        ? 'cloud-upload-outline'
+                                                        : allTagged
+                                                            ? 'checkmark'
+                                                            : 'arrow-forward'
+                                                }
+                                                size={18}
+                                                color={Colors.white}
+                                            />
+                                            <Body
+                                                color="white"
+                                                family="semiBold"
+                                                style={styles.doneText}
+                                                dictionary={
+                                                    isEditMode
+                                                        ? 'Update Tags'
+                                                        : allTagged
+                                                            ? 'Done'
+                                                            : 'Next'
+                                                }
+                                            />
+                                        </>
+                                    )}
                                 </Pressable>
                             </View>
                         </SafeAreaView>
@@ -732,6 +809,12 @@ const styles = StyleSheet.create({
     },
     doneButtonPressed: {
         backgroundColor: '#229954'
+    },
+    doneButtonDisabled: {
+        opacity: 0.6
+    },
+    updateButton: {
+        backgroundColor: '#2563eb'
     },
     doneText: {
         fontSize: 15

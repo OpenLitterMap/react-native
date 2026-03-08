@@ -3,10 +3,8 @@
 
 ## Local Server
 
-- URL: `https://olm.test` (Laravel Valet, HTTPS with self-signed cert)
-- HTTP redirects to HTTPS (301)
-- Set via `.env`: `CURRENT_ENVIRONMENT='local'` → `http://olm.test` in `actions/types.js`
-  - Note: `actions/types.js` hardcodes `'http://olm.test'` but Valet forces HTTPS
+- URL: `http://localhost:8000` (Laravel local dev server)
+- Set via `.env`: `CURRENT_ENVIRONMENT='local'` → `http://localhost:8000` in `actions/types.js`
 
 ## GET /api/tags/all — Response Shape
 

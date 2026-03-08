@@ -2,6 +2,7 @@ import React, {useCallback, useMemo} from 'react';
 import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {Caption, Colors} from '../../components';
+import {makeTagKey, resolveTagEntry} from './tagUtils';
 
 const TagSuggestions = ({
     images,
@@ -13,7 +14,7 @@ const TagSuggestions = ({
 }) => {
     const suggestions = useMemo(() => {
         const currentKeys = new Set(
-            (currentTags || []).map(t => `${t.cloId}-${t.typeId || ''}`)
+            (currentTags || []).map(t => makeTagKey(t.cloId, t.typeId))
         );
         const frequency = {};
 
@@ -23,7 +24,7 @@ const TagSuggestions = ({
             }
             const tags = images[i].tagsV5 || [];
             for (const tag of tags) {
-                const key = `${tag.cloId}-${tag.typeId || ''}`;
+                const key = makeTagKey(tag.cloId, tag.typeId);
                 if (!currentKeys.has(key)) {
                     frequency[key] = (frequency[key] || 0) + 1;
                 }
@@ -37,9 +38,12 @@ const TagSuggestions = ({
                 const [cloIdStr, typeIdStr] = key.split('-');
                 const cloId = Number(cloIdStr);
                 const typeId = typeIdStr ? Number(typeIdStr) : null;
-                const entry = typeId
-                    ? typeEntriesByKey?.[`${cloId}-${typeId}`]
-                    : entriesByCloId[cloId];
+                const entry = resolveTagEntry(
+                    cloId,
+                    typeId,
+                    entriesByCloId,
+                    typeEntriesByKey
+                );
                 return {cloId, typeId, entry};
             })
             .filter(s => s.entry);
@@ -71,7 +75,7 @@ const TagSuggestions = ({
                 keyboardShouldPersistTaps="handled">
                 {suggestions.map(({cloId, typeId, entry}) => (
                     <Pressable
-                        key={`${cloId}-${typeId || ''}`}
+                        key={makeTagKey(cloId, typeId)}
                         style={({pressed}) => [
                             styles.chip,
                             pressed && styles.chipPressed

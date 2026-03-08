@@ -1,13 +1,14 @@
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { Caption, Colors } from '../../../components';
 import TagChips from './TagChips';
 import dayjs from '../../../../utils/dayjs';
 import { useTranslation } from 'react-i18next';
+import Icon from 'react-native-vector-icons/Ionicons';
 
-const UploadCard = ({ item }) => {
+const UploadCard = React.memo(({ item, onEditTags, onDelete, onCopyLink, onOpenMap }) => {
     const { t } = useTranslation();
-    const isTagged = item.new_tags && item.new_tags.length > 0;
+    const isTagged = (item.new_tags && item.new_tags.length > 0) || item.total_tags > 0;
     const totalTags = item.total_tags || (item.new_tags?.length || 0);
     const xp = item.xp || 0;
     const teamName = item.team?.name;
@@ -44,9 +45,51 @@ const UploadCard = ({ item }) => {
                     </>
                 )}
             </View>
+
+            <View style={styles.actions}>
+                <Pressable
+                    style={styles.actionBtn}
+                    onPress={() => onEditTags(item)}
+                    hitSlop={6}
+                >
+                    <Icon name="pricetag-outline" size={16} color={Colors.accent} />
+                    <Caption style={[styles.actionLabel, { color: Colors.accent }]}>
+                        {t('Edit Tags')}
+                    </Caption>
+                </Pressable>
+
+                <Pressable
+                    style={styles.actionBtn}
+                    onPress={() => onCopyLink(item)}
+                    hitSlop={6}
+                >
+                    <Icon name="link-outline" size={16} color={Colors.muted} />
+                    <Caption style={styles.actionLabel}>{t('Copy Link')}</Caption>
+                </Pressable>
+
+                <Pressable
+                    style={styles.actionBtn}
+                    onPress={() => onOpenMap(item)}
+                    hitSlop={6}
+                >
+                    <Icon name="map-outline" size={16} color={Colors.muted} />
+                    <Caption style={styles.actionLabel}>{t('Map')}</Caption>
+                </Pressable>
+
+                <Pressable
+                    style={styles.actionBtn}
+                    onPress={() => onDelete(item)}
+                    hitSlop={6}
+                >
+                    <Icon name="trash-outline" size={16} color={Colors.error} />
+                    <Caption style={[styles.actionLabel, { color: Colors.error }]}>
+                        {t('Delete')}
+                    </Caption>
+                </Pressable>
+            </View>
         </View>
     );
-};
+});
 
 const styles = StyleSheet.create({
     card: {
@@ -85,7 +128,28 @@ const styles = StyleSheet.create({
     },
     teamName: {
         flexShrink: 1
+    },
+    actions: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginTop: 10,
+        paddingTop: 10,
+        borderTopWidth: StyleSheet.hairlineWidth,
+        borderTopColor: '#e5e7eb'
+    },
+    actionBtn: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+        paddingVertical: 4,
+        paddingHorizontal: 2
+    },
+    actionLabel: {
+        fontSize: 11,
+        color: Colors.muted
     }
 });
+
+UploadCard.displayName = 'UploadCard';
 
 export default UploadCard;

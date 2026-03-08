@@ -1,5 +1,5 @@
-import { Platform } from 'react-native';
-import { check, PERMISSIONS, request } from 'react-native-permissions';
+import {Platform} from 'react-native';
+import {check, PERMISSIONS, request} from 'react-native-permissions';
 
 export const requestCameraRollPermission = async () => {
     let result;
@@ -7,25 +7,28 @@ export const requestCameraRollPermission = async () => {
         if (Platform.OS === 'ios') {
             result = await request(PERMISSIONS.IOS.PHOTO_LIBRARY);
         } else if (Platform.OS === 'android') {
-            // Android 13 and above
-            // needs to request READ_MEDIA_IMAGES and ACCESS_MEDIA_LOCATION
             if (Platform.Version >= 33) {
                 result = await request(PERMISSIONS.ANDROID.READ_MEDIA_IMAGES);
 
-                const mediaLocation = await request(PERMISSIONS.ANDROID.ACCESS_MEDIA_LOCATION);
-
-                if (result === 'granted' && mediaLocation === 'granted') {
-                    return 'granted';
-                } else {
+                if (result !== 'granted') {
                     return 'denied';
                 }
+
+                const mediaLocation = await request(
+                    PERMISSIONS.ANDROID.ACCESS_MEDIA_LOCATION
+                );
+
+                // Photos accessible; GPS may or may not be available
+                return mediaLocation === 'granted' ? 'granted' : 'limited';
             } else {
-                // Android 12 and below needs to request READ_EXTERNAL_STORAGE
-                result = await request(PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE);
+                result = await request(
+                    PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE
+                );
             }
         }
     } catch (error) {
-        console.error('Error requesting camera roll permission:', error);
+        if (__DEV__)
+            console.error('Error requesting camera roll permission:', error);
         result = 'denied';
     }
 
@@ -37,26 +40,31 @@ export const requestCameraRollPermission = async () => {
  */
 export const checkCameraRollPermission = async () => {
     if (Platform.OS === 'ios') {
-        return await check('ios.permission.PHOTO_LIBRARY');
+        return await check(PERMISSIONS.IOS.PHOTO_LIBRARY);
     }
     if (Platform.OS === 'android') {
         if (Platform.Version >= 33) {
-            const readMediaImages = await check(PERMISSIONS.ANDROID.READ_MEDIA_IMAGES);
+            const readMediaImages = await check(
+                PERMISSIONS.ANDROID.READ_MEDIA_IMAGES
+            );
 
             if (readMediaImages !== 'granted') {
                 return 'denied';
             }
 
             // READ_MEDIA_IMAGES is granted — now check ACCESS_MEDIA_LOCATION
-            // Without this, CameraRoll returns photos but without GPS data
-            const mediaLocation = await check(PERMISSIONS.ANDROID.ACCESS_MEDIA_LOCATION);
+            const mediaLocation = await check(
+                PERMISSIONS.ANDROID.ACCESS_MEDIA_LOCATION
+            );
 
             if (mediaLocation === 'granted') {
                 return 'granted';
             }
 
             // Try requesting ACCESS_MEDIA_LOCATION
-            const requestResult = await request(PERMISSIONS.ANDROID.ACCESS_MEDIA_LOCATION);
+            const requestResult = await request(
+                PERMISSIONS.ANDROID.ACCESS_MEDIA_LOCATION
+            );
 
             if (requestResult === 'granted') {
                 return 'granted';
@@ -68,19 +76,4 @@ export const checkCameraRollPermission = async () => {
             return await check(PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE);
         }
     }
-};
-
-/**
- * Android 13+ only
- */
-export const checkAccessMediaLocation = async () => {
-    const result = await check(PERMISSIONS.ANDROID.ACCESS_MEDIA_LOCATION);
-
-    if (result === 'granted') {
-        return 'granted';
-    }
-
-    const requestResult = await request(PERMISSIONS.ANDROID.ACCESS_MEDIA_LOCATION);
-
-    return requestResult === 'granted' ? 'granted' : 'denied';
 };

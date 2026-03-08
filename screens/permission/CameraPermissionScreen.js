@@ -20,6 +20,9 @@ import {
 
 const CameraPermissionScreen = ({navigation}) => {
     useEffect(() => {
+        // Check on initial mount in case permissions were already granted
+        checkPermissions();
+
         const handleAppStateChange = nextAppState => {
             if (
                 AppState.currentState.match(/inactive|background/) &&
@@ -46,7 +49,7 @@ const CameraPermissionScreen = ({navigation}) => {
             cameraPermission === 'granted' &&
             locationPermission === 'granted'
         ) {
-            navigation.navigate('CAMERA');
+            navigation.navigate('HOME');
         }
     };
 
@@ -54,7 +57,7 @@ const CameraPermissionScreen = ({navigation}) => {
         const cameraResult = await requestCameraPermission();
         const locationResult = await requestLocationPermission();
         if (cameraResult === 'granted' && locationResult === 'granted') {
-            navigation.navigate('CAMERA');
+            navigation.navigate('HOME');
         } else {
             Platform.OS === 'ios'
                 ? Linking.openURL('app-settings:')
@@ -90,10 +93,7 @@ const CameraPermissionScreen = ({navigation}) => {
                             />
                         </View>
                         <View style={styles.itemBody}>
-                            <Body
-                                family="medium"
-                                dictionary="Camera Access"
-                            />
+                            <Body family="medium" dictionary="Camera Access" />
                             <Caption
                                 color="muted"
                                 dictionary="To capture litter images from app camera"

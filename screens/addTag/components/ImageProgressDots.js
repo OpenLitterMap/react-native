@@ -1,6 +1,7 @@
 import React, {useCallback, useMemo, useRef, useEffect} from 'react';
 import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
 import {Caption, Colors} from '../../components';
+import {isTagged} from '../../../utils/isTagged';
 
 const DOT_SIZE = 6;
 const ACTIVE_DOT_SIZE = 10;
@@ -10,7 +11,7 @@ const ImageProgressDots = ({images, currentIndex, onIndexChange}) => {
     const scrollRef = useRef(null);
 
     const taggedStatuses = useMemo(() => {
-        return images.map(img => img.tagsV5 && img.tagsV5.length > 0);
+        return images.map(isTagged);
     }, [images]);
 
     const taggedCount = useMemo(() => {
@@ -46,7 +47,7 @@ const ImageProgressDots = ({images, currentIndex, onIndexChange}) => {
                 contentContainerStyle={styles.dotsRow}>
                 {images.map((_, index) => {
                     const isCurrent = index === currentIndex;
-                    const isTagged = taggedStatuses[index];
+                    const tagged = taggedStatuses[index];
 
                     return (
                         <Pressable
@@ -56,8 +57,8 @@ const ImageProgressDots = ({images, currentIndex, onIndexChange}) => {
                             style={[
                                 styles.dot,
                                 isCurrent && styles.dotActive,
-                                isTagged && styles.dotTagged,
-                                isCurrent && isTagged && styles.dotActiveTagged
+                                tagged && styles.dotTagged,
+                                isCurrent && tagged && styles.dotActiveTagged
                             ]}
                         />
                     );

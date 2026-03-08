@@ -3,6 +3,7 @@ import {FlatList, Pressable, ScrollView, StyleSheet, View} from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {Body, Caption, Colors} from '../../components';
 import {getCategoryColor} from './categoryColors';
+import {makeTagKey} from './tagUtils';
 
 const CategoryBrowser = ({
     categoriesById,
@@ -17,7 +18,7 @@ const CategoryBrowser = ({
         const set = new Set();
         if (currentTags) {
             for (const t of currentTags) {
-                set.add(`${t.cloId}-${t.typeId || ''}`);
+                set.add(makeTagKey(t.cloId, t.typeId));
             }
         }
         return set;
@@ -83,9 +84,7 @@ const CategoryBrowser = ({
 
     const renderItem = useCallback(
         ({item}) => {
-            const isAdded = taggedKeys.has(
-                `${item.cloId}-${item.typeId || ''}`
-            );
+            const isAdded = taggedKeys.has(makeTagKey(item.cloId, item.typeId));
             const categoryColor = getCategoryColor(item.categoryKey);
 
             return (

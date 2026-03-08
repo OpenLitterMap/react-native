@@ -84,7 +84,7 @@ const FilterSheet = ({ visible, filters, onApply, onClose }) => {
 
                             <View style={styles.dateRow}>
                                 <View style={styles.dateCell}>
-                                    <Caption style={styles.label}>From</Caption>
+                                    <Caption style={styles.label}>{t('From')}</Caption>
                                     <DateTimePicker
                                         value={draft.filterDateFrom || new Date()}
                                         mode="date"
@@ -99,7 +99,7 @@ const FilterSheet = ({ visible, filters, onApply, onClose }) => {
                                     />
                                 </View>
                                 <View style={styles.dateCell}>
-                                    <Caption style={styles.label}>To</Caption>
+                                    <Caption style={styles.label}>{t('To')}</Caption>
                                     <DateTimePicker
                                         value={draft.filterDateTo || new Date()}
                                         mode="date"

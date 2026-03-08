@@ -12,10 +12,9 @@ import {
 import Icon from 'react-native-vector-icons/Ionicons';
 import {Body, Caption, Colors} from '../../components';
 import {getCategoryColor} from './categoryColors';
+import {MAX_QUANTITY} from './tagUtils';
 import {useTranslation} from 'react-i18next';
-
-const MAX_QUANTITY = 10;
-const MAX_BRAND_RESULTS = 5;
+const MAX_SEARCH_RESULTS = 5;
 
 const TagDetailSheet = ({
     visible,
@@ -33,12 +32,13 @@ const TagDetailSheet = ({
     onClose
 }) => {
     const {t} = useTranslation();
+    const [materialQuery, setMaterialQuery] = useState('');
     const [brandQuery, setBrandQuery] = useState('');
     const [customTagText, setCustomTagText] = useState('');
 
-    const categoryColor = getCategoryColor(tagEntry?.categoryKey);
-    const tagName = tagEntry?.displayName || `#${tag?.cloId}`;
-    const categoryName = tagEntry?.categoryDisplayName || '';
+    const categoryColor = getCategoryColor(tagEntry?.categoryKey || tag?._categoryKey);
+    const tagName = tagEntry?.displayName || tag?._displayName || `#${tag?.cloId}`;
+    const categoryName = tagEntry?.categoryDisplayName || tag?._categoryDisplayName || '';
 
     const selectedMaterialIds = useMemo(
         () => new Set(tag?.materials || []),
@@ -50,6 +50,27 @@ const TagDetailSheet = ({
         [tag?.brands]
     );
 
+    const materialResults = useMemo(() => {
+        if (!materialQuery.trim() || !materials) return [];
+        const q = materialQuery.toLowerCase();
+        const matches = [];
+        for (const m of materials) {
+            if (
+                m.name.toLowerCase().includes(q) &&
+                !selectedMaterialIds.has(m.id)
+            ) {
+                matches.push(m);
+                if (matches.length >= MAX_SEARCH_RESULTS) break;
+            }
+        }
+        return matches;
+    }, [materialQuery, materials, selectedMaterialIds]);
+
+    const selectedMaterials = useMemo(() => {
+        if (!materials || selectedMaterialIds.size === 0) return [];
+        return materials.filter(m => selectedMaterialIds.has(m.id));
+    }, [materials, selectedMaterialIds]);
+
     const brandResults = useMemo(() => {
         if (!brandQuery.trim() || !brands) return [];
         const q = brandQuery.toLowerCase();
@@ -60,9 +81,7 @@ const TagDetailSheet = ({
                 !selectedBrandIds.has(b.id)
             ) {
                 matches.push(b);
-                if (matches.length >= MAX_BRAND_RESULTS) {
-                    break;
-                }
+                if (matches.length >= MAX_SEARCH_RESULTS) break;
             }
         }
         return matches;
@@ -173,49 +192,104 @@ const TagDetailSheet = ({
                             </View>
 
                             {/* Materials */}
-                            {materials && materials.length > 0 && (
-                                <View style={styles.section}>
-                                    <View style={styles.sectionHeader}>
-                                        <Caption style={styles.sectionLabel}>
-                                            {t('Materials')}
-                                        </Caption>
-                                        <Caption
-                                            style={styles.xpHint}
-                                            color="accent">
-                                            +2 XP
-                                        </Caption>
-                                    </View>
-                                    <View style={styles.chipsWrap}>
-                                        {materials.map(m => {
-                                            const selected =
-                                                selectedMaterialIds.has(m.id);
-                                            return (
+                            <View style={styles.section}>
+                                <View style={styles.sectionHeader}>
+                                    <Caption style={styles.sectionLabel}>
+                                        {t('Materials')}
+                                    </Caption>
+                                    <Caption
+                                        style={styles.xpHint}
+                                        color="accent">
+                                        +2 XP
+                                    </Caption>
+                                </View>
+
+                                {/* Selected materials */}
+                                {selectedMaterials.length > 0 && (
+                                    <View style={styles.selectedChipsWrap}>
+                                        {selectedMaterials.map(m => (
+                                            <View
+                                                key={m.id}
+                                                style={styles.selectedChip}>
+                                                <Caption
+                                                    style={
+                                                        styles.selectedChipText
+                                                    }>
+                                                    {m.name}
+                                                </Caption>
                                                 <Pressable
-                                                    key={m.id}
-                                                    style={[
-                                                        styles.chip,
-                                                        selected &&
-                                                            styles.chipSelected
-                                                    ]}
                                                     onPress={() =>
                                                         onToggleMaterial(m.id)
-                                                    }>
-                                                    <Caption
-                                                        style={
-                                                            selected
-                                                                ? styles.chipTextSelected
-                                                                : styles.chipText
-                                                        }>
-                                                        {t(
-                                                            `litter.materials.${m.key}`
-                                                        )}
-                                                    </Caption>
+                                                    }
+                                                    hitSlop={4}>
+                                                    <Icon
+                                                        name="close"
+                                                        size={14}
+                                                        color="#888"
+                                                    />
                                                 </Pressable>
-                                            );
-                                        })}
+                                            </View>
+                                        ))}
                                     </View>
+                                )}
+
+                                {/* Material search */}
+                                <View style={styles.searchRow}>
+                                    <Icon
+                                        name="search"
+                                        size={16}
+                                        color="#aaa"
+                                        style={styles.searchIcon}
+                                    />
+                                    <TextInput
+                                        style={styles.searchInput}
+                                        placeholder={t('Search materials')}
+                                        placeholderTextColor="#aaa"
+                                        value={materialQuery}
+                                        onChangeText={setMaterialQuery}
+                                        autoCapitalize="none"
+                                        autoCorrect={false}
+                                    />
+                                    {materialQuery.length > 0 && (
+                                        <Pressable
+                                            onPress={() =>
+                                                setMaterialQuery('')
+                                            }
+                                            hitSlop={4}>
+                                            <Icon
+                                                name="close-circle"
+                                                size={16}
+                                                color="#ccc"
+                                            />
+                                        </Pressable>
+                                    )}
                                 </View>
-                            )}
+
+                                {/* Material results */}
+                                {materialResults.length > 0 && (
+                                    <View style={styles.brandResults}>
+                                        {materialResults.map(m => (
+                                            <Pressable
+                                                key={m.id}
+                                                style={styles.brandRow}
+                                                onPress={() => {
+                                                    onToggleMaterial(m.id);
+                                                    setMaterialQuery('');
+                                                }}>
+                                                <Caption
+                                                    style={styles.brandName}>
+                                                    {m.name}
+                                                </Caption>
+                                                <Icon
+                                                    name="add-circle-outline"
+                                                    size={18}
+                                                    color={Colors.accent}
+                                                />
+                                            </Pressable>
+                                        ))}
+                                    </View>
+                                )}
+                            </View>
 
                             {/* Brands */}
                             <View style={styles.section}>
@@ -500,32 +574,6 @@ const styles = StyleSheet.create({
         minWidth: 30,
         textAlign: 'center'
     },
-    chipsWrap: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        gap: 6
-    },
-    chip: {
-        paddingHorizontal: 12,
-        paddingVertical: 6,
-        borderRadius: 100,
-        backgroundColor: '#f0f0f0',
-        borderWidth: 1,
-        borderColor: '#e0e0e0'
-    },
-    chipSelected: {
-        backgroundColor: Colors.accentLight,
-        borderColor: Colors.accent
-    },
-    chipText: {
-        fontSize: 13,
-        color: '#666'
-    },
-    chipTextSelected: {
-        fontSize: 13,
-        color: Colors.accent,
-        fontWeight: '500'
-    },
     selectedChipsWrap: {
         flexDirection: 'row',
         flexWrap: 'wrap',
@@ -607,4 +655,4 @@ const styles = StyleSheet.create({
     }
 });
 
-export default TagDetailSheet;
+export default React.memo(TagDetailSheet);

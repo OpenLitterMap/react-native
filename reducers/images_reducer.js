@@ -2,6 +2,7 @@ import axios from 'axios';
 import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
 import * as Sentry from '@sentry/react-native';
 import {URL} from '../actions/types';
+import {formatKey} from '../utils/formatKey';
 import {logout} from './auth_reducer';
 
 /** Find a tag in tagsV5 by (cloId, typeId). */
@@ -253,6 +254,29 @@ export const editTagsOnPhoto = createAsyncThunk(
     }
 );
 
+/** Build dedup sets from current state for O(1) lookups. */
+const buildDedupSets = state => {
+    const uris = new Set();
+    const ids = new Set();
+    for (const img of state.imagesArray) {
+        if (img.uri) {
+            uris.add(img.uri);
+        }
+        if (img.id != null) {
+            ids.add(img.id);
+        }
+    }
+    return {uris, ids};
+};
+
+/** Check if image already exists using pre-built dedup sets. */
+const isDuplicate = (dedupSets, image) => {
+    if (image.uri && !image.uploaded) {
+        return dedupSets.uris.has(image.uri);
+    }
+    return dedupSets.ids.has(image.id);
+};
+
 const imagesSlice = createSlice({
     name: 'images',
 
@@ -260,24 +284,17 @@ const imagesSlice = createSlice({
 
     reducers: {
         /**
-         * Add images from Camera, Gallery or Web to state
+         * Add images from Camera or Gallery to state
          */
         addImages(state, action) {
             const images = action.payload.images;
-            if (!images) return;
+            if (!images) {
+                return;
+            }
 
-            const existingIds = new Set(state.imagesArray.map(img => img.id));
-            const existingUris = new Set(
-                state.imagesArray.filter(img => img.uri).map(img => img.uri)
-            );
-
+            const dedup = buildDedupSets(state);
             images.forEach(image => {
-                const isDuplicate =
-                    image.platform === 'mobile' && !image.uploaded
-                        ? existingUris.has(image.uri)
-                        : existingIds.has(image.id);
-
-                if (!isDuplicate) {
+                if (!isDuplicate(dedup, image)) {
                     state.imagesArray.push({
                         id: image.id,
                         date: image.date ?? null,
@@ -285,8 +302,8 @@ const imagesSlice = createSlice({
                         lon: image.lon ?? null,
                         filename: image.filename,
                         uri: image.uri,
-                        type: image.type, // gallery, camera, or web
-                        platform: image.platform, // web or mobile
+                        type: image.type, // gallery or camera
+                        platform: image.platform,
 
                         tags: image.tags,
                         tagsV5: [],
@@ -395,12 +412,18 @@ const imagesSlice = createSlice({
         toggleMaterialOnTag(state, action) {
             const {imageIndex, cloId, typeId, materialId} = action.payload;
             const image = state.imagesArray[imageIndex];
-            if (!image?.tagsV5) return;
+            if (!image?.tagsV5) {
+                return;
+            }
 
             const tag = findTagV5(image.tagsV5, cloId, typeId);
-            if (!tag) return;
+            if (!tag) {
+                return;
+            }
 
-            if (!tag.materials) tag.materials = [];
+            if (!tag.materials) {
+                tag.materials = [];
+            }
             const idx = tag.materials.indexOf(materialId);
             if (idx !== -1) {
                 tag.materials.splice(idx, 1);
@@ -416,12 +439,18 @@ const imagesSlice = createSlice({
         addBrandToTag(state, action) {
             const {imageIndex, cloId, typeId, brandId} = action.payload;
             const image = state.imagesArray[imageIndex];
-            if (!image?.tagsV5) return;
+            if (!image?.tagsV5) {
+                return;
+            }
 
             const tag = findTagV5(image.tagsV5, cloId, typeId);
-            if (!tag) return;
+            if (!tag) {
+                return;
+            }
 
-            if (!tag.brands) tag.brands = [];
+            if (!tag.brands) {
+                tag.brands = [];
+            }
             if (!tag.brands.some(b => b.id === brandId)) {
                 tag.brands.push({id: brandId, quantity: 1});
             }
@@ -434,10 +463,14 @@ const imagesSlice = createSlice({
         removeBrandFromTag(state, action) {
             const {imageIndex, cloId, typeId, brandId} = action.payload;
             const image = state.imagesArray[imageIndex];
-            if (!image?.tagsV5) return;
+            if (!image?.tagsV5) {
+                return;
+            }
 
             const tag = findTagV5(image.tagsV5, cloId, typeId);
-            if (!tag?.brands) return;
+            if (!tag?.brands) {
+                return;
+            }
 
             tag.brands = tag.brands.filter(b => b.id !== brandId);
         },
@@ -449,12 +482,18 @@ const imagesSlice = createSlice({
         addCustomTagToTag(state, action) {
             const {imageIndex, cloId, typeId, text} = action.payload;
             const image = state.imagesArray[imageIndex];
-            if (!image?.tagsV5 || !text?.trim()) return;
+            if (!image?.tagsV5 || !text?.trim()) {
+                return;
+            }
 
             const tag = findTagV5(image.tagsV5, cloId, typeId);
-            if (!tag) return;
+            if (!tag) {
+                return;
+            }
 
-            if (!tag.customTags) tag.customTags = [];
+            if (!tag.customTags) {
+                tag.customTags = [];
+            }
             const trimmed = text.trim();
             if (!tag.customTags.includes(trimmed)) {
                 tag.customTags.push(trimmed);
@@ -468,10 +507,14 @@ const imagesSlice = createSlice({
         removeCustomTagFromTag(state, action) {
             const {imageIndex, cloId, typeId, text} = action.payload;
             const image = state.imagesArray[imageIndex];
-            if (!image?.tagsV5) return;
+            if (!image?.tagsV5) {
+                return;
+            }
 
             const tag = findTagV5(image.tagsV5, cloId, typeId);
-            if (!tag?.customTags) return;
+            if (!tag?.customTags) {
+                return;
+            }
 
             tag.customTags = tag.customTags.filter(t => t !== text);
         },
@@ -483,7 +526,9 @@ const imagesSlice = createSlice({
         addImageCustomTag(state, action) {
             const {imageIndex, text} = action.payload;
             const image = state.imagesArray[imageIndex];
-            if (!image || !text?.trim()) return;
+            if (!image || !text?.trim()) {
+                return;
+            }
 
             if (!image.customTags) {
                 image.customTags = [];
@@ -502,14 +547,103 @@ const imagesSlice = createSlice({
         removeImageCustomTag(state, action) {
             const {imageIndex, text} = action.payload;
             const image = state.imagesArray[imageIndex];
-            if (!image?.customTags) return;
+            if (!image?.customTags) {
+                return;
+            }
 
             image.customTags = image.customTags.filter(t => t !== text);
         },
 
-        cancelUploadImages(state) {
-            state.isUploading = false;
+        /**
+         * Load an existing API photo into imagesArray for tag editing.
+         * Converts API new_tags format to local tagsV5 format.
+         * payload = { photo } where photo is the API photo object
+         */
+        loadPhotoForEditing(state, action) {
+            const photo = action.payload.photo;
+
+            // Convert API new_tags → local tagsV5.
+            // Tags without category/object data are custom-tag-only entries —
+            // promote their custom tags to image-level instead of showing a
+            // meaningless CLO pill.
+            const tagsV5 = [];
+            const imageCustomTags = [];
+
+            if (photo.new_tags) {
+                for (const apiTag of photo.new_tags) {
+                    const catKey = apiTag.category?.key;
+                    const objKey = apiTag.object?.key;
+
+                    const tagCustomTags = [];
+                    const tagMaterials = [];
+                    const tagBrands = [];
+
+                    if (apiTag.extra_tags) {
+                        for (const extra of apiTag.extra_tags) {
+                            if (extra.type === 'material' && extra.tag?.id) {
+                                tagMaterials.push(extra.tag.id);
+                            } else if (extra.type === 'brand' && extra.tag?.id) {
+                                tagBrands.push({
+                                    id: extra.tag.id,
+                                    quantity: extra.quantity || 1
+                                });
+                            } else if (extra.type === 'custom_tag' && extra.tag?.key) {
+                                tagCustomTags.push(extra.tag.key);
+                            }
+                        }
+                    }
+
+                    // If the tag has no category/object info, it's a
+                    // custom-tag-only entry. Promote custom tags to
+                    // image-level and skip the CLO pill.
+                    if (!catKey && !objKey) {
+                        imageCustomTags.push(...tagCustomTags);
+                        continue;
+                    }
+
+                    const tag = {
+                        cloId: apiTag.category_litter_object_id,
+                        quantity: apiTag.quantity || 1,
+                        materials: tagMaterials,
+                        brands: tagBrands,
+                        customTags: tagCustomTags,
+                        _displayName: objKey ? formatKey(objKey) : undefined,
+                        _categoryDisplayName: catKey ? formatKey(catKey) : undefined,
+                        _categoryKey: catKey || undefined
+                    };
+
+                    if (apiTag.litter_object_type_id) {
+                        tag.typeId = apiTag.litter_object_type_id;
+                    }
+
+                    tagsV5.push(tag);
+                }
+            }
+
+            // Replace imagesArray with just this photo for editing
+            state.imagesArray = [{
+                id: photo.id,
+                photoId: photo.id,
+                date: photo.datetime ?? null,
+                lat: photo.lat ?? null,
+                lon: photo.lon ?? null,
+                filename: photo.filename,
+                uri: null,
+                type: 'web',
+                platform: photo.platform ?? 'web',
+
+                tagsV5,
+                customTags: imageCustomTags,
+                picked_up: !!photo.picked_up,
+
+                selected: false,
+                uploaded: true,
+                editing: true
+            }];
+            state.swiperIndex = 0;
         },
+
+        cancelUploadImages() {},
 
         /**
          * Changes litter picked up status of all images
@@ -519,14 +653,11 @@ const imagesSlice = createSlice({
         },
 
         /**
-         * After setting enable_admin_tagging changes to False,
-         *
-         * We want to clear the users uploaded un-tagged images.
+         * When enable_admin_tagging is turned on, remove server-fetched
+         * untagged images from state (admin will tag them instead).
          */
         clearUploadedImages(state) {
-            state.imagesArray = state.imagesArray.filter(img => {
-                return img.uploaded && img.id !== undefined;
-            });
+            state.imagesArray = state.imagesArray.filter(img => !img.uploaded);
         },
 
         /**
@@ -545,10 +676,8 @@ const imagesSlice = createSlice({
         /**
          * Delete selected images -- all images with property selected set to true
          */
-        deleteSelectedImages(state, action) {
+        deleteSelectedImages(state) {
             state.imagesArray = state.imagesArray.filter(img => !img.selected);
-
-            state.selected = 0;
         },
 
         /**
@@ -563,8 +692,6 @@ const imagesSlice = createSlice({
         },
 
         resetUploadState(state) {
-            state.isUploading = false;
-            state.showThankYouMessages = false;
             state.totalToUpload = 0;
             state.uploaded = 0;
             state.uploadFailed = 0;
@@ -617,46 +744,30 @@ const imagesSlice = createSlice({
         /**
          * Toggles isSelecting -- selecting images for deletion
          */
-        toggleSelecting(state) {
-            state.selected = 0;
-        },
+        toggleSelecting() {},
 
         /**
          * toggle selected property of a image object
          */
         toggleSelectedImages(state, action) {
-            state.imagesArray[action.payload].selected =
-                !state.imagesArray[action.payload].selected;
-        },
-
-        /**
-         * After an untagged image was uploaded,
-         *
-         * If user.enable_admin_tagging is false,
-         * Update the image as uploaded which will show a cloud emoji
-         */
-        updateImageAsUploaded(state, action) {}
+            const image = state.imagesArray[action.payload];
+            if (image) {
+                image.selected = !image.selected;
+            }
+        }
     },
 
     extraReducers: builder => {
         builder
 
             .addCase(getUntaggedImages.fulfilled, (state, action) => {
-                if (!action.payload.images) return;
+                if (!action.payload.images) {
+                    return;
+                }
 
-                const existingIds = new Set(state.imagesArray.map(img => img.id));
-                const existingUris = new Set(
-                    state.imagesArray.filter(img => img.uri).map(img => img.uri)
-                );
-
+                const dedup = buildDedupSets(state);
                 action.payload.images.forEach(image => {
-                    // Check if already present
-                    const isDuplicate =
-                        image.platform === 'mobile' && !image.uploaded
-                            ? existingUris.has(image.uri)
-                            : existingIds.has(image.id);
-
-                    if (!isDuplicate) {
+                    if (!isDuplicate(dedup, image)) {
                         state.imagesArray.push({
                             id: image.id,
                             date: image.datetime ?? null,
@@ -680,18 +791,13 @@ const imagesSlice = createSlice({
             })
 
             // Upload Image
-            .addCase(uploadImage.pending, state => {
-                // nothing yet
-            })
             .addCase(uploadImage.fulfilled, (state, action) => {
                 const {imageId, imageUri, photo_id} = action.payload;
 
                 // Find the exact image — match by URI (unique) when
                 // available, falling back to ID for uploaded images.
                 const index = state.imagesArray.findIndex(img =>
-                    imageUri
-                        ? img.uri === imageUri
-                        : img.id === imageId
+                    imageUri ? img.uri === imageUri : img.id === imageId
                 );
 
                 if (index !== -1) {
@@ -709,22 +815,22 @@ const imagesSlice = createSlice({
 
                 switch (errorType) {
                     case 'photo-already-uploaded':
-                    state.failedCounts.alreadyUploaded += 1;
-                    break;
+                        state.failedCounts.alreadyUploaded += 1;
+                        break;
                     case 'invalid-coordinates':
-                    state.failedCounts.invalidCoordinates += 1;
-                    break;
+                        state.failedCounts.invalidCoordinates += 1;
+                        break;
                     case 'timeout':
-                    state.failedCounts.timeout += 1;
-                    break;
+                        state.failedCounts.timeout += 1;
+                        break;
                     case 'network':
-                    state.failedCounts.network += 1;
-                    break;
+                        state.failedCounts.network += 1;
+                        break;
                     case 'server':
-                    state.failedCounts.server += 1;
-                    break;
+                        state.failedCounts.server += 1;
+                        break;
                     default:
-                    state.failedCounts.unknown += 1;
+                        state.failedCounts.unknown += 1;
                 }
             })
 
@@ -769,6 +875,7 @@ export const {
     deleteImage,
     deleteSelectedImages,
     deselectAllImages,
+    loadPhotoForEditing,
     removeBrandFromTag,
     removeCustomTagFromTag,
     removeImageCustomTag,
@@ -783,7 +890,6 @@ export const {
     togglePickedUpByIndex,
     toggleSelecting,
     toggleSelectedImages,
-    updateImageAsUploaded,
     updateTagQuantityV5
 } = imagesSlice.actions;
 

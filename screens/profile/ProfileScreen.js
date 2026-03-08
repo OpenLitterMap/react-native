@@ -63,8 +63,12 @@ const ProfileScreen = ({ navigation }) => {
                     AsyncStorage.getItem(CACHE_KEY),
                     AsyncStorage.getItem(GLOBAL_CACHE_KEY)
                 ]);
-                if (cached) setPrev(JSON.parse(cached));
-                if (cachedGlobal) setPrevGlobal(JSON.parse(cachedGlobal));
+                try {
+                    if (cached) setPrev(JSON.parse(cached));
+                    if (cachedGlobal) setPrevGlobal(JSON.parse(cachedGlobal));
+                } catch (e) {
+                    // Corrupted cache — ignore
+                }
                 prevLoadedRef.current = true;
                 setInitialLoad(false);
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, {useState, useEffect, useRef, useCallback} from 'react';
 import {
     ActivityIndicator,
     Dimensions,
@@ -12,15 +12,18 @@ import {
 } from 'react-native';
 import dayjs from '../../utils/dayjs';
 import _ from 'lodash';
-import { PanGestureHandler, State } from 'react-native-gesture-handler';
-import { useSelector, useDispatch } from 'react-redux';
+import {PanGestureHandler, State} from 'react-native-gesture-handler';
+import {useSelector, useDispatch} from 'react-redux';
+import {useTranslation} from 'react-i18next';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { Body, Caption, Colors, Header, SubTitle } from '../components';
-import { isGeotagged } from '../../utils/isGeotagged';
-import { checkCameraRollPermission } from '../../utils/permissions';
+import {Body, Caption, Colors, Header, SubTitle} from '../components';
+import {checkCameraRollPermission} from '../../utils/permissions';
 import AnimatedImage from './galleryComponents/AnimatedImage';
-import { getPhotosFromCameraroll } from "../../reducers/gallery_reducer";
-import { addImages } from "../../reducers/images_reducer";
+import {
+    getPhotosFromCameraroll,
+    selectNonGeotaggedCount
+} from '../../reducers/gallery_reducer';
+import {addImages} from '../../reducers/images_reducer';
 
 /**
  * fn to check if arg date is "today", this "week", this "month"
@@ -49,24 +52,24 @@ export const placeInTime = date => {
     }
 };
 
-const showToast = (message) => {
+const showToast = message => {
     if (Platform.OS === 'android') {
         ToastAndroid.show(message, ToastAndroid.SHORT);
     }
     // iOS: no built-in toast — the visual indicator is enough
 };
 
-const GalleryScreen = ({ navigation }) => {
-
+const GalleryScreen = ({navigation}) => {
     const dispatch = useDispatch();
+    const {t} = useTranslation();
 
     // For selecting images with swipe gesture
     const IMAGE_PER_ROW = 3;
-    const { width } = Dimensions.get('window');
-    const IMAGE_SIZE = (width / IMAGE_PER_ROW) - 2;
+    const {width} = Dimensions.get('window');
+    const IMAGE_SIZE = width / IMAGE_PER_ROW - 2;
     const IMAGE_MARGIN = 1;
-    const ROW_HEIGHT = IMAGE_SIZE + (IMAGE_MARGIN * 2);
-    const lastGesturePosition = useRef({ x: 0, y: 0 });
+    const ROW_HEIGHT = IMAGE_SIZE + IMAGE_MARGIN * 2;
+    const lastGesturePosition = useRef({x: 0, y: 0});
     const flatListRef = useRef();
     const scrollOffset = useRef(0);
 
@@ -75,12 +78,13 @@ const GalleryScreen = ({ navigation }) => {
     const [hasPermission, setHasPermission] = useState(false);
 
     const galleryImages = useSelector(state => state.gallery.galleryImages);
-    const nonGeotaggedCount = useSelector(state => state.gallery.nonGeotaggedCount);
+    const nonGeotaggedCount = useSelector(selectNonGeotaggedCount);
     const imagesLoading = useSelector(state => state.gallery.imagesLoading);
-    const { user } = useSelector(state => state.auth);
+    const {user} = useSelector(state => state.auth);
 
     useEffect(() => {
         checkGalleryPermission();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useEffect(() => {
@@ -90,35 +94,47 @@ const GalleryScreen = ({ navigation }) => {
     }, [galleryImages]);
 
     const onGestureEvent = event => {
-        const { x, y } = event.nativeEvent;
+        const {x, y} = event.nativeEvent;
 
         selectItems(x, y);
 
-        lastGesturePosition.current = { x, y };
+        lastGesturePosition.current = {x, y};
     };
 
     const processedImages = useRef(new Set());
 
     const selectItems = (x, y) => {
-
         const adjustedY = y + scrollOffset.current;
         const column = Math.floor(x / (IMAGE_SIZE + IMAGE_MARGIN * 2));
 
         let accumulatedHeight = 0;
 
-        for (let sectionIndex = 0; sectionIndex < sortedData.length; sectionIndex++) {
+        for (
+            let sectionIndex = 0;
+            sectionIndex < sortedData.length;
+            sectionIndex++
+        ) {
             const section = sortedData[sectionIndex];
-            const rowsInSection = Math.ceil(section.data.length / IMAGE_PER_ROW);
+            const rowsInSection = Math.ceil(
+                section.data.length / IMAGE_PER_ROW
+            );
             const sectionHeight = rowsInSection * ROW_HEIGHT;
 
-            if (adjustedY >= accumulatedHeight && adjustedY < accumulatedHeight + sectionHeight) {
+            if (
+                adjustedY >= accumulatedHeight &&
+                adjustedY < accumulatedHeight + sectionHeight
+            ) {
                 const sectionRelativeY = adjustedY - accumulatedHeight;
                 const row = Math.floor(sectionRelativeY / ROW_HEIGHT);
                 const index = row * IMAGE_PER_ROW + column;
 
                 if (index >= 0 && index < section.data.length) {
                     const image = section.data[index];
-                    if (image && image.hasGps && !processedImages.current.has(image.uri)) {
+                    if (
+                        image &&
+                        image.hasGps &&
+                        !processedImages.current.has(image.uri)
+                    ) {
                         processedImages.current.add(image.uri);
                         toggleSelection(image);
                     }
@@ -131,17 +147,21 @@ const GalleryScreen = ({ navigation }) => {
         }
     };
 
-    const toggleSelection = (image) => {
-        const isSelected = selectedImages.some(selected => selected.uri === image.uri);
+    const toggleSelection = image => {
+        const isSelected = selectedImages.some(
+            selected => selected.uri === image.uri
+        );
 
         if (isSelected) {
-            setSelectedImages(selectedImages => selectedImages.filter(selected => selected.uri !== image.uri));
+            setSelectedImages(selectedImages =>
+                selectedImages.filter(selected => selected.uri !== image.uri)
+            );
         } else {
             setSelectedImages(selectedImages => [...selectedImages, image]);
         }
     };
 
-    const onHandlerStateChange = ({ nativeEvent }) => {
+    const onHandlerStateChange = ({nativeEvent}) => {
         if (nativeEvent.state === State.END) {
             processedImages.current.clear();
         }
@@ -152,19 +172,15 @@ const GalleryScreen = ({ navigation }) => {
     };
 
     const checkGalleryPermission = async () => {
-
         const result = await checkCameraRollPermission();
 
-        if (result === 'granted' || result === 'limited')
-        {
+        if (result === 'granted' || result === 'limited') {
             dispatch(getPhotosFromCameraroll());
 
             await splitIntoRows(galleryImages);
 
             setHasPermission(true);
-        }
-        else
-        {
+        } else {
             navigation.navigate('PERMISSION', {
                 screen: 'GALLERY_PERMISSION'
             });
@@ -178,8 +194,7 @@ const GalleryScreen = ({ navigation }) => {
      * month name (if older than current month but belongs to current year), year
      * @param {Array} images
      */
-    const splitIntoRows = async (images) => {
-
+    const splitIntoRows = async images => {
         let temp = {};
 
         const sortedImages = _.orderBy(images, ['date'], ['asc']);
@@ -195,15 +210,21 @@ const GalleryScreen = ({ navigation }) => {
 
         let final = [];
         let order = ['today', 'week', 'month'];
-        let allTimeTags = Object.keys(temp).map(prop => Number.isInteger(parseInt(prop)) ? parseInt(prop) : prop);
-        let allMonths = allTimeTags.filter(prop => Number.isInteger(prop) && prop >= 1 && prop <= 12).sort((a, b) => b - a);
-        let allYears = allTimeTags.filter(prop => Number.isInteger(prop) && !allMonths.includes(prop)).sort((a, b) => b - a);
+        let allTimeTags = Object.keys(temp).map(prop =>
+            Number.isInteger(parseInt(prop)) ? parseInt(prop) : prop
+        );
+        let allMonths = allTimeTags
+            .filter(prop => Number.isInteger(prop) && prop >= 1 && prop <= 12)
+            .sort((a, b) => b - a);
+        let allYears = allTimeTags
+            .filter(prop => Number.isInteger(prop) && !allMonths.includes(prop))
+            .sort((a, b) => b - a);
 
         order = [...order, ...allMonths, ...allYears];
 
         order.forEach(prop => {
             if (temp[prop]) {
-                final.push({ title: prop, data: temp[prop] });
+                final.push({title: prop, data: temp[prop]});
             }
         });
 
@@ -215,14 +236,20 @@ const GalleryScreen = ({ navigation }) => {
      * sorts the array based on id
      * call action addImages to save selected images to state
      */
-    const handleDoneClick = async () => {
-        const sortedArray = selectedImages.sort((a, b) => a.id - b.id);
+    const loadMorePhotos = useCallback(() => {
+        dispatch(getPhotosFromCameraroll('LOAD'));
+    }, [dispatch]);
 
-        dispatch(addImages({
-            images: sortedArray,
-            type: 'GALLERY',
-            picked_up: user.picked_up
-        }));
+    const handleDoneClick = async () => {
+        const sortedArray = [...selectedImages].sort((a, b) => a.id - b.id);
+
+        dispatch(
+            addImages({
+                images: sortedArray,
+                type: 'GALLERY',
+                picked_up: user?.picked_up
+            })
+        );
 
         navigation.navigate('HOME');
     };
@@ -232,9 +259,9 @@ const GalleryScreen = ({ navigation }) => {
      *
      * @param  item - The image object
      */
-    const selectImage = (item) => {
+    const selectImage = useCallback(item => {
         if (!item.hasGps) {
-            showToast('This photo has no location data');
+            showToast(t('This photo has no location data'));
             return;
         }
 
@@ -245,23 +272,26 @@ const GalleryScreen = ({ navigation }) => {
         } else {
             setSelectedImages(prev => [...prev, item]);
         }
-    };
+    }, [selectedImages, t]);
 
     /**
      * fn that returns the sections for flatlist to display
      */
-    const renderSection = ({ item }) => {
-
+    const renderSection = useCallback(({item}) => {
         let headerTitle = item?.title;
 
-        if (Number.isInteger(headerTitle) && headerTitle >= 1 && headerTitle <= 12) {
+        if (
+            Number.isInteger(headerTitle) &&
+            headerTitle >= 1 &&
+            headerTitle <= 12
+        ) {
             headerTitle = dayjs(headerTitle.toString(), 'MM').format('MMMM');
         }
 
         const titleMap = {
-            today: 'Today',
-            week: 'This Week',
-            month: 'This Month'
+            today: t('Today'),
+            week: t('This Week'),
+            month: t('This Month')
         };
 
         headerTitle = titleMap[headerTitle] || headerTitle;
@@ -269,18 +299,16 @@ const GalleryScreen = ({ navigation }) => {
         return (
             <View>
                 <View style={styles.headerStyle}>
-                    <Body style={{ color: '#aaaaaa' }}>
-                        {headerTitle}
-                    </Body>
+                    <Body style={styles.headerText}>{headerTitle}</Body>
                 </View>
-                <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+                <View style={styles.imageGrid}>
                     {item.data.map(image => {
                         const selected = selectedImages.includes(image);
                         const imageHasGps = image.hasGps;
 
                         return (
                             <AnimatedImage
-                                key={image.uri + ":"}
+                                key={image.uri}
                                 onPress={() => selectImage(image)}
                                 image={image}
                                 isImageGeotagged={imageHasGps}
@@ -291,7 +319,7 @@ const GalleryScreen = ({ navigation }) => {
                 </View>
             </View>
         );
-    };
+    }, [selectedImages, selectImage, t]);
 
     return (
         <>
@@ -301,28 +329,22 @@ const GalleryScreen = ({ navigation }) => {
                         onPress={() => {
                             navigation.navigate('HOME');
                         }}>
-                        <Body
-                            color="white"
-                            dictionary={'Cancel'}
-                        />
+                        <Body color="white" dictionary={'Cancel'} />
                     </Pressable>
                 }
                 centerContent={
-                    <SubTitle
-                        color="white"
-                        dictionary={'Geotagged'}
-                    />
+                    <SubTitle color="white" dictionary={'Geotagged'} />
                 }
-                centerContainerStyle={{ flex: 2 }}
+                centerContainerStyle={{flex: 2}}
                 rightContent={
-                    <Pressable
-                        onPress={handleDoneClick}
-                    >
-                        <View style={{ flexDirection: 'row', justifyContent: 'center', alignItems: 'center'}}>
+                    <Pressable onPress={handleDoneClick}>
+                        <View style={styles.nextButton}>
                             <Body color="white" dictionary={'Next'} />
                             {selectedImages?.length > 0 && (
                                 <View style={styles.selectionBadge}>
-                                    <Body color="white" style={{ fontWeight: '600' }}>
+                                    <Body
+                                        color="white"
+                                        family="semiBold">
                                         {selectedImages.length}
                                     </Body>
                                 </View>
@@ -333,7 +355,7 @@ const GalleryScreen = ({ navigation }) => {
             />
 
             {hasPermission ? (
-                <View style={{ flex: 1 }}>
+                <View style={styles.contentContainer}>
                     {nonGeotaggedCount > 0 && (
                         <View style={styles.gpsBanner}>
                             <Icon
@@ -341,45 +363,55 @@ const GalleryScreen = ({ navigation }) => {
                                 size={16}
                                 color={Colors.warn}
                             />
-                            <Caption style={{ color: Colors.warn, marginLeft: 4 }}>
-                                {nonGeotaggedCount} {nonGeotaggedCount === 1 ? 'photo has' : 'photos have'} no GPS data and cannot be uploaded
+                            <Caption
+                                style={styles.gpsBannerText}>
+                                {nonGeotaggedCount}{' '}
+                                {nonGeotaggedCount === 1
+                                    ? t('photo has')
+                                    : t('photos have')}{' '}
+                                {t('no GPS data and cannot be uploaded')}
                             </Caption>
                         </View>
                     )}
 
-                    <View style={{ flexDirection: 'row', marginTop: 4, justifyContent: 'center' }}>
+                    <View style={styles.infoRow}>
                         <Icon
                             name="information-circle-outline"
-                            style={{color: Colors.muted}}
+                            style={styles.infoIcon}
                             size={18}
                         />
-                        <Caption>Only geotagged images can be selected</Caption>
+                        <Caption dictionary="Only geotagged images can be selected" />
                     </View>
 
-                    <SafeAreaView style={{ flexDirection: 'row',  flex: 1 }}>
+                    <SafeAreaView style={styles.safeArea}>
                         <PanGestureHandler
                             onGestureEvent={onGestureEvent}
                             onHandlerStateChange={onHandlerStateChange}
-                            simultaneousHandlers={flatListRef}
-                        >
+                            simultaneousHandlers={flatListRef}>
                             <FlatList
                                 ref={flatListRef}
-                                contentContainerStyle={sortedData.length === 0 ? { flex: 1 } : { paddingBottom: 40 }}
-                                style={{ flexDirection: 'column' }}
+                                contentContainerStyle={
+                                    sortedData.length === 0
+                                        ? styles.emptyContentContainer
+                                        : styles.listContentContainer
+                                }
+                                style={styles.flatList}
                                 alwaysBounceVertical={false}
                                 data={sortedData}
                                 showsVerticalScrollIndicator={false}
                                 renderItem={renderSection}
                                 extraData={selectedImages}
                                 keyExtractor={item => `${item.title}`}
-                                onEndReached={() => dispatch(getPhotosFromCameraroll('LOAD'))}
+                                onEndReached={loadMorePhotos}
                                 onEndReachedThreshold={0.05}
                                 onScroll={handleScroll}
                                 scrollEventThrottle={16}
                                 ListEmptyComponent={
                                     imagesLoading ? (
                                         <View style={styles.emptyState}>
-                                            <ActivityIndicator color={Colors.accent} />
+                                            <ActivityIndicator
+                                                color={Colors.accent}
+                                            />
                                         </View>
                                     ) : (
                                         <View style={styles.emptyState}>
@@ -388,15 +420,25 @@ const GalleryScreen = ({ navigation }) => {
                                                 size={64}
                                                 color={Colors.muted}
                                             />
-                                            <Body style={styles.emptyStateTitle}>
-                                                No geotagged photos found
-                                            </Body>
-                                            <Caption style={styles.emptyStateText}>
-                                                Photos need GPS data to be uploaded. Make sure Location Services are enabled when taking photos.
-                                            </Caption>
+                                            <Body
+                                                style={styles.emptyStateTitle}
+                                                dictionary="No geotagged photos found"
+                                            />
+                                            <Caption
+                                                style={styles.emptyStateText}
+                                                dictionary="Photos need GPS data to be uploaded. Make sure Location Services are enabled when taking photos."
+                                            />
                                             {nonGeotaggedCount > 0 && (
-                                                <Caption style={[styles.emptyStateText, { color: Colors.warn, marginTop: 12 }]}>
-                                                    {nonGeotaggedCount} {nonGeotaggedCount === 1 ? 'photo' : 'photos'} found without GPS data
+                                                <Caption
+                                                    style={[
+                                                        styles.emptyStateText,
+                                                        styles.warnText
+                                                    ]}>
+                                                    {nonGeotaggedCount}{' '}
+                                                    {nonGeotaggedCount === 1
+                                                        ? t('photo')
+                                                        : t('photos')}{' '}
+                                                    {t('found without GPS data')}
                                                 </Caption>
                                             )}
                                         </View>
@@ -408,14 +450,12 @@ const GalleryScreen = ({ navigation }) => {
                 </View>
             ) : (
                 <View style={styles.container}>
-                    <ActivityIndicator
-                        color={Colors.accent}
-                    />
+                    <ActivityIndicator color={Colors.accent} />
                 </View>
             )}
         </>
     );
-}
+};
 
 const styles = StyleSheet.create({
     headerStyle: {
@@ -428,6 +468,9 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center'
     },
+    contentContainer: {
+        flex: 1
+    },
     gpsBanner: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -435,6 +478,38 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff3cd',
         paddingVertical: 6,
         paddingHorizontal: 12
+    },
+    gpsBannerText: {
+        color: Colors.warn,
+        marginLeft: 4
+    },
+    infoRow: {
+        flexDirection: 'row',
+        marginTop: 4,
+        justifyContent: 'center'
+    },
+    infoIcon: {
+        color: Colors.muted
+    },
+    safeArea: {
+        flexDirection: 'row',
+        flex: 1
+    },
+    nextButton: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
+    headerText: {
+        color: '#aaaaaa'
+    },
+    imageGrid: {
+        flexDirection: 'row',
+        flexWrap: 'wrap'
+    },
+    warnText: {
+        color: Colors.warn,
+        marginTop: 12
     },
     selectionBadge: {
         backgroundColor: 'rgba(255,255,255,0.3)',
@@ -462,6 +537,15 @@ const styles = StyleSheet.create({
         marginTop: 8,
         textAlign: 'center',
         color: '#888'
+    },
+    emptyContentContainer: {
+        flex: 1
+    },
+    listContentContainer: {
+        paddingBottom: 40
+    },
+    flatList: {
+        flexDirection: 'column'
     }
 });
 

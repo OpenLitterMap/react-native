@@ -29,8 +29,6 @@ const Header = ({
     centerContainerStyle,
     rightContainerStyle
 }) => {
-    // @ts-ignore
-    // @ts-ignore
     return (
         <>
             <StatusBar
@@ -62,17 +60,18 @@ const Header = ({
                     )}
 
                     {/* right content */}
-
-                    <View
-                        style={[
-                            {
-                                flex: 1,
-                                alignItems: 'flex-end'
-                            },
-                            rightContainerStyle
-                        ]}>
-                        {rightContent}
-                    </View>
+                    {rightContent && (
+                        <View
+                            style={[
+                                {
+                                    flex: 1,
+                                    alignItems: 'flex-end'
+                                },
+                                rightContainerStyle
+                            ]}>
+                            {rightContent}
+                        </View>
+                    )}
                 </View>
             </SafeAreaView>
         </>

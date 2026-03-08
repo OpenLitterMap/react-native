@@ -22,7 +22,7 @@ export default function setupAxiosInterceptors(store) {
                     store.dispatch(setUploadAbortReason('token-expired'));
                 }
 
-                await AsyncStorage.removeItem('jwt');
+                await AsyncStorage.removeItem('jwt').catch(() => {});
                 store.dispatch(logout());
             }
             return Promise.reject(error);

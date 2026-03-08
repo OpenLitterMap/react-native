@@ -1,39 +1,69 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Caption } from '../../../components';
 import { getCategoryColor } from '../../../addTag/components/categoryColors';
 import { useTranslation } from 'react-i18next';
 
-const TagChips = ({ newTags = [], maxVisible = 3 }) => {
+const TagChips = React.memo(({ newTags = [], maxVisible = 3 }) => {
     const { t } = useTranslation();
 
-    if (!newTags || newTags.length === 0) return null;
+    const chips = useMemo(() => {
+        if (!newTags || newTags.length === 0) return [];
 
-    const visible = newTags.slice(0, maxVisible);
-    const overflow = newTags.length - maxVisible;
+        // Build flat list of chips: CLO tags + custom tags from extra_tags
+        const result = [];
+        for (const tag of newTags) {
+            const catKey = tag.category?.key || '';
+            const objKey = tag.object?.key || '';
+            const qty = tag.quantity || 1;
+
+            // Skip unclassified.other if it only exists as a carrier for custom tags
+            const isUnclassifiedOther = catKey === 'unclassified' && objKey === 'other';
+            if (!isUnclassifiedOther) {
+                result.push({
+                    key: `${catKey}-${objKey}-${result.length}`,
+                    label: catKey && objKey
+                        ? t(`litter.${catKey}.${objKey}`)
+                        : objKey || catKey,
+                    qty,
+                    bg: getCategoryColor(catKey)
+                });
+            }
+
+            // Add custom tags from extra_tags
+            if (tag.extra_tags) {
+                for (const extra of tag.extra_tags) {
+                    if (extra.type === 'custom_tag' && extra.tag?.key) {
+                        result.push({
+                            key: `custom-${extra.tag.id}-${result.length}`,
+                            label: extra.tag.key,
+                            qty: 1,
+                            bg: '#6b7280'
+                        });
+                    }
+                }
+            }
+        }
+        return result;
+    }, [newTags, t]);
+
+    if (chips.length === 0) return null;
+
+    const visible = chips.slice(0, maxVisible);
+    const overflow = chips.length - maxVisible;
 
     return (
         <View style={styles.container}>
-            {visible.map((tag, index) => {
-                const catKey = tag.category?.key || '';
-                const objKey = tag.object?.key || '';
-                const qty = tag.quantity || 1;
-                const bg = getCategoryColor(catKey);
-                const label = catKey && objKey
-                    ? t(`litter.${catKey}.${objKey}`)
-                    : objKey || catKey;
-
-                return (
-                    <View
-                        key={`${catKey}-${objKey}-${index}`}
-                        style={[styles.chip, { backgroundColor: bg }]}
-                    >
-                        <Caption style={styles.chipText} color="white">
-                            {label}{qty > 1 ? ` ${qty}` : ''}
-                        </Caption>
-                    </View>
-                );
-            })}
+            {visible.map(chip => (
+                <View
+                    key={chip.key}
+                    style={[styles.chip, { backgroundColor: chip.bg }]}
+                >
+                    <Caption style={styles.chipText} color="white">
+                        {chip.label}{chip.qty > 1 ? ` ${chip.qty}` : ''}
+                    </Caption>
+                </View>
+            ))}
             {overflow > 0 && (
                 <View style={[styles.chip, styles.overflowChip]}>
                     <Caption style={styles.chipText}>+{overflow} more</Caption>
@@ -41,7 +71,9 @@ const TagChips = ({ newTags = [], maxVisible = 3 }) => {
             )}
         </View>
     );
-};
+});
+
+TagChips.displayName = 'TagChips';
 
 const styles = StyleSheet.create({
     container: {

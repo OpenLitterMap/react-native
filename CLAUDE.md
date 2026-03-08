@@ -43,14 +43,15 @@ Package manager: **npm** (v10.8.2). Both `yarn.lock` and `package-lock.json` exi
 Redux Toolkit with `createSlice` and `createAsyncThunk`. The store is configured in `store/index.js` with `redux-persist` (AsyncStorage backend, `auth` and `images` slices persisted). The `images` transform only persists `imagesArray` — upload counters reset on relaunch. In dev mode, `redux-immutable-state-invariant` middleware is included.
 
 Reducers in `reducers/`:
-- `auth_reducer` - Authentication, user profile, JWT token management
+- `auth_reducer` - Authentication, user profile, Sanctum token management
 - `tags_reducer` - Tag data fetched from API, search index (objectEntries, categoriesById, entriesByCloId)
-- `camera_reducer` / `gallery_reducer` / `images_reducer` - Photo capture, selection, v5 tagging (tagsV5), swiperIndex
-- `shared_reducer` - Cross-feature shared state
+- `gallery_reducer` / `images_reducer` - Photo selection, v5 tagging (tagsV5), swiperIndex, GPS/EXIF handling
+- `shared_reducer` - Cross-feature shared state (upload modal, app version)
 - `settings_reducer` - User preferences
 - `stats_reducer` / `leaderboards_reducer` - Statistics and rankings
 - `team_reducer` - Team features
-- `my_uploads_reducer` - Upload management
+- `my_uploads_reducer` - Upload history and management
+- `locations_reducer` - Location hierarchy data
 
 API calls use **axios** with Bearer token auth, hitting endpoints on the `URL` from `actions/types.js`.
 
@@ -78,8 +79,8 @@ Shared/reusable components are in `screens/components/` with barrel exports via 
 
 Uses `react-native-config` to load `.env` variables. Key env vars defined in `actions/types.js`:
 - `CURRENT_ENVIRONMENT` - `"production"` or `"local"`
-- `SECRET_CLIENT` / `ID_CLIENT` / `OLM_ENDPOINT` - Production OAuth credentials and API URL
-- `LOCAL_SECRET_CLIENT` / `LOCAL_ID_CLIENT` / `LOCAL_OLM_ENDPOINT` - Local dev equivalents
+- `OLM_ENDPOINT` - Production API URL
+- `LOCAL_OLM_ENDPOINT` - Local dev API URL
 - `SENTRY_DSN` - Error tracking (only initialized in production)
 
 ### Internationalization
@@ -108,7 +109,6 @@ Tag data is fetched from the API (`GET /api/tags/all`) and cached in AsyncStorag
 ## Key Dependencies
 
 - `@shopify/flash-list` for performant lists
-- `react-native-maps` for map display
 - `formik` + `yup` for form handling/validation
 - `lottie-react-native` for animations
 - `react-native-permissions` for camera/location/photo library permissions (iOS permissions listed in `reactNativePermissionsIOS` in package.json)

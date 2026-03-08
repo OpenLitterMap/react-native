@@ -21,7 +21,7 @@ const TeamListCard = ({team, index, showRanking = true, leftContent}) => {
                         </Caption>
                         <Caption style={styles.statDivider}>|</Caption>
                         <Caption>
-                            {(team.total_tags || team.total_litter || 0).toLocaleString()} Tags
+                            {(team.total_tags || 0).toLocaleString()} Tags
                         </Caption>
                         <Caption style={styles.statDivider}>|</Caption>
                         <Caption>

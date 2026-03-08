@@ -44,13 +44,19 @@ When no photos are available, GalleryScreen shows:
 ## Redux State (`state.gallery`)
 ```
 {
-    imagesLoading: boolean,       // True while fetching from CameraRoll
-    galleryImages: array,         // All photos from CameraRoll (each has hasGps boolean)
-    geotaggedCount: number,       // Count of photos with valid GPS
-    nonGeotaggedCount: number,    // Count of photos without GPS
-    lastCursor: string            // Pagination cursor for next batch
+    imagesLoading: boolean,          // True while fetching from CameraRoll
+    galleryImages: array,            // All photos from CameraRoll (each has hasGps boolean)
+    nextGalleryId: number,           // Auto-incrementing ID for new photos
+    camerarollImageFetched: boolean, // Whether initial fetch has completed
+    lastFetchTime: number | null,    // Timestamp of last fetch (for TIME-based fetches)
+    isNextPageAvailable: boolean,    // Whether more pages exist
+    lastImageCursor: string | null,  // Pagination cursor for next batch
+    error: string | null             // Error message from last fetch
 }
 ```
+
+**Derived selectors:**
+- `selectNonGeotaggedCount(state)` — count of photos without GPS (computed, not stored)
 
 ## GPS Detection
 Each photo from CameraRoll is checked for GPS data:

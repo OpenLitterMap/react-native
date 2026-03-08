@@ -33,10 +33,14 @@ export const fetchAllTags = createAsyncThunk(
             if (!forceRefresh) {
                 const cached = await AsyncStorage.getItem(CACHE_KEY);
                 if (cached) {
-                    const parsed = JSON.parse(cached);
-                    const age = Date.now() - parsed.lastFetchedAt;
-                    if (age < CACHE_TTL_MS) {
-                        return parsed;
+                    try {
+                        const parsed = JSON.parse(cached);
+                        const age = Date.now() - parsed.lastFetchedAt;
+                        if (age < CACHE_TTL_MS) {
+                            return parsed;
+                        }
+                    } catch {
+                        await AsyncStorage.removeItem(CACHE_KEY);
                     }
                 }
             }
