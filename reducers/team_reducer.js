@@ -1,5 +1,4 @@
-import axios from 'axios';
-import {URL} from '../actions/types';
+import api from '../utils/apiClient';
 import {createAsyncThunk, createSlice} from '@reduxjs/toolkit';
 import {changeUsersActiveTeam, logout} from './auth_reducer';
 
@@ -8,7 +7,6 @@ const initialState = {
     topTeamsLoading: false,
     userTeams: [],
     teamMembers: [],
-    teamsRequestStatus: '',
     selectedTeam: {},
     teamsFormError: '',
     teamFormStatus: null, // SUCCESS || ERROR
@@ -31,18 +29,12 @@ const initialState = {
 
 export const changeActiveTeam = createAsyncThunk(
     'teams/changeActiveTeam',
-    async ({token, teamId}, {rejectWithValue, dispatch}) => {
+    async ({teamId}, {getState, rejectWithValue, dispatch}) => {
         try {
-            const response = await axios({
-                url: `${URL}/api/teams/active`,
-                method: 'POST',
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    Accept: 'application/json'
-                },
-                data: {
-                    team_id: teamId
-                }
+            const token = getState().auth.token;
+            const response = await api.post('/api/teams/active', {
+                token,
+                data: {team_id: teamId}
             });
 
             if (!response.data?.success) {
@@ -63,21 +55,12 @@ export const changeActiveTeam = createAsyncThunk(
 
 export const createTeam = createAsyncThunk(
     'teams/createTeam',
-    async ({name, identifier, token}, {rejectWithValue}) => {
+    async ({name, identifier}, {getState, rejectWithValue}) => {
         try {
-            const response = await axios({
-                url: `${URL}/api/teams/create`,
-                method: 'POST',
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    Accept: 'application/json',
-                    'Content-Type': 'application/json'
-                },
-                data: {
-                    name,
-                    identifier,
-                    team_type: 1
-                }
+            const token = getState().auth.token;
+            const response = await api.post('/api/teams/create', {
+                token,
+                data: {name, identifier, team_type: 1}
             });
 
             if (!response.data.success) {
@@ -106,16 +89,11 @@ export const createTeam = createAsyncThunk(
 
 export const inactivateTeam = createAsyncThunk(
     'teams/inactivateTeam',
-    async (token, {rejectWithValue, dispatch}) => {
+    async (_, {getState, rejectWithValue, dispatch}) => {
         try {
-            const response = await axios({
-                url: `${URL}/api/teams/inactivate`,
-                method: 'POST',
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    Accept: 'application/json',
-                    'Content-Type': 'application/json'
-                }
+            const token = getState().auth.token;
+            const response = await api.post('/api/teams/inactivate', {
+                token
             });
 
             if (!response.data.success) {
@@ -136,37 +114,40 @@ export const inactivateTeam = createAsyncThunk(
 
 export const leaveTeam = createAsyncThunk(
     'teams/leaveTeam',
-    async ({token, teamId}, {rejectWithValue, dispatch}) => {
+    async ({teamId}, {getState, rejectWithValue, dispatch}) => {
         try {
-            const response = await axios({
-                url: `${URL}/api/teams/leave`,
-                method: 'POST',
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    Accept: 'application/json',
-                    'Content-Type': 'application/json'
-                },
-                data: {
-                    team_id: teamId
-                }
+            const token = getState().auth.token;
+            const response = await api.post('/api/teams/leave', {
+                token,
+                data: {team_id: teamId}
             });
 
             if (!response.data) {
                 return rejectWithValue('Failed to leave the team');
             }
 
-            if (response.data?.activeTeam) {
-                dispatch(changeUsersActiveTeam(response.data.activeTeam.id));
-            }
+            // Backend auto-assigns a new active team (or null if no
+            // other teams). Always sync — don't skip when null.
+            dispatch(
+                changeUsersActiveTeam(
+                    response.data.activeTeam?.id ?? null
+                )
+            );
 
-            // Returning the entire response data or just necessary parts for reducer logic
             return {
-                activeTeamID: response.data.activeTeam
-                    ? response.data.activeTeam.id
-                    : null,
+                activeTeamId: response.data.activeTeam?.id ?? null,
                 team: response.data.team
             };
         } catch (error) {
+            const msg = error.response?.data?.message;
+            if (msg === 'you-are-last-member') {
+                return rejectWithValue(
+                    'You are the last member. Delete the team instead.'
+                );
+            }
+            if (msg === 'not-a-member') {
+                return rejectWithValue('You are not a member of this team.');
+            }
             return rejectWithValue('Error while trying to leave the team');
         }
     }
@@ -174,20 +155,12 @@ export const leaveTeam = createAsyncThunk(
 
 export const getTeamMembers = createAsyncThunk(
     'teams/getTeamMembers',
-    async ({token, teamId, page = 1}, {rejectWithValue}) => {
+    async ({teamId, page = 1}, {getState, rejectWithValue}) => {
         try {
-            const response = await axios({
-                url: `${URL}/api/teams/members`,
-                method: 'GET',
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    Accept: 'application/json',
-                    'Content-Type': 'application/json'
-                },
-                params: {
-                    team_id: teamId,
-                    page
-                }
+            const token = getState().auth.token;
+            const response = await api.get('/api/teams/members', {
+                token,
+                params: {team_id: teamId, page}
             });
 
             if (!response.data) {
@@ -203,16 +176,11 @@ export const getTeamMembers = createAsyncThunk(
 
 export const getTopTeams = createAsyncThunk(
     'teams/getTopTeams',
-    async (token, {rejectWithValue}) => {
+    async (_, {getState, rejectWithValue}) => {
         try {
-            const response = await axios({
-                url: `${URL}/api/teams/leaderboard`,
-                method: 'GET',
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    Accept: 'application/json',
-                    'Content-Type': 'application/json'
-                }
+            const token = getState().auth.token;
+            const response = await api.get('/api/teams/leaderboard', {
+                token
             });
 
             if (!response.data) {
@@ -234,16 +202,11 @@ export const getTopTeams = createAsyncThunk(
 
 export const getUserTeams = createAsyncThunk(
     'teams/getUserTeams',
-    async (token, {rejectWithValue}) => {
+    async (_, {getState, rejectWithValue}) => {
         try {
-            const response = await axios({
-                url: URL + '/api/teams/list',
-                method: 'GET',
-                headers: {
-                    Authorization: 'Bearer ' + token,
-                    Accept: 'application/json',
-                    'Content-Type': 'application/json'
-                }
+            const token = getState().auth.token;
+            const response = await api.get('/api/teams/list', {
+                token
             });
             if (response.data && response.data.success) {
                 return response.data.teams;
@@ -266,19 +229,12 @@ export const getUserTeams = createAsyncThunk(
 
 export const joinTeam = createAsyncThunk(
     'teams/joinTeam',
-    async ({token, identifier}, {rejectWithValue}) => {
+    async ({identifier}, {getState, rejectWithValue, dispatch}) => {
         try {
-            const response = await axios({
-                url: URL + '/api/teams/join',
-                method: 'POST',
-                headers: {
-                    Authorization: 'Bearer ' + token,
-                    Accept: 'application/json',
-                    'content-type': 'application/json'
-                },
-                data: {
-                    identifier
-                }
+            const token = getState().auth.token;
+            const response = await api.post('/api/teams/join', {
+                token,
+                data: {identifier}
             });
             if (!response.data?.success) {
                 return rejectWithValue(
@@ -286,8 +242,13 @@ export const joinTeam = createAsyncThunk(
                 );
             }
 
+            const activeTeamId = response.data?.activeTeam?.id;
+            if (activeTeamId) {
+                dispatch(changeUsersActiveTeam(activeTeamId));
+            }
+
             return {
-                activeTeamId: response.data?.activeTeam?.id,
+                activeTeamId,
                 team: response.data?.team,
                 type: 'JOIN'
             };
@@ -359,7 +320,7 @@ const teamSlice = createSlice({
 
             .addCase(createTeam.pending, state => {
                 state.teamsFormError = '';
-                state.teamFormStatus = '';
+                state.teamFormStatus = null;
                 state.successMessage = '';
             })
             .addCase(createTeam.fulfilled, (state, action) => {
@@ -373,18 +334,26 @@ const teamSlice = createSlice({
                 state.teamsFormError = action.payload;
             })
 
-            .addCase(inactivateTeam.fulfilled, () => {})
             .addCase(inactivateTeam.rejected, (state, action) => {
                 state.teamsFormError = action.payload;
             })
 
             .addCase(leaveTeam.fulfilled, (state, action) => {
+                const leftTeamId = action.payload.team?.id;
+
                 const index = state.userTeams.findIndex(
-                    team => team.id === action.payload.team?.id
+                    team => team.id === leftTeamId
                 );
 
                 if (index !== -1) {
                     state.userTeams.splice(index, 1);
+                }
+
+                // If the left team was the currently viewed team, clear it
+                if (state.selectedTeam?.id === leftTeamId) {
+                    state.selectedTeam = {};
+                    state.teamMembers = [];
+                    state.memberNextPage = 1;
                 }
             })
             .addCase(leaveTeam.rejected, (state, action) => {
@@ -393,15 +362,18 @@ const teamSlice = createSlice({
 
             .addCase(getTeamMembers.fulfilled, (state, action) => {
                 if (action.payload?.data) {
-                    state.teamMembers.push(...action.payload.data);
+                    const existingIds = new Set(
+                        state.teamMembers.map(m => m.id)
+                    );
+                    const newMembers = action.payload.data.filter(
+                        m => !existingIds.has(m.id)
+                    );
+                    state.teamMembers.push(...newMembers);
                 }
 
                 const nextPage = action.payload?.next_page_url;
 
                 state.memberNextPage = nextPage ? nextPage.split('=')[1] : null;
-            })
-            .addCase(getTeamMembers.rejected, (state, action) => {
-                state.teamsRequestStatus = action.payload;
             })
 
             .addCase(getTopTeams.pending, state => {
@@ -411,18 +383,12 @@ const teamSlice = createSlice({
                 state.topTeams = action.payload?.data ?? action.payload;
                 state.topTeamsLoading = false;
             })
-            .addCase(getTopTeams.rejected, (state, action) => {
+            .addCase(getTopTeams.rejected, (state) => {
                 state.topTeamsLoading = false;
-                state.teamsRequestStatus = action.payload;
-                state.teamFormStatus = 'ERROR';
             })
 
             .addCase(getUserTeams.fulfilled, (state, action) => {
                 state.userTeams = action.payload;
-            })
-            .addCase(getUserTeams.rejected, (state, action) => {
-                state.teamsRequestStatus = action.payload;
-                state.teamFormStatus = 'ERROR';
             })
 
             .addCase(joinTeam.fulfilled, (state, action) => {

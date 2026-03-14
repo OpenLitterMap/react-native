@@ -105,17 +105,17 @@ Single call returns everything the profile screen needs. Stats come from Redis w
 | API Response | State Field |
 |---|---|
 | `user.*` | Spread directly (includes settings, privacy flags) |
-| `stats.xp` | `user.xp_redis` |
-| `stats.uploads` | `user.total_images` |
-| `stats.litter` | `user.totalTags` |
+| `stats.xp` | `user.xp` |
+| `stats.uploads` | `user.totalImages` |
+| `stats.tags` | `user.totalTags` (was `stats.litter`, renamed) |
 | `stats.littercoin` | `user.totalLittercoin` |
 | `stats.streak` | `user.streak` |
 | `rank.global_position` | `user.position` |
 | `rank.percentile` | `user.percentile` |
 | `level.level` | `user.level` |
 | `level.title` | `user.levelTitle` |
-| `level.progress_percent` | `user.targetPercentage` |
-| `level.xp_remaining` | `user.xpRequired` |
+| `level.progress_percent` | `user.levelProgress` |
+| `level.xp_remaining` | `user.xpToNextLevel` |
 | `team.id` | `user.active_team` |
 | `team` | `user.team` |
 | `achievements` | `user.achievements` |
@@ -368,7 +368,7 @@ Uses the same user photos endpoint with `tagged=false` filter. Returns full phot
 
 | Method | Route | Mobile File | Status |
 |--------|-------|-------------|--------|
-| POST | `/api/profile/photos/delete` | `my_uploads_reducer.js` → `deleteUploadPhoto` | **Active** |
+| POST | `/api/profile/photos/delete` | `uploads_reducer.js` → `deleteUploadPhoto` | **Active** |
 
 ### Delete Photo — `POST /api/profile/photos/delete`
 
@@ -388,7 +388,7 @@ Note: the param is `photoid` (no underscore). Reverses metrics (XP, total_images
 
 | Method | Route | Mobile File | Status |
 |--------|-------|-------------|--------|
-| GET | `/api/v3/user/photos` | `my_uploads_reducer.js` → `fetchUploads` | **Active** (migrated from `/history/paginated`) |
+| GET | `/api/v3/user/photos` | `uploads_reducer.js` → `fetchUploads` | **Active** (migrated from `/history/paginated`) |
 | GET | `/api/v3/user/photos/stats` | Phase 4 | Upload statistics |
 
 ### User Photos — `GET /api/v3/user/photos`

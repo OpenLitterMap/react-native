@@ -1,4 +1,4 @@
-import React, {useRef, useState} from 'react';
+import React from 'react';
 import {
     ActivityIndicator,
     Alert,
@@ -12,7 +12,6 @@ import {
 } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import Icon from 'react-native-vector-icons/Ionicons';
-import ActionSheet from 'react-native-actions-sheet';
 import {useTranslation} from 'react-i18next';
 import {Body, Caption, Colors, Header, SubTitle, Title} from '../components';
 import SettingsComponent from './settingComponents/SettingsComponent';
@@ -20,30 +19,24 @@ import {useDispatch, useSelector} from 'react-redux';
 import {logout} from '../../reducers/auth_reducer';
 import {
     saveSettings,
-    toggleSettingsModal,
+    toggleEditModal,
     toggleSettingsSwitch
 } from '../../reducers/settings_reducer';
 import {
-    changeLitterStatus,
     getUntaggedImages
 } from '../../reducers/images_reducer';
-import {fetchAllTags} from '../../reducers/tags_reducer';
 
-const SCREEN_WIDTH = Dimensions.get('window').width;
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 
 const SettingsScreen = ({navigation}) => {
     const dispatch = useDispatch();
-    const actionSheetRef = useRef();
     const {t} = useTranslation();
 
     const user = useSelector(state => state.auth.user);
-    const token = useSelector(state => state.auth.token);
-    const settingsModalVisible = useSelector(
-        state => state.settings.settingsModalVisible
+    const editModalVisible = useSelector(
+        state => state.settings.editModalVisible
     );
-    const wait = useSelector(state => state.settings.wait);
-    const settingsEdit = useSelector(state => state.settings.settingsEdit);
+    const savingToggle = useSelector(state => state.settings.savingToggle);
 
     const countryCode = user?.global_flag?.toUpperCase();
 
@@ -53,33 +46,6 @@ const SettingsScreen = ({navigation}) => {
      * show values else show toggle switch
      */
     const renderRow = item => {
-        // Special row: refresh tags
-        if (item?.key === 'refresh-tags') {
-            return (
-                <Pressable
-                    style={{flex: 1, padding: 10}}
-                    onPress={() => {
-                        dispatch(fetchAllTags({token, forceRefresh: true}));
-                        Alert.alert(
-                            'Tags Refreshed',
-                            'Tag data has been updated.'
-                        );
-                    }}>
-                    <View
-                        style={{
-                            flexDirection: 'row',
-                            justifyContent: 'space-between'
-                        }}>
-                        <Body>Refresh Tags</Body>
-                        <Icon
-                            name="refresh-outline"
-                            color={Colors.accent}
-                            size={24}
-                        />
-                    </View>
-                </Pressable>
-            );
-        }
 
         const dataKeys = [
             'name',
@@ -179,39 +145,34 @@ const SettingsScreen = ({navigation}) => {
                     text: ok,
                     onPress: async () => {
                         if (key === 'picked-up') {
-                            // Toggle picked_up value
+                            // Toggle the user's default picked_up preference
                             await dispatch(
                                 saveSettings({
                                     dataKey: 'picked_up',
-                                    dataValue: !user?.picked_up,
-                                    token
+                                    dataValue: !user?.picked_up
                                 })
                             );
-
-                            actionSheetRef.current?.show();
                         } else if (key === 'global_flag') {
                             await dispatch(
                                 saveSettings({
                                     dataKey: 'global_flag',
-                                    dataValue: countryCode?.toLowerCase(),
-                                    token
+                                    dataValue: countryCode?.toLowerCase()
                                 })
                             );
                         } else if (key === 'enable_admin_tagging') {
                             if (user?.enable_admin_tagging) {
-                                await dispatch(getUntaggedImages({token}));
+                                await dispatch(getUntaggedImages());
                             }
 
                             await dispatch(
                                 saveSettings({
                                     dataKey: 'enable_admin_tagging',
-                                    dataValue: !user?.enable_admin_tagging,
-                                    token
+                                    dataValue: !user?.enable_admin_tagging
                                 })
                             );
                         } else {
                             // Privacy Settings
-                            await dispatch(toggleSettingsSwitch({id, token}));
+                            await dispatch(toggleSettingsSwitch({id}));
                         }
                     }
                 },
@@ -232,7 +193,7 @@ const SettingsScreen = ({navigation}) => {
      * Open modal to show settings options
      */
     const rowPressed = (id, title, key = '') => {
-        dispatch(toggleSettingsModal({id, title, key}));
+        dispatch(toggleEditModal({id, title, key}));
     };
 
     /**
@@ -257,9 +218,6 @@ const SettingsScreen = ({navigation}) => {
                 return user?.show_name_createdby;
             case 'username-createdby':
                 return user?.show_username_createdby;
-            // case 10:
-            //     return user?.previous_tag;
-            //     break;
             case 'picked-up':
                 return user?.picked_up === false ? 0 : 1;
             case 'enable_admin_tagging':
@@ -293,13 +251,13 @@ const SettingsScreen = ({navigation}) => {
                 <Modal
                     animationType="slide"
                     transparent={true}
-                    visible={settingsModalVisible}>
-                    {wait && (
+                    visible={editModalVisible}>
+                    {savingToggle && (
                         <View style={styles.waitModal}>
                             <ActivityIndicator />
                         </View>
                     )}
-                    {settingsEdit && (
+                    {editModalVisible && (
                         <View style={styles.modal}>
                             <SettingsComponent />
                         </View>
@@ -361,11 +319,6 @@ const SettingsScreen = ({navigation}) => {
                                         key: 'enable_admin_tagging',
                                         title: 'Enable crowdsourced tagging'
                                     },
-                                    {
-                                        id: 14,
-                                        key: 'refresh-tags',
-                                        title: 'Refresh Tags'
-                                    }
                                 ]
                             },
                             {
@@ -434,106 +387,25 @@ const SettingsScreen = ({navigation}) => {
                 </View>
             </View>
 
-            <ActionSheet closeOnTouchBackdrop={false} ref={actionSheetRef}>
-                <View
-                    style={{
-                        height: 300,
-                        padding: 40,
-                        borderTopLeftRadius: 8,
-                        borderTopRightRadius: 8,
-                        alignItems: 'center',
-                        backgroundColor: 'white',
-                        justifyContent: 'center'
-                    }}>
-                    <Body style={{textAlign: 'center'}}>
-                        Do you want to change picked up status of all the images
-                        ?
-                    </Body>
-                    <View
-                        style={{
-                            marginTop: 20,
-                            marginBottom: 40,
-                            width: SCREEN_WIDTH - 40
-                        }}>
-                        <Pressable
-                            onPress={() => {
-                                dispatch(changeLitterStatus(user?.picked_up));
-
-                                actionSheetRef.current?.hide();
-                            }}
-                            style={[
-                                styles.actionButtonStyle,
-                                {
-                                    backgroundColor: Colors.accent,
-                                    marginVertical: 20
-                                }
-                            ]}>
-                            <Body color="white">Yes, Change</Body>
-                        </Pressable>
-                        <Pressable
-                            onPress={() => actionSheetRef.current?.hide()}
-                            style={[styles.actionButtonStyle]}>
-                            <Body color="accent">No, Don't Change</Body>
-                        </Pressable>
-                    </View>
-                </View>
-            </ActionSheet>
-
-            {/* <SafeAreaView style={{ flex: 0, backgroundColor: '#f7f7f7' }} /> */}
         </View>
     );
 };
 
 const styles = StyleSheet.create({
-    bottomImageContainer: {
-        backgroundColor: '#ccc',
-        flex: 1,
-        flexDirection: 'row',
-        justifyContent: 'center'
-    },
     container: {
         flex: 1,
         backgroundColor: '#f7f7f7'
-    },
-    image: {
-        height: 50,
-        width: 50,
-        borderRadius: 6
-    },
-    imageContainer: {
-        backgroundColor: 'blue',
-        width: SCREEN_WIDTH * 0.3,
-        height: SCREEN_HEIGHT * 0.1,
-        alignItems: 'center',
-        padding: 10
-    },
-    logoutContainer: {
-        alignItems: 'center',
-        justifyContent: 'center',
-        display: 'flex',
-        flexDirection: 'row'
     },
     modal: {
         backgroundColor: 'rgba(255,255,255,1)',
         flex: 1
     },
-    // row: {
-    //   backgroundColor: '#ccc',
-    //   flexDirection: 'row',
-    //   padding: 10
-    // },
     sectionRow: {
         alignItems: 'center',
         backgroundColor: 'white',
         marginBottom: 2,
         flexDirection: 'row',
         height: SCREEN_HEIGHT * 0.06
-    },
-    text: {
-        height: 30,
-        borderColor: 'gray',
-        borderWidth: 1,
-        flex: 1
     },
     sectionHeaderTitle: {
         paddingLeft: 10,
@@ -553,14 +425,6 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(0,0,0,0.6)',
         alignItems: 'center',
         justifyContent: 'center'
-    },
-    actionButtonStyle: {
-        height: 48,
-        borderRadius: 8,
-        paddingHorizontal: 20,
-        paddingVertical: 12,
-        justifyContent: 'center',
-        alignItems: 'center'
     }
 });
 

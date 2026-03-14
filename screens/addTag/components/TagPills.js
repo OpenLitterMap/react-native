@@ -92,14 +92,14 @@ const TagPills = ({
                         entriesByCloId,
                         typeEntriesByKey
                     );
-                    const name = entry?.displayName || tag._displayName || `#${tag.cloId}`;
+                    const name = entry?.displayName || tag.fallbackDisplayName || `#${tag.cloId}`;
                     const category = entry?.isMultiCategory
                         ? entry.categoryDisplayName
                         : null;
                     const label = category ? `${name} · ${category}` : name;
                     const qty = tag.quantity;
                     const isExpanded = expandedKey === tagKey;
-                    const categoryColor = getCategoryColor(entry?.categoryKey || tag._categoryKey);
+                    const categoryColor = getCategoryColor(entry?.categoryKey || tag.fallbackCategoryKey);
 
                     if (isExpanded) {
                         return (

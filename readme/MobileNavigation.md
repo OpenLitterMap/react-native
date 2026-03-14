@@ -22,9 +22,7 @@ NavigationContainer
         ├── APP → TabRoutes (Material Top Tabs, bottom position)
         │   ├── HOME → HomeScreen
         │   ├── TEAM → TeamStack
-        │   ├── GLOBAL → GlobalDataScreen
-        │   ├── LEADERBOARD → LeaderboardsScreen
-        │   └── USER_STATS → UserStatsScreen
+        │   └── USER_STATS → ProfileScreen
         ├── PERMISSION → PermissionStack
         ├── ADD_TAGS → AddTagScreen
         ├── ALBUM → GalleryScreen

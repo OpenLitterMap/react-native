@@ -41,10 +41,10 @@
 | `reducers/index.js` | Root combiner | 0 | OK |
 | `reducers/auth_reducer.js` | `auth` | 5 | Active — Sanctum auth |
 | `reducers/gallery_reducer.js` | `gallery` | 1 | CameraRoll fetch, EXIF GPS fallback, derived selectors |
-| `reducers/images_reducer.js` | `images` | 4 | Active, core — v5 CLO tagging |
+| `reducers/images_reducer.js` | `images` | 4 | Active, core — CLO tagging |
 | `reducers/leaderboards_reducer.js` | `leaderboard` | 1 | Active |
 | `reducers/locations_reducer.js` | `locations` | 2 | Active |
-| `reducers/my_uploads_reducer.js` | `my_uploads_reducer` | 3 | Active |
+| `reducers/uploads_reducer.js` | `uploads` | 3 | Active |
 | `reducers/settings_reducer.js` | `settings` | 4 | Active |
 | `reducers/shared_reducer.js` | `shared` | 1 | Active |
 | `reducers/stats_reducer.js` | `stats` | 1 | Active |
@@ -59,7 +59,7 @@
 | `routes/index.js` | Barrel export for MainRoutes |
 | `routes/MainRoutes.js` | Root navigator, auth gating, conditional routing |
 | `routes/AuthStack.js` | Welcome → Auth screen stack |
-| `routes/TabRoutes.tsx` | Bottom tabs: Home, Team, Global Data, Leaderboards, User Stats |
+| `routes/TabRoutes.tsx` | Bottom tabs: Home, Team, User Stats (3 tabs — GlobalData and Leaderboards exist but are not wired into any route) |
 | `routes/PermissionStack.tsx` | Camera/Gallery permission screens |
 | `routes/TeamStack.tsx` | Team screens stack |
 
@@ -79,7 +79,7 @@
 | `screens/auth/authComponents/ForgotPasswordForm.tsx` | Password reset form | Active |
 | `screens/auth/authComponents/Slides.tsx` | Welcome slides content | Active |
 | `screens/auth/authComponents/LanguageFlags.tsx` | Language picker | Active |
-| `screens/auth/authComponents/StatusMessage.tsx` | Auth status display | Active |
+| `screens/auth/authComponents/StatusMessage.tsx` | Auth status display | **Deleted** |
 | `screens/addTag/AddTagScreen.js` | Tag images — full-screen image viewer with overlays | Active |
 | `screens/addTag/components/CategoryBrowser.js` | Category grid browser | Active |
 | `screens/addTag/components/ImageProgressDots.js` | Image navigation dots | Active |
@@ -90,9 +90,9 @@
 | `screens/addTag/components/TagSuggestions.js` | Suggest tags from other images | Active |
 | `screens/addTag/components/categoryColors.js` | Category color mapping | Active |
 | `screens/gallery/GalleryScreen.js` | Photo picker with gesture selection | Active |
-| `screens/gallery/AlbumScreen.js` | Album view | Active |
-| `screens/globalData/GlobalDataScreen.js` | Global statistics | Active |
-| `screens/leaderboards/LeaderboardsScreen.js` | Leaderboard | Active |
+| `screens/gallery/AlbumScreen.js` | Album view | **Deleted** |
+| `screens/globalData/GlobalDataScreen.js` | Global statistics | **Deleted** |
+| `screens/leaderboards/LeaderboardsScreen.js` | Leaderboard | **Deleted** |
 | `screens/setting/SettingsScreen.js` | Settings | Active |
 | `screens/setting/settingComponents/SettingsComponent.js` | Settings edit forms | Active |
 | `screens/NewUpdateScreen.js` | App update prompt | Active |
@@ -133,14 +133,16 @@
 | `utils/gps.js` | GPS coordinate validation |
 | `utils/readGpsFromExif.js` | EXIF GPS extraction (Android fallback) |
 | `utils/dayjs.js` | dayjs with relativeTime + isSameOrAfter plugins |
-| `utils/Values.js` | REM division factor |
+| `utils/classifyError.js` | Error classification for upload thunks |
+| `utils/getTagsFromBackend.js` | Convert backend new_tags to local tags format |
+| `utils/buildTagsPayload.js` | Convert per-image tags to POST format |
 | `utils/setupAxiosInterceptors.js` | Global 401 handler + 30s timeout |
 | `utils/permissions/index.js` | Permission barrel exports |
 | `utils/permissions/cameraPermission.js` | Camera permission helpers |
 | `utils/permissions/cameraRollPermission.js` | Photo library permission helpers |
 | `utils/permissions/locationPermission.js` | Location permission helpers |
 
-**Removed:** `utils/Colors.js` (merged into `screens/components/theme/colors.ts`)
+**Removed:** `utils/Colors.js` (merged into `theme/colors.ts`), `utils/Values.js` (unused)
 
 ---
 
@@ -156,7 +158,7 @@
 |---|-------|--------|-----|---------|---------------------|------|--------|
 | 1 | `checkValidToken` | POST | `/api/validate-token` | None (token in header) | `message === 'valid'` | Bearer | OK |
 | 2 | `createAccount` | POST | `/api/auth/register` | `{email, password}` | `token`, `user.username` | None | OK |
-| 3 | `fetchUser` | GET | `/api/user/profile/index` | None | `user.*`, `stats.{uploads,litter,xp,littercoin,streak}`, `level.{level,title,progress_percent,xp_remaining}`, `rank.{global_position,percentile}`, `team.id`, `achievements`, `locations` | Bearer | OK |
+| 3 | `fetchUser` | GET | `/api/user/profile/index` | None | `user.*`, `stats.{uploads,tags,xp,littercoin,streak}`, `level.{level,title,progress_percent,xp_remaining}`, `rank.{global_position,percentile}`, `team.id`, `achievements`, `locations` | Bearer | OK — `stats.tags` replaced `stats.litter` (includes object quantities + materials + brands + custom tags) |
 | 4 | `sendResetPasswordRequest` | POST | `/api/password/email` | `{email}` | `response.data` | None | OK |
 | 5 | `userLogin` | POST | `/api/auth/token` | `{identifier, password}` | `token`, `user` | None | OK |
 
@@ -169,7 +171,7 @@
 | 8 | `postTagsToPhoto` | POST | `/api/v3/tags` | `{photo_id, tags[{category_litter_object_id, litter_object_type_id, quantity, picked_up, materials, brands, custom_tags}]}` | `response.status` | Bearer | OK |
 | 9 | `editTagsOnPhoto` | PUT | `/api/v3/tags` | Same as #8 | `photoTags` | Bearer | OK — PUT atomically replaces all tags |
 
-### My Uploads (my_uploads_reducer.js) — 3 endpoints
+### My Uploads (uploads_reducer.js) — 3 endpoints
 
 | # | Thunk | Method | URL | Payload | Response Fields Read | Auth | Status |
 |---|-------|--------|-----|---------|---------------------|------|--------|
@@ -323,16 +325,15 @@ store
 │   (Derived selector: selectNonGeotaggedCount)
 │
 ├── images (persisted — imagesArray only via transform)
-│   ├── imagesArray: array (core image collection with tagsV5, customTags per image)
+│   ├── imagesArray: array (core image collection with tags, customTags per image)
 │   ├── swiperIndex: number
 │   ├── totalToUpload / uploaded / uploadFailed / tagged / taggedFailed: numbers
 │   ├── uploadPhase: 'idle' | 'uploading' | 'tagging'
 │   ├── currentUploadIndex: number
 │   ├── uploadAbortReason: null | 'token-expired' | 'cancelled'
-│   ├── errorMessage: string
 │   └── failedCounts: { alreadyUploaded, invalidCoordinates, timeout, network, server, unknown }
 │
-├── my_uploads_reducer  ← NOTE: inconsistent key name
+├── uploads
 │   ├── uploads: { data[], total, current_page, next_page_url, ... }
 │   ├── uploadStats: object | null
 │   ├── loading: boolean
@@ -344,18 +345,17 @@ store
 ├── shared
 │   ├── appVersion: object | null
 │   ├── isUploading: boolean
-│   ├── showModal: boolean
+│   ├── showUploadModal: boolean
 │   └── showThankYouMessages: boolean
 │
 ├── settings
-│   ├── model: string
-│   ├── settingsModalVisible / secondSettingsModalVisible: boolean
-│   ├── settingsEdit: boolean
-│   ├── settingsEditProp: string
+│   ├── deviceModel: string
+│   ├── editModalVisible / saveResultModalVisible: boolean
+│   ├── editValue: string
 │   ├── wait: boolean
-│   ├── dataToEdit: any
+│   ├── editField: any
 │   ├── deleteAccountError: string
-│   ├── updateSettingsStatusMessage: string
+│   ├── saveResultMessage: string
 │   └── updatingSettings: boolean
 │
 ├── stats
@@ -375,7 +375,6 @@ store
 │   ├── topTeamsLoading: boolean
 │   ├── userTeams: array
 │   ├── teamMembers: array
-│   ├── teamsRequestStatus: string
 │   ├── selectedTeam: object
 │   ├── teamsFormError: string
 │   ├── teamFormStatus: string | null
@@ -410,9 +409,7 @@ NavigationContainer (App.tsx)
         │   │   ├── TOP_TEAMS → TopTeamsScreen
         │   │   ├── TEAM_DETAILS → TeamDetailsScreen
         │   │   └── TEAM_LEADERBOARD → TeamLeaderboardScreen
-        │   ├── GLOBAL → GlobalDataScreen
-        │   ├── LEADERBOARD → LeaderboardsScreen
-        │   └── USER_STATS → UserStatsScreen
+        │   └── USER_STATS → ProfileScreen
         │
         ├── PERMISSION → PermissionStack
         │   ├── CAMERA_PERMISSION → CameraPermissionScreen
@@ -503,14 +500,14 @@ NavigationContainer (App.tsx)
 
 ### Remaining Bugs
 
-**BUG-06: leaveTeam fulfilled handler is empty (team_reducer.js)**
-When a user leaves a team, the API call succeeds but no state is updated — the team remains in `userTeams`, and `activeTeam` is not changed. Reducer logic needs to be written.
+**BUG-06: ~~leaveTeam fulfilled handler is empty~~ RESOLVED (team_reducer.js)**
+Handler now finds the team by `action.payload.team?.id` and splices it from `userTeams`. Works correctly.
 
 **BUG-11: TopTeamsScreen fake loading (TopTeamsScreen.js)**
 Uses `setTimeout(() => setIsLoading(false), 3000)` instead of tracking actual API loading state. Users always wait 3 seconds regardless of API speed.
 
-**BUG-15: changeActiveTeam.fulfilled handler reads wrong payload shape (team_reducer.js)**
-`state.userTeams.push(action.payload.team)` — but the thunk returns `response.data.team.id` (a number), not `{team, type}`. Will push `undefined`.
+**BUG-15: ~~changeActiveTeam.fulfilled handler reads wrong payload shape~~ LOW RISK (team_reducer.js)**
+Handler only sets `teamFormStatus` and `successMessage` — it no longer pushes to `userTeams`. The thunk dispatches `fetchUser` to refresh the user's active team. No payload shape issue.
 
 ### Fixed Bugs (resolved in v7 audit passes)
 
@@ -530,6 +527,21 @@ Uses `setTimeout(() => setIsLoading(false), 3000)` instead of tracking actual AP
 | BUG-18 | `utils/Colors.js` deleted, `theme/colors.ts` is single source of truth |
 | BUG-19 | LitterTagsCard removed — tag display rebuilt in TagPills/AddTagScreen |
 | BUG-20 | deleteAccount correctly sends `{password}` in body, token only in Authorization header |
+| BUG-21 | `fetchUser` not awaited in `checkValidToken`/`userLogin`/`createAccount` — app rendered with `user: null`. Fixed: all three now `await dispatch(fetchUser())` |
+| BUG-22 | `fetchUser.rejected` cleared token on any failure (including network blip). Fixed: retry 2× with backoff for transient errors (timeout/network/5xx), only clear token on 401 |
+| BUG-23 | Custom-tag-only upload payload malformed (no CLO, no `custom: true`). Fixed: sends `{ custom: true, key: "tag-text" }` per backend spec |
+| BUG-24 | `typeId` falsy-zero coercion: `(typeId \|\| null)` treated `0` as `null`. Fixed: `?? null` in 4 locations |
+| BUG-25 | Upload cancel didn't abort in-flight request or reset `uploadPhase`. Fixed: `AbortController` + signal on axios calls, cancel resets phase to idle, early-return prevents stale result modal |
+| BUG-26 | `cancelUploadImages` reducer was empty no-op. Removed; cancel logic moved to `cancelUploadWrapper` in HomeScreen |
+| BUG-27 | `joinTeam` ignored `activeTeamId` from response. Fixed: dispatches `changeUsersActiveTeam` when backend returns active team |
+| BUG-28 | `leaveTeam` didn't clear `selectedTeam` or sync `user.active_team` when leaving active team. Fixed: always syncs from response (including null), clears `selectedTeam` if it was the left team, surfaces 403 errors |
+| BUG-29 | `getTeamMembers` could accumulate duplicates on pagination. Fixed: deduplicates by member ID before push |
+| BUG-30 | EXIF `readGpsFromExif` had no timeout. Fixed: 5s `Promise.race` timeout |
+| BUG-31 | `checkCameraRollPermission` re-requested `ACCESS_MEDIA_LOCATION` on every call. Fixed: only `check()`, never `request()` |
+| BUG-32 | Custom tags had no validation. Fixed: max 100 chars, min 3 chars, regex `/^[\w\s:-]+$/` matching backend rules |
+| BUG-33 | Minio image URLs use `127.0.0.1` unreachable from phone. Fixed: dev-only URL rewrite in `ImageViewer.js` using LAN IP from API base URL |
+| BUG-34 | Edit mode showed "Carton" instead of "Juice Carton" — `loadPhotoForEditing` didn't read `apiTag.type?.key`. Fixed in both `images_reducer.js` (edit mode `fallbackDisplayName`) and `TagChips.js` (My Uploads list) |
+| BUG-35 | Profile showed `stats.litter` (undefined) instead of `stats.tags`. Backend renamed field. Fixed: `stats.tags ?? stats.litter ?? 0` with fallback |
 
 ### Dead Code Removed
 
@@ -546,6 +558,17 @@ Uses `setTimeout(() => setIsLoading(false), 3000)` instead of tracking actual AP
 | `console.log` in `actions/types.js` | Removed (env + client credentials logging) |
 | `react-native-maps` | Removed from package.json |
 | `redux-thunk` / `immer` | Removed from package.json (included in RTK) |
+| `screens/globalData/GlobalDataScreen.js` | Deleted — orphaned screen, never routed |
+| `screens/leaderboards/LeaderboardsScreen.js` | Deleted — orphaned screen, never routed |
+| `screens/gallery/AlbumScreen.js` | Deleted — orphaned screen |
+| `screens/gallery/galleryComponents/AlbumList.js` | Deleted — orphaned component |
+| `screens/auth/authComponents/StatusMessage.js` | Deleted — exported but never used |
+| `screens/userStats/userComponents/myUploadsComponents/UploadStatsHeader.js` | Deleted |
+| `utils/Values.js` | Deleted — unused |
+| `images.errorMessage` | Removed from state |
+| `teams.teamsRequestStatus` | Removed from state |
+| `settings.isEditing` | Removed from state (redundant) |
+| Legacy `tags: {}` field | Removed from gallery and images reducers |
 
 ---
 
@@ -595,13 +618,13 @@ Uses `setTimeout(() => setIsLoading(false), 3000)` instead of tracking actual AP
 |---------|-----------|--------|--------|
 | **User Auth** | AuthScreen, SigninForm, SignupForm | Sanctum auth complete. Login/signup/token validation working. | 8/10 |
 | **Password Reset** | ForgotPasswordForm | Form works, sends email. | 7/10 |
-| **Gallery Photo Selection** | GalleryScreen, AlbumScreen | CameraRoll access, gesture selection, GPS filtering, EXIF fallback on Android. | 8/10 |
+| **Gallery Photo Selection** | GalleryScreen | CameraRoll access, gesture selection, GPS filtering, EXIF fallback on Android. | 8/10 |
 | **Image Upload** | HomeScreen | Select → tag → upload pipeline. Sequential upload with progress, cancel support, structured error handling. | 8/10 |
 | **Litter Tagging** | AddTagScreen, TagSearchBar, CategoryBrowser, etc. | Full-screen image viewer. Search, browse categories, tag pills, materials/brands/custom tags per tag. XP estimate. | 8/10 |
 | **Upload History** | MyUploads | Paginated list with filters, swipe actions (copy link, open map, delete). | 7/10 |
 | **Teams** | TeamScreen, TeamDetails, TopTeams | Create, join, leave, view members. Leave team state update incomplete (BUG-06). Fake loading (BUG-11). | 5/10 |
-| **Leaderboards** | LeaderboardsScreen | Time-filtered leaderboard display. | 7/10 |
-| **Global Stats** | GlobalDataScreen | Animated counters with milestone progress. | 8/10 |
+| **Leaderboards** | ~~LeaderboardsScreen~~ (Deleted) | Time-filtered leaderboard display. Screen deleted, data reducer retained. | — |
+| **Global Stats** | ~~GlobalDataScreen~~ (Deleted) | Animated counters with milestone progress. Screen deleted, data reducer retained. | — |
 | **User Profile** | UserStatsScreen, ProfileScreen | User level, XP, tag counts, animated stats, navigation to uploads. | 7/10 |
 | **Settings** | SettingsScreen, SettingsComponent | Edit name/username/email, privacy toggles, social accounts, delete account. | 7/10 |
 | **App Version Check** | NewUpdateScreen, HomeScreen | Checks backend for latest version, prompts update. | 7/10 |
@@ -619,16 +642,17 @@ The core workflow — pick photos from gallery, tag with litter categories, uplo
 ### Remaining Work
 
 **P1 — Features Incomplete:**
-1. BUG-06: leaveTeam state update (reducer logic needs writing)
-2. BUG-15: changeActiveTeam payload shape mismatch
+1. ~~BUG-06: leaveTeam state update~~ RESOLVED
+2. ~~BUG-15: changeActiveTeam payload shape~~ LOW RISK (handler correct)
 3. BUG-11: TopTeamsScreen fake loading
+4. ~~GlobalDataScreen and LeaderboardsScreen exist but are not wired into any route~~ Deleted
 
 **P2 — New Features:**
 4. Camera capture (needs full rewrite with react-native-vision-camera)
 5. Map view (needs implementation from scratch)
 
 **P3 — Cleanup:**
-6. `my_uploads_reducer` inconsistent slice key name
+6. ~~`my_uploads_reducer` inconsistent slice key name~~ Fixed — renamed to `uploads_reducer.js` with slice key `uploads`
 7. No test coverage
 8. User object stored redundantly in Redux and AsyncStorage
 

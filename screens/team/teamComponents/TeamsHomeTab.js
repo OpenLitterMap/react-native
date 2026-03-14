@@ -9,12 +9,14 @@ import {
 import Icon from 'react-native-vector-icons/Ionicons';
 import {useSelector} from 'react-redux';
 import {useNavigation} from '@react-navigation/native';
+import {useTranslation} from 'react-i18next';
 import {Colors, SubTitle, Caption, Body, Button} from '../../components';
 import TopTeamsList from './TopTeamsList';
 import UserTeamsList from './UserTeamsList';
 
 const TeamsHomeTab = ({onCreateTeam, onJoinTeam}) => {
     const navigation = useNavigation();
+    const {t} = useTranslation();
     const topTeams = useSelector(state => state.teams.topTeams);
     const userTeams = useSelector(state => state.teams.userTeams);
     const isLoading = useSelector(state => state.teams.topTeamsLoading);
@@ -36,11 +38,11 @@ const TeamsHomeTab = ({onCreateTeam, onJoinTeam}) => {
             alwaysBounceVertical={false}
             showsVerticalScrollIndicator={false}>
             <View style={styles.headingRow}>
-                <SubTitle>Top Teams</SubTitle>
+                <SubTitle>{t('Top Teams')}</SubTitle>
                 <Pressable
                     onPress={() => navigation.navigate('TOP_TEAMS')}
                     style={{padding: 5}}>
-                    <Caption color="accent">View All</Caption>
+                    <Caption color="accent">{t('View All')}</Caption>
                 </Pressable>
             </View>
             <TopTeamsList topTeams={topTeams?.slice(0, 3)} />
@@ -55,11 +57,10 @@ const TeamsHomeTab = ({onCreateTeam, onJoinTeam}) => {
                         />
                     </View>
                     <Body style={styles.emptyTitle}>
-                        Join a team to get started
+                        {t('Join a team to get started')}
                     </Body>
                     <Caption color="muted" style={styles.emptyText}>
-                        Collaborate with others and track your collective
-                        impact on the environment.
+                        {t('Collaborate with others and track your collective impact on the environment.')}
                     </Caption>
                     <View style={styles.emptyButtonRow}>
                         <Pressable
@@ -71,7 +72,7 @@ const TeamsHomeTab = ({onCreateTeam, onJoinTeam}) => {
                                 color={Colors.accent}
                             />
                             <Body color="accent" style={styles.emptyButtonText}>
-                                Create
+                                {t('Create')}
                             </Body>
                         </Pressable>
                         <Pressable
@@ -83,7 +84,7 @@ const TeamsHomeTab = ({onCreateTeam, onJoinTeam}) => {
                                 color={Colors.accent}
                             />
                             <Body color="accent" style={styles.emptyButtonText}>
-                                Join
+                                {t('Join')}
                             </Body>
                         </Pressable>
                     </View>

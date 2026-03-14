@@ -6,9 +6,7 @@ The gallery system handles photo selection from the device's camera roll. Users 
 
 ## Files
 - `screens/gallery/GalleryScreen.js` — Photo picker grid with selection, empty state, GPS warning banner
-- `screens/gallery/AlbumScreen.js` — Album browser
 - `screens/gallery/galleryComponents/AnimatedImage.js` — Image tile with GPS/selection visual treatment
-- `screens/gallery/galleryComponents/AlbumList.js` — Album list component
 - `reducers/gallery_reducer.js` — CameraRoll photo fetching with cursor-based pagination, GPS detection
 - `utils/isGeotagged.js` — Check if an image has valid GPS coordinates (rejects null, 0,0)
 - `utils/permissions/cameraRollPermission.js` — Photo library + ACCESS_MEDIA_LOCATION permission handling
@@ -63,4 +61,17 @@ Each photo from CameraRoll is checked for GPS data:
 - `node.location` must exist with non-null, non-zero `latitude` and `longitude`
 - Photos meeting criteria get `hasGps: true` with `lat`/`lon` values
 - Photos failing get `hasGps: false` with `lat: null, lon: null`
-- `__DEV__` debug logging outputs platform, counts, and first 5 photos for GPS diagnosis
+- **Android EXIF fallback**: When CameraRoll returns no GPS on Android, `readGpsFromExif()` attempts EXIF extraction in batches of 10
+- `__DEV__` debug logging outputs platform, fetch type, and GPS counts
+
+## Pagination Strategies
+The gallery fetches photos using four strategies:
+- `INITIAL`: First load — 40 photos
+- `TIME`: After initial — up to 1000 photos added since `lastFetchTime`
+- `LOAD`: Scroll pagination — 20 photos per page
+- `REFRESH`: Full re-fetch (used after iOS limited permission changes)
+
+## Additional Features
+- **Swipe gesture selection**: Multi-select via pan gesture handler across the grid
+- **Date-based grouping**: Photos grouped into "today", "this week", "this month", then by month/year
+- **iOS limited photo picker**: "Select More Photos" button shown when access is limited

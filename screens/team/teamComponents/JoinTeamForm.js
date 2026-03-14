@@ -3,6 +3,7 @@ import React from 'react';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
+import { useTranslation } from 'react-i18next';
 import { Body, Button, Colors, Caption, SubTitle } from '../../components';
 import { useDispatch, useSelector } from "react-redux";
 import { joinTeam } from "../../../reducers/team_reducer";
@@ -17,28 +18,28 @@ const JoinTeamSchema = Yup.object().shape({
 const JoinTeamForm = ({ backPress }) => {
 
     const dispatch = useDispatch();
+    const {t} = useTranslation();
 
-    const token = useSelector(state => state.auth.token);
     const teamsFormError = useSelector(state => state.teams.teamsFormError);
 
     return (
         <View>
             <View style={styles.headerRow}>
-                <SubTitle>Join a Team</SubTitle>
+                <SubTitle>{t('Join a Team')}</SubTitle>
                 <Pressable onPress={backPress} style={styles.closeButton}>
                     <Icon name="close" size={22} color={Colors.text} />
                 </Pressable>
             </View>
 
             <Caption color="muted" style={styles.description}>
-                Enter the team identifier shared by your team leader.
+                {t('Enter the team identifier shared by your team leader.')}
             </Caption>
 
             <Formik
                 initialValues={{ id: '' }}
                 validationSchema={JoinTeamSchema}
                 onSubmit={async values => {
-                    await dispatch(joinTeam({ token, identifier: values.id }));
+                    await dispatch(joinTeam({ identifier: values.id }));
                 }}>
                 {({
                     isValid,
@@ -49,7 +50,7 @@ const JoinTeamForm = ({ backPress }) => {
                     handleChange
                 }) => (
                     <>
-                        <Body style={styles.label}>Team Identifier</Body>
+                        <Body style={styles.label}>{t('Team Identifier')}</Body>
                         <TextInput
                             name="id"
                             autoFocus={false}
@@ -82,7 +83,7 @@ const JoinTeamForm = ({ backPress }) => {
                             onPress={handleSubmit}
                             style={styles.submitButton}
                         >
-                            <Body color="white">Join Team</Body>
+                            <Body color="white">{t('Join Team')}</Body>
                         </Button>
                     </>
                 )}

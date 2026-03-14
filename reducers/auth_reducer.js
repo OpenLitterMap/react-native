@@ -1,8 +1,7 @@
-import axios from 'axios';
 import * as Sentry from '@sentry/react-native';
 import {createAsyncThunk, createSlice} from '@reduxjs/toolkit';
-import {URL} from '../actions/types';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import api from '../utils/apiClient';
 
 const initialState = {
     isSubmitting: false,
@@ -32,20 +31,13 @@ export const checkValidToken = createAsyncThunk(
     'auth/checkValidToken',
     async (jwt, {rejectWithValue, dispatch}) => {
         try {
-            const response = await axios({
-                url: `${URL}/api/validate-token`,
-                method: 'POST',
-                headers: {
-                    Authorization: `Bearer ${jwt}`,
-                    Accept: 'application/json'
-                }
-            });
+            const response = await api.post('/api/validate-token', {token: jwt});
 
             if (
                 response.data.hasOwnProperty('message') &&
                 response.data.message === 'valid'
             ) {
-                dispatch(fetchUser(jwt));
+                await dispatch(fetchUser(jwt));
                 return jwt;
             } else {
                 dispatch(logout());
@@ -61,19 +53,9 @@ export const createAccount = createAsyncThunk(
     'auth/createAccount',
     async ({email, password}, {rejectWithValue, dispatch}) => {
         try {
-            const response = await axios.post(
-                `${URL}/api/auth/register`,
-                {
-                    email,
-                    password
-                },
-                {
-                    headers: {
-                        Accept: 'application/json',
-                        'Content-Type': 'application/json'
-                    }
-                }
-            );
+            const response = await api.post('/api/auth/register', {
+                data: {email, password}
+            });
 
             if (response.data?.token) {
                 const token = response.data.token;
@@ -89,7 +71,7 @@ export const createAccount = createAsyncThunk(
                     }
                 }
 
-                dispatch(fetchUser(token));
+                await dispatch(fetchUser(token));
 
                 return token;
             }
@@ -121,37 +103,79 @@ export const createAccount = createAsyncThunk(
     }
 );
 
+/**
+ * Fetch user profile with retry for transient failures.
+ * Retries up to 2 times with backoff for timeout/network/5xx errors.
+ * 401 errors are NOT retried — they indicate an invalid session.
+ */
 export const fetchUser = createAsyncThunk(
     'auth/fetchUser',
-    async (token, {rejectWithValue}) => {
-        try {
-            const response = await axios({
-                url: `${URL}/api/user/profile/index`,
-                method: 'GET',
-                headers: {
-                    Accept: 'application/json',
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`
-                }
-            });
+    async (tokenOverride, {getState, rejectWithValue}) => {
+        const token = tokenOverride || getState().auth.token;
+        const MAX_RETRIES = 2;
+        const BACKOFF_MS = [1000, 3000];
 
-            if (response.status === 200 && response.data) {
-                Sentry.setUser({
-                    id: response.data.user?.id,
-                    email: response.data.user?.email
-                });
-
-                return response.data;
-            } else {
-                return rejectWithValue('User fetch failed');
+        const isTransient = error => {
+            if (error.code === 'ECONNABORTED') {
+                return true; // timeout
             }
-        } catch (error) {
-            return rejectWithValue(
-                error.response?.data?.message ||
-                    error.message ||
-                    'Network error, please try again'
-            );
+            if (!error.response) {
+                return true; // network error
+            }
+            return error.response.status >= 500; // server error
+        };
+
+        let lastError;
+        for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+            try {
+                const response = await api.get('/api/user/profile/index', {token});
+
+                if (response.status === 200 && response.data) {
+                    Sentry.setUser({
+                        id: response.data.user?.id,
+                        email: response.data.user?.email
+                    });
+
+                    return response.data;
+                } else {
+                    return rejectWithValue({
+                        message: 'User fetch failed',
+                        isAuthError: false
+                    });
+                }
+            } catch (error) {
+                lastError = error;
+                const status = error.response?.status;
+
+                // 401 = invalid session, don't retry
+                if (status === 401) {
+                    return rejectWithValue({
+                        message: 'Session expired',
+                        isAuthError: true
+                    });
+                }
+
+                // Transient error — retry with backoff
+                if (isTransient(error) && attempt < MAX_RETRIES) {
+                    await new Promise(r => setTimeout(r, BACKOFF_MS[attempt]));
+                    continue;
+                }
+
+                // Non-transient or retries exhausted
+                return rejectWithValue({
+                    message:
+                        error.response?.data?.message ||
+                        error.message ||
+                        'Network error, please try again',
+                    isAuthError: false
+                });
+            }
         }
+
+        return rejectWithValue({
+            message: lastError?.message || 'Failed to load profile',
+            isAuthError: false
+        });
     }
 );
 
@@ -159,18 +183,9 @@ export const sendResetPasswordRequest = createAsyncThunk(
     'user/sendResetPasswordRequest',
     async (email, {rejectWithValue}) => {
         try {
-            const response = await axios.post(
-                `${URL}/api/password/email`,
-                {
-                    email
-                },
-                {
-                    headers: {
-                        Accept: 'application/json',
-                        'Content-Type': 'application/json'
-                    }
-                }
-            );
+            const response = await api.post('/api/password/email', {
+                data: {email}
+            });
 
             return response.data;
         } catch (error) {
@@ -193,15 +208,7 @@ export const userLogin = createAsyncThunk(
 
             const data = {identifier, password};
 
-            const response = await axios({
-                url: `${URL}/api/auth/token`,
-                method: 'POST',
-                headers: {
-                    Accept: 'application/json',
-                    'Content-Type': 'application/json'
-                },
-                data
-            });
+            const response = await api.post('/api/auth/token', {data});
 
             if (response.status === 200) {
                 const token = response.data.token;
@@ -214,7 +221,7 @@ export const userLogin = createAsyncThunk(
                     );
                 }
 
-                dispatch(fetchUser(token));
+                await dispatch(fetchUser(token));
 
                 return token;
             } else {
@@ -310,6 +317,7 @@ const authSlice = createSlice({
             // We flatten into a single state object that screens expect.
             .addCase(fetchUser.fulfilled, (state, action) => {
                 const data = action.payload;
+
                 const profile = data.user || {};
                 const stats = data.stats || {};
                 const levelData = data.level || {};
@@ -319,18 +327,18 @@ const authSlice = createSlice({
                     // Core user fields (includes settings like show_name, picked_up, etc.)
                     ...profile,
 
-                    // Stats → flat field names screens expect
-                    total_images: stats.uploads || 0,
-                    totalTags: stats.litter || 0,
+                    // Stats
+                    totalImages: stats.uploads || 0,
+                    totalTags: stats.tags ?? stats.litter ?? 0,
                     totalLittercoin: stats.littercoin || 0,
-                    xp_redis: stats.xp || 0,
+                    xp: stats.xp || 0,
                     streak: stats.streak || 0,
 
-                    // Level → flat field names
+                    // Level
                     level: levelData.level || 0,
                     levelTitle: levelData.title || '',
-                    targetPercentage: levelData.progress_percent || 0,
-                    xpRequired: levelData.xp_remaining || 0,
+                    levelProgress: levelData.progress_percent || 0,
+                    xpToNextLevel: levelData.xp_remaining || 0,
 
                     // Rank → flat field names (null = not ranked)
                     position: rankData.global_position ?? null,
@@ -351,9 +359,18 @@ const authSlice = createSlice({
                 state.isSubmitting = false;
             })
             .addCase(fetchUser.rejected, (state, action) => {
-                state.serverStatusText = action.payload;
+                const payload = action.payload || {};
+                state.serverStatusText =
+                    payload.message || 'Failed to load profile';
                 state.isSubmitting = false;
-                state.token = null;
+
+                // Only clear session on auth errors (401).
+                // Transient failures (timeout, network, 5xx) keep the token
+                // so the user isn't force-logged-out by a network blip.
+                if (payload.isAuthError) {
+                    state.token = null;
+                    state.user = null;
+                }
             })
 
             // Send Reset Password Request

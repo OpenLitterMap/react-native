@@ -18,7 +18,7 @@ export default function setupAxiosInterceptors(store) {
             if (error.response?.status === 401) {
                 // If an upload is in progress, signal it to stop gracefully
                 const state = store.getState();
-                if (state.shared?.isUploading) {
+                if (state.images?.uploadPhase !== 'idle') {
                     store.dispatch(setUploadAbortReason('token-expired'));
                 }
 

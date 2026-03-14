@@ -1,80 +1,39 @@
-import axios from 'axios';
-import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
-import * as Sentry from '@sentry/react-native';
-import {URL} from '../actions/types';
-import {formatKey} from '../utils/formatKey';
+import {createSlice, createAsyncThunk, createSelector} from '@reduxjs/toolkit';
+import api from '../utils/apiClient';
+import {classifyError} from '../utils/classifyError';
+import {getTagsFromBackend} from '../utils/getTagsFromBackend';
 import {logout} from './auth_reducer';
 
-/** Find a tag in tagsV5 by (cloId, typeId). */
-const findTagV5 = (tagsV5, cloId, typeId) =>
-    tagsV5.find(
-        t => t.cloId === cloId && (t.typeId || null) === (typeId || null)
+/** Find a tag in tags by (cloId, typeId). */
+const findTag = (tags, cloId, typeId) =>
+    tags.find(
+        t => t.cloId === cloId && (t.typeId ?? null) === (typeId ?? null)
     );
 
-/** Filter out a tag from tagsV5 by (cloId, typeId). */
-const filterOutTagV5 = (tagsV5, cloId, typeId) =>
-    tagsV5.filter(
-        t => !(t.cloId === cloId && (t.typeId || null) === (typeId || null))
+/** Filter out a tag from tags by (cloId, typeId). */
+const filterOutTag = (tags, cloId, typeId) =>
+    tags.filter(
+        t => !(t.cloId === cloId && (t.typeId ?? null) === (typeId ?? null))
     );
+
+/** Backend regex for custom tag validation: word chars, spaces, colons, hyphens */
+const CUSTOM_TAG_REGEX = /^[\w\s:-]+$/;
 
 /**
- * Classify an axios error into a structured { errorType, userMessage } object.
- * Used by all upload thunks for consistent error handling.
+ * Resolve target image for tag actions.
+ * If editingPhoto exists, returns it (edit mode from My Uploads).
+ * Otherwise returns imagesArray[imageIndex] (normal tagging flow).
  */
-function classifyError(error, section) {
-    let errorType = 'unknown';
-    let userMessage = 'Upload failed. Please try again.';
-
-    if (!error.response) {
-        // No server response — network or timeout
-        if (error.code === 'ECONNABORTED') {
-            errorType = 'timeout';
-            userMessage =
-                'Upload timed out. Check your connection and try again.';
-        } else {
-            errorType = 'network';
-            userMessage = 'No internet connection. Please check your network.';
-        }
-    } else {
-        const status = error.response.status;
-        const msg = error.response.data?.msg || error.response.data?.message;
-
-        if (status === 401) {
-            errorType = 'unauthorized';
-            userMessage = 'Session expired. Please log in again.';
-        } else if (status === 422) {
-            if (msg === 'photo-already-uploaded') {
-                errorType = 'photo-already-uploaded';
-                userMessage = 'This photo was already uploaded.';
-            } else if (msg === 'invalid-coordinates') {
-                errorType = 'invalid-coordinates';
-                userMessage = 'Photo has invalid GPS coordinates.';
-            } else {
-                errorType = 'validation';
-                userMessage = msg || 'Photo could not be processed.';
-            }
-        } else if (status >= 500) {
-            errorType = 'server';
-            userMessage = 'Server error. Please try again later.';
-        } else {
-            errorType = 'unknown';
-            userMessage = msg || 'Upload failed. Please try again.';
-        }
-
-        Sentry.captureException(
-            new Error(JSON.stringify(error.response.data)),
-            {
-                level: 'error',
-                tags: {section, errorType, status: String(status)}
-            }
-        );
+const getTargetImage = (state, imageIndex) => {
+    if (state.editingPhoto) {
+        return state.editingPhoto;
     }
-
-    return {errorType, userMessage};
-}
+    return state.imagesArray[imageIndex];
+};
 
 const initialState = {
     imagesArray: [],
+    editingPhoto: null, // Separate slot for My Uploads edit mode — not persisted, doesn't affect HomeScreen
     swiperIndex: 0,
 
     // Upload progress
@@ -89,7 +48,6 @@ const initialState = {
     currentUploadIndex: 0,
     uploadAbortReason: null, // null | 'token-expired' | 'cancelled'
 
-    errorMessage: '',
     failedCounts: {
         alreadyUploaded: 0,
         invalidCoordinates: 0,
@@ -110,14 +68,11 @@ const initialState = {
 
 export const getUntaggedImages = createAsyncThunk(
     'images/getUntaggedImages',
-    async ({token}, {rejectWithValue}) => {
+    async (_, {getState, rejectWithValue}) => {
         try {
-            const response = await axios({
-                url: `${URL}/api/v3/user/photos`,
-                method: 'GET',
-                headers: {
-                    Authorization: `Bearer ${token}`
-                },
+            const token = getState().auth.token;
+            const response = await api.get('/api/v3/user/photos', {
+                token,
                 params: {
                     tagged: false,
                     per_page: 100
@@ -142,34 +97,39 @@ export const getUntaggedImages = createAsyncThunk(
 export const uploadImage = createAsyncThunk(
     'images/uploadImage',
     async (
-        {token, imageData, imageId, imageUri, enableAdminTagging, photoHasTags},
-        {rejectWithValue}
+        {
+            imageData,
+            photoId,
+            imageUri,
+            enableAdminTagging,
+            photoHasTags,
+            signal
+        },
+        {getState, rejectWithValue}
     ) => {
         try {
-            const response = await axios({
-                url: `${URL}/api/v3/upload`,
-                method: 'POST',
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    'Content-Type': 'multipart/form-data'
-                },
-                data: imageData
+            const token = getState().auth.token;
+            const response = await api.post('/api/v3/upload', {
+                token,
+                data: imageData,
+                headers: {'Content-Type': 'multipart/form-data'},
+                signal
             });
 
-            if (response.data?.success) {
-                return {
-                    imageId,
-                    imageUri,
-                    photo_id: response.data.photo_id,
-                    enableAdminTagging,
-                    photoHasTags
-                };
-            } else {
+            if (!response.data?.success) {
                 return rejectWithValue({
                     errorType: 'unknown',
                     userMessage: 'Upload failed with no success flag'
                 });
             }
+
+            return {
+                photoId,
+                imageUri,
+                serverPhotoId: response.data.photo_id,
+                enableAdminTagging,
+                photoHasTags
+            };
         } catch (error) {
             return rejectWithValue(classifyError(error, 'image_upload'));
         }
@@ -184,32 +144,20 @@ export const uploadImage = createAsyncThunk(
  */
 export const postTagsToPhoto = createAsyncThunk(
     'images/postTagsToPhoto',
-    async ({token, photoId, tags, pickedUp}, {rejectWithValue}) => {
+    async ({photoId, tags, pickedUp, signal}, {getState, rejectWithValue}) => {
         try {
-            const response = await axios.post(
-                `${URL}/api/v3/tags`,
-                {
+            const token = getState().auth.token;
+            const response = await api.post('/api/v3/tags', {
+                token,
+                data: {
                     photo_id: photoId,
                     tags,
                     picked_up: pickedUp ? 1 : 0
                 },
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                }
-            );
+                signal
+            });
 
-            // Accept any 2xx or explicit success flag
-            if (response.status >= 200 && response.status < 300) {
-                return {photoId};
-            } else {
-                return rejectWithValue({
-                    errorType: 'unknown',
-                    userMessage: 'Failed to post tags'
-                });
-            }
+            return {photoId};
         } catch (error) {
             return rejectWithValue(classifyError(error, 'post_tags_v3'));
         }
@@ -223,31 +171,19 @@ export const postTagsToPhoto = createAsyncThunk(
  */
 export const editTagsOnPhoto = createAsyncThunk(
     'images/editTagsOnPhoto',
-    async ({token, photoId, tags, pickedUp}, {rejectWithValue}) => {
+    async ({photoId, tags, pickedUp}, {getState, rejectWithValue}) => {
         try {
-            const response = await axios.put(
-                `${URL}/api/v3/tags`,
-                {
+            const token = getState().auth.token;
+            const response = await api.put('/api/v3/tags', {
+                token,
+                data: {
                     photo_id: photoId,
                     tags,
                     picked_up: pickedUp ? 1 : 0
-                },
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
                 }
-            );
+            });
 
-            if (response.status >= 200 && response.status < 300) {
-                return {photoId, photoTags: response.data.photoTags};
-            } else {
-                return rejectWithValue({
-                    errorType: 'unknown',
-                    userMessage: 'Failed to edit tags'
-                });
-            }
+            return {photoId, photoTags: response.data.photoTags};
         } catch (error) {
             return rejectWithValue(classifyError(error, 'edit_tags_v3'));
         }
@@ -305,8 +241,7 @@ const imagesSlice = createSlice({
                         type: image.type, // gallery or camera
                         platform: image.platform,
 
-                        tags: image.tags,
-                        tagsV5: [],
+                        tags: [],
                         customTags: image.customTags,
                         picked_up: action.payload.picked_up,
 
@@ -331,16 +266,16 @@ const imagesSlice = createSlice({
          */
         addTagV5(state, action) {
             const {imageIndex, cloId, typeId} = action.payload;
-            const image = state.imagesArray[imageIndex];
+            const image = getTargetImage(state, imageIndex);
             if (!image) {
                 return;
             }
 
-            if (!image.tagsV5) {
-                image.tagsV5 = [];
+            if (!image.tags) {
+                image.tags = [];
             }
 
-            const existing = findTagV5(image.tagsV5, cloId, typeId);
+            const existing = findTag(image.tags, cloId, typeId);
             if (existing) {
                 existing.quantity += 1;
             } else {
@@ -354,7 +289,7 @@ const imagesSlice = createSlice({
                 if (typeId) {
                     tag.typeId = typeId;
                 }
-                image.tagsV5.push(tag);
+                image.tags.push(tag);
             }
         },
 
@@ -364,12 +299,12 @@ const imagesSlice = createSlice({
          */
         removeTagV5(state, action) {
             const {imageIndex, cloId, typeId} = action.payload;
-            const image = state.imagesArray[imageIndex];
-            if (!image || !image.tagsV5) {
+            const image = getTargetImage(state, imageIndex);
+            if (!image || !image.tags) {
                 return;
             }
 
-            image.tagsV5 = filterOutTagV5(image.tagsV5, cloId, typeId);
+            image.tags = filterOutTag(image.tags, cloId, typeId);
         },
 
         /**
@@ -379,15 +314,15 @@ const imagesSlice = createSlice({
          */
         updateTagQuantityV5(state, action) {
             const {imageIndex, cloId, typeId, quantity} = action.payload;
-            const image = state.imagesArray[imageIndex];
-            if (!image || !image.tagsV5) {
+            const image = getTargetImage(state, imageIndex);
+            if (!image || !image.tags) {
                 return;
             }
 
             if (quantity <= 0) {
-                image.tagsV5 = filterOutTagV5(image.tagsV5, cloId, typeId);
+                image.tags = filterOutTag(image.tags, cloId, typeId);
             } else {
-                const tag = findTagV5(image.tagsV5, cloId, typeId);
+                const tag = findTag(image.tags, cloId, typeId);
                 if (tag) {
                     tag.quantity = quantity;
                 }
@@ -399,7 +334,7 @@ const imagesSlice = createSlice({
          * payload = imageIndex
          */
         togglePickedUpByIndex(state, action) {
-            const image = state.imagesArray[action.payload];
+            const image = getTargetImage(state, action.payload);
             if (image) {
                 image.picked_up = !image.picked_up;
             }
@@ -411,12 +346,12 @@ const imagesSlice = createSlice({
          */
         toggleMaterialOnTag(state, action) {
             const {imageIndex, cloId, typeId, materialId} = action.payload;
-            const image = state.imagesArray[imageIndex];
-            if (!image?.tagsV5) {
+            const image = getTargetImage(state, imageIndex);
+            if (!image?.tags) {
                 return;
             }
 
-            const tag = findTagV5(image.tagsV5, cloId, typeId);
+            const tag = findTag(image.tags, cloId, typeId);
             if (!tag) {
                 return;
             }
@@ -438,12 +373,12 @@ const imagesSlice = createSlice({
          */
         addBrandToTag(state, action) {
             const {imageIndex, cloId, typeId, brandId} = action.payload;
-            const image = state.imagesArray[imageIndex];
-            if (!image?.tagsV5) {
+            const image = getTargetImage(state, imageIndex);
+            if (!image?.tags) {
                 return;
             }
 
-            const tag = findTagV5(image.tagsV5, cloId, typeId);
+            const tag = findTag(image.tags, cloId, typeId);
             if (!tag) {
                 return;
             }
@@ -462,12 +397,12 @@ const imagesSlice = createSlice({
          */
         removeBrandFromTag(state, action) {
             const {imageIndex, cloId, typeId, brandId} = action.payload;
-            const image = state.imagesArray[imageIndex];
-            if (!image?.tagsV5) {
+            const image = getTargetImage(state, imageIndex);
+            if (!image?.tags) {
                 return;
             }
 
-            const tag = findTagV5(image.tagsV5, cloId, typeId);
+            const tag = findTag(image.tags, cloId, typeId);
             if (!tag?.brands) {
                 return;
             }
@@ -481,12 +416,12 @@ const imagesSlice = createSlice({
          */
         addCustomTagToTag(state, action) {
             const {imageIndex, cloId, typeId, text} = action.payload;
-            const image = state.imagesArray[imageIndex];
-            if (!image?.tagsV5 || !text?.trim()) {
+            const image = getTargetImage(state, imageIndex);
+            if (!image?.tags || !text?.trim()) {
                 return;
             }
 
-            const tag = findTagV5(image.tagsV5, cloId, typeId);
+            const tag = findTag(image.tags, cloId, typeId);
             if (!tag) {
                 return;
             }
@@ -494,7 +429,10 @@ const imagesSlice = createSlice({
             if (!tag.customTags) {
                 tag.customTags = [];
             }
-            const trimmed = text.trim();
+            const trimmed = text.trim().slice(0, 100);
+            if (trimmed.length < 3 || !CUSTOM_TAG_REGEX.test(trimmed)) {
+                return;
+            }
             if (!tag.customTags.includes(trimmed)) {
                 tag.customTags.push(trimmed);
             }
@@ -506,12 +444,12 @@ const imagesSlice = createSlice({
          */
         removeCustomTagFromTag(state, action) {
             const {imageIndex, cloId, typeId, text} = action.payload;
-            const image = state.imagesArray[imageIndex];
-            if (!image?.tagsV5) {
+            const image = getTargetImage(state, imageIndex);
+            if (!image?.tags) {
                 return;
             }
 
-            const tag = findTagV5(image.tagsV5, cloId, typeId);
+            const tag = findTag(image.tags, cloId, typeId);
             if (!tag?.customTags) {
                 return;
             }
@@ -525,7 +463,7 @@ const imagesSlice = createSlice({
          */
         addImageCustomTag(state, action) {
             const {imageIndex, text} = action.payload;
-            const image = state.imagesArray[imageIndex];
+            const image = getTargetImage(state, imageIndex);
             if (!image || !text?.trim()) {
                 return;
             }
@@ -534,7 +472,10 @@ const imagesSlice = createSlice({
                 image.customTags = [];
             }
 
-            const trimmed = text.trim();
+            const trimmed = text.trim().slice(0, 100);
+            if (trimmed.length < 3 || !CUSTOM_TAG_REGEX.test(trimmed)) {
+                return;
+            }
             if (!image.customTags.includes(trimmed)) {
                 image.customTags.push(trimmed);
             }
@@ -546,7 +487,7 @@ const imagesSlice = createSlice({
          */
         removeImageCustomTag(state, action) {
             const {imageIndex, text} = action.payload;
-            const image = state.imagesArray[imageIndex];
+            const image = getTargetImage(state, imageIndex);
             if (!image?.customTags) {
                 return;
             }
@@ -556,72 +497,17 @@ const imagesSlice = createSlice({
 
         /**
          * Load an existing API photo into imagesArray for tag editing.
-         * Converts API new_tags format to local tagsV5 format.
+         * Converts API new_tags format to local tags format.
          * payload = { photo } where photo is the API photo object
          */
         loadPhotoForEditing(state, action) {
             const photo = action.payload.photo;
 
-            // Convert API new_tags → local tagsV5.
-            // Tags without category/object data are custom-tag-only entries —
-            // promote their custom tags to image-level instead of showing a
-            // meaningless CLO pill.
-            const tagsV5 = [];
-            const imageCustomTags = [];
+            // Convert API new_tags → local tags format
+            const {tags, imageCustomTags} = getTagsFromBackend(photo.new_tags);
 
-            if (photo.new_tags) {
-                for (const apiTag of photo.new_tags) {
-                    const catKey = apiTag.category?.key;
-                    const objKey = apiTag.object?.key;
-
-                    const tagCustomTags = [];
-                    const tagMaterials = [];
-                    const tagBrands = [];
-
-                    if (apiTag.extra_tags) {
-                        for (const extra of apiTag.extra_tags) {
-                            if (extra.type === 'material' && extra.tag?.id) {
-                                tagMaterials.push(extra.tag.id);
-                            } else if (extra.type === 'brand' && extra.tag?.id) {
-                                tagBrands.push({
-                                    id: extra.tag.id,
-                                    quantity: extra.quantity || 1
-                                });
-                            } else if (extra.type === 'custom_tag' && extra.tag?.key) {
-                                tagCustomTags.push(extra.tag.key);
-                            }
-                        }
-                    }
-
-                    // If the tag has no category/object info, it's a
-                    // custom-tag-only entry. Promote custom tags to
-                    // image-level and skip the CLO pill.
-                    if (!catKey && !objKey) {
-                        imageCustomTags.push(...tagCustomTags);
-                        continue;
-                    }
-
-                    const tag = {
-                        cloId: apiTag.category_litter_object_id,
-                        quantity: apiTag.quantity || 1,
-                        materials: tagMaterials,
-                        brands: tagBrands,
-                        customTags: tagCustomTags,
-                        _displayName: objKey ? formatKey(objKey) : undefined,
-                        _categoryDisplayName: catKey ? formatKey(catKey) : undefined,
-                        _categoryKey: catKey || undefined
-                    };
-
-                    if (apiTag.litter_object_type_id) {
-                        tag.typeId = apiTag.litter_object_type_id;
-                    }
-
-                    tagsV5.push(tag);
-                }
-            }
-
-            // Replace imagesArray with just this photo for editing
-            state.imagesArray = [{
+            // Store in a separate slot so HomeScreen's imagesArray is untouched
+            state.editingPhoto = {
                 id: photo.id,
                 photoId: photo.id,
                 date: photo.datetime ?? null,
@@ -632,25 +518,20 @@ const imagesSlice = createSlice({
                 type: 'web',
                 platform: photo.platform ?? 'web',
 
-                tagsV5,
+                tags,
                 customTags: imageCustomTags,
                 picked_up: !!photo.picked_up,
 
                 selected: false,
                 uploaded: true,
                 editing: true
-            }];
-            state.swiperIndex = 0;
+            };
         },
 
-        cancelUploadImages() {},
-
-        /**
-         * Changes litter picked up status of all images
-         */
-        changeLitterStatus(state, action) {
-            state.imagesArray.forEach(img => (img.picked_up = action.payload));
+        clearEditingPhoto(state) {
+            state.editingPhoto = null;
         },
+
 
         /**
          * When enable_admin_tagging is turned on, remove server-fetched
@@ -687,7 +568,7 @@ const imagesSlice = createSlice({
          */
         deselectAllImages(state) {
             state.imagesArray.forEach(image => {
-                image.selected = false;
+                if (image.selected) image.selected = false;
             });
         },
 
@@ -700,7 +581,6 @@ const imagesSlice = createSlice({
             state.uploadPhase = 'idle';
             state.currentUploadIndex = 0;
             state.uploadAbortReason = null;
-            state.errorMessage = '';
             state.failedCounts = {
                 alreadyUploaded: 0,
                 invalidCoordinates: 0,
@@ -744,7 +624,6 @@ const imagesSlice = createSlice({
         /**
          * Toggles isSelecting -- selecting images for deletion
          */
-        toggleSelecting() {},
 
         /**
          * toggle selected property of a image object
@@ -778,8 +657,7 @@ const imagesSlice = createSlice({
                             type: image.platform || 'web',
                             platform: image.platform ?? 'web',
 
-                            tags: {},
-                            tagsV5: [],
+                            tags: [],
                             customTags: [],
                             picked_up: image.picked_up,
 
@@ -792,16 +670,16 @@ const imagesSlice = createSlice({
 
             // Upload Image
             .addCase(uploadImage.fulfilled, (state, action) => {
-                const {imageId, imageUri, photo_id} = action.payload;
+                const {photoId, imageUri, serverPhotoId} = action.payload;
 
                 // Find the exact image — match by URI (unique) when
                 // available, falling back to ID for uploaded images.
                 const index = state.imagesArray.findIndex(img =>
-                    imageUri ? img.uri === imageUri : img.id === imageId
+                    imageUri ? img.uri === imageUri : img.id === photoId
                 );
 
                 if (index !== -1) {
-                    state.imagesArray[index].id = photo_id;
+                    state.imagesArray[index].id = serverPhotoId;
                     state.imagesArray[index].uploaded = true;
                 }
 
@@ -811,7 +689,7 @@ const imagesSlice = createSlice({
                 const {errorType} = action.payload || {errorType: 'unknown'};
 
                 state.uploadFailed += 1;
-                state.errorMessage = errorType;
+
 
                 switch (errorType) {
                     case 'photo-already-uploaded':
@@ -837,15 +715,14 @@ const imagesSlice = createSlice({
             // Post Tags V3
             .addCase(postTagsToPhoto.fulfilled, (state, action) => {
                 const {photoId} = action.payload;
-                state.imagesArray = state.imagesArray.filter(
-                    img => img.id !== photoId
-                );
+                const idx = state.imagesArray.findIndex(img => img.id === photoId);
+                if (idx !== -1) state.imagesArray.splice(idx, 1);
                 state.tagged++;
             })
             .addCase(postTagsToPhoto.rejected, (state, action) => {
                 const {errorType} = action.payload || {errorType: 'unknown'};
                 state.taggedFailed++;
-                state.errorMessage = errorType;
+
             })
 
             // Edit Tags V3 (PUT — full replace)
@@ -854,7 +731,7 @@ const imagesSlice = createSlice({
             })
             .addCase(editTagsOnPhoto.rejected, (state, action) => {
                 const {errorType} = action.payload || {errorType: 'unknown'};
-                state.errorMessage = errorType;
+
             })
 
             // Clear all images on logout
@@ -868,9 +745,8 @@ export const {
     addImageCustomTag,
     addImages,
     addTagV5,
-    cancelUploadImages,
-    changeLitterStatus,
     changeSwiperIndex,
+    clearEditingPhoto,
     clearUploadedImages,
     deleteImage,
     deleteSelectedImages,
@@ -888,9 +764,15 @@ export const {
     toggleMaterialOnTag,
     togglePickedUp,
     togglePickedUpByIndex,
-    toggleSelecting,
     toggleSelectedImages,
     updateTagQuantityV5
 } = imagesSlice.actions;
+
+// Memoized selectors
+const selectImagesArray = state => state.images.imagesArray;
+export const selectSelectedCount = createSelector(
+    [selectImagesArray],
+    images => images.filter(img => img.selected).length
+);
 
 export default imagesSlice.reducer;

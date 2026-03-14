@@ -8,6 +8,7 @@ import {
     StyleSheet,
     View
 } from 'react-native';
+import {useDispatch} from 'react-redux';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {Body, Caption, Colors, Title} from '../components';
@@ -15,9 +16,14 @@ import {
     checkCameraRollPermission,
     requestCameraRollPermission
 } from '../../utils/permissions';
-import * as Sentry from '@sentry/react-native';
+import {
+    resetGallery,
+    getPhotosFromCameraroll
+} from '../../reducers/gallery_reducer';
 
 const GalleryPermissionScreen = ({navigation}) => {
+    const dispatch = useDispatch();
+
     useEffect(() => {
         // Check on initial mount in case permissions were already granted
         checkGalleryPermission();
@@ -43,19 +49,11 @@ const GalleryPermissionScreen = ({navigation}) => {
     const checkGalleryPermission = async () => {
         const result = await checkCameraRollPermission();
 
-        if (result?.toLowerCase() === 'granted') {
+        if (result === 'granted' || result === 'limited') {
+            // Reset gallery and re-fetch so newly-permitted photos appear
+            dispatch(resetGallery());
+            dispatch(getPhotosFromCameraroll('REFRESH'));
             navigation.navigate('HOME');
-        } else {
-            Sentry.captureException(
-                new Error(`Gallery Permission Error ${result}`),
-                {
-                    level: 'error',
-                    tags: {
-                        section: 'checkGalleryPermission',
-                        result
-                    }
-                }
-            );
         }
     };
 
@@ -63,19 +61,10 @@ const GalleryPermissionScreen = ({navigation}) => {
         const result = await requestCameraRollPermission();
 
         if (result === 'granted' || result === 'limited') {
+            dispatch(resetGallery());
+            dispatch(getPhotosFromCameraroll('REFRESH'));
             navigation.navigate('HOME');
         } else {
-            Sentry.captureException(
-                new Error(`Gallery Permission Error ${result}`),
-                {
-                    level: 'error',
-                    tags: {
-                        section: 'requestGalleryPermission',
-                        platform: Platform.OS
-                    }
-                }
-            );
-
             Platform.OS === 'ios'
                 ? await Linking.openURL('app-settings:')
                 : await Linking.openSettings();

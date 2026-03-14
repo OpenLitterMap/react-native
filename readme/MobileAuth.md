@@ -15,7 +15,6 @@ The onboarding flow uses a nature-inspired gradient design system with smooth an
 - `screens/auth/authComponents/SignupForm.js` — Registration form with password strength indicator
 - `screens/auth/authComponents/ForgotPasswordForm.js` — Password reset form
 - `screens/auth/authComponents/LanguageFlags.js` — Language picker with animated dropdown panel
-- `screens/auth/authComponents/StatusMessage.js` — Server status message display
 - `screens/components/textInput/CustomTextInput.tsx` — Shared text input with `variant` prop (`light`/`dark`)
 - `screens/permission/GalleryPermissionScreen.js` — Gallery access permission with gradient background
 - `screens/permission/CameraPermissionScreen.js` — Camera + location permission with permission cards
@@ -61,8 +60,9 @@ When the keyboard opens, the logo smoothly animates to `height: 0` and `opacity:
 ## Password Strength Indicator (SignupForm)
 
 Visual 4-segment bar showing password strength:
-- Checks: length >= 6, has uppercase, has digit, length >= 10
-- Colors: red (Weak) → orange (Fair) → yellow (Good) → green (Strong)
+- Checks: length >= 3, length >= 6, has uppercase or digit, length >= 10
+- Labels: Short → OK → Good → Strong
+- Colors: orange (`#ff8800`) → amber (`#ffbb00`) → green (accent) → green (accent)
 - Appears only when the password field has content
 
 ## Language Flags (LanguageFlags)
@@ -71,7 +71,7 @@ Redesigned with:
 - Animated dropdown panel with `LayoutAnimation` transitions
 - White card background with shadow when expanded
 - Active language highlighted with green tint
-- Consistent positioning via absolute `top: 8, right: 16`
+- Dynamic positioning via absolute `top: -12, right: (SCREEN_WIDTH * 0.35) / 2 - 24`
 
 ## Permission Screens
 
@@ -82,9 +82,6 @@ Both permission screens share a consistent layout:
 - Pill button with icon + text, accent shadow
 - "Not now" skip link below
 
-### Bug Fixes
-- **GalleryPermissionScreen**: Fixed duplicate `AppState.addEventListener` calls (two separate useEffects both adding listeners)
-- **CameraPermissionScreen**: Fixed stale closure in `AppState` listener (was capturing `appState` from render, now uses `AppState.currentState`)
 
 ## API Endpoints
 | Thunk | Method | Endpoint | Payload | Notes |

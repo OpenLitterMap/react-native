@@ -32,6 +32,41 @@ const ActiveFilters = ({ filters, onRemoveFilter, onClearAll }) => {
         });
     }
 
+    if (filters.filterCountry) {
+        chips.push({
+            key: 'filterCountry',
+            label: filters.filterCountry
+        });
+    }
+
+    if (filters.filterState) {
+        chips.push({
+            key: 'filterState',
+            label: filters.filterState
+        });
+    }
+
+    if (filters.filterCity) {
+        chips.push({
+            key: 'filterCity',
+            label: filters.filterCity
+        });
+    }
+
+    if (filters.filterVerified !== '' && filters.filterVerified !== undefined) {
+        const label = filters.filterVerified === '0' ? t('Unverified')
+            : filters.filterVerified === '2' ? t('Verified')
+            : `Verified: ${filters.filterVerified}`;
+        chips.push({ key: 'filterVerified', label });
+    }
+
+    if (filters.filterPickedUp !== '' && filters.filterPickedUp !== undefined) {
+        chips.push({
+            key: 'filterPickedUp',
+            label: filters.filterPickedUp === '1' ? t('Picked up') : t('Not picked up')
+        });
+    }
+
     if (filters.filterDateFrom) {
         const from = dayjs(filters.filterDateFrom).format('MMM D');
         const to = filters.filterDateTo

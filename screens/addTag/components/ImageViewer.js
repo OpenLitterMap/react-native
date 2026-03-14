@@ -1,6 +1,7 @@
 import React, { useCallback } from 'react';
 import { Dimensions, Image, StyleSheet, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import { URL, IS_PRODUCTION } from '../../../actions/types';
 import Animated, {
     useSharedValue,
     useAnimatedStyle,
@@ -207,7 +208,16 @@ const ImageViewer = ({ images, currentIndex, onIndexChange, onToggleFocus, onZoo
     const currentImage = images[currentIndex];
     if (!currentImage) return null;
 
-    const imageUri = currentImage.uri || currentImage.filename;
+    let imageUri = currentImage.uri || currentImage.filename;
+
+    // Local dev: Minio stores URLs with 127.0.0.1 which the phone can't reach.
+    // Rewrite to the LAN host extracted from the API base URL.
+    if (!IS_PRODUCTION && imageUri?.includes('127.0.0.1')) {
+        const match = URL.match(/:\/\/([^:/]+)/);
+        if (match) {
+            imageUri = imageUri.replace('127.0.0.1', match[1]);
+        }
+    }
 
     return (
         <View style={styles.container}>

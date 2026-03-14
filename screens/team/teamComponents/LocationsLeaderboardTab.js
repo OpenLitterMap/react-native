@@ -3,6 +3,7 @@ import {View, StyleSheet, ActivityIndicator, TextInput, Pressable} from 'react-n
 import {FlashList} from '@shopify/flash-list';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {useDispatch, useSelector} from 'react-redux';
+import {useTranslation} from 'react-i18next';
 import {Colors, Body, Caption} from '../../components';
 import {
     fetchCountries,
@@ -15,6 +16,7 @@ const LEVEL_TYPES = ['country', 'state', 'city'];
 
 const LocationsLeaderboardTab = () => {
     const dispatch = useDispatch();
+    const {t} = useTranslation();
     const countries = useSelector(state => state.locations.countries);
     const countriesStatus = useSelector(state => state.locations.countriesStatus);
     const children = useSelector(state => state.locations.children);
@@ -76,7 +78,7 @@ const LocationsLeaderboardTab = () => {
     if (status === 'failed') {
         return (
             <View style={styles.loadingContainer}>
-                <Body color="muted">No location data available</Body>
+                <Body color="muted">{t('No location data available')}</Body>
             </View>
         );
     }
@@ -122,7 +124,7 @@ const LocationsLeaderboardTab = () => {
                 showsVerticalScrollIndicator={false}
                 ListEmptyComponent={
                     <View style={styles.emptyContainer}>
-                        <Body color="muted">No results</Body>
+                        <Body color="muted">{t('No results')}</Body>
                     </View>
                 }
             />

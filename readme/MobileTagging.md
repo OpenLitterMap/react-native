@@ -15,7 +15,7 @@ The v5 tagging system uses a full-screen image viewer with overlay controls. Tag
 - `screens/addTag/components/ImageProgressDots.js` — Visual tagged/untagged progress indicator for multi-image batches
 - `screens/addTag/components/categoryColors.js` — Category-to-color mapping constant (`CATEGORY_COLORS`, `getCategoryColor`)
 - `reducers/tags_reducer.js` — Tag data fetch, search index (objects + types), materials/brands lookups, AsyncStorage cache (7-day TTL)
-- `reducers/images_reducer.js` — Per-image tag storage (`tagsV5`), `swiperIndex`, upload thunks, `findTagV5`/`filterOutTagV5` helpers
+- `reducers/images_reducer.js` — Per-image tag storage (`tags`), `swiperIndex`, upload thunks, `findTag`/`filterOutTag` helpers
 - `utils/formatKey.js` — Converts snake_case API keys to Title Case for display
 
 ## Tag Data Source
@@ -108,7 +108,7 @@ Type entries have `isType: true` and store both their type name and parent objec
 }
 ```
 
-Cached in AsyncStorage under `tags_cache_v4` key with 7-day TTL. Force refresh available via Settings > Refresh Tags.
+Cached in AsyncStorage under `tags_cache_v5` key with 7-day TTL. Force refresh available via Settings > Refresh Tags.
 
 ## Search Behavior
 
@@ -181,7 +181,7 @@ When tagging multiple images, `TagSuggestions` scans all other images in the ses
 Tags on each image in `state.images.imagesArray`:
 
 ```js
-image.tagsV5 = [
+image.tags = [
     { cloId: 1, quantity: 3, materials: [1, 5], brands: [{ id: 42, quantity: 1 }], customTags: ['near café'] },
     { cloId: 14, quantity: 1, materials: [], brands: [], customTags: [] }
 ]
@@ -194,8 +194,8 @@ Display names are resolved at render time from `state.tags.entriesByCloId[cloId]
 ## Key Actions (images_reducer)
 
 ### Tag helpers (module-level)
-- `findTagV5(tagsV5, cloId, typeId)` — Find a tag by (cloId, typeId) match
-- `filterOutTagV5(tagsV5, cloId, typeId)` — Filter out a tag by (cloId, typeId) match
+- `findTag(tags, cloId, typeId)` — Find a tag by (cloId, typeId) match
+- `filterOutTag(tags, cloId, typeId)` — Filter out a tag by (cloId, typeId) match
 
 ### Tag CRUD
 - `addTagV5({ imageIndex, cloId, typeId? })` — Add tag or increment quantity (initializes materials/brands/customTags)

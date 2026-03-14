@@ -13,8 +13,8 @@ const initialState = {
     nextGalleryId: 0,
     camerarollImageFetched: false,
     lastFetchTime: null,
-    isNextPageAvailable: false,
-    lastImageCursor: null,
+    hasMorePages: false,
+    nextPageCursor: null,
     error: null
 };
 
@@ -35,8 +35,8 @@ export const getPhotosFromCameraroll = createAsyncThunk(
                 nextGalleryId,
                 camerarollImageFetched,
                 lastFetchTime,
-                isNextPageAvailable,
-                lastImageCursor
+                hasMorePages,
+                nextPageCursor
             }
         } = getState();
 
@@ -58,16 +58,20 @@ export const getPhotosFromCameraroll = createAsyncThunk(
 
         const loadParams = {
             first: 20,
-            after: lastImageCursor,
+            after: nextPageCursor,
             assetType: 'Photos',
             include: CAMERAROLL_INCLUDE
         };
 
         try {
-            if (
+            if (fetchType === 'REFRESH') {
+                // Full re-fetch — used after permission changes on iOS
+                // (newly-permitted photos may predate lastFetchTime)
+                camerarollData = await CameraRoll.getPhotos(initialParams);
+            } else if (
                 fetchType === 'LOAD' &&
-                isNextPageAvailable &&
-                lastImageCursor !== null
+                hasMorePages &&
+                nextPageCursor !== null
             ) {
                 camerarollData = await CameraRoll.getPhotos(loadParams);
             } else if (
@@ -112,7 +116,6 @@ export const getPhotosFromCameraroll = createAsyncThunk(
                     uri: image.uri,
                     type: 'gallery',
                     platform: 'mobile',
-                    tags: {},
                     customTags: [],
                     selected: false,
                     uploaded: false
@@ -193,7 +196,9 @@ const gallerySlice = createSlice({
 
     initialState,
 
-    reducers: {},
+    reducers: {
+        resetGallery: () => initialState
+    },
 
     extraReducers: builder => {
         builder
@@ -204,15 +209,21 @@ const gallerySlice = createSlice({
 
             .addCase(getPhotosFromCameraroll.fulfilled, (state, action) => {
                 const newImages = action.payload.photos;
-                const existingUris = new Set(
-                    state.galleryImages.map(img => img.uri)
-                );
 
-                const uniqueNewImages = newImages.filter(
-                    newImage => !existingUris.has(newImage.uri)
-                );
+                let allImages;
+                if (action.payload.fetchType === 'REFRESH') {
+                    // Replace gallery with fresh data
+                    allImages = newImages;
+                } else {
+                    const existingUris = new Set(
+                        state.galleryImages.map(img => img.uri)
+                    );
+                    const uniqueNewImages = newImages.filter(
+                        newImage => !existingUris.has(newImage.uri)
+                    );
+                    allImages = [...state.galleryImages, ...uniqueNewImages];
+                }
 
-                const allImages = [...state.galleryImages, ...uniqueNewImages];
                 state.galleryImages = allImages;
 
                 // Track highest assigned ID for next fetch
@@ -221,15 +232,18 @@ const gallerySlice = createSlice({
                         (max, img) => Math.max(max, img.id || 0),
                         0
                     );
-                    state.nextGalleryId = Math.max(state.nextGalleryId, maxId);
+                    state.nextGalleryId =
+                        action.payload.fetchType === 'REFRESH'
+                            ? maxId
+                            : Math.max(state.nextGalleryId, maxId);
                 }
 
                 state.camerarollImageFetched = true;
                 state.lastFetchTime = Math.floor(new Date().getTime());
 
                 if (action.payload.fetchType !== 'TIME') {
-                    state.isNextPageAvailable = action.payload.hasNextPage;
-                    state.lastImageCursor = action.payload.endCursor;
+                    state.hasMorePages = action.payload.hasNextPage;
+                    state.nextPageCursor = action.payload.endCursor;
                 }
 
                 state.imagesLoading = false;
@@ -242,6 +256,8 @@ const gallerySlice = createSlice({
             .addCase(logout, () => initialState);
     }
 });
+
+export const {resetGallery} = gallerySlice.actions;
 
 export const selectNonGeotaggedCount = createSelector(
     state => state.gallery.galleryImages,

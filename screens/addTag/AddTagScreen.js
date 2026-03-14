@@ -3,6 +3,7 @@ import {
     ActivityIndicator,
     Alert,
     Animated,
+    Keyboard,
     KeyboardAvoidingView,
     PanResponder,
     Platform,
@@ -14,7 +15,7 @@ import {
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
-import {useDispatch, useSelector} from 'react-redux';
+import {shallowEqual, useDispatch, useSelector} from 'react-redux';
 import {useTranslation} from 'react-i18next';
 import {Body, Caption, Colors} from '../components';
 import ImageViewer from './components/ImageViewer';
@@ -30,6 +31,7 @@ import {
     addImageCustomTag,
     addTagV5,
     changeSwiperIndex,
+    clearEditingPhoto,
     editTagsOnPhoto,
     removeBrandFromTag,
     removeCustomTagFromTag,
@@ -41,17 +43,19 @@ import {
 } from '../../reducers/images_reducer';
 import {fetchAllTags} from '../../reducers/tags_reducer';
 import {isTagged} from '../../utils/isTagged';
-import buildV5TagsPayload from '../../utils/buildV5TagsPayload';
+import buildTagsPayload from '../../utils/buildTagsPayload';
 import {makeTagKey, resolveTagEntry} from './components/tagUtils';
 
 const AddTagScreen = ({navigation}) => {
     const dispatch = useDispatch();
     const {t} = useTranslation();
 
-    // Redux state
-    const images = useSelector(state => state.images.imagesArray);
-    const swiperIndex = useSelector(state => state.images.swiperIndex);
-    const token = useSelector(state => state.auth.token);
+    // Redux state — use editingPhoto if available, otherwise imagesArray
+    const editingPhoto = useSelector(state => state.images.editingPhoto);
+    const galleryImages = useSelector(state => state.images.imagesArray);
+    const rawSwiperIndex = useSelector(state => state.images.swiperIndex);
+    const images = editingPhoto ? [editingPhoto] : galleryImages;
+    const swiperIndex = editingPhoto ? 0 : rawSwiperIndex;
 
     const {
         objectEntries,
@@ -61,14 +65,20 @@ const AddTagScreen = ({navigation}) => {
         materialsById,
         brandsById,
         loading: tagsLoading
-    } = useSelector(state => state.tags);
+    } = useSelector(state => state.tags, shallowEqual);
 
     const [isSaving, setIsSaving] = useState(false);
+    const [pendingCustomTag, setPendingCustomTag] = useState(null);
+    const searchBarRef = useRef(null);
 
     // Focus mode: hides overlays so user can see full image
     const [focusMode, setFocusMode] = useState(false);
     const [showBrowser, setShowBrowser] = useState(false);
     const [detailTag, setDetailTag] = useState(null);
+    const detailTagRef = useRef(null);
+
+    // Keep ref in sync so PanResponder can read it
+    detailTagRef.current = detailTag;
 
     // Overlay opacity for focus mode transitions
     const overlayOpacity = useRef(new Animated.Value(1)).current;
@@ -76,11 +86,13 @@ const AddTagScreen = ({navigation}) => {
     // XP badge pulse animation
     const xpScale = useRef(new Animated.Value(1)).current;
 
-    // Swipe down to dismiss
+    // Swipe down to dismiss (disabled when detail sheet is open)
     const swipeDismiss = useRef(
         PanResponder.create({
             onMoveShouldSetPanResponder: (_, gs) =>
-                gs.dy > 30 && Math.abs(gs.dy) > Math.abs(gs.dx * 2),
+                !detailTagRef.current &&
+                gs.dy > 30 &&
+                Math.abs(gs.dy) > Math.abs(gs.dx * 2),
             onPanResponderRelease: (_, gs) => {
                 if (gs.dy > 100) {
                     navigation.navigate('HOME');
@@ -92,7 +104,7 @@ const AddTagScreen = ({navigation}) => {
     // Fetch tags on mount if not loaded
     useEffect(() => {
         if (objectEntries.length === 0 && !tagsLoading) {
-            dispatch(fetchAllTags({token}));
+            dispatch(fetchAllTags());
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
@@ -105,8 +117,8 @@ const AddTagScreen = ({navigation}) => {
     const isEditMode = currentImage?.editing === true;
 
     const currentTags = useMemo(
-        () => currentImage?.tagsV5 || [],
-        [currentImage?.tagsV5]
+        () => currentImage?.tags || [],
+        [currentImage?.tags]
     );
     const currentCustomTags = useMemo(
         () => currentImage?.customTags || [],
@@ -250,6 +262,17 @@ const AddTagScreen = ({navigation}) => {
         [dispatch, swiperIndex]
     );
 
+    const handleCreatePendingCustomTag = useCallback(() => {
+        if (pendingCustomTag) {
+            dispatch(addImageCustomTag({imageIndex: swiperIndex, text: pendingCustomTag}));
+            setPendingCustomTag(null);
+            if (searchBarRef.current) {
+                searchBarRef.current.clearQuery();
+            }
+            Keyboard.dismiss();
+        }
+    }, [dispatch, swiperIndex, pendingCustomTag]);
+
     const handleRemoveImageCustomTag = useCallback(
         text => {
             dispatch(removeImageCustomTag({imageIndex: swiperIndex, text}));
@@ -300,7 +323,7 @@ const AddTagScreen = ({navigation}) => {
         return currentTags.find(
             t =>
                 t.cloId === detailCloId &&
-                (t.typeId || null) === (detailTypeId || null)
+                (t.typeId ?? null) === (detailTypeId ?? null)
         );
     }, [detailTag, detailCloId, detailTypeId, currentTags]);
 
@@ -373,7 +396,7 @@ const AddTagScreen = ({navigation}) => {
     const handleUpdateTags = useCallback(async () => {
         if (!currentImage?.photoId) return;
 
-        const payload = buildV5TagsPayload(currentImage);
+        const payload = buildTagsPayload(currentImage);
         if (!payload) {
             Alert.alert(t('Error!'), t('Please add at least one tag before saving.'));
             return;
@@ -381,7 +404,6 @@ const AddTagScreen = ({navigation}) => {
 
         setIsSaving(true);
         const result = await dispatch(editTagsOnPhoto({
-            token,
             photoId: currentImage.photoId,
             tags: payload,
             pickedUp: currentImage.picked_up
@@ -391,9 +413,10 @@ const AddTagScreen = ({navigation}) => {
         if (result.meta?.requestStatus === 'rejected') {
             Alert.alert(t('Error!'), t('Failed to update tags. Please try again.'));
         } else {
+            dispatch(clearEditingPhoto());
             navigation.goBack();
         }
-    }, [dispatch, token, currentImage, navigation, t]);
+    }, [dispatch, currentImage, navigation, t]);
 
     const handleDone = useCallback(() => {
         if (isEditMode) {
@@ -568,12 +591,14 @@ const AddTagScreen = ({navigation}) => {
 
                         {/* Search bar */}
                         <TagSearchBar
+                            ref={searchBarRef}
                             objectEntries={objectEntries}
                             entriesByCloId={entriesByCloId}
                             currentTags={currentTags}
                             customTags={currentCustomTags}
                             onAddTag={handleAddTag}
                             onAddCustomTag={handleAddImageCustomTag}
+                            onPendingCustomTag={setPendingCustomTag}
                             onBrowsePress={handleBrowsePress}
                             showBrowser={showBrowser}
                         />
@@ -620,19 +645,7 @@ const AddTagScreen = ({navigation}) => {
                                     </Caption>
                                 </Pressable>
 
-                                {/* Tag count */}
-                                {currentTags.length > 0 && (
-                                    <View style={styles.tagCountBadge}>
-                                        <Caption color="white" family="medium">
-                                            {currentTags.length} tag
-                                            {currentTags.length !== 1
-                                                ? 's'
-                                                : ''}
-                                        </Caption>
-                                    </View>
-                                )}
-
-                                {/* Done / Update Tags button */}
+                                {/* Done / Update Tags / Create Tag button */}
                                 <Pressable
                                     disabled={isSaving}
                                     style={({pressed}) => [
@@ -641,18 +654,20 @@ const AddTagScreen = ({navigation}) => {
                                         pressed && styles.doneButtonPressed,
                                         isSaving && styles.doneButtonDisabled
                                     ]}
-                                    onPress={handleDone}>
+                                    onPress={pendingCustomTag ? handleCreatePendingCustomTag : handleDone}>
                                     {isSaving ? (
                                         <ActivityIndicator size="small" color={Colors.white} />
                                     ) : (
                                         <>
                                             <Icon
                                                 name={
-                                                    isEditMode
-                                                        ? 'cloud-upload-outline'
-                                                        : allTagged
-                                                            ? 'checkmark'
-                                                            : 'arrow-forward'
+                                                    pendingCustomTag
+                                                        ? 'pricetag-outline'
+                                                        : isEditMode
+                                                            ? 'cloud-upload-outline'
+                                                            : allTagged
+                                                                ? 'checkmark'
+                                                                : 'arrow-forward'
                                                 }
                                                 size={18}
                                                 color={Colors.white}
@@ -662,11 +677,13 @@ const AddTagScreen = ({navigation}) => {
                                                 family="semiBold"
                                                 style={styles.doneText}
                                                 dictionary={
-                                                    isEditMode
-                                                        ? 'Update Tags'
-                                                        : allTagged
-                                                            ? 'Done'
-                                                            : 'Next'
+                                                    pendingCustomTag
+                                                        ? 'Create Tag'
+                                                        : isEditMode
+                                                            ? 'Update Tags'
+                                                            : allTagged
+                                                                ? 'Done'
+                                                                : 'Next'
                                                 }
                                             />
                                         </>
@@ -790,12 +807,6 @@ const styles = StyleSheet.create({
     pickedUpText: {
         marginLeft: 6,
         fontSize: 12
-    },
-    tagCountBadge: {
-        paddingHorizontal: 12,
-        paddingVertical: 8,
-        backgroundColor: 'rgba(255,255,255,0.15)',
-        borderRadius: 100
     },
     doneButton: {
         marginLeft: 'auto',

@@ -5,6 +5,7 @@ import { createTeam } from "../../../reducers/team_reducer";
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { useTranslation } from 'react-i18next';
 import { Body, Colors, Caption, SubTitle, Button } from '../../components';
 import StatusModal from './StatusModal';
 
@@ -22,9 +23,9 @@ const CreateTeamSchema = Yup.object().shape({
 const CreateTeamForm = ({ backPress }) => {
 
     const dispatch = useDispatch();
+    const {t} = useTranslation();
     const identifierRef = useRef(null);
     const user = useSelector(state => state.auth.user);
-    const token = useSelector(state => state.auth.token);
     const teamsFormError = useSelector(state => state.teams.teamsFormError);
 
     return (
@@ -35,8 +36,7 @@ const CreateTeamForm = ({ backPress }) => {
                 onSubmit={async values => {
                     await dispatch(createTeam({
                         name: values.name,
-                        identifier: values.identifier,
-                        token
+                        identifier: values.identifier
                     }));
                 }}
             >
@@ -51,13 +51,13 @@ const CreateTeamForm = ({ backPress }) => {
                     <>
                         {user?.remaining_teams <= 0 ? (
                             <StatusModal
-                                text="You have already created the maximum allowed number of teams."
+                                text={t('You have already created the maximum allowed number of teams.')}
                                 type="ERROR"
                             />
                         ) : (
                             <>
                                 <View style={styles.headerRow}>
-                                    <SubTitle>Create a Team</SubTitle>
+                                    <SubTitle>{t('Create a Team')}</SubTitle>
                                     <Pressable
                                         onPress={backPress}
                                         style={styles.closeButton}>
@@ -76,11 +76,11 @@ const CreateTeamForm = ({ backPress }) => {
                                         color={Colors.muted}
                                     />
                                     <Caption color="muted">
-                                        {user?.remaining_teams} team{user?.remaining_teams !== 1 ? 's' : ''} remaining
+                                        {t('{{count}} team remaining', {count: user?.remaining_teams, defaultValue_plural: '{{count}} teams remaining'})}
                                     </Caption>
                                 </View>
 
-                                <Body style={styles.label}>Team Name</Body>
+                                <Body style={styles.label}>{t('Team Name')}</Body>
                                 <TextInput
                                     name="name"
                                     autoFocus={false}
@@ -102,10 +102,10 @@ const CreateTeamForm = ({ backPress }) => {
                                 )}
 
                                 <Body style={styles.identifierLabel}>
-                                    Unique Identifier
+                                    {t('Unique Identifier')}
                                 </Body>
                                 <Caption color="muted" style={styles.identifierHint}>
-                                    Share this with others so they can join your team.
+                                    {t('Share this with others so they can join your team.')}
                                 </Caption>
                                 <TextInput
                                     ref={identifierRef}
@@ -143,7 +143,7 @@ const CreateTeamForm = ({ backPress }) => {
                                     onPress={handleSubmit}
                                     style={styles.submitButton}
                                 >
-                                    <Body color="white">Create Team</Body>
+                                    <Body color="white">{t('Create Team')}</Body>
                                 </Button>
                             </>
                         )}

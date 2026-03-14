@@ -22,7 +22,7 @@ const TagSuggestions = ({
             if (i === currentIndex) {
                 continue;
             }
-            const tags = images[i].tagsV5 || [];
+            const tags = images[i].tags || [];
             for (const tag of tags) {
                 const key = makeTagKey(tag.cloId, tag.typeId);
                 if (!currentKeys.has(key)) {

@@ -79,7 +79,7 @@ const ProfileScreen = ({ navigation }) => {
                 try {
                     setFetchError(false);
                     await Promise.all([
-                        dispatch(fetchUser(token)),
+                        dispatch(fetchUser()),
                         dispatch(getStats())
                     ]);
                 } catch {
@@ -98,9 +98,9 @@ const ProfileScreen = ({ navigation }) => {
         AsyncStorage.setItem(
             CACHE_KEY,
             JSON.stringify({
-                xp: user.xp_redis,
+                xp: user.xp,
                 position: user.position,
-                totalImages: user.total_images || 0,
+                totalImages: user.totalImages || 0,
                 totalTags: user.totalTags,
                 littercoin: user.totalLittercoin
             })
@@ -127,7 +127,7 @@ const ProfileScreen = ({ navigation }) => {
 
         try {
             await Promise.all([
-                dispatch(fetchUser(token)),
+                dispatch(fetchUser()),
                 dispatch(getStats())
             ]);
         } catch {
@@ -148,18 +148,18 @@ const ProfileScreen = ({ navigation }) => {
                 },
                 {
                     value:
-                        (user.total_images || 0) - (prev.totalImages || 0),
+                        (user.totalImages || 0) - (prev.totalImages || 0),
                     label: 'more photos'
                 }
             ]
             : [];
 
     // Resolve display values: prefer live, fall back to cached
-    const xp = user?.xp_redis ?? prev?.xp ?? 0;
+    const xp = user?.xp ?? prev?.xp ?? 0;
     const level = user?.level ?? 0;
     const rank = user?.position ?? prev?.position ?? null;
     const tags = user?.totalTags ?? prev?.totalTags ?? 0;
-    const photos = user?.total_images ?? prev?.totalImages ?? 0;
+    const photos = user?.totalImages ?? prev?.totalImages ?? 0;
     const littercoin = user?.totalLittercoin ?? prev?.littercoin ?? 0;
 
     const hasNoData = initialLoad && !user && !prev;

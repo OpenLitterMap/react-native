@@ -3,8 +3,23 @@
 
 ## Local Server
 
-- URL: `http://localhost:8000` (Laravel local dev server)
-- Set via `.env`: `CURRENT_ENVIRONMENT='local'` → `http://localhost:8000` in `actions/types.js`
+- Laravel: `http://0.0.0.0:8000` (serves on all interfaces)
+- Web: `olm.test` via Laravel Valet
+- Minio (S3-compatible storage): `http://127.0.0.1:9000`
+- Mobile API URL: `http://192.168.1.28:8000` (LAN IP, set in `actions/types.js`)
+
+### Minio Image URLs
+
+Minio stores photo URLs in the `filename` column as `http://127.0.0.1:9000/olm-public/...`. The phone **cannot reach `127.0.0.1`** (that's the host's loopback, not the phone's). `ImageViewer.js` includes a dev-only rewrite that replaces `127.0.0.1` with the LAN host extracted from the API base URL.
+
+**To fix permanently**: Set `AWS_URL=http://192.168.1.28:9000/olm-public` in your Laravel `.env` so new uploads store the reachable LAN IP. Existing DB records need:
+```sql
+UPDATE photos SET filename = REPLACE(filename, '127.0.0.1', '192.168.1.28');
+```
+
+### Environment
+
+Set via `.env`: `CURRENT_ENVIRONMENT='local'` → uses `http://192.168.1.28:8000` in `actions/types.js`
 
 ## GET /api/tags/all — Response Shape
 

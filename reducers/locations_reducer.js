@@ -1,15 +1,13 @@
-import axios from 'axios';
 import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
-import {URL} from '../actions/types';
+import api from '../utils/apiClient';
 import {logout} from './auth_reducer';
 
 const initialState = {
     countries: [],
     countriesStatus: 'idle',
-    countriesError: null,
+    error: null,
     children: [],
     childrenStatus: 'idle',
-    // Stack of {name, type, id} for breadcrumb navigation
     locationStack: []
 };
 
@@ -17,13 +15,12 @@ export const fetchCountries = createAsyncThunk(
     'locations/fetchCountries',
     async (_, {rejectWithValue}) => {
         try {
-            const response = await axios.get(`${URL}/api/locations/country`, {
-                headers: {Accept: 'application/json'}
-            });
+            const response = await api.get('/api/locations/country');
             return response.data?.locations || response.data;
         } catch (error) {
             return rejectWithValue(
-                error.response?.data?.message || 'Network error, please try again'
+                error.response?.data?.message ||
+                    'Network error, please try again'
             );
         }
     }
@@ -33,17 +30,15 @@ export const fetchLocationChildren = createAsyncThunk(
     'locations/fetchLocationChildren',
     async ({type, id, name}, {rejectWithValue}) => {
         try {
-            const response = await axios.get(
-                `${URL}/api/locations/${type}/${id}`,
-                {headers: {Accept: 'application/json'}}
-            );
+            const response = await api.get(`/api/locations/${type}/${id}`);
             return {
                 locations: response.data?.locations || [],
                 parent: {name, type, id}
             };
         } catch (error) {
             return rejectWithValue(
-                error.response?.data?.message || 'Network error, please try again'
+                error.response?.data?.message ||
+                    'Network error, please try again'
             );
         }
     }
@@ -55,11 +50,6 @@ const locationsSlice = createSlice({
     reducers: {
         goBackLocation(state) {
             state.locationStack.pop();
-            state.children = [];
-            state.childrenStatus = 'idle';
-        },
-        resetLocationNav(state) {
-            state.locationStack = [];
             state.children = [];
             state.childrenStatus = 'idle';
         }
@@ -75,7 +65,7 @@ const locationsSlice = createSlice({
             })
             .addCase(fetchCountries.rejected, (state, action) => {
                 state.countriesStatus = 'failed';
-                state.countriesError = action.payload;
+                state.error = action.payload;
             })
             .addCase(fetchLocationChildren.pending, state => {
                 state.childrenStatus = 'loading';
@@ -85,13 +75,13 @@ const locationsSlice = createSlice({
                 state.children = action.payload.locations;
                 state.locationStack.push(action.payload.parent);
             })
-            .addCase(fetchLocationChildren.rejected, (state, action) => {
+            .addCase(fetchLocationChildren.rejected, state => {
                 state.childrenStatus = 'failed';
             })
             .addCase(logout, () => initialState);
     }
 });
 
-export const {goBackLocation, resetLocationNav} = locationsSlice.actions;
+export const {goBackLocation} = locationsSlice.actions;
 
 export default locationsSlice.reducer;

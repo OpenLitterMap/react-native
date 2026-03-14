@@ -149,7 +149,7 @@ This treats every object as 1 XP — it ignores the special overrides for `small
 
 ### Data Available at Tagging Time
 
-Each tag in `tagsV5` has `{ cloId, typeId, quantity, materials, brands, customTags }`. The `objectKey` is available via `entriesByCloId[cloId].objectKey` from `tags_reducer.js`.
+Each tag in `tags` has `{ cloId, typeId, quantity, materials, brands, customTags }`. The `objectKey` is available via `entriesByCloId[cloId].objectKey` from `tags_reducer.js`.
 
 | Data | Available | Source |
 |------|-----------|--------|
@@ -186,6 +186,6 @@ Note: This uses a flat 1 XP per object regardless of key. The special overrides 
 | `screens/addTag/AddTagScreen.js` | XP badge display + pulse animation |
 | `screens/addTag/components/TagDetailSheet.js` | XP hints per section (+2, +3, +1) |
 | `reducers/tags_reducer.js` | `entriesByCloId` lookup, `materialsById`, `brandsById` |
-| `reducers/images_reducer.js` | `tagsV5` with `{ cloId, quantity, materials, brands, customTags }` |
+| `reducers/images_reducer.js` | `tags` with `{ cloId, quantity, materials, brands, customTags }` |
 | `screens/profile/components/LevelHero.js` | Level progress bar on Profile screen |
 | `screens/profile/helpers/xpLevels.js` | Fetches + caches level thresholds from API |

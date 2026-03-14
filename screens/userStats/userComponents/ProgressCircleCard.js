@@ -7,7 +7,7 @@ const ProgressCircleCard = ({
     level,
     levelStart,
     levelPercentage,
-    xpRequired
+    xpToNextLevel
 }) => {
     const clampedPercent = Math.min(Math.max(levelPercentage || 0, 0), 100);
 
@@ -39,7 +39,7 @@ const ProgressCircleCard = ({
             </View>
 
             <Caption color="muted" style={styles.xpText}>
-                {(xpRequired || 0).toLocaleString()} XP to next level
+                {(xpToNextLevel || 0).toLocaleString()} XP to next level
             </Caption>
         </View>
     );

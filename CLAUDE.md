@@ -4,118 +4,236 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-OpenLitterMap is a React Native mobile app (iOS & Android) for crowdsourced litter mapping. Users photograph litter, tag it by category, and upload geotagged data to the OpenLitterMap Laravel backend API. Authentication uses Laravel Sanctum token-based auth (login with email or username).
+OpenLitterMap is a React Native mobile app (iOS & Android) for crowdsourced litter mapping. Users photograph litter, tag it by category, and upload geotagged data to the OpenLitterMap Laravel backend API.
 
-## Common Commands
+**App Version:** 7.0.0 | **React Native:** 0.74.3 | **Branch:** `openlittermap/v7` (main: `main5`)
+
+## Quick Start
 
 ```bash
-# Install dependencies
-npm install
-
-# Start Metro bundler
-npm start
-
-# Run on iOS / Android
-npm run ios
-npm run android
-
-# Install iOS native dependencies
-cd ios && bundle exec pod install && cd ..
-
-# Lint
-npm run lint
-
-# Run tests
-npm test
-
-# Run a single test file
-npx jest path/to/test.js
+npm install                              # Install dependencies
+npm start                                # Start Metro bundler
+npm run ios                              # Run on iOS
+npm run android                          # Run on Android
+cd ios && bundle exec pod install && cd ..  # Install iOS native pods
+npm run lint                             # ESLint
+npm test                                 # Jest (no tests exist yet)
 ```
 
-Runtime: **Node v20.20.0**, **npm 10.8.2**
+Runtime: **Node v20.20.0**, **npm 10.8.2** (prefer npm over yarn)
 
-Package manager: **npm** (v10.8.2). Both `yarn.lock` and `package-lock.json` exist; prefer npm.
+## Core User Flow
+
+```
+Gallery → Select photos → Tag each photo → Upload → Server
+```
+
+1. **Gallery** (`GalleryScreen`) — Browse camera roll, select geotagged photos (non-GPS photos blocked)
+2. **Home** (`HomeScreen`) — View selected photos in grid, tap to tag, tap upload to start
+3. **Tag** (`AddTagScreen`) — Full-screen image viewer with search/browse for litter tags, materials, brands
+4. **Upload** (`HomeScreen`) — Two-step: upload photo binary → POST tags. Sequential with progress tracking.
 
 ## Architecture
 
-### State Management
+### Navigation (3 bottom tabs)
 
-Redux Toolkit with `createSlice` and `createAsyncThunk`. The store is configured in `store/index.js` with `redux-persist` (AsyncStorage backend, `auth` and `images` slices persisted). The `images` transform only persists `imagesArray` — upload counters reset on relaunch. In dev mode, `redux-immutable-state-invariant` middleware is included.
+```
+MainRoutes (Stack)
+├── [No token] AuthStack → WelcomeScreen → AuthScreen
+└── [Has token]
+    ├── TabRoutes (3 tabs)
+    │   ├── HOME → HomeScreen
+    │   ├── TEAM → TeamStack (TeamScreen, TopTeams, TeamDetails, TeamLeaderboard)
+    │   └── USER_STATS → ProfileScreen
+    ├── ADD_TAGS → AddTagScreen (modal)
+    ├── ALBUM → GalleryScreen (modal)
+    ├── SETTING → SettingsScreen (modal)
+    ├── PERMISSION → PermissionStack
+    ├── UPDATE → NewUpdateScreen (modal)
+    └── MY_UPLOADS → MyUploads (modal)
+```
 
-Reducers in `reducers/`:
-- `auth_reducer` - Authentication, user profile, Sanctum token management
-- `tags_reducer` - Tag data fetched from API, search index (objectEntries, categoriesById, entriesByCloId)
-- `gallery_reducer` / `images_reducer` - Photo selection, v5 tagging (tagsV5), swiperIndex, GPS/EXIF handling
-- `shared_reducer` - Cross-feature shared state (upload modal, app version)
-- `settings_reducer` - User preferences
-- `stats_reducer` / `leaderboards_reducer` - Statistics and rankings
-- `team_reducer` - Team features
-- `my_uploads_reducer` - Upload history and management
-- `locations_reducer` - Location hierarchy data
 
-API calls use **axios** with Bearer token auth, hitting endpoints on the `URL` from `actions/types.js`.
+### State Management — Redux Toolkit (11 slices)
 
-### Navigation
+| Slice | File | Key Data | Persisted |
+|-------|------|----------|-----------|
+| `auth` | `auth_reducer.js` | token, user profile | Yes |
+| `images` | `images_reducer.js` | imagesArray (photos + tags), upload state | imagesArray only |
+| `gallery` | `gallery_reducer.js` | CameraRoll photos, GPS metadata | No |
+| `tags` | `tags_reducer.js` | Search index, materials, brands (cached 7-day TTL) | AsyncStorage cache |
+| `teams` | `team_reducer.js` | User teams, team members, top teams | No |
+| `uploads` | `uploads_reducer.js` | Upload history, stats | No |
+| `settings` | `settings_reducer.js` | User preferences, privacy toggles | No |
+| `shared` | `shared_reducer.js` | Upload modal state, app version | No |
+| `stats` | `stats_reducer.js` | Global statistics | No |
+| `leaderboard` | `leaderboards_reducer.js` | Leaderboard data | No |
+| `locations` | `locations_reducer.js` | Location hierarchy | No |
 
-React Navigation v6 with `@react-navigation/stack` and `@react-navigation/material-top-tabs`.
+Store configured in `store/index.js` with `redux-persist` (AsyncStorage backend). In dev mode, `redux-immutable-state-invariant` middleware is included.
 
-- `routes/MainRoutes.js` - Root navigator. Shows `AuthStack` when no token, otherwise the main app stack.
-- `routes/AuthStack.js` - Welcome → Auth (login/signup) flow.
-- `routes/TabRoutes.tsx` - Bottom tab navigator: Home, Team, Global Data, Leaderboards, User Stats.
-- `routes/PermissionStack.tsx` - Camera/gallery permission request flow.
-- Modal screens: AddTagScreen, Album, Settings, Update, MyUploads.
+### Litter Data Model (CLO Tags)
 
-### Screen Organization
+Tag data is fetched from `GET /api/tags/all` and cached in AsyncStorage (`tags_cache_v5`, 7-day TTL).
 
-Each screen lives in `screens/<feature>/` with a main screen component and a subdirectory for sub-components (e.g., `screens/home/homeComponents/`, `screens/addTag/components/`, `screens/userStats/userComponents/`).
+**Key concept — `cloId`** (category_litter_object_id): Unique ID for an (object, category) pair. Objects like "bottle" exist in multiple categories (alcohol, beverages) and are disambiguated by cloId.
 
-Shared/reusable components are in `screens/components/` with barrel exports via `index.ts`:
-- `theme/colors.ts` - App color palette (`Colors.accent`, `Colors.error`, etc.)
-- `theme/fonts.ts` - Font definitions
-- `typography/` - Styled text components (Title, SubTitle, Body, Caption, StyledText)
-- `Button.tsx`, `Header.js`, `AnimatedCircle.tsx`, `StatsGrid`, `IconStatsCard`, `CustomTextInput`
+Per-image tags stored as:
+```js
+image.tags = [{ cloId, quantity, materials: [id,...], brands: [{id, quantity}], customTags: ['...'] }]
+image.customTags = ['...']  // Image-level custom tags (merged into first tag on upload)
+image.picked_up = true
+```
 
-### Environment Configuration
+Display names resolved at render time from `state.tags.entriesByCloId[cloId]`.
 
-Uses `react-native-config` to load `.env` variables. Key env vars defined in `actions/types.js`:
-- `CURRENT_ENVIRONMENT` - `"production"` or `"local"`
-- `OLM_ENDPOINT` - Production API URL
-- `LOCAL_OLM_ENDPOINT` - Local dev API URL
-- `SENTRY_DSN` - Error tracking (only initialized in production)
+### Upload Flow
 
-### Internationalization
+Two-step process orchestrated in `HomeScreen.js`:
+1. **Upload photo** → `POST /api/v3/upload` (FormData with photo + GPS) → returns `photo_id`
+2. **POST tags** → `POST /api/v3/tags` (photo_id + resolved tags via `buildTagsPayload`)
 
-i18next with `react-i18next`. Configured in `i18n.js`. Translation keys are **full British English string literals** (key = English display text). All translation files use a single flat JSON structure with keys sorted alphabetically A-Z. See `Translations.md` for full architecture details.
+Pre-upload: GPS validation via `isGeotagged()` (rejects null, 0,0). Uploaded images bypass GPS check.
+On failure: image stays with `uploaded: true` + `tags` intact for retry (tag-only path).
+On 401: axios interceptor signals abort via `uploadAbortReason('token-expired')`, recovery flow after re-login.
+Cancel: `AbortController` aborts the in-flight axios request, resets `uploadPhase` to idle, closes modal.
 
-Translation files live in `assets/langs/` with 8 languages: en, ar, de, es, fr, ie, nl, pt. Each language directory contains `{lang}.json` (flat UI strings), `litter.json` (nested litter taxonomy), and `index.js`.
+**Custom-tag-only images**: When an image has only custom tags (no CLO tags), `buildTagsPayload` sends `{ custom: true, key: "tag-text" }` entries per the backend's `ClassifyTagsService` spec. Custom tags are validated: 3–100 chars, `/^[\w\s:-]+$/`.
 
-The `litter.json` files use a nested structure with 15 sections (categories, 12 litter categories, materials, types) derived from the backend `TagsConfig`. Keys are snake_case identifiers matching the backend. Access via `t('litter.smoking.butts')`, `t('litter.materials.plastic')`, etc. Unlike UI strings, litter keys are **translated per language** — each language has its own `litter.json` with identical keys but translated values (174 key-value pairs per language).
+### Auth — Laravel Sanctum
 
-**When adding a new user-facing string:** Add the key to `en/en.json` (key = value for English), then translate and add it to ALL other language files (`ar.json`, `de.json`, `es.json`, `fr.json`, `ie.json`, `nl.json`, `pt.json`). Keep all files sorted alphabetically A-Z by key. Use `t('Your new string')` or `dictionary="Your new string"` in code.
+- Login: `POST /api/auth/token` with `{identifier, password}` → returns `{token, user}`
+- Token stored in AsyncStorage key `"jwt"` and Redux `state.auth.token`
+- All requests use `Authorization: Bearer {token}` via axios
+- On boot: `checkValidToken` validates stored JWT, **awaits** `fetchUser` before rendering
+- `fetchUser` retries 2× with 1s/3s backoff for transient errors (timeout, network, 5xx). Only clears session on 401.
+- Global 401 interceptor in `utils/setupAxiosInterceptors.js` (30s timeout)
 
-**When adding a new litter key:** Add it to `en/litter.json` in the appropriate section, then translate and add it to ALL other `litter.json` files. Keep keys sorted alphabetically within each section.
+## API Endpoints (31 total)
 
-### Litter Data Model
+All endpoints verified against Laravel backend. See `readme/AUDIT.md` §2 for complete table with payload/response details.
 
-Tag data is fetched from the API (`GET /api/tags/all`) and cached in AsyncStorage (7-day TTL) by `tags_reducer.js`. Per-image tags are stored as `tagsV5: [{ cloId, quantity, materials, brands, customTags }]` in `images_reducer`. The `cloId` (category_litter_object_id) uniquely identifies an (object, category) pair. Display names are resolved at render time from `entriesByCloId`. Materials and brands are indexed by ID in `materialsById` and `brandsById`. Image-level custom tags (`image.customTags`) are stored separately and merged into the first tag's `custom_tags` on upload.
+| Area | Endpoints | Key Routes |
+|------|-----------|------------|
+| Auth | 5 | `/api/auth/token`, `/api/auth/register`, `/api/user/profile/index`, `/api/validate-token`, `/api/password/email` |
+| Images | 4 | `/api/v3/upload`, `/api/v3/tags` (POST & PUT), `/api/v3/user/photos` |
+| My Uploads | 3 | `/api/v3/user/photos`, `/api/v3/user/photos/stats`, `/api/profile/photos/delete` |
+| Tags | 1 | `/api/tags/all` |
+| Teams | 8 | `/api/teams/{create,join,leave,active,inactivate,members,leaderboard,list}` |
+| Settings | 4 | `/api/settings/update/`, `/api/settings` (PATCH), `/api/settings/privacy/{endpoint}`, `/api/settings/delete-account/` |
+| Other | 6 | Leaderboard, stats, app version, locations (2), XP levels |
+
+## File Organization
+
+```
+├── actions/types.js          # Environment config, API URL selection
+├── store/index.js            # Redux store + persist config
+├── reducers/                 # 11 Redux slices (all use createSlice + createAsyncThunk)
+├── routes/                   # React Navigation v6 navigators
+├── screens/
+│   ├── home/                 # HomeScreen (upload orchestration) + homeComponents/
+│   ├── addTag/               # AddTagScreen + components/ (TagPills, TagSearchBar, TagDetailSheet, etc.)
+│   ├── gallery/              # GalleryScreen + galleryComponents/
+│   ├── auth/                 # WelcomeScreen, AuthScreen + authComponents/
+│   ├── team/                 # TeamScreen, TeamDetailsScreen, TopTeamsScreen, TeamLeaderboardScreen
+│   ├── userStats/            # UserStatsScreen + userComponents/ (MyUploads, ProgressCircleCard)
+│   ├── profile/              # ProfileScreen + helpers/
+│   ├── setting/              # SettingsScreen + settingComponents/
+│   ├── permission/           # CameraPermissionScreen, GalleryPermissionScreen
+│   ├── components/           # Shared: theme/, typography/, Button, Header, CustomTextInput, etc.
+│   └── NewUpdateScreen.js
+├── utils/
+│   ├── gps.js                # GPS coordinate validation (isValidGpsCoords)
+│   ├── isGeotagged.js        # Image GPS check (uses gps.js)
+│   ├── isTagged.js           # Check image has CLO/custom tags
+│   ├── readGpsFromExif.js    # Android EXIF GPS fallback
+│   ├── buildTagsPayload.js   # Convert tags → POST format
+│   ├── classifyError.js      # Classify upload errors for UI + Sentry
+│   ├── getTagsFromBackend.js # Convert backend new_tags → local tags
+│   ├── formatKey.js          # snake_case → Title Case
+│   ├── setupAxiosInterceptors.js  # Global 401 handler + 30s timeout
+│   ├── dayjs.js              # dayjs plugins
+│   └── permissions/          # Camera, camera roll, location permission helpers
+├── assets/langs/             # 8 languages: en, ar, de, es, fr, ie, nl, pt
+│   └── {lang}/               # {lang}.json (flat UI strings) + litter.json (nested litter taxonomy)
+└── i18n.js                   # i18next configuration
+```
+
+## Internationalization
+
+i18next with `react-i18next`. Translation keys are **full British English string literals** (key = English display text).
+
+- UI strings: `assets/langs/{lang}/{lang}.json` — flat structure, sorted A-Z
+- Litter taxonomy: `assets/langs/{lang}/litter.json` — nested by category, 174 keys per language
+- Access: `t('Your string')` for UI, `t('litter.smoking.butts')` for litter
+
+**When adding a new user-facing string:** Add to `en/en.json` (key = value), then translate and add to ALL 7 other language files. Keep sorted A-Z.
+
+**When adding a new litter key:** Add to `en/litter.json` in the appropriate section, then translate and add to ALL other `litter.json` files.
+
+## Restricted Files
+
+- **`.env`** — NEVER read, modify, or delete. Contains production secrets, signing keys, and credentials used by build tooling outside the JS codebase.
+- **`.gitignore`** — Do not read or modify.
 
 ## Code Style
 
-- ESLint extends `@react-native` with 4-space indentation and no trailing commas
+- ESLint: `@react-native` config, 4-space indentation
 - Prettier: single quotes, no bracket spacing, arrow parens avoided, trailing commas
-- Mixed JS/TS codebase (newer files tend to be TypeScript)
+- Mixed JS/TS (newer files tend to be TypeScript)
 - Screens export via barrel files (`index.js` or `index.ts`)
 
 ## Key Dependencies
 
-- `@shopify/flash-list` for performant lists
-- `formik` + `yup` for form handling/validation
-- `lottie-react-native` for animations
-- `react-native-permissions` for camera/location/photo library permissions (iOS permissions listed in `reactNativePermissionsIOS` in package.json)
-- `@sentry/react-native` for error tracking (production only). Sentry Cocoa SDK version is overridden to 8.46.0+ via `postinstall` script for Xcode 26 compatibility
-- `dayjs` for date formatting
+- `@shopify/flash-list` — performant lists
+- `formik` + `yup` — form handling/validation
+- `react-native-gesture-handler` v2 + `react-native-reanimated` v3 — image viewer gestures
+- `react-native-permissions` — camera/location/photo library (iOS permissions in `reactNativePermissionsIOS` in package.json)
+- `@sentry/react-native` — error tracking (production only)
+- `@lodev09/react-native-exify` — Android EXIF GPS fallback
+- `dayjs` — date formatting
+- `lottie-react-native` — onboarding animations
+
+## Local Development
+
+- **Laravel**: `http://0.0.0.0:8000` (serves on all interfaces), web via `olm.test` (Laravel Valet)
+- **Minio**: `http://127.0.0.1:9000` (S3-compatible storage)
+- **Mobile API**: `http://192.168.1.28:8000` (LAN IP in `actions/types.js`)
+- **Minio image URLs**: Stored as `http://127.0.0.1:9000/...` which the phone can't reach. `ImageViewer.js` rewrites `127.0.0.1` to the LAN host in dev builds. Long-term fix: set `AWS_URL=http://192.168.1.28:9000/olm-public` in Laravel `.env`.
+- See `readme/LocalDev.md` for full setup details including tag data structure.
+
+## Known Issues
+
+- **BUG-11**: `TopTeamsScreen` uses fake 3s loading instead of actual API loading state
+- **No test coverage**: Jest configured but no test files exist
+- **Upload state split**: `shared.showUploadModal`/`showThankYouMessages` + `images.uploadPhase` track overlapping state across two reducers. Needs consolidation to a single enum (deferred — requires spec)
 
 ## Build Notes
 
-- **Xcode 26+/macOS Tahoe**: Sentry Cocoa SDK < 8.46.0 fails to compile (`std::allocator does not support const types`). The `postinstall` script in package.json patches the RNSentry podspec to use 8.46.0. After `npm install`, run `cd ios && pod update Sentry && cd ..` if the `Podfile.lock` still references an older version.
-- After modifying native dependencies: clean Xcode build folder (Cmd+Shift+K) and rebuild
+- **Xcode 26+/macOS Tahoe**: Sentry Cocoa SDK < 8.46.0 fails to compile. The `postinstall` script patches the RNSentry podspec to use 8.46.0. After `npm install`, run `cd ios && pod update Sentry && cd ..` if `Podfile.lock` still references an older version.
+- After modifying native dependencies: clean Xcode build folder (Cmd+Shift+K) and rebuild.
+
+## Deep-Dive Documentation
+
+Detailed documentation for each feature area lives in `readme/`:
+
+| File | Covers |
+|------|--------|
+| `AUDIT.md` | **Start here** — Complete file inventory, all 31 API endpoints with payloads/responses, Redux state map, navigation tree, bug tracker, dependency list |
+| `MobileUpload.md` | Upload flow, two-step process, GPS validation, error classification, retry behavior |
+| `MobileTagging.md` | CLO tagging system, search index, tag pills, detail sheet, category colors, XP estimate |
+| `MobileGallery.md` | Camera roll access, GPS detection, EXIF fallback, pagination strategies, gesture selection |
+| `MobileAuth.md` | Sanctum auth, onboarding UI, animated slides, password strength, language picker |
+| `MobileTeams.md` | Team CRUD, members, leaderboard |
+| `MobileSettings.md` | Settings, privacy toggles, account deletion |
+| `MobileNavigation.md` | Navigation structure (authoritative — 3 tabs, not 5) |
+| `MobilePermissions.md` | iOS/Android permission handling |
+| `MobileMyUploads.md` | Upload history, filters, swipe actions |
+| `BackendAPI.md` | Backend API architecture and field mappings |
+| `BackendMobileApi.md` | Mobile-specific API contracts |
+| `BackendTagging.md` | Backend tagging architecture, XP calculation |
+| `BackendTagsConfig.md` | Backend TagsConfig source of truth |
+| `BackendLocations.md` | Backend location resolution (design doc) |
+| `XP.md` | XP formula — backend awards correctly; mobile preview is incomplete (doesn't handle special object bonuses) |
+| `GPS_AUDIT.md` | GPS handling audit (thorough, accurate) |
+| `LocalDev.md` | Local development setup, tag data structure |

@@ -31,15 +31,14 @@ The settings screen allows users to edit their profile (name, username, email), 
 ## Redux State (`state.settings`)
 ```
 {
-    model: string,
-    settingsModalVisible: boolean,
-    secondSettingsModalVisible: boolean,
-    settingsEdit: boolean,
-    settingsEditProp: string,
+    deviceModel: string,
+    editModalVisible: boolean,
+    saveResultModalVisible: boolean,
+    editValue: string,
     wait: boolean,
-    dataToEdit: any,
+    editField: any,
     deleteAccountError: string,
-    updateSettingsStatusMessage: string,
+    saveResultMessage: string,
     updatingSettings: boolean
 }
 ```
@@ -57,7 +56,7 @@ The settings screen allows users to edit their profile (name, username, email), 
 Dispatches `fetchAllTags({ token, forceRefresh: true })` from `tags_reducer.js` to bypass the 7-day AsyncStorage cache and re-fetch tag data from the API. Useful if new litter categories or objects are added on the backend.
 
 ## Flow
-1. User taps a setting field → `toggleSettingsModal` opens modal with current value
+1. User taps a setting field → `toggleEditModal` opens modal with current value
 2. User edits value → `saveSettings` dispatched
 3. On success, user object updated in both Redux and AsyncStorage
 4. Second modal shows success/error message

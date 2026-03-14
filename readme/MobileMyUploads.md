@@ -8,11 +8,10 @@ Shows the user's upload history with pagination, filtering, swipe actions (copy 
 - `screens/userStats/userComponents/MyUploads.js` — Upload history list with filters, stats header, swipe actions
 - `screens/userStats/userComponents/myUploadsComponents/UploadCard.js` — Individual upload card (tags, date, status)
 - `screens/userStats/userComponents/myUploadsComponents/TagChips.js` — Tag chips display for upload cards
-- `screens/userStats/userComponents/myUploadsComponents/UploadStatsHeader.js` — Stats summary (total photos, tags, XP, left to tag)
 - `screens/userStats/userComponents/myUploadsComponents/ActiveFilters.js` — Active filter chips with remove/clear
 - `screens/userStats/userComponents/myUploadsComponents/EmptyUploads.js` — Empty state when no uploads match
 - `screens/userStats/userComponents/myUploadsComponents/FilterSheet.js` — Bottom sheet with filter inputs (tag, custom tag, date range)
-- `reducers/my_uploads_reducer.js` — Upload history fetching, pagination, stats, and delete
+- `reducers/uploads_reducer.js` — Upload history fetching, pagination, stats, and delete
 
 ## API Endpoints
 | Thunk | Method | Endpoint | Payload | Notes |
@@ -55,7 +54,7 @@ Uses `onEndReached` with 50% threshold to load next page via `loadData`. Dedupli
 - `listHeader`, `listEmpty`, `listFooter` are `useMemo` elements (not inline component functions) to prevent FlatList header/footer remounting on every render
 - `onRefresh` depends on `loadData` via `useCallback` to avoid stale closures
 
-## Redux State (`state.my_uploads_reducer`)
+## Redux State (`state.uploads`)
 ```
 {
     uploads: { data: array, total, current_page, last_page, next_page_url, ... },

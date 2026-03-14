@@ -1,50 +1,67 @@
-import axios from "axios";
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import { URL } from  '../actions/types';
-import { logout } from './auth_reducer';
+import {createAsyncThunk, createSlice} from '@reduxjs/toolkit';
+import api from '../utils/apiClient';
+import {logout} from './auth_reducer';
 
 const initialState = {
     uploads: { data: [] },
-    uploadStats: null,
+    userLocations: null, // Cached hierarchical location tree
     loading: false,
     error: null
 };
 
 export const fetchUploads = createAsyncThunk(
-    'myUploads/fetchUploads',
+    'uploads/fetchUploads',
     async ({
-       token,
        page = 1,
-       filterDateFrom,
-       filterDateTo,
-       filterTag,
-       filterCustomTag,
+       filters = {},
        append = false
-    }, { rejectWithValue }
+    }, { getState, rejectWithValue }
     ) => {
         try {
             const params = { page };
 
-            if (filterTag) params.tag = filterTag;
-            if (filterCustomTag) params.custom_tag = filterCustomTag;
-            if (filterDateFrom) {
-                params.date_from = filterDateFrom instanceof Date
-                    ? filterDateFrom.toISOString().split('T')[0]
-                    : filterDateFrom;
+            if (filters.filterTag) params.tag = filters.filterTag;
+            if (filters.filterCustomTag) {
+                params.custom_tag = filters.filterCustomTag;
             }
-            if (filterDateTo) {
-                params.date_to = filterDateTo instanceof Date
-                    ? filterDateTo.toISOString().split('T')[0]
-                    : filterDateTo;
+            if (filters.filterDateFrom) {
+                params.date_from =
+                    filters.filterDateFrom instanceof Date
+                        ? filters.filterDateFrom
+                              .toISOString()
+                              .split('T')[0]
+                        : filters.filterDateFrom;
+            }
+            if (filters.filterDateTo) {
+                params.date_to =
+                    filters.filterDateTo instanceof Date
+                        ? filters.filterDateTo
+                              .toISOString()
+                              .split('T')[0]
+                        : filters.filterDateTo;
+            }
+            if (filters.filterCountry) {
+                params.country = filters.filterCountry;
+            }
+            if (filters.filterState) params.state = filters.filterState;
+            if (filters.filterCity) params.city = filters.filterCity;
+            if (
+                filters.filterVerified !== '' &&
+                filters.filterVerified !== undefined
+            ) {
+                params.verified = filters.filterVerified;
+            }
+            if (
+                filters.filterPickedUp !== '' &&
+                filters.filterPickedUp !== undefined
+            ) {
+                params.picked_up =
+                    filters.filterPickedUp === '1' ? 'true' : 'false';
             }
 
-            const response = await axios({
-                method: 'GET',
-                url: `${URL}/api/v3/user/photos`,
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    Accept: 'application/json'
-                },
+            const token = getState().auth.token;
+            const response = await api.get('/api/v3/user/photos', {
+                token,
                 params
             });
 
@@ -69,39 +86,34 @@ export const fetchUploads = createAsyncThunk(
     }
 );
 
-export const fetchUploadStats = createAsyncThunk(
-    'myUploads/fetchUploadStats',
-    async ({ token }, { rejectWithValue }) => {
+export const fetchUserLocations = createAsyncThunk(
+    'uploads/fetchUserLocations',
+    async (_, {getState, rejectWithValue}) => {
         try {
-            const response = await axios({
-                method: 'GET',
-                url: `${URL}/api/v3/user/photos/stats`,
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    Accept: 'application/json'
-                }
-            });
+            const token = getState().auth.token;
+            const response = await api.get(
+                '/api/v3/user/photos/locations',
+                {token}
+            );
 
-            return response.data;
+            return response.data.locations || [];
         } catch (error) {
-            return rejectWithValue(error.response?.data?.message || 'Failed to load upload stats');
+            return rejectWithValue(
+                error.response?.data?.message ||
+                    'Failed to load locations'
+            );
         }
     }
 );
 
 export const deleteUploadPhoto = createAsyncThunk(
-    'myUploads/deleteUploadPhoto',
-    async ({ token, photoId }, { rejectWithValue }) => {
+    'uploads/deleteUploadPhoto',
+    async ({ photoId }, { getState, rejectWithValue }) => {
         try {
-            await axios({
-                method: 'POST',
-                url: `${URL}/api/profile/photos/delete`,
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    Accept: 'application/json',
-                    'Content-Type': 'application/json'
-                },
-                data: { photoid: photoId }
+            const token = getState().auth.token;
+            await api.post('/api/profile/photos/delete', {
+                token,
+                data: {photoid: photoId}
             });
 
             return photoId;
@@ -113,9 +125,9 @@ export const deleteUploadPhoto = createAsyncThunk(
     }
 );
 
-const myUploadsSlice = createSlice({
+const uploadsSlice = createSlice({
 
-    name: 'myUploads',
+    name: 'uploads',
 
     initialState,
 
@@ -153,11 +165,12 @@ const myUploadsSlice = createSlice({
                 state.loading = false;
                 state.error = action.payload;
             })
-            .addCase(fetchUploadStats.fulfilled, (state, action) => {
-                state.uploadStats = action.payload;
+            .addCase(fetchUserLocations.fulfilled, (state, action) => {
+                state.userLocations = action.payload;
             })
-            .addCase(fetchUploadStats.rejected, (state, action) => {
-                state.error = action.payload;
+            .addCase(fetchUserLocations.rejected, (state) => {
+                // Mark as empty array (not null) so we don't retry infinitely
+                state.userLocations = [];
             })
             .addCase(deleteUploadPhoto.fulfilled, (state, action) => {
                 const photoId = action.payload;
@@ -177,5 +190,5 @@ const myUploadsSlice = createSlice({
     }
 });
 
-export const { clearUploads } = myUploadsSlice.actions;
-export default myUploadsSlice.reducer;
+export const { clearUploads } = uploadsSlice.actions;
+export default uploadsSlice.reducer;

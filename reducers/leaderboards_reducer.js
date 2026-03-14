@@ -1,7 +1,6 @@
-import axios from 'axios';
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { URL } from '../actions/types';
-import { logout } from './auth_reducer';
+import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
+import api from '../utils/apiClient';
+import {logout} from './auth_reducer';
 
 const initialState = {
     paginated: {
@@ -17,36 +16,31 @@ const initialState = {
 
 export const getLeaderboardData = createAsyncThunk(
     'leaderboard/fetchLeaderboardData',
-    async ({ timeFilter, page = 1 }, { rejectWithValue }) => {
+    async ({timeFilter, page = 1}, {rejectWithValue}) => {
         try {
-            const response = await axios.get(`${URL}/api/leaderboard`, {
-                params: { timeFilter, page },
-                headers: {
-                    Accept: 'application/json'
-                }
+            const response = await api.get('/api/leaderboard', {
+                params: {timeFilter, page}
             });
 
             if (response.data.success) {
-                return { ...response.data, page };
+                return {...response.data, page};
             } else {
-                return rejectWithValue("Error");
+                return rejectWithValue('Error');
             }
         } catch (error) {
-            return rejectWithValue(error.response?.data?.message || 'Network error, please try again');
+            return rejectWithValue(
+                error.response?.data?.message ||
+                    'Network error, please try again'
+            );
         }
     }
 );
 
 const leaderboardsSlice = createSlice({
-
     name: 'leaderboards',
-
     initialState,
-
-    extraReducers: (builder) => {
-
+    extraReducers: builder => {
         builder
-
             .addCase(getLeaderboardData.pending, (state, action) => {
                 const page = action.meta.arg.page || 1;
                 if (page === 1) {
@@ -62,24 +56,29 @@ const leaderboardsSlice = createSlice({
                 if (page === 1) {
                     state.paginated.users = users;
                 } else {
-                    state.paginated.users.push(...users);
+                    const existingIds = new Set(
+                        state.paginated.users.map(u => u.id)
+                    );
+                    const newUsers = users.filter(
+                        u => !existingIds.has(u.id)
+                    );
+                    state.paginated.users.push(...newUsers);
                 }
 
-                state.paginated.hasNextPage = action.payload.hasNextPage || false;
+                state.paginated.hasNextPage =
+                    action.payload.hasNextPage || false;
                 state.paginated.total = action.payload.total || 0;
                 state.currentPage = page;
                 state.timeFilter = action.meta.arg.timeFilter;
                 state.loading = false;
                 state.loadingMore = false;
             })
-            .addCase(getLeaderboardData.rejected, (state, action) => {
+            .addCase(getLeaderboardData.rejected, state => {
                 state.loading = false;
                 state.loadingMore = false;
             })
             .addCase(logout, () => initialState);
     }
 });
-
-export const { } = leaderboardsSlice.actions;
 
 export default leaderboardsSlice.reducer;

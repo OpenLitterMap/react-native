@@ -8,18 +8,6 @@ import {
 } from 'react-native';
 import {Colors} from './theme';
 
-// const {height: SCREEN_HEIGHT} = Dimensions.get('window');
-
-// interface HeaderProps {
-//     leftContent?: ReactElement;
-//     rightContent?: ReactElement;
-//     centerContent?: ReactElement;
-//     containerStyle?: React.CSSProperties | React.CSSProperties[];
-//     leftContainerStyle?: React.CSSProperties | React.CSSProperties[];
-//     rightContainerStyle?: React.CSSProperties | React.CSSProperties[];
-//     centerContainerStyle?: React.CSSProperties | React.CSSProperties[];
-// }
-
 const Header = ({
     leftContent,
     centerContent,

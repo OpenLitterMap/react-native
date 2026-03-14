@@ -1,5 +1,6 @@
 import React, {useMemo, useState} from 'react';
 import {
+    Keyboard,
     KeyboardAvoidingView,
     Modal,
     Platform,
@@ -36,9 +37,9 @@ const TagDetailSheet = ({
     const [brandQuery, setBrandQuery] = useState('');
     const [customTagText, setCustomTagText] = useState('');
 
-    const categoryColor = getCategoryColor(tagEntry?.categoryKey || tag?._categoryKey);
-    const tagName = tagEntry?.displayName || tag?._displayName || `#${tag?.cloId}`;
-    const categoryName = tagEntry?.categoryDisplayName || tag?._categoryDisplayName || '';
+    const categoryColor = getCategoryColor(tagEntry?.categoryKey || tag?.fallbackCategoryKey);
+    const tagName = tagEntry?.displayName || tag?.fallbackDisplayName || `#${tag?.cloId}`;
+    const categoryName = tagEntry?.categoryDisplayName || tag?.fallbackCategoryName || '';
 
     const selectedMaterialIds = useMemo(
         () => new Set(tag?.materials || []),
@@ -95,12 +96,37 @@ const TagDetailSheet = ({
         }
     };
 
+    const handleCreateBrandAsCustomTag = () => {
+        const trimmed = brandQuery.trim();
+        if (trimmed) {
+            onAddCustomTag(`brand:${trimmed}`);
+            setBrandQuery('');
+        }
+    };
+
+    const handleCreateMaterialAsCustomTag = () => {
+        const trimmed = materialQuery.trim();
+        if (trimmed) {
+            onAddCustomTag(`material:${trimmed}`);
+            setMaterialQuery('');
+        }
+    };
+
+    const showBrandCreateOption =
+        brandQuery.trim().length > 0 && brandResults.length === 0;
+    const showMaterialCreateOption =
+        materialQuery.trim().length > 0 && materialResults.length === 0;
+
     if (!tag || !visible) return null;
 
     const qty = tag.quantity || 1;
 
     return (
-        <Modal animationType="slide" transparent visible={visible}>
+        <Modal
+            animationType="slide"
+            transparent
+            visible={visible}
+            onRequestClose={onClose}>
             <View style={styles.overlay}>
                 <KeyboardAvoidingView
                     behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -289,6 +315,32 @@ const TagDetailSheet = ({
                                         ))}
                                     </View>
                                 )}
+
+                                {/* Create custom tag from material search */}
+                                {showMaterialCreateOption && (
+                                    <Pressable
+                                        style={styles.createCustomRow}
+                                        onPress={handleCreateMaterialAsCustomTag}>
+                                        <View style={styles.createCustomLeft}>
+                                            <Icon
+                                                name="pricetag-outline"
+                                                size={16}
+                                                color="#6366f1"
+                                            />
+                                            <Caption style={styles.createCustomText}>
+                                                {t('Create')}{' '}
+                                                <Caption style={styles.createCustomTag}>
+                                                    material:{materialQuery.trim()}
+                                                </Caption>
+                                            </Caption>
+                                        </View>
+                                        <Icon
+                                            name="add-circle-outline"
+                                            size={18}
+                                            color="#6366f1"
+                                        />
+                                    </Pressable>
+                                )}
                             </View>
 
                             {/* Brands */}
@@ -394,6 +446,32 @@ const TagDetailSheet = ({
                                         ))}
                                     </View>
                                 )}
+
+                                {/* Create custom tag from brand search */}
+                                {showBrandCreateOption && (
+                                    <Pressable
+                                        style={styles.createCustomRow}
+                                        onPress={handleCreateBrandAsCustomTag}>
+                                        <View style={styles.createCustomLeft}>
+                                            <Icon
+                                                name="pricetag-outline"
+                                                size={16}
+                                                color="#6366f1"
+                                            />
+                                            <Caption style={styles.createCustomText}>
+                                                {t('Create')}{' '}
+                                                <Caption style={styles.createCustomTag}>
+                                                    brand:{brandQuery.trim()}
+                                                </Caption>
+                                            </Caption>
+                                        </View>
+                                        <Icon
+                                            name="add-circle-outline"
+                                            size={18}
+                                            color="#6366f1"
+                                        />
+                                    </Pressable>
+                                )}
                             </View>
 
                             {/* Custom Tags */}
@@ -454,6 +532,7 @@ const TagDetailSheet = ({
                                         onChangeText={setCustomTagText}
                                         onSubmitEditing={handleAddCustomTag}
                                         returnKeyType="done"
+                                        maxLength={100}
                                     />
                                     {customTagText.length > 0 && (
                                         <Pressable
@@ -470,12 +549,29 @@ const TagDetailSheet = ({
                                 </View>
                             </View>
 
-                            {/* Done */}
+                            {/* Done / Create Tag */}
                             <Pressable
                                 style={styles.doneButton}
-                                onPress={onClose}>
+                                onPress={() => {
+                                    if (customTagText.trim()) {
+                                        handleAddCustomTag();
+                                        Keyboard.dismiss();
+                                    } else if (brandQuery.trim() && brandResults.length === 0) {
+                                        handleCreateBrandAsCustomTag();
+                                        Keyboard.dismiss();
+                                    } else if (materialQuery.trim() && materialResults.length === 0) {
+                                        handleCreateMaterialAsCustomTag();
+                                        Keyboard.dismiss();
+                                    } else {
+                                        onClose();
+                                    }
+                                }}>
                                 <Body color="white" style={styles.doneText}>
-                                    Done
+                                    {customTagText.trim() ||
+                                        (brandQuery.trim() && brandResults.length === 0) ||
+                                        (materialQuery.trim() && materialResults.length === 0)
+                                        ? t('Create Tag')
+                                        : t('Done')}
                                 </Body>
                             </Pressable>
 
@@ -638,6 +734,31 @@ const styles = StyleSheet.create({
     brandName: {
         fontSize: 14,
         color: '#333'
+    },
+    createCustomRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 12,
+        paddingVertical: 10,
+        marginTop: 4,
+        borderRadius: 8,
+        backgroundColor: '#f0edff'
+    },
+    createCustomLeft: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+        flex: 1
+    },
+    createCustomText: {
+        fontSize: 13,
+        color: '#6366f1'
+    },
+    createCustomTag: {
+        fontSize: 13,
+        color: '#6366f1',
+        fontWeight: '600'
     },
     doneButton: {
         backgroundColor: Colors.accent,

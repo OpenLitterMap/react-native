@@ -1,10 +1,9 @@
-import axios from "axios";
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import { URL } from '../actions/types';
-import { logout } from './auth_reducer';
+import {createAsyncThunk, createSlice} from '@reduxjs/toolkit';
+import api from '../utils/apiClient';
+import {logout} from './auth_reducer';
 
 const initialState = {
-    statsErrorMessage: null,
+    error: null,
     totalTags: 0,
     totalImages: 0,
     totalUsers: 0,
@@ -15,63 +14,43 @@ const initialState = {
 
 export const getStats = createAsyncThunk(
     'stats/getStats',
-    async (_, { rejectWithValue }) => {
-        try
-        {
-            const response = await axios({
-                url: `${URL}/api/global/stats-data`,
-                method: 'GET',
-                headers: {
-                    Accept: 'application/json'
-                }
-            });
-
+    async (_, {rejectWithValue}) => {
+        try {
+            const response = await api.get('/api/global/stats-data');
             return response.data;
-        }
-        catch (error)
-        {
-            return (error.response)
+        } catch (error) {
+            return error.response
                 ? rejectWithValue('Something went wrong, please try again')
-                : rejectWithValue('Network Error, please try again');
+                : rejectWithValue('Network error, please try again');
         }
     }
 );
 
-
 const statsSlice = createSlice({
-
     name: 'stats',
-
     initialState,
-
     reducers: {},
-
-    extraReducers: (builder) => {
-
+    extraReducers: builder => {
         builder
-
-            .addCase(getStats.pending, (state) => {
-                state.statsErrorMessage = null;
+            .addCase(getStats.pending, state => {
+                state.error = null;
             })
             .addCase(getStats.fulfilled, (state, action) => {
-                const totalTags = action.payload?.total_tags || 0;
-                const totalImages = action.payload?.total_images || 0;
-                const totalUsers = action.payload?.total_users || 0;
-
-                state.totalTags = totalTags;
-                state.totalImages = totalImages;
-                state.totalUsers = totalUsers;
+                state.totalTags = action.payload?.total_tags || 0;
+                state.totalImages = action.payload?.total_images || 0;
+                state.totalUsers = action.payload?.total_users || 0;
                 state.newUsersToday = action.payload?.new_users_today || 0;
-                state.newUsersLast7Days = action.payload?.new_users_last_7_days || 0;
-                state.newUsersLast30Days = action.payload?.new_users_last_30_days || 0;
-                state.statsErrorMessage = null;
+                state.newUsersLast7Days =
+                    action.payload?.new_users_last_7_days || 0;
+                state.newUsersLast30Days =
+                    action.payload?.new_users_last_30_days || 0;
+                state.error = null;
             })
             .addCase(getStats.rejected, (state, action) => {
-                state.statsErrorMessage = action.payload;
+                state.error = action.payload;
             })
             .addCase(logout, () => initialState);
     }
 });
 
-export const {  } = statsSlice.actions;
 export default statsSlice.reducer;

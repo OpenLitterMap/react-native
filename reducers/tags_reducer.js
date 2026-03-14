@@ -1,11 +1,11 @@
-import axios from 'axios';
 import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {URL} from '../actions/types';
+import api from '../utils/apiClient';
 import {formatKey} from '../utils/formatKey';
 import {logout} from './auth_reducer';
+import i18n from '../i18n';
 
-const CACHE_KEY = 'tags_cache_v4';
+const CACHE_KEY = 'tags_cache_v5';
 const CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
 const initialState = {
@@ -27,7 +27,7 @@ const initialState = {
  */
 export const fetchAllTags = createAsyncThunk(
     'tags/fetchAll',
-    async ({token, forceRefresh = false} = {}, {rejectWithValue}) => {
+    async ({forceRefresh = false} = {}, {getState, rejectWithValue}) => {
         try {
             // Check cache first
             if (!forceRefresh) {
@@ -45,13 +45,11 @@ export const fetchAllTags = createAsyncThunk(
                 }
             }
 
-            // Fetch from API
-            const headers = {Accept: 'application/json'};
-            if (token) {
-                headers.Authorization = `Bearer ${token}`;
-            }
-
-            const response = await axios.get(`${URL}/api/tags/all`, {headers});
+            // Fetch from API (token optional for this endpoint)
+            const token = getState().auth.token;
+            const response = await api.get('/api/tags/all', {
+                token: token || undefined
+            });
             const data = response.data;
 
             // Build lookup maps
@@ -60,9 +58,9 @@ export const fetchAllTags = createAsyncThunk(
                 objectsById[obj.id] = obj;
             }
 
-            const catsById = {};
+            const categoriesLookup = {};
             for (const cat of data.categories) {
-                catsById[cat.id] = cat;
+                categoriesLookup[cat.id] = cat;
             }
 
             // Count how many categories each object appears in
@@ -76,13 +74,19 @@ export const fetchAllTags = createAsyncThunk(
             const objectEntries = [];
             for (const co of data.category_objects) {
                 const obj = objectsById[co.litter_object_id];
-                const cat = catsById[co.category_id];
+                const cat = categoriesLookup[co.category_id];
                 if (!obj || !cat) {
                     continue;
                 }
 
-                const objectName = formatKey(obj.key);
-                const categoryName = formatKey(cat.key);
+                const litterKey = `litter.${cat.key}.${obj.key}`;
+                const objectName = i18n.exists(litterKey)
+                    ? i18n.t(litterKey)
+                    : formatKey(obj.key);
+                const catLitterKey = `litter.categories.${cat.key}`;
+                const categoryName = i18n.exists(catLitterKey)
+                    ? i18n.t(catLitterKey)
+                    : formatKey(cat.key);
                 const isMultiCategory = objectCategoryCount[obj.id] > 1;
                 const objectText = obj.key.replace(/_/g, ' ').toLowerCase();
                 const categoryText = cat.key.replace(/_/g, ' ').toLowerCase();
@@ -125,7 +129,10 @@ export const fetchAllTags = createAsyncThunk(
                         continue;
                     }
 
-                    const typeName = type.name || formatKey(type.key);
+                    const typeKey = `litter.types.${type.key}`;
+                    const typeName = i18n.exists(typeKey)
+                        ? i18n.t(typeKey)
+                        : (type.name || formatKey(type.key));
                     const typeText = (type.name || type.key)
                         .replace(/_/g, ' ')
                         .toLowerCase();
@@ -161,10 +168,13 @@ export const fetchAllTags = createAsyncThunk(
             // Build categoriesById for display
             const categoriesById = {};
             for (const cat of data.categories) {
+                const catKey = `litter.categories.${cat.key}`;
                 categoriesById[cat.id] = {
                     id: cat.id,
                     key: cat.key,
-                    displayName: formatKey(cat.key)
+                    displayName: i18n.exists(catKey)
+                        ? i18n.t(catKey)
+                        : formatKey(cat.key)
                 };
             }
 
@@ -172,10 +182,13 @@ export const fetchAllTags = createAsyncThunk(
             const materialsById = {};
             if (data.materials) {
                 for (const m of data.materials) {
+                    const mKey = `litter.materials.${m.key}`;
                     materialsById[m.id] = {
                         id: m.id,
                         key: m.key,
-                        name: formatKey(m.key)
+                        name: i18n.exists(mKey)
+                            ? i18n.t(mKey)
+                            : formatKey(m.key)
                     };
                 }
             }
@@ -232,6 +245,16 @@ export const fetchAllTags = createAsyncThunk(
             return rejectWithValue(
                 error.response?.data?.message || 'Failed to fetch tags'
             );
+        }
+    },
+    {
+        condition: ({forceRefresh = false} = {}, {getState}) => {
+            if (forceRefresh) return true;
+            const {objectEntries, lastFetchedAt} = getState().tags;
+            if (objectEntries.length > 0 && lastFetchedAt) {
+                return Date.now() - lastFetchedAt >= CACHE_TTL_MS;
+            }
+            return true;
         }
     }
 );

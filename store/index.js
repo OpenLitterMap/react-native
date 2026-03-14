@@ -14,7 +14,8 @@ const imagesTransform = createTransform(
     }),
     // On REHYDRATE: merge imagesArray into default state
     (outboundState) => ({
-        imagesArray: outboundState?.imagesArray || [],
+        imagesArray: (outboundState?.imagesArray || []).filter(img => !img.editing),
+        editingPhoto: null,
         swiperIndex: 0,
         totalToUpload: 0,
         uploaded: 0,
@@ -24,7 +25,6 @@ const imagesTransform = createTransform(
         uploadPhase: 'idle',
         currentUploadIndex: 0,
         uploadAbortReason: null,
-        errorMessage: '',
         failedCounts: {
             alreadyUploaded: 0,
             invalidCoordinates: 0,

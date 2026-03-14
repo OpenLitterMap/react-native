@@ -20,11 +20,20 @@ const TagChips = React.memo(({ newTags = [], maxVisible = 3 }) => {
             // Skip unclassified.other if it only exists as a carrier for custom tags
             const isUnclassifiedOther = catKey === 'unclassified' && objKey === 'other';
             if (!isUnclassifiedOther) {
+                let label = catKey && objKey
+                    ? t(`litter.${catKey}.${objKey}`)
+                    : objKey || catKey;
+
+                // If tag has a type (e.g. "juice" for carton), prepend it
+                const typeKey = tag.type?.key;
+                if (typeKey) {
+                    const typeName = t(`litter.types.${typeKey}`);
+                    label = `${typeName} ${label}`;
+                }
+
                 result.push({
                     key: `${catKey}-${objKey}-${result.length}`,
-                    label: catKey && objKey
-                        ? t(`litter.${catKey}.${objKey}`)
-                        : objKey || catKey,
+                    label,
                     qty,
                     bg: getCategoryColor(catKey)
                 });

@@ -10,10 +10,10 @@ The upload flow lets users select photos from their gallery, tag them with the v
 - `screens/home/homeComponents/UploadImagesGrid.js` — 3-column image grid display
 - `screens/home/homeComponents/ActionButton.js` — FAB for gallery/delete actions
 - `reducers/images_reducer.js` — Image state management, v5 tag actions, and upload thunks
-- `reducers/my_uploads_reducer.js` — Photo deletion thunk (`deleteUploadPhoto`)
+- `reducers/uploads_reducer.js` — Photo deletion thunk (`deleteUploadPhoto`)
 - `reducers/shared_reducer.js` — Upload modal and "thank you" message state
 - `utils/isGeotagged.js` — GPS validation (rejects null, undefined, and 0,0 coordinates)
-- `utils/isTagged.js` — Checks for v5 tags (`tagsV5`) or custom tags
+- `utils/isTagged.js` — Checks for tags or custom tags
 
 ## API Endpoints
 | Thunk | Method | Endpoint | Payload | Notes |
@@ -37,13 +37,13 @@ The upload flow lets users select photos from their gallery, tag them with the v
    - Image stays in state with `uploaded: true` and server `photo_id`
    - **Step 2**: POST tags via `postTagsToPhoto` (photo_id + resolved tags)
    - On success: image removed from state, `tagged++`
-   - On failure: image stays for retry (uploaded=true, tagsV5 intact)
+   - On failure: image stays for retry (uploaded=true, tags intact)
 10. **For uploaded images with v5 tags**: POST tags directly via `postTagsToPhoto`
 11. On completion, result modal shows upload summary (success/failure counts)
-12. User can cancel mid-upload via cancel button
+12. User can cancel mid-upload via cancel button (AbortController aborts in-flight request)
 
 ## Tag Payload Resolution
-At upload time, `buildV5TagsPayload(img)` converts each tag into the POST format:
+At upload time, `buildTagsPayload(img)` (from `utils/buildTagsPayload.js`) converts each tag into the POST format:
 
 ```json
 {
@@ -77,34 +77,42 @@ After a gallery image is uploaded, `type` stays `'gallery'` but `uploaded` becom
 ## Redux State (`state.images`)
 ```
 {
-    imagesArray: array,       // All images (each has tagsV5, customTags, picked_up, etc.)
+    imagesArray: array,       // All images (each has tags, customTags, picked_up, etc.)
     swiperIndex: number,      // Currently selected image index in AddTagScreen
     totalToUpload: number,
     uploaded: number,
     uploadFailed: number,
     tagged: number,
     taggedFailed: number,
+    uploadPhase: 'idle' | 'uploading' | 'tagging',
+    currentUploadIndex: number,
+    uploadAbortReason: null | 'token-expired' | 'cancelled',
     failedCounts: { alreadyUploaded, invalidCoordinates, timeout, network, server, unknown }
 }
 ```
 
 ## Error Handling
-Upload failures are classified by `classifyError()` in `images_reducer.js`:
+Upload failures are classified by `classifyError()` in `utils/classifyError.js`:
 - `photo-already-uploaded` — Duplicate detection (422)
 - `invalid-coordinates` — lat=0, lon=0 (422)
 - `timeout` — Connection timed out (ECONNABORTED)
 - `network` — No internet connection
 - `server` — Server error (5xx)
-- `unauthorized` — Session expired (401) — aborts upload loop
+- `unauthorized` — Session expired (401) — triggers abort via `setUploadAbortReason('token-expired')`
 - `unknown` — Other errors
+
+On 401, the axios interceptor signals the upload loop to stop gracefully. After re-login, a recovery alert lets the user retry with preserved photos.
 
 Tag POST failures increment `taggedFailed`. The image stays in state for retry.
 
+## Cancel Behavior
+Cancel uses an `AbortController` to abort the in-flight axios request, then resets `uploadPhase` to `idle` and closes the modal. The upload loop checks `isUploadCancelled` ref before each iteration and early-returns after a cancel to prevent the result modal from re-appearing.
+
 ## Retry Behavior
 If tag POST fails after a successful photo upload:
-- Image stays in `imagesArray` with `uploaded: true` and `tagsV5` intact
-- On next upload attempt, the loop routes it to the "uploaded + v5 tags" path
+- Image stays in `imagesArray` with `uploaded: true` and `tags` intact
+- On next upload attempt, the loop routes it to the "uploaded + tags" path
 - Tags are posted directly via `postTagsToPhoto` (no re-upload of the photo)
 
 ## Photo Deletion
-Uploaded images on HomeScreen are deleted via `deleteUploadPhoto` (from `my_uploads_reducer.js`), which calls `POST /api/profile/photos/delete` with `{ "photoid": <id> }`. The image is also removed from local `imagesArray` via `deleteImage`. Non-uploaded images are removed from local state only (no server call needed).
+Uploaded images on HomeScreen are deleted via `deleteUploadPhoto` (from `uploads_reducer.js`), which calls `POST /api/profile/photos/delete` with `{ "photoid": <id> }`. The image is also removed from local `imagesArray` via `deleteImage`. Non-uploaded images are removed from local state only (no server call needed).

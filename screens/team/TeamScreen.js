@@ -16,10 +16,9 @@ const TeamScreen = ({navigation}) => {
 
     const teamFormStatus = useSelector(state => state.teams.teamFormStatus);
     const successMessage = useSelector(state => state.teams.successMessage);
-    const token = useSelector(state => state.auth.token);
 
     useEffect(() => {
-        dispatch(getTopTeams(token));
+        dispatch(getTopTeams());
     }, []);
 
     const actionSheetOnClose = () => {

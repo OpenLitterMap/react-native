@@ -11,6 +11,7 @@ import {Picker} from '@react-native-picker/picker';
 import {useDispatch, useSelector} from 'react-redux';
 import {getLeaderboardData} from '../../../reducers/leaderboards_reducer';
 import {flags} from '../../../assets/icons/flags';
+import {useTranslation} from 'react-i18next';
 import {Body, Caption, Colors} from '../../components';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -25,6 +26,7 @@ const PICKER_ITEMS = [
 
 const LeaderboardsTab = () => {
     const dispatch = useDispatch();
+    const {t} = useTranslation();
     const [selectedValue, setSelectedValue] = useState('today');
 
     const paginated = useSelector(state => state.leaderboard.paginated);
@@ -57,7 +59,7 @@ const LeaderboardsTab = () => {
     return (
         <View style={styles.container}>
             <View style={styles.pickerRow}>
-                <Caption family="semiBold">Timeframe:</Caption>
+                <Caption family="semiBold">{t('Timeframe:')}</Caption>
                 <Picker
                     selectedValue={selectedValue}
                     style={styles.picker}
@@ -76,7 +78,7 @@ const LeaderboardsTab = () => {
 
             {!paginated.users.length ? (
                 <View style={styles.loadingContainer}>
-                    <Body color="muted">No data found</Body>
+                    <Body color="muted">{t('No data found')}</Body>
                 </View>
             ) : (
                 <FlatList

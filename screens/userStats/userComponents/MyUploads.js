@@ -12,7 +12,7 @@ import {
 import { Body, Colors, Header } from '../../components';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useDispatch, useSelector } from 'react-redux';
-import { clearUploads, deleteUploadPhoto, fetchUploads, fetchUploadStats } from '../../../reducers/my_uploads_reducer';
+import { clearUploads, deleteUploadPhoto, fetchUploads } from '../../../reducers/uploads_reducer';
 import { loadPhotoForEditing } from '../../../reducers/images_reducer';
 import ActionButton from '../../home/homeComponents/ActionButton';
 import { useTranslation } from 'react-i18next';
@@ -20,16 +20,20 @@ import { URL } from '../../../actions/types';
 import Clipboard from '@react-native-clipboard/clipboard';
 
 import UploadCard from './myUploadsComponents/UploadCard';
-import UploadStatsHeader from './myUploadsComponents/UploadStatsHeader';
 import ActiveFilters from './myUploadsComponents/ActiveFilters';
 import EmptyUploads from './myUploadsComponents/EmptyUploads';
 import FilterSheet from './myUploadsComponents/FilterSheet';
 
-const EMPTY_FILTERS = {
+export const EMPTY_FILTERS = {
     filterTag: '',
     filterCustomTag: '',
     filterDateFrom: '',
-    filterDateTo: ''
+    filterDateTo: '',
+    filterCountry: '',
+    filterState: '',
+    filterCity: '',
+    filterVerified: '',
+    filterPickedUp: ''
 };
 
 const MyUploads = ({ navigation }) => {
@@ -42,22 +46,23 @@ const MyUploads = ({ navigation }) => {
     const [showFilter, setShowFilter] = useState(false);
     const [filters, setFilters] = useState({ ...EMPTY_FILTERS });
 
-    const token = useSelector(state => state.auth.token);
     const user = useSelector(state => state.auth.user);
-    const uploads = useSelector(state => state.my_uploads_reducer.uploads);
-    const uploadStats = useSelector(state => state.my_uploads_reducer.uploadStats);
-
+    const uploads = useSelector(state => state.uploads.uploads);
     const hasActiveFilters =
         !!filters.filterTag ||
         !!filters.filterCustomTag ||
         !!filters.filterDateFrom ||
-        !!filters.filterDateTo;
+        !!filters.filterDateTo ||
+        !!filters.filterCountry ||
+        !!filters.filterState ||
+        !!filters.filterCity ||
+        filters.filterVerified !== '' ||
+        filters.filterPickedUp !== '';
 
     const isInitialMount = useRef(true);
 
     useEffect(() => {
         loadData(false);
-        dispatch(fetchUploadStats({ token }));
 
         // Refresh data when returning from edit screen
         const unsubscribe = navigation.addListener('focus', () => {
@@ -67,7 +72,6 @@ const MyUploads = ({ navigation }) => {
             }
             dispatch(clearUploads());
             loadData(false, 1);
-            dispatch(fetchUploadStats({ token }));
         });
 
         return unsubscribe;
@@ -81,27 +85,22 @@ const MyUploads = ({ navigation }) => {
             if (!append) setLoading(true);
 
             await dispatch(fetchUploads({
-                token,
                 page,
-                filterDateFrom: f.filterDateFrom,
-                filterDateTo: f.filterDateTo,
-                filterTag: f.filterTag,
-                filterCustomTag: f.filterCustomTag,
+                filters: f,
                 append
             }));
 
             setLoading(false);
             setRefreshing(false);
         },
-        [dispatch, token, filters]
+        [dispatch, filters]
     );
 
     const onRefresh = useCallback(() => {
         setRefreshing(true);
         dispatch(clearUploads());
-        dispatch(fetchUploadStats({ token }));
         loadData(false, 1);
-    }, [dispatch, token, loadData]);
+    }, [dispatch, loadData]);
 
     const onEndReached = useCallback(() => {
         if (loadingMore || !uploads.next_page_url) return;
@@ -127,6 +126,13 @@ const MyUploads = ({ navigation }) => {
             if (key === 'filterDate') {
                 updated.filterDateFrom = '';
                 updated.filterDateTo = '';
+            } else if (key === 'filterCountry') {
+                updated.filterCountry = '';
+                updated.filterState = '';
+                updated.filterCity = '';
+            } else if (key === 'filterState') {
+                updated.filterState = '';
+                updated.filterCity = '';
             } else {
                 updated[key] = '';
             }
@@ -169,13 +175,13 @@ const MyUploads = ({ navigation }) => {
                         text: t('Delete'),
                         style: 'destructive',
                         onPress: () => {
-                            dispatch(deleteUploadPhoto({ token, photoId: item.id }));
+                            dispatch(deleteUploadPhoto({ photoId: item.id }));
                         }
                     }
                 ]
             );
         },
-        [dispatch, token, t]
+        [dispatch, t]
     );
 
     const renderItem = useCallback(({ item }) => (
@@ -191,12 +197,6 @@ const MyUploads = ({ navigation }) => {
     const listHeader = useMemo(
         () => (
             <>
-                <UploadStatsHeader
-                    totalPhotos={uploadStats?.totalPhotos || uploads?.total || user?.total_images || 0}
-                    totalTags={uploadStats?.totalTags || user?.totalTags || 0}
-                    totalXp={user?.xp_redis || 0}
-                    leftToTag={uploadStats?.leftToTag || 0}
-                />
                 {hasActiveFilters && (
                     <ActiveFilters
                         filters={filters}
@@ -206,7 +206,7 @@ const MyUploads = ({ navigation }) => {
                 )}
             </>
         ),
-        [uploadStats, uploads?.total, user?.total_images, user?.totalTags, user?.xp_redis, hasActiveFilters, filters, removeFilter, clearAllFilters]
+        [hasActiveFilters, filters, removeFilter, clearAllFilters]
     );
 
     const listEmpty = useMemo(

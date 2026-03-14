@@ -17,7 +17,10 @@ import {useSelector, useDispatch} from 'react-redux';
 import {useTranslation} from 'react-i18next';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {Body, Caption, Colors, Header, SubTitle} from '../components';
-import {checkCameraRollPermission} from '../../utils/permissions';
+import {
+    checkCameraRollPermission,
+    openLimitedPhotoPicker
+} from '../../utils/permissions';
 import AnimatedImage from './galleryComponents/AnimatedImage';
 import {
     getPhotosFromCameraroll,
@@ -76,6 +79,7 @@ const GalleryScreen = ({navigation}) => {
     const [selectedImages, setSelectedImages] = useState([]);
     const [sortedData, setSortedData] = useState([]);
     const [hasPermission, setHasPermission] = useState(false);
+    const [isLimited, setIsLimited] = useState(false);
 
     const galleryImages = useSelector(state => state.gallery.galleryImages);
     const nonGeotaggedCount = useSelector(selectNonGeotaggedCount);
@@ -175,9 +179,10 @@ const GalleryScreen = ({navigation}) => {
         const result = await checkCameraRollPermission();
 
         if (result === 'granted' || result === 'limited') {
-            dispatch(getPhotosFromCameraroll());
-
-            await splitIntoRows(galleryImages);
+            setIsLimited(result === 'limited');
+            // For limited access, always refresh to pick up selection changes
+            const fetchType = result === 'limited' ? 'REFRESH' : undefined;
+            dispatch(getPhotosFromCameraroll(fetchType));
 
             setHasPermission(true);
         } else {
@@ -185,6 +190,14 @@ const GalleryScreen = ({navigation}) => {
                 screen: 'GALLERY_PERMISSION'
             });
         }
+    };
+
+    /**
+     * Open iOS limited photo picker, then refresh gallery
+     */
+    const handleManagePhotos = async () => {
+        await openLimitedPhotoPicker();
+        dispatch(getPhotosFromCameraroll('REFRESH'));
     };
 
     /**
@@ -383,6 +396,23 @@ const GalleryScreen = ({navigation}) => {
                         <Caption dictionary="Only geotagged images can be selected" />
                     </View>
 
+                    {isLimited && Platform.OS === 'ios' && (
+                        <Pressable
+                            style={styles.managePhotosButton}
+                            onPress={handleManagePhotos}>
+                            <Icon
+                                name="add-circle-outline"
+                                size={16}
+                                color={Colors.accent}
+                            />
+                            <Body
+                                style={styles.managePhotosText}
+                                color="accent"
+                                dictionary="Select More Photos"
+                            />
+                        </Pressable>
+                    )}
+
                     <SafeAreaView style={styles.safeArea}>
                         <PanGestureHandler
                             onGestureEvent={onGestureEvent}
@@ -490,6 +520,16 @@ const styles = StyleSheet.create({
     },
     infoIcon: {
         color: Colors.muted
+    },
+    managePhotosButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 8
+    },
+    managePhotosText: {
+        marginLeft: 4,
+        fontSize: 13
     },
     safeArea: {
         flexDirection: 'row',

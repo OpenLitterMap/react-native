@@ -12,6 +12,9 @@ const UploadCard = React.memo(({ item, onEditTags, onDelete, onCopyLink, onOpenM
     const totalTags = item.total_tags || (item.new_tags?.length || 0);
     const xp = item.xp || 0;
     const teamName = item.team?.name;
+    const location = [item.city, item.state, item.country]
+        .filter(Boolean)
+        .join(', ');
 
     return (
         <View style={styles.card}>
@@ -25,10 +28,35 @@ const UploadCard = React.memo(({ item, onEditTags, onDelete, onCopyLink, onOpenM
                 <Caption style={styles.statusText}>
                     {isTagged ? t('Tagged') : t('Untagged')}
                 </Caption>
+                {item.verified >= 2 && (
+                    <View style={styles.verifiedBadge}>
+                        <Icon name="checkmark-circle" size={12} color={Colors.accent} />
+                        <Caption style={styles.verifiedText}>
+                            {t('Verified')}
+                        </Caption>
+                    </View>
+                )}
+                {item.picked_up && (
+                    <Icon
+                        name="arrow-up-circle-outline"
+                        size={14}
+                        color={Colors.accent}
+                        style={styles.pickedUpIcon}
+                    />
+                )}
                 <Caption style={styles.timeAgo}>
                     {dayjs(item.datetime).fromNow()}
                 </Caption>
             </View>
+
+            {location ? (
+                <View style={styles.locationRow}>
+                    <Icon name="location-outline" size={12} color={Colors.muted} />
+                    <Caption style={styles.locationText} numberOfLines={1}>
+                        {location}
+                    </Caption>
+                </View>
+            ) : null}
 
             <TagChips newTags={item.new_tags} />
 
@@ -113,9 +141,34 @@ const styles = StyleSheet.create({
         fontSize: 12,
         fontWeight: '500'
     },
-    timeAgo: {
+    verifiedBadge: {
+        flexDirection: 'row',
+        alignItems: 'center',
         marginLeft: 8,
+        gap: 2
+    },
+    verifiedText: {
+        fontSize: 10,
+        color: Colors.accent,
+        fontWeight: '500'
+    },
+    pickedUpIcon: {
+        marginLeft: 6
+    },
+    timeAgo: {
+        marginLeft: 'auto',
         opacity: 0.5
+    },
+    locationRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+        marginTop: 4
+    },
+    locationText: {
+        fontSize: 11,
+        opacity: 0.6,
+        flexShrink: 1
     },
     statsRow: {
         flexDirection: 'row',

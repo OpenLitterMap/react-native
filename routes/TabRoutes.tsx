@@ -84,11 +84,6 @@ const TabRoutes: React.FC = () => (
             })}
         >
             <Tab.Screen name="HOME" component={HomeScreen} />
-            {/*<Tab.Screen*/}
-            {/*    name="CAMERA"*/}
-            {/*    component={CameraScreen}*/}
-            {/*    options={{ unmountOnBlur: true }}*/}
-            {/*/>*/}
             <Tab.Screen name="TEAM" component={TeamStack} />
             <Tab.Screen name="USER_STATS" component={ProfileScreen} />
         </Tab.Navigator>

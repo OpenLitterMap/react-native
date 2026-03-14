@@ -1,5 +1,5 @@
 import {Platform} from 'react-native';
-import {check, PERMISSIONS, request} from 'react-native-permissions';
+import {check, openPhotoPicker, PERMISSIONS, request} from 'react-native-permissions';
 
 export const requestCameraRollPermission = async () => {
     let result;
@@ -36,6 +36,19 @@ export const requestCameraRollPermission = async () => {
 };
 
 /**
+ * Opens the iOS limited photo picker so the user can add/remove photos.
+ * No-op on Android or if full access is already granted.
+ */
+export const openLimitedPhotoPicker = async () => {
+    if (Platform.OS === 'ios') {
+        const status = await check(PERMISSIONS.IOS.PHOTO_LIBRARY);
+        if (status === 'limited') {
+            await openPhotoPicker();
+        }
+    }
+};
+
+/**
  * @returns {Promise<"limited"|"denied"|"blocked"|"unavailable"|"granted">}
  */
 export const checkCameraRollPermission = async () => {
@@ -52,26 +65,16 @@ export const checkCameraRollPermission = async () => {
                 return 'denied';
             }
 
-            // READ_MEDIA_IMAGES is granted — now check ACCESS_MEDIA_LOCATION
+            // READ_MEDIA_IMAGES is granted — check ACCESS_MEDIA_LOCATION.
+            // Only check here, never re-request. The initial request happens
+            // in requestCameraRollPermission(). Re-requesting on every check
+            // is poor UX and fires on every HomeScreen mount.
             const mediaLocation = await check(
                 PERMISSIONS.ANDROID.ACCESS_MEDIA_LOCATION
             );
 
-            if (mediaLocation === 'granted') {
-                return 'granted';
-            }
-
-            // Try requesting ACCESS_MEDIA_LOCATION
-            const requestResult = await request(
-                PERMISSIONS.ANDROID.ACCESS_MEDIA_LOCATION
-            );
-
-            if (requestResult === 'granted') {
-                return 'granted';
-            }
-
-            // Photos accessible but no GPS — return 'limited'
-            return 'limited';
+            // Photos accessible; GPS depends on media location permission
+            return mediaLocation === 'granted' ? 'granted' : 'limited';
         } else {
             return await check(PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE);
         }

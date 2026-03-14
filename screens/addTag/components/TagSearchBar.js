@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState, forwardRef} from 'react';
 import {
     Keyboard,
     Pressable,
@@ -14,16 +14,17 @@ import {makeTagKey} from './tagUtils';
 
 const MAX_RESULTS = 100;
 
-const TagSearchBar = ({
+const TagSearchBar = forwardRef(({
     objectEntries,
     entriesByCloId,
     currentTags,
     customTags,
     onAddTag,
     onAddCustomTag,
+    onPendingCustomTag,
     onBrowsePress,
     showBrowser
-}) => {
+}, ref) => {
     const [query, setQuery] = useState('');
     const [isFocused, setIsFocused] = useState(false);
     const blurTimerRef = useRef(null);
@@ -88,10 +89,21 @@ const TagSearchBar = ({
         );
     }, [results]);
 
+    useImperativeHandle(ref, () => ({
+        clearQuery: () => setQuery('')
+    }), []);
+
     const hasQuery = query.trim().length > 0;
     const showDropdown = isFocused && hasQuery && !showBrowser;
     const showNoResults = showDropdown && results.length === 0;
     const showResults = showDropdown && sections.length > 0;
+
+    // Notify parent when there's a pending custom tag (no results for query)
+    useEffect(() => {
+        if (onPendingCustomTag) {
+            onPendingCustomTag(showNoResults ? query.trim() : null);
+        }
+    }, [showNoResults, query, onPendingCustomTag]);
 
     const handleSelect = useCallback(
         (cloId, typeId) => {
@@ -256,6 +268,7 @@ const TagSearchBar = ({
                     returnKeyType="search"
                     autoCorrect={false}
                     autoCapitalize="none"
+                    maxLength={100}
                 />
                 {query.length > 0 && (
                     <Pressable onPress={handleClear} style={styles.clearButton}>
@@ -274,18 +287,6 @@ const TagSearchBar = ({
                     <Caption color="muted" family="medium">
                         No results for &ldquo;{query.trim()}&rdquo;
                     </Caption>
-                    <Pressable
-                        onPress={handleCreateCustomTag}
-                        style={styles.createCustomTag}>
-                        <Icon
-                            name="add-circle-outline"
-                            size={16}
-                            color={Colors.white}
-                        />
-                        <Caption color="white" family="medium">
-                            Create &ldquo;{query.trim()}&rdquo;
-                        </Caption>
-                    </Pressable>
                     <Pressable
                         onPress={handleBrowse}
                         style={styles.browseSuggestion}>
@@ -323,7 +324,7 @@ const TagSearchBar = ({
             )}
         </View>
     );
-};
+});
 
 const styles = StyleSheet.create({
     wrapper: {

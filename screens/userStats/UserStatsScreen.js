@@ -37,7 +37,7 @@ const UserStatsScreen = ({ navigation }) => {
         useCallback(() => {
             const fetchData = async () => {
                 await getDataFromStorage();
-                await dispatch(fetchUser(token));
+                await dispatch(fetchUser());
                 await dispatch(getStats());
                 await fetchUserData();
             };
@@ -84,14 +84,14 @@ const UserStatsScreen = ({ navigation }) => {
         if (user)
         {
             const statsObj = {
-                xp: user?.xp_redis,
+                xp: user?.xp,
                 position: user?.position,
-                totalImages: user?.total_images || 0,
+                totalImages: user?.totalImages || 0,
                 totalTags: user?.totalTags,
                 level: user?.level,
-                levelPercentage: user?.targetPercentage,
+                levelPercentage: user?.levelProgress,
                 littercoin: user?.totalLittercoin,
-                littercoinPercentage: user?.total_images % 100
+                littercoinPercentage: user?.totalImages % 100
             };
 
             // INFO: previous stats saved for animation purpose
@@ -147,7 +147,7 @@ const UserStatsScreen = ({ navigation }) => {
 
     const statsData = [
         {
-            value: user?.xp_redis || xpStart,
+            value: user?.xp || xpStart,
             startValue: xpStart,
             title: 'XP',
             icon: 'medal-outline',
@@ -164,7 +164,7 @@ const UserStatsScreen = ({ navigation }) => {
             ordinal: true
         },
         {
-            value: user?.total_images || totalImagesStart,
+            value: user?.totalImages || totalImagesStart,
             startValue: totalImagesStart,
             title: 'Photos',
             icon: 'images-outline',
@@ -257,8 +257,8 @@ const UserStatsScreen = ({ navigation }) => {
                     <ProgressCircleCard
                         level={user?.level}
                         levelStart={levelStart}
-                        levelPercentage={user?.targetPercentage}
-                        xpRequired={user?.xpRequired}
+                        levelPercentage={user?.levelProgress}
+                        xpToNextLevel={user?.xpToNextLevel}
                     />
 
                     <StatsGrid
