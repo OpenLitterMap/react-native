@@ -1,13 +1,12 @@
 import React, {FC, useState} from 'react';
 import {
     Dimensions,
-    Platform,
     Pressable,
-    SafeAreaView,
     StatusBar,
     StyleSheet,
     View
 } from 'react-native';
+import {SafeAreaView} from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
 import {Slides} from './authComponents';
 import {Body, Colors} from '../components';
@@ -60,7 +59,7 @@ const WelcomeScreen: FC<{navigation: any}> = ({navigation}) => {
                 colors={['#f0faf4', '#e8f5ec', '#dcffeb', '#d4f7e2']}
                 locations={[0, 0.3, 0.7, 1]}
                 style={styles.gradient}>
-                <SafeAreaView style={styles.safe}>
+                <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
                     <View style={styles.centered}>
                         <View>
                             <Slides
@@ -129,7 +128,6 @@ const styles = StyleSheet.create({
     },
     safe: {
         flex: 1,
-        paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0
     },
     centered: {
         flex: 1,

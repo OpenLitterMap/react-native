@@ -34,7 +34,7 @@ const NewUpdateScreen = ({ navigation }) => {
                     dictionary={'Update Now'}
                 />
             </Pressable>
-            <Pressable onPress={() => navigation.navigate('HOME')}>
+            <Pressable onPress={() => navigation.navigate('APP', { screen: 'HOME' })}>
                 <Body dictionary={'Not now, Later'} />
             </Pressable>
         </View>

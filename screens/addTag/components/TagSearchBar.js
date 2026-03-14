@@ -1,12 +1,12 @@
 import React, {useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState, forwardRef} from 'react';
 import {
     Keyboard,
-    Pressable,
     SectionList,
     StyleSheet,
     TextInput,
     View
 } from 'react-native';
+import {Pressable} from 'react-native-gesture-handler';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {Body, Caption, Colors} from '../../components';
 import {getCategoryColor} from './categoryColors';

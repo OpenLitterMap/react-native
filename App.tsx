@@ -4,6 +4,7 @@ import {Provider} from 'react-redux';
 import {PersistGate} from 'redux-persist/integration/react';
 import {NavigationContainer} from '@react-navigation/native';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
+import {SafeAreaProvider} from 'react-native-safe-area-context';
 import {MainRoutes} from './routes';
 import * as Sentry from '@sentry/react-native';
 import Config from 'react-native-config';
@@ -19,13 +20,15 @@ setupAxiosInterceptors(store);
 
 if (IS_PRODUCTION) {
     Sentry.init({
-        dsn: SENTRY_DSN
+        dsn: SENTRY_DSN,
+        tracePropagationTargets: [],
     });
 }
 
 const App = () => {
     return (
         <GestureHandlerRootView style={{flex: 1}}>
+            <SafeAreaProvider>
             <NavigationContainer>
                 <Provider store={store}>
                     <PersistGate loading={null} persistor={persistor}>
@@ -33,6 +36,7 @@ const App = () => {
                     </PersistGate>
                 </Provider>
             </NavigationContainer>
+            </SafeAreaProvider>
         </GestureHandlerRootView>
     );
 };

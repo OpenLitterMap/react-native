@@ -1,18 +1,17 @@
-# Transform this into a `node_require` generic function:
-def node_require(script)
-  # Resolve script with node to allow for hoisting
-  require Pod::Executable.execute_command('node', ['-p',
-    "require.resolve(
-      '#{script}',
-      {paths: [process.argv[1]]},
-    )", __dir__]).strip
-end
+# Resolve react_native_pods.rb with node to allow for hoisting
+require Pod::Executable.execute_command('node', ['-p',
+  'require.resolve(
+    "react-native/scripts/react_native_pods.rb",
+    {paths: [process.argv[1]]},
+  )', __dir__]).strip
 
-# Use it to require both react-native's and this package's scripts:
-node_require('react-native/scripts/react_native_pods.rb')
-node_require('react-native-permissions/scripts/setup.rb')
+require Pod::Executable.execute_command('node', ['-p',
+  'require.resolve(
+    "react-native-permissions/scripts/setup.rb",
+    {paths: [process.argv[1]]},
+  )', __dir__]).strip
 
-platform :ios, '15.0'
+platform :ios, '15.1'
 prepare_react_native_project!
 
 linkage = ENV['USE_FRAMEWORKS']
@@ -36,22 +35,6 @@ target 'openlittermap' do
     'PhotoLibrary',
     'LocationAlways',
     'LocationWhenInUse',
-    # 'Bluetooth',
-    # 'Microphone',
-    # 'Motion',
-    # 'Contacts',
-    # 'Events',
-    # 'Reminders',
-    # 'SpeechRecognition',
-    # 'MediaLibrary',
-    # 'Health',
-    # 'DataProtection',
-    # 'HomeKit',
-    # 'Music',
-    # 'Motion',
-    # 'SpeechRecognition',
-    # 'Siri',
-    # 'StoreKit',
   ])
 
   target 'openlittermapTests' do
@@ -60,12 +43,10 @@ target 'openlittermap' do
   end
 
   post_install do |installer|
-    # https://github.com/facebook/react-native/blob/main/packages/react-native/scripts/react_native_pods.rb#L197-L202
     react_native_post_install(
       installer,
       config[:reactNativePath],
       :mac_catalyst_enabled => false,
-      # :ccache_enabled => true
     )
   end
 end

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, FC } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
-import { createStackNavigator } from '@react-navigation/stack';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useSelector, useDispatch } from 'react-redux';
 import { checkValidToken } from '../reducers/auth_reducer';
 
@@ -12,7 +12,7 @@ import { GalleryScreen, NewUpdateScreen,  SettingScreen } from '../screens';
 import AddTagScreen from '../screens/addTag/AddTagScreen';
 import MyUploads from "../screens/userStats/userComponents/MyUploads";
 
-const Stack = createStackNavigator();
+const Stack = createNativeStackNavigator();
 
 const MainRoutes = () => {
 
@@ -41,21 +41,20 @@ const MainRoutes = () => {
     } else {
         return (
             <Stack.Navigator
-                presentation="modal"
-                screenOptions={{ headerShown: false }}
+                screenOptions={{ headerShown: false, contentStyle: { backgroundColor: 'white' } }}
             >
                 {token === null ? (
                     <Stack.Screen name="AUTH_HOME" component={AuthStack} />
                 ) : (
                     <>
                         <Stack.Screen name="APP" component={TabRoutes} />
-                        <Stack.Screen name="PERMISSION" component={PermissionStack} />
-                        <Stack.Screen name="ADD_TAGS" component={AddTagScreen} />
-                        <Stack.Screen name="ALBUM" component={GalleryScreen} />
-                        <Stack.Screen name="SETTING" component={SettingScreen} />
-                        <Stack.Screen name="UPDATE" component={NewUpdateScreen} />
+                        <Stack.Screen name="PERMISSION" component={PermissionStack} options={{ presentation: 'fullScreenModal', gestureEnabled: false }} />
+                        <Stack.Screen name="ADD_TAGS" component={AddTagScreen} options={{ presentation: 'fullScreenModal', gestureEnabled: false }} />
+                        <Stack.Screen name="ALBUM" component={GalleryScreen} options={{ presentation: 'fullScreenModal', gestureEnabled: false }} />
+                        <Stack.Screen name="SETTING" component={SettingScreen} options={{ presentation: 'fullScreenModal', gestureEnabled: false }} />
+                        <Stack.Screen name="UPDATE" component={NewUpdateScreen} options={{ presentation: 'fullScreenModal', gestureEnabled: false }} />
 
-                        <Stack.Screen name="MY_UPLOADS" component={MyUploads} />
+                        <Stack.Screen name="MY_UPLOADS" component={MyUploads} options={{ presentation: 'fullScreenModal', gestureEnabled: false }} />
                     </>
                 )}
             </Stack.Navigator>

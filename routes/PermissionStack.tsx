@@ -1,5 +1,5 @@
 import React, { FC } from 'react';
-import { createStackNavigator } from '@react-navigation/stack';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { CameraPermissionScreen, GalleryPermissionScreen } from '../screens';
 
 type PermissionStackParamList = {
@@ -7,7 +7,7 @@ type PermissionStackParamList = {
     CameraPermissionScreen: any;
 }
 
-const Stack = createStackNavigator<PermissionStackParamList>();
+const Stack = createNativeStackNavigator<PermissionStackParamList>();
 
 const PermissionStack: FC = () => {
     return (

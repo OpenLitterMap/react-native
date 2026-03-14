@@ -1,11 +1,11 @@
 import React from 'react';
 import {
     Platform,
-    SafeAreaView,
     StatusBar,
     StyleSheet,
     View
 } from 'react-native';
+import {SafeAreaView} from 'react-native-safe-area-context';
 import {Colors} from './theme';
 
 const Header = ({
@@ -73,10 +73,9 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         paddingHorizontal: 20,
-        paddingTop: StatusBar.currentHeight,
         alignItems: 'center',
         backgroundColor: `${Colors.accent}`,
-        minHeight: Platform.OS === 'ios' ? 60 : 80
+        minHeight: 60
     },
     headerSafeView: {
         backgroundColor: `${Colors.accent}`

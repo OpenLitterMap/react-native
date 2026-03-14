@@ -4,12 +4,12 @@ import {
     Dimensions,
     FlatList,
     Pressable,
-    SafeAreaView,
     StyleSheet,
     ToastAndroid,
     Platform,
     View
 } from 'react-native';
+import {SafeAreaView} from 'react-native-safe-area-context';
 import dayjs from '../../utils/dayjs';
 import _ from 'lodash';
 import {PanGestureHandler, State} from 'react-native-gesture-handler';
@@ -264,7 +264,7 @@ const GalleryScreen = ({navigation}) => {
             })
         );
 
-        navigation.navigate('HOME');
+        navigation.navigate('APP', { screen: 'HOME' });
     };
 
     /**
@@ -340,7 +340,7 @@ const GalleryScreen = ({navigation}) => {
                 leftContent={
                     <Pressable
                         onPress={() => {
-                            navigation.navigate('HOME');
+                            navigation.navigate('APP', { screen: 'HOME' });
                         }}>
                         <Body color="white" dictionary={'Cancel'} />
                     </Pressable>
@@ -413,7 +413,7 @@ const GalleryScreen = ({navigation}) => {
                         </Pressable>
                     )}
 
-                    <SafeAreaView style={styles.safeArea}>
+                    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
                         <PanGestureHandler
                             onGestureEvent={onGestureEvent}
                             onHandlerStateChange={onHandlerStateChange}

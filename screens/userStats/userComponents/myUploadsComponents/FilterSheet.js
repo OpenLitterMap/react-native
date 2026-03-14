@@ -124,7 +124,7 @@ const FilterSheet = ({ visible, filters, onApply, onClose }) => {
     };
 
     return (
-        <Modal animationType="slide" transparent visible={visible}>
+        <Modal animationType="slide" transparent visible={visible} onRequestClose={onClose}>
             <View style={styles.overlay}>
                 <KeyboardAvoidingView
                     behavior={Platform.OS === 'ios' ? 'padding' : 'height'}

@@ -5,17 +5,18 @@ import {
     Animated,
     Keyboard,
     KeyboardAvoidingView,
-    PanResponder,
     Platform,
-    Pressable,
-    SafeAreaView,
+    Pressable as RNPressable,
     StatusBar,
     StyleSheet,
     View
 } from 'react-native';
+import {SafeAreaView} from 'react-native-safe-area-context';
+import {Pressable} from 'react-native-gesture-handler';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {shallowEqual, useDispatch, useSelector} from 'react-redux';
+import {useFocusEffect} from '@react-navigation/native';
 import {useTranslation} from 'react-i18next';
 import {Body, Caption, Colors} from '../components';
 import ImageViewer from './components/ImageViewer';
@@ -75,31 +76,11 @@ const AddTagScreen = ({navigation}) => {
     const [focusMode, setFocusMode] = useState(false);
     const [showBrowser, setShowBrowser] = useState(false);
     const [detailTag, setDetailTag] = useState(null);
-    const detailTagRef = useRef(null);
-
-    // Keep ref in sync so PanResponder can read it
-    detailTagRef.current = detailTag;
-
     // Overlay opacity for focus mode transitions
     const overlayOpacity = useRef(new Animated.Value(1)).current;
 
     // XP badge pulse animation
     const xpScale = useRef(new Animated.Value(1)).current;
-
-    // Swipe down to dismiss (disabled when detail sheet is open)
-    const swipeDismiss = useRef(
-        PanResponder.create({
-            onMoveShouldSetPanResponder: (_, gs) =>
-                !detailTagRef.current &&
-                gs.dy > 30 &&
-                Math.abs(gs.dy) > Math.abs(gs.dx * 2),
-            onPanResponderRelease: (_, gs) => {
-                if (gs.dy > 100) {
-                    navigation.navigate('HOME');
-                }
-            }
-        })
-    ).current;
 
     // Fetch tags on mount if not loaded
     useEffect(() => {
@@ -108,6 +89,13 @@ const AddTagScreen = ({navigation}) => {
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
+
+    // Set status bar style when screen is focused
+    useFocusEffect(
+        useCallback(() => {
+            StatusBar.setBarStyle('light-content');
+        }, [])
+    );
 
     // Clamp swiperIndex to valid range to prevent out-of-bounds access
     const safeIndex = images.length > 0
@@ -425,7 +413,7 @@ const AddTagScreen = ({navigation}) => {
         }
 
         if (allTagged) {
-            navigation.navigate('HOME');
+            navigation.navigate('APP', { screen: 'HOME' });
         } else if (swiperIndex < images.length - 1) {
             dispatch(changeSwiperIndex(swiperIndex + 1));
         } else {
@@ -450,7 +438,7 @@ const AddTagScreen = ({navigation}) => {
 
     if (!currentImage) {
         return (
-            <SafeAreaView style={styles.emptyContainer}>
+            <SafeAreaView style={styles.emptyContainer} edges={['top', 'left', 'right']}>
                 <Icon name="images-outline" size={48} color={Colors.muted} />
                 <Body color="muted" style={styles.emptyText}>
                     No images selected
@@ -463,8 +451,7 @@ const AddTagScreen = ({navigation}) => {
     }
 
     return (
-        <View style={styles.container} {...swipeDismiss.panHandlers}>
-            <StatusBar barStyle="light-content" />
+        <View style={styles.container}>
 
             {/* Full-screen image viewer */}
             <ImageViewer
@@ -487,10 +474,10 @@ const AddTagScreen = ({navigation}) => {
                         'transparent'
                     ]}
                     locations={[0, 0.6, 1]}>
-                    <SafeAreaView>
+                    <SafeAreaView edges={['top', 'left', 'right']}>
                         <View style={styles.topBar}>
                             <Pressable
-                                onPress={() => isEditMode ? navigation.goBack() : navigation.navigate('HOME')}
+                                onPress={() => isEditMode ? navigation.goBack() : navigation.navigate('APP', { screen: 'HOME' })}
                                 style={styles.backButton}
                                 hitSlop={8}>
                                 <Icon
@@ -615,7 +602,7 @@ const AddTagScreen = ({navigation}) => {
                         )}
 
                         {/* Bottom controls */}
-                        <SafeAreaView>
+                        <SafeAreaView edges={['bottom']}>
                             <View style={styles.bottomControls}>
                                 {/* Picked up toggle */}
                                 <Pressable

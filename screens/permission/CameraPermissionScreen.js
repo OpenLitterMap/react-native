@@ -8,6 +8,7 @@ import {
     StyleSheet,
     View
 } from 'react-native';
+import {SafeAreaView} from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {Title, Body, Colors, Caption} from '../components';
@@ -49,7 +50,7 @@ const CameraPermissionScreen = ({navigation}) => {
             cameraPermission === 'granted' &&
             locationPermission === 'granted'
         ) {
-            navigation.navigate('HOME');
+            navigation.navigate('APP', { screen: 'HOME' });
         }
     };
 
@@ -57,7 +58,7 @@ const CameraPermissionScreen = ({navigation}) => {
         const cameraResult = await requestCameraPermission();
         const locationResult = await requestLocationPermission();
         if (cameraResult === 'granted' && locationResult === 'granted') {
-            navigation.navigate('HOME');
+            navigation.navigate('APP', { screen: 'HOME' });
         } else {
             Platform.OS === 'ios'
                 ? Linking.openURL('app-settings:')
@@ -70,7 +71,7 @@ const CameraPermissionScreen = ({navigation}) => {
             colors={['#f0faf4', '#e8f5ec', '#dcffeb']}
             locations={[0, 0.5, 1]}
             style={styles.gradient}>
-            <View style={styles.container}>
+            <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
                 <View style={styles.iconCircle}>
                     <Image
                         source={require('../../assets/illustrations/camera_permission.png')}
@@ -141,7 +142,7 @@ const CameraPermissionScreen = ({navigation}) => {
                 </Pressable>
 
                 <Pressable
-                    onPress={() => navigation.navigate('HOME')}
+                    onPress={() => navigation.navigate('APP', { screen: 'HOME' })}
                     style={styles.skipButton}>
                     <Caption
                         color="muted"
@@ -149,7 +150,7 @@ const CameraPermissionScreen = ({navigation}) => {
                         dictionary="Not now, Later"
                     />
                 </Pressable>
-            </View>
+            </SafeAreaView>
         </LinearGradient>
     );
 };

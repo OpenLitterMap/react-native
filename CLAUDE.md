@@ -20,7 +20,7 @@ npm run lint                             # ESLint
 npm test                                 # Jest (no tests exist yet)
 ```
 
-Runtime: **Node v20.20.0**, **npm 10.8.2** (prefer npm over yarn)
+Runtime: **Node v22.22.1**, **npm 10.9.4** (prefer npm over yarn) — RN 0.84 requires Node ≥ 22.11
 
 ## Core User Flow
 

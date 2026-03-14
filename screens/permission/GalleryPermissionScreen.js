@@ -9,6 +9,7 @@ import {
     View
 } from 'react-native';
 import {useDispatch} from 'react-redux';
+import {SafeAreaView} from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {Body, Caption, Colors, Title} from '../components';
@@ -53,7 +54,7 @@ const GalleryPermissionScreen = ({navigation}) => {
             // Reset gallery and re-fetch so newly-permitted photos appear
             dispatch(resetGallery());
             dispatch(getPhotosFromCameraroll('REFRESH'));
-            navigation.navigate('HOME');
+            navigation.navigate('APP', { screen: 'HOME' });
         }
     };
 
@@ -63,7 +64,7 @@ const GalleryPermissionScreen = ({navigation}) => {
         if (result === 'granted' || result === 'limited') {
             dispatch(resetGallery());
             dispatch(getPhotosFromCameraroll('REFRESH'));
-            navigation.navigate('HOME');
+            navigation.navigate('APP', { screen: 'HOME' });
         } else {
             Platform.OS === 'ios'
                 ? await Linking.openURL('app-settings:')
@@ -76,7 +77,7 @@ const GalleryPermissionScreen = ({navigation}) => {
             colors={['#f0faf4', '#e8f5ec', '#dcffeb']}
             locations={[0, 0.5, 1]}
             style={styles.gradient}>
-            <View style={styles.container}>
+            <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
                 <View style={styles.iconCircle}>
                     <Image
                         source={require('../../assets/illustrations/gallery_permission.png')}
@@ -115,7 +116,7 @@ const GalleryPermissionScreen = ({navigation}) => {
                 </Pressable>
 
                 <Pressable
-                    onPress={() => navigation.navigate('HOME')}
+                    onPress={() => navigation.navigate('APP', { screen: 'HOME' })}
                     style={styles.skipButton}>
                     <Caption
                         color="muted"
@@ -123,7 +124,7 @@ const GalleryPermissionScreen = ({navigation}) => {
                         dictionary="Not now, Later"
                     />
                 </Pressable>
-            </View>
+            </SafeAreaView>
         </LinearGradient>
     );
 };

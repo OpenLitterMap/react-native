@@ -8,7 +8,6 @@ import {
     StyleSheet,
     Text,
     TextInput,
-    TouchableHighlight,
     View
 } from 'react-native';
 import {useDispatch, useSelector} from 'react-redux';
@@ -324,13 +323,11 @@ const SettingsComponent = () => {
 
                     <Text>{success ? successMessage : errorMessage}</Text>
 
-                    <TouchableHighlight
+                    <Pressable
                         style={styles.successButton}
-                        activeOpacity={0.9}
-                        underlayColor="#00aced"
                         onPress={goBack}>
                         <Text style={styles.buttonText}>{goBackMessage}</Text>
-                    </TouchableHighlight>
+                    </Pressable>
                 </View>
             );
         }
@@ -432,7 +429,8 @@ const SettingsComponent = () => {
             <Modal
                 animationType="slide"
                 transparent={true}
-                visible={saveResultModalVisible}>
+                visible={saveResultModalVisible}
+                onRequestClose={goBack}>
                 <View style={styles.modalContainer}>
                     {renderStatusMessage(saveResultMessage)}
                     {isSaving && saveResultMessage === '' && (

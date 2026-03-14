@@ -229,7 +229,7 @@ const HomeScreen = ({navigation}) => {
      * Navigate to album screen
      */
     const loadGallery = async () => {
-        navigation.navigate('ALBUM', {screen: 'GALLERY'});
+        navigation.navigate('ALBUM');
     };
 
     /**
@@ -601,7 +601,8 @@ const HomeScreen = ({navigation}) => {
                 <Modal
                     animationType="slide"
                     transparent={true}
-                    visible={showUploadModal}>
+                    visible={showUploadModal}
+                    onRequestClose={isUploading ? cancelUploadWrapper : hideThankYouMessages}>
                     {/* Uploading spinner with phase-aware progress */}
                     {isUploading && (
                         <View style={styles.modal}>

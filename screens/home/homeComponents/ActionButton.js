@@ -44,8 +44,8 @@ const ActionButton = ({ status, onPress }) => {
                                   `${Colors.accent}`
                               ]
                     }
-                    useAngle={true}
-                    angle={145}
+                    start={{x: 0.2, y: 0}}
+                    end={{x: 0.8, y: 1}}
                     style={[
                         styles.buttonStyle,
                         {

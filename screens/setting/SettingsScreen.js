@@ -251,7 +251,8 @@ const SettingsScreen = ({navigation}) => {
                 <Modal
                     animationType="slide"
                     transparent={true}
-                    visible={editModalVisible}>
+                    visible={editModalVisible}
+                    onRequestClose={() => dispatch(toggleEditModal({}))}>
                     {savingToggle && (
                         <View style={styles.waitModal}>
                             <ActivityIndicator />

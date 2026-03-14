@@ -1,5 +1,6 @@
 import React, {useCallback, useMemo} from 'react';
-import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
+import {ScrollView, StyleSheet, View} from 'react-native';
+import {Pressable} from 'react-native-gesture-handler';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {Caption, Colors} from '../../components';
 import {makeTagKey, resolveTagEntry} from './tagUtils';

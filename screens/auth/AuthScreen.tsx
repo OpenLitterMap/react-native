@@ -229,8 +229,7 @@ const styles = StyleSheet.create({
         paddingBottom: Platform.OS === 'android' ? 32 : 16
     },
     topBar: {
-        paddingTop:
-            Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 8 : 8,
+        paddingTop: 8,
         paddingBottom: 8
     },
     backButton: {

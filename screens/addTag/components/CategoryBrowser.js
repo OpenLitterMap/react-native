@@ -1,5 +1,6 @@
 import React, {useCallback, useMemo, useState} from 'react';
-import {FlatList, Pressable, ScrollView, StyleSheet, View} from 'react-native';
+import {FlatList, ScrollView, StyleSheet, View} from 'react-native';
+import {Pressable} from 'react-native-gesture-handler';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {Body, Caption, Colors} from '../../components';
 import {getCategoryColor} from './categoryColors';

@@ -120,16 +120,12 @@ const ImageViewer = ({ images, currentIndex, onIndexChange, onToggleFocus, onZoo
                 const hasSufficientVelocity = Math.abs(e.velocityX) > SWIPE_VELOCITY;
 
                 if (isHorizontalSwipe && (hasSufficientDistance || hasSufficientVelocity)) {
-                    // Animate off screen then change image
-                    const direction = e.translationX < 0 ? -1 : 1;
-                    swipeX.value = withTiming(direction * SCREEN_WIDTH, { duration: 150 }, () => {
-                        swipeX.value = 0;
-                        if (direction < 0) {
-                            runOnJS(goNext)();
-                        } else {
-                            runOnJS(goPrev)();
-                        }
-                    });
+                    swipeX.value = 0;
+                    if (e.translationX < 0) {
+                        runOnJS(goNext)();
+                    } else {
+                        runOnJS(goPrev)();
+                    }
                 } else {
                     // Snap back
                     swipeX.value = withTiming(0, { duration: 150 });

@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, SafeAreaView } from 'react-native';
+import { View } from 'react-native';
 import { createMaterialTopTabNavigator } from '@react-navigation/material-top-tabs';
 import {
     HomeScreen,
@@ -17,12 +17,9 @@ const TabRoutes: React.FC = () => (
         <Tab.Navigator
             tabBarPosition="bottom"
             initialRouteName="HOME"
-            // @ts-ignore
-            showIcon={true}
-            tabStyle={{ backgroundColor: '#000' }}
+            lazy
             screenOptions={({ route }) => ({
-                // @ts-ignore
-                tabBarIcon: ({ focused, color, size }) => {
+                tabBarIcon: ({ focused, color }) => {
                     let iconName;
 
                     switch (route.name) {
@@ -70,24 +67,22 @@ const TabRoutes: React.FC = () => (
                     justifyContent: 'center',
                     alignItems: 'center'
                 },
-                pressColor: 'white',
-                pressOpacity: 0,
-                indicatorStyle: {display: 'none', backgroundColor: 'white'},
-                style: {
+                tabBarPressColor: 'white',
+                tabBarPressOpacity: 0,
+                tabBarIndicatorStyle: {display: 'none', backgroundColor: 'white'},
+                tabBarStyle: {
                     backgroundColor: 'white',
                     borderTopWidth: 0,
                     height: 60,
                     margin: 0,
                     padding: 0
                 },
-                lazy: true
             })}
         >
             <Tab.Screen name="HOME" component={HomeScreen} />
             <Tab.Screen name="TEAM" component={TeamStack} />
             <Tab.Screen name="USER_STATS" component={ProfileScreen} />
         </Tab.Navigator>
-        <SafeAreaView />
     </>
 );
 

@@ -1,5 +1,5 @@
 import React, { FC } from 'react';
-import { createStackNavigator } from '@react-navigation/stack';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import {
     TeamScreen,
     TeamDetailsScreen,
@@ -7,7 +7,7 @@ import {
     TeamLeaderboardScreen
 } from '../screens';
 
-const Stack = createStackNavigator();
+const Stack = createNativeStackNavigator();
 
 const TeamStack: FC = () => {
     return (
