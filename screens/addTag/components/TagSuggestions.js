@@ -3,7 +3,7 @@ import {ScrollView, StyleSheet, View} from 'react-native';
 import {Pressable} from 'react-native-gesture-handler';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {Caption, Colors} from '../../components';
-import {makeTagKey, resolveTagEntry} from './tagUtils';
+import {makeTagKey, parseTagKey, resolveTagEntry} from './tagUtils';
 
 const TagSuggestions = ({
     images,
@@ -36,9 +36,7 @@ const TagSuggestions = ({
             .sort((a, b) => b[1] - a[1])
             .slice(0, 10)
             .map(([key]) => {
-                const [cloIdStr, typeIdStr] = key.split('-');
-                const cloId = Number(cloIdStr);
-                const typeId = typeIdStr ? Number(typeIdStr) : null;
+                const [cloId, typeId] = parseTagKey(key);
                 const entry = resolveTagEntry(
                     cloId,
                     typeId,
@@ -63,12 +61,6 @@ const TagSuggestions = ({
 
     return (
         <View style={styles.container}>
-            <View style={styles.labelRow}>
-                <Icon name="flash" size={12} color={Colors.accent} />
-                <Caption color="accent" family="medium" style={styles.label}>
-                    Quick add
-                </Caption>
-            </View>
             <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}

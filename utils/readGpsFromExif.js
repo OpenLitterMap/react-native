@@ -1,4 +1,5 @@
 import {read as readExif} from '@lodev09/react-native-exify';
+import * as Sentry from '@sentry/react-native';
 import {isValidGpsCoords} from './gps';
 
 const EXIF_TIMEOUT_MS = 5000;
@@ -14,16 +15,18 @@ const EXIF_TIMEOUT_MS = 5000;
  * @returns {Promise<{latitude: number, longitude: number} | null>}
  */
 export const readGpsFromExif = async uri => {
+    let timeoutId;
     try {
         const tags = await Promise.race([
             readExif(uri),
-            new Promise((_, reject) =>
-                setTimeout(
+            new Promise((_, reject) => {
+                timeoutId = setTimeout(
                     () => reject(new Error('EXIF read timed out')),
                     EXIF_TIMEOUT_MS
-                )
-            )
+                );
+            })
         ]);
+        clearTimeout(timeoutId);
         if (
             tags?.GPSLatitude != null &&
             tags?.GPSLongitude != null &&
@@ -32,8 +35,14 @@ export const readGpsFromExif = async uri => {
             return {latitude: tags.GPSLatitude, longitude: tags.GPSLongitude};
         }
     } catch (e) {
+        clearTimeout(timeoutId);
         if (__DEV__) {
             console.warn(`[GPS Debug] EXIF read failed for ${uri}:`, e.message);
+        } else {
+            Sentry.captureException(e, {
+                level: 'warning',
+                tags: {section: 'exif_read'}
+            });
         }
     }
     return null;

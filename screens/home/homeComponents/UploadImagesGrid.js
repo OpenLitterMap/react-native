@@ -1,5 +1,5 @@
 import React from 'react';
-import {Dimensions, FlatList, Image, Pressable, Text, View} from 'react-native';
+import {FlatList, Image, Pressable, Text, useWindowDimensions, View} from 'react-native';
 import {useDispatch} from 'react-redux';
 import {Body, SubTitle} from '../../components';
 import {isTagged} from '../../../utils/isTagged';
@@ -8,9 +8,8 @@ import {
     toggleSelectedImages
 } from '../../../reducers/images_reducer';
 
-const {width: SCREEN_WIDTH} = Dimensions.get('window');
-
 const UploadImagesGrid = ({images, isSelecting, navigation}) => {
+    const {width: SCREEN_WIDTH} = useWindowDimensions();
     const dispatch = useDispatch();
 
     const imagePressed = index => {
@@ -40,13 +39,11 @@ const UploadImagesGrid = ({images, isSelecting, navigation}) => {
      */
     const renderImage = ({item, index}) => {
         const imageHasTags = isTagged(item);
-        const isPickedUp = item.picked_up ?? false;
-        const pickedUpIcon = isPickedUp ? '⬆️' : '⬇️';
         return (
             <Pressable onPress={() => imagePressed(index)}>
-                <View style={styles.gridImageContainer}>
+                <View style={{width: SCREEN_WIDTH / 3 - 2, height: SCREEN_WIDTH / 3 - 2, marginHorizontal: 0.5, marginTop: 1}}>
                     <Image
-                        style={styles.gridImageStyle}
+                        style={{width: SCREEN_WIDTH / 3 - 2, height: SCREEN_WIDTH / 3 - 2}}
                         source={{uri: item.uri ?? item.filename}}
                         resizeMode="cover"
                     />
@@ -70,14 +67,14 @@ const UploadImagesGrid = ({images, isSelecting, navigation}) => {
                             <Text>🏷</Text>
                         </View>
                     )}
-                    {isPickedUp !== null && (
+                    {item.picked_up && (
                         <View
                             style={{
                                 position: 'absolute',
                                 top: 5,
                                 right: 5
                             }}>
-                            <Text>{pickedUpIcon}</Text>
+                            <Text>⬆️</Text>
                         </View>
                     )}
                 </View>
@@ -86,7 +83,7 @@ const UploadImagesGrid = ({images, isSelecting, navigation}) => {
     };
 
     // Show empty state illustration when no images
-    if (images.length === 0) {
+    if (!images || images.length === 0) {
         return (
             <View
                 style={{
@@ -95,15 +92,15 @@ const UploadImagesGrid = ({images, isSelecting, navigation}) => {
                     flex: 0.75
                 }}>
                 <Image
-                    style={styles.imageStyle}
+                    style={{width: SCREEN_WIDTH / 2, height: SCREEN_WIDTH / 2}}
                     source={require('../../../assets/illustrations/empty_image.png')}
                 />
                 <SubTitle
-                    style={styles.exptyStateText}
+                    style={styles.emptyStateText}
                     dictionary={'No images to upload'}
                 />
                 <Body
-                    style={styles.exptyStateText}
+                    style={styles.emptyStateText}
                     dictionary={'Take a photo and select it from the gallery'}
                 />
             </View>
@@ -130,24 +127,10 @@ const UploadImagesGrid = ({images, isSelecting, navigation}) => {
 };
 
 const styles = {
-    exptyStateText: {
+    emptyStateText: {
         textAlign: 'center',
         marginTop: 20,
         paddingHorizontal: 20
-    },
-    imageStyle: {
-        width: SCREEN_WIDTH / 2,
-        height: SCREEN_WIDTH / 2
-    },
-    gridImageContainer: {
-        width: SCREEN_WIDTH / 3 - 2,
-        height: SCREEN_WIDTH / 3 - 2,
-        marginHorizontal: 0.5,
-        marginTop: 1
-    },
-    gridImageStyle: {
-        width: SCREEN_WIDTH / 3 - 2,
-        height: SCREEN_WIDTH / 3 - 2
     },
     checkCircleContainer: {
         position: 'absolute',

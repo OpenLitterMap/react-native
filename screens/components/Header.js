@@ -5,7 +5,7 @@ import {
     StyleSheet,
     View
 } from 'react-native';
-import {SafeAreaView} from 'react-native-safe-area-context';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {Colors} from './theme';
 
 const Header = ({
@@ -17,17 +17,24 @@ const Header = ({
     centerContainerStyle,
     rightContainerStyle
 }) => {
+    const insets = useSafeAreaInsets();
+
     return (
         <>
             <StatusBar
                 translucent
-                // hidden
                 barStyle="light-content"
                 backgroundColor={`${Colors.accent}`}
             />
-            <SafeAreaView
-                edges={['left', 'top', 'right']}
-                style={styles.headerSafeView}>
+            <View
+                style={[
+                    styles.headerSafeView,
+                    {
+                        paddingTop: insets.top,
+                        paddingLeft: insets.left,
+                        paddingRight: insets.right
+                    }
+                ]}>
                 <View style={[styles.headerContainer, containerStyle]}>
                     {/* left icon */}
                     {leftContent && (
@@ -61,7 +68,7 @@ const Header = ({
                         </View>
                     )}
                 </View>
-            </SafeAreaView>
+            </View>
         </>
     );
 };

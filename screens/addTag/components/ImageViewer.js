@@ -1,15 +1,14 @@
-import React, { useCallback } from 'react';
-import { Dimensions, Image, StyleSheet, View } from 'react-native';
-import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import { URL, IS_PRODUCTION } from '../../../actions/types';
+import React, {useCallback, useEffect, useMemo, useRef} from 'react';
+import {Image, StyleSheet, useWindowDimensions, View} from 'react-native';
+import {Gesture, GestureDetector} from 'react-native-gesture-handler';
+import {URL, IS_PRODUCTION} from '../../../actions/types';
 import Animated, {
     useSharedValue,
     useAnimatedStyle,
     withTiming,
     runOnJS,
+    cancelAnimation
 } from 'react-native-reanimated';
-
-const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 const MIN_SCALE = 1.0;
 const MAX_SCALE = 4.0;
@@ -17,16 +16,79 @@ const DOUBLE_TAP_SCALE = 2.0;
 const SWIPE_THRESHOLD = 60;
 const SWIPE_VELOCITY = 400;
 const ZOOM_THRESHOLD = 1.02;
+const SNAP_DURATION = 250;
 
-const ImageViewer = ({ images, currentIndex, onIndexChange, onToggleFocus, onZoomChange }) => {
+const resolveUri = uri => {
+    if (!IS_PRODUCTION && uri?.includes('127.0.0.1')) {
+        const match = URL.match(/:\/\/([^:/]+)/);
+        if (match) {
+            return uri.replace('127.0.0.1', match[1]);
+        }
+    }
+    return uri;
+};
+
+/**
+ * Single slide that renders an image at a fixed horizontal offset.
+ * Does NOT receive any animated style — avoids Reanimated crash from
+ * toggling useAnimatedStyle across mount/unmount cycles.
+ */
+const Slide = React.memo(({uri, offsetX, screenWidth, screenHeight}) => (
+    <View style={[styles.slide, {left: offsetX, width: screenWidth}]}>
+        {uri && (
+            <Image
+                source={{uri}}
+                style={{width: screenWidth, height: screenHeight}}
+                resizeMode="contain"
+            />
+        )}
+    </View>
+));
+
+const ImageViewer = ({
+    images,
+    currentIndex,
+    onIndexChange,
+    onToggleFocus,
+    onZoomChange
+}) => {
+    const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} = useWindowDimensions();
+
+    // --- Shared values for worklet-safe access ---
+    // These mirror the JS props so gesture worklets always read current values.
+    const indexSV = useSharedValue(currentIndex);
+    const countSV = useSharedValue(images?.length ?? 0);
+
+    // Keep shared values in sync with props
+    useEffect(() => {
+        indexSV.value = currentIndex;
+    }, [currentIndex, indexSV]);
+
+    useEffect(() => {
+        countSV.value = images?.length ?? 0;
+    }, [images?.length, countSV]);
+
+    // Use ref for callbacks so worklet closures are never stale
+    const onIndexChangeRef = useRef(onIndexChange);
+    onIndexChangeRef.current = onIndexChange;
+
+    const onZoomChangeRef = useRef(onZoomChange);
+    onZoomChangeRef.current = onZoomChange;
+
+    const onToggleFocusRef = useRef(onToggleFocus);
+    onToggleFocusRef.current = onToggleFocus;
+
+    // Zoom (current image only)
     const scale = useSharedValue(1);
     const savedScale = useSharedValue(1);
-    const translateX = useSharedValue(0);
-    const translateY = useSharedValue(0);
-    const savedTranslateX = useSharedValue(0);
-    const savedTranslateY = useSharedValue(0);
-    // Separate swipe offset so it doesn't interfere with zoom pan
-    const swipeX = useSharedValue(0);
+    const zoomX = useSharedValue(0);
+    const zoomY = useSharedValue(0);
+    const savedZoomX = useSharedValue(0);
+    const savedZoomY = useSharedValue(0);
+
+    // Swipe — horizontal offset of the entire strip
+    const stripOffset = useSharedValue(0);
+    const isSwipeProcessing = useSharedValue(false);
 
     const clampTranslation = (tx, ty, s) => {
         'worklet';
@@ -34,119 +96,168 @@ const ImageViewer = ({ images, currentIndex, onIndexChange, onToggleFocus, onZoo
         const maxY = Math.max(0, (SCREEN_HEIGHT * s - SCREEN_HEIGHT) / 2);
         return {
             x: Math.min(maxX, Math.max(-maxX, tx)),
-            y: Math.min(maxY, Math.max(-maxY, ty)),
+            y: Math.min(maxY, Math.max(-maxY, ty))
         };
     };
 
-    const goNext = useCallback(() => {
-        if (currentIndex < images.length - 1) {
-            onIndexChange(currentIndex + 1);
-        }
-    }, [currentIndex, images.length, onIndexChange]);
+    // Resolve URIs for [prev, current, next] — null if out of bounds.
+    // Always returns 3 entries so the JSX renders 3 stable slots (no mount/unmount).
+    const slotUris = useMemo(() => {
+        const resolve = idx => {
+            if (idx < 0 || idx >= images.length) return null;
+            const img = images[idx];
+            if (!img) return null;
+            return resolveUri(img.uri || img.filename);
+        };
+        return [
+            resolve(currentIndex - 1),
+            resolve(currentIndex),
+            resolve(currentIndex + 1)
+        ];
+    }, [currentIndex, images]);
 
-    const goPrev = useCallback(() => {
-        if (currentIndex > 0) {
-            onIndexChange(currentIndex - 1);
-        }
-    }, [currentIndex, onIndexChange]);
+    // Stable JS-thread callback for runOnJS — uses ref to avoid stale closure
+    const commitIndexChange = useCallback(
+        newIndex => {
+            const len = countSV.value;
+            if (newIndex >= 0 && newIndex < len) {
+                onIndexChangeRef.current(newIndex);
+            }
+            isSwipeProcessing.value = false;
+        },
+        [countSV, isSwipeProcessing]
+    );
 
     const notifyZoomReset = useCallback(() => {
-        if (onZoomChange) onZoomChange(false);
-    }, [onZoomChange]);
+        onZoomChangeRef.current?.(false);
+    }, []);
 
-    // Pinch zoom
+    const notifyToggleFocus = useCallback(() => {
+        onToggleFocusRef.current?.('tap');
+    }, []);
+
+    // --- Gestures ---
+
     const pinchGesture = Gesture.Pinch()
         .onStart(() => {
             savedScale.value = scale.value;
         })
-        .onUpdate((e) => {
-            const newScale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, savedScale.value * e.scale));
+        .onUpdate(e => {
+            const newScale = Math.min(
+                MAX_SCALE,
+                Math.max(MIN_SCALE, savedScale.value * e.scale)
+            );
             scale.value = newScale;
-
             if (savedScale.value > 0) {
-                const scaleDiff = newScale / savedScale.value;
-                const newX = savedTranslateX.value + (1 - scaleDiff) * (e.focalX - SCREEN_WIDTH / 2);
-                const newY = savedTranslateY.value + (1 - scaleDiff) * (e.focalY - SCREEN_HEIGHT / 2);
+                const diff = newScale / savedScale.value;
+                const newX =
+                    savedZoomX.value +
+                    (1 - diff) * (e.focalX - SCREEN_WIDTH / 2);
+                const newY =
+                    savedZoomY.value +
+                    (1 - diff) * (e.focalY - SCREEN_HEIGHT / 2);
                 const clamped = clampTranslation(newX, newY, newScale);
-                translateX.value = clamped.x;
-                translateY.value = clamped.y;
+                zoomX.value = clamped.x;
+                zoomY.value = clamped.y;
             }
         })
         .onEnd(() => {
             savedScale.value = scale.value;
-            savedTranslateX.value = translateX.value;
-            savedTranslateY.value = translateY.value;
-
+            savedZoomX.value = zoomX.value;
+            savedZoomY.value = zoomY.value;
             if (scale.value < MIN_SCALE + 0.05) {
-                // Zoom back to 1x
-                scale.value = withTiming(1, { duration: 200 });
+                scale.value = withTiming(1, {duration: 200});
                 savedScale.value = 1;
-                translateX.value = withTiming(0, { duration: 200 });
-                translateY.value = withTiming(0, { duration: 200 });
-                savedTranslateX.value = 0;
-                savedTranslateY.value = 0;
-                // Notify parent to show overlays
+                zoomX.value = withTiming(0, {duration: 200});
+                zoomY.value = withTiming(0, {duration: 200});
+                savedZoomX.value = 0;
+                savedZoomY.value = 0;
                 runOnJS(notifyZoomReset)();
             }
         });
 
-    // Pan — pans zoomed image OR swipes between images at 1x
     const panGesture = Gesture.Pan()
         .minPointers(1)
         .maxPointers(2)
         .onStart(() => {
-            savedTranslateX.value = translateX.value;
-            savedTranslateY.value = translateY.value;
-            swipeX.value = 0;
-        })
-        .onUpdate((e) => {
+            cancelAnimation(stripOffset);
             if (scale.value > ZOOM_THRESHOLD) {
-                // Panning zoomed image
-                const newX = savedTranslateX.value + e.translationX;
-                const newY = savedTranslateY.value + e.translationY;
-                const clamped = clampTranslation(newX, newY, scale.value);
-                translateX.value = clamped.x;
-                translateY.value = clamped.y;
-            } else {
-                // At 1x: image follows finger horizontally for swipe feedback
-                swipeX.value = e.translationX;
+                savedZoomX.value = zoomX.value;
+                savedZoomY.value = zoomY.value;
             }
         })
-        .onEnd((e) => {
-            if (scale.value <= ZOOM_THRESHOLD) {
-                // Swipe detection at 1x zoom
-                const isHorizontalSwipe = Math.abs(e.translationX) > Math.abs(e.translationY) * 1.2;
-                const hasSufficientDistance = Math.abs(e.translationX) > SWIPE_THRESHOLD;
-                const hasSufficientVelocity = Math.abs(e.velocityX) > SWIPE_VELOCITY;
+        .onUpdate(e => {
+            if (scale.value > ZOOM_THRESHOLD) {
+                const newX = savedZoomX.value + e.translationX;
+                const newY = savedZoomY.value + e.translationY;
+                const clamped = clampTranslation(newX, newY, scale.value);
+                zoomX.value = clamped.x;
+                zoomY.value = clamped.y;
+            } else {
+                stripOffset.value = e.translationX;
+            }
+        })
+        .onEnd(e => {
+            if (scale.value > ZOOM_THRESHOLD) {
+                savedZoomX.value = zoomX.value;
+                savedZoomY.value = zoomY.value;
+                return;
+            }
 
-                if (isHorizontalSwipe && (hasSufficientDistance || hasSufficientVelocity)) {
-                    swipeX.value = 0;
-                    if (e.translationX < 0) {
-                        runOnJS(goNext)();
-                    } else {
-                        runOnJS(goPrev)();
-                    }
+            const isHorizontal =
+                Math.abs(e.translationX) > Math.abs(e.translationY) * 1.2;
+            const hasDist = Math.abs(e.translationX) > SWIPE_THRESHOLD;
+            const hasVel = Math.abs(e.velocityX) > SWIPE_VELOCITY;
+            const swipedLeft = e.translationX < 0;
+            const swipedRight = e.translationX > 0;
+
+            if (
+                isHorizontal &&
+                (hasDist || hasVel) &&
+                !isSwipeProcessing.value
+            ) {
+                // Read current values from shared values (not stale JS closure)
+                const idx = indexSV.value;
+                const len = countSV.value;
+                const canGoNext = swipedLeft && idx < len - 1;
+                const canGoPrev = swipedRight && idx > 0;
+
+                if (canGoNext || canGoPrev) {
+                    isSwipeProcessing.value = true;
+                    const targetX = canGoNext
+                        ? -SCREEN_WIDTH
+                        : SCREEN_WIDTH;
+                    const newIdx = canGoNext ? idx + 1 : idx - 1;
+                    stripOffset.value = withTiming(
+                        targetX,
+                        {duration: SNAP_DURATION},
+                        finished => {
+                            if (finished) {
+                                runOnJS(commitIndexChange)(newIdx);
+                            } else {
+                                // Animation cancelled — reset guard
+                                isSwipeProcessing.value = false;
+                            }
+                        }
+                    );
                 } else {
-                    // Snap back
-                    swipeX.value = withTiming(0, { duration: 150 });
+                    stripOffset.value = withTiming(0, {duration: 150});
                 }
             } else {
-                savedTranslateX.value = translateX.value;
-                savedTranslateY.value = translateY.value;
+                stripOffset.value = withTiming(0, {duration: 150});
             }
         });
 
-    // Double tap — toggle between 1x and 2x
     const doubleTapGesture = Gesture.Tap()
         .numberOfTaps(2)
-        .onEnd((e) => {
+        .onEnd(e => {
             if (scale.value > ZOOM_THRESHOLD) {
-                scale.value = withTiming(1, { duration: 200 });
+                scale.value = withTiming(1, {duration: 200});
                 savedScale.value = 1;
-                translateX.value = withTiming(0, { duration: 200 });
-                translateY.value = withTiming(0, { duration: 200 });
-                savedTranslateX.value = 0;
-                savedTranslateY.value = 0;
+                zoomX.value = withTiming(0, {duration: 200});
+                zoomY.value = withTiming(0, {duration: 200});
+                savedZoomX.value = 0;
+                savedZoomY.value = 0;
                 runOnJS(notifyZoomReset)();
             } else {
                 const targetScale = DOUBLE_TAP_SCALE;
@@ -155,74 +266,107 @@ const ImageViewer = ({ images, currentIndex, onIndexChange, onToggleFocus, onZoo
                 const newX = -originX * (targetScale - 1);
                 const newY = -originY * (targetScale - 1);
                 const clamped = clampTranslation(newX, newY, targetScale);
-
-                scale.value = withTiming(targetScale, { duration: 250 });
+                scale.value = withTiming(targetScale, {duration: 250});
                 savedScale.value = targetScale;
-                translateX.value = withTiming(clamped.x, { duration: 250 });
-                translateY.value = withTiming(clamped.y, { duration: 250 });
-                savedTranslateX.value = clamped.x;
-                savedTranslateY.value = clamped.y;
+                zoomX.value = withTiming(clamped.x, {duration: 250});
+                zoomY.value = withTiming(clamped.y, {duration: 250});
+                savedZoomX.value = clamped.x;
+                savedZoomY.value = clamped.y;
             }
         });
 
-    // Single tap — toggle focus mode
     const singleTapGesture = Gesture.Tap()
         .numberOfTaps(1)
         .requireExternalGestureToFail(doubleTapGesture)
         .onEnd(() => {
-            if (onToggleFocus) {
-                runOnJS(onToggleFocus)('tap');
-            }
+            runOnJS(notifyToggleFocus)();
         });
 
-    // Compose: pinch runs simultaneously with pan; taps are exclusive with pan
     const composed = Gesture.Race(
         doubleTapGesture,
         Gesture.Simultaneous(pinchGesture, panGesture),
-        singleTapGesture,
+        singleTapGesture
     );
 
-    const animatedStyle = useAnimatedStyle(() => ({
-        transform: [
-            { translateX: translateX.value + swipeX.value },
-            { translateY: translateY.value },
-            { scale: scale.value },
-        ],
+    // --- Animated styles ---
+
+    const stripStyle = useAnimatedStyle(() => ({
+        transform: [{translateX: stripOffset.value}]
     }));
 
-    // Reset zoom when image changes
-    React.useEffect(() => {
+    const zoomStyle = useAnimatedStyle(() => ({
+        transform: [
+            {translateX: zoomX.value},
+            {translateY: zoomY.value},
+            {scale: scale.value}
+        ]
+    }));
+
+    // Reset on index change — runs after React re-renders with new visibleImages
+    useEffect(() => {
+        cancelAnimation(stripOffset);
+        cancelAnimation(zoomX);
+        cancelAnimation(zoomY);
+        cancelAnimation(scale);
         scale.value = 1;
         savedScale.value = 1;
-        translateX.value = 0;
-        translateY.value = 0;
-        savedTranslateX.value = 0;
-        savedTranslateY.value = 0;
-        swipeX.value = 0;
+        zoomX.value = 0;
+        zoomY.value = 0;
+        savedZoomX.value = 0;
+        savedZoomY.value = 0;
+        stripOffset.value = 0;
+        isSwipeProcessing.value = false;
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentIndex]);
 
-    const currentImage = images[currentIndex];
-    if (!currentImage) return null;
+    // Cancel animations on unmount
+    useEffect(() => {
+        return () => {
+            cancelAnimation(stripOffset);
+            cancelAnimation(scale);
+            cancelAnimation(zoomX);
+            cancelAnimation(zoomY);
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
-    let imageUri = currentImage.uri || currentImage.filename;
-
-    // Local dev: Minio stores URLs with 127.0.0.1 which the phone can't reach.
-    // Rewrite to the LAN host extracted from the API base URL.
-    if (!IS_PRODUCTION && imageUri?.includes('127.0.0.1')) {
-        const match = URL.match(/:\/\/([^:/]+)/);
-        if (match) {
-            imageUri = imageUri.replace('127.0.0.1', match[1]);
-        }
-    }
+    if (!images || !images[currentIndex]) return null;
 
     return (
         <View style={styles.container}>
             <GestureDetector gesture={composed}>
-                <Animated.View style={[styles.imageContainer, animatedStyle]}>
-                    <Image
-                        source={{ uri: imageUri }}
-                        style={styles.image}
-                        resizeMode="contain"
+                <Animated.View style={[styles.strip, stripStyle]}>
+                    {/* Prev slot */}
+                    <Slide
+                        key="prev"
+                        uri={slotUris[0]}
+                        offsetX={-SCREEN_WIDTH}
+                        screenWidth={SCREEN_WIDTH}
+                        screenHeight={SCREEN_HEIGHT}
+                    />
+                    {/* Center slot — receives zoom */}
+                    <Animated.View
+                        key="center"
+                        style={[
+                            styles.slide,
+                            {left: 0, width: SCREEN_WIDTH},
+                            zoomStyle
+                        ]}>
+                        {slotUris[1] && (
+                            <Image
+                                source={{uri: slotUris[1]}}
+                                style={{width: SCREEN_WIDTH, height: SCREEN_HEIGHT}}
+                                resizeMode="contain"
+                            />
+                        )}
+                    </Animated.View>
+                    {/* Next slot */}
+                    <Slide
+                        key="next"
+                        uri={slotUris[2]}
+                        offsetX={SCREEN_WIDTH}
+                        screenWidth={SCREEN_WIDTH}
+                        screenHeight={SCREEN_HEIGHT}
                     />
                 </Animated.View>
             </GestureDetector>
@@ -234,17 +378,18 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#000',
-        overflow: 'hidden',
+        overflow: 'hidden'
     },
-    imageContainer: {
-        flex: 1,
+    strip: {
+        flex: 1
+    },
+    slide: {
+        position: 'absolute',
+        top: 0,
+        height: '100%',
         justifyContent: 'center',
-        alignItems: 'center',
-    },
-    image: {
-        width: SCREEN_WIDTH,
-        height: SCREEN_HEIGHT,
-    },
+        alignItems: 'center'
+    }
 });
 
 export default React.memo(ImageViewer);

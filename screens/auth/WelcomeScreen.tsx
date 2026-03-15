@@ -1,17 +1,15 @@
 import React, {FC, useState} from 'react';
 import {
-    Dimensions,
     Pressable,
     StatusBar,
     StyleSheet,
+    useWindowDimensions,
     View
 } from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
 import {Slides} from './authComponents';
 import {Body, Colors} from '../components';
-
-const {width: SCREEN_WIDTH} = Dimensions.get('window');
 
 const SLIDE_DATA = [
     {
@@ -36,6 +34,7 @@ const SLIDE_DATA = [
 
 const WelcomeScreen: FC<{navigation: any}> = ({navigation}) => {
     const [activeIndex, setActiveIndex] = useState(0);
+    const {width: SCREEN_WIDTH} = useWindowDimensions();
 
     const handleScroll = (event: any) => {
         const currentIndex = Math.round(

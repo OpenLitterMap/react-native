@@ -1,12 +1,11 @@
 import React from 'react';
-import { StyleSheet, Pressable, Dimensions } from 'react-native';
+import { StyleSheet, Pressable, useWindowDimensions } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { Colors, SubTitle } from '../../components';
-const { width } = Dimensions.get('window');
-
 const UploadButton = ({ onPress }) => {
+    const { width } = useWindowDimensions();
     return (
-        <Pressable onPress={() => onPress()} style={styles.buttonStyle}>
+        <Pressable onPress={() => onPress()} style={[styles.buttonStyle, {width: width - 150}]}>
             <Icon
                 name="cloud-upload-outline"
                 color="white"
@@ -26,7 +25,6 @@ const styles = StyleSheet.create({
         position: 'absolute',
         bottom: 30,
         left: 20,
-        width: width - 150,
         height: 80,
         borderRadius: 100,
         backgroundColor: Colors.accent,

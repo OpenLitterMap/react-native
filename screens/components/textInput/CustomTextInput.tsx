@@ -28,29 +28,25 @@ interface CustomTextInputProps {
     leftContent?: React.ReactElement;
     placeholderTextColor?: string;
     variant?: 'light' | 'dark';
+    ref?: React.Ref<TextInput>;
 }
 
-const CustomTextInput: React.ForwardRefRenderFunction<
-    TextInput,
-    CustomTextInputProps
-> = (
-    {
-        style,
-        inputStyle,
-        value,
-        touched,
-        error,
-        errorText,
-        placeholder,
-        leftIconName,
-        leftContent,
-        rightIconName,
-        rightContent,
-        variant = 'dark',
-        ...rest
-    },
-    ref
-) => {
+const CustomTextInput = ({
+    style,
+    inputStyle,
+    value,
+    touched,
+    error,
+    errorText,
+    placeholder,
+    leftIconName,
+    leftContent,
+    rightIconName,
+    rightContent,
+    variant = 'dark',
+    ref,
+    ...rest
+}: CustomTextInputProps) => {
     const hasError = touched && error;
     const isDark = variant === 'dark';
 
@@ -127,9 +123,7 @@ const CustomTextInput: React.ForwardRefRenderFunction<
     );
 };
 
-export default React.forwardRef<TextInput, CustomTextInputProps>(
-    CustomTextInput
-);
+export default CustomTextInput;
 
 const styles = StyleSheet.create({
     wrapper: {},

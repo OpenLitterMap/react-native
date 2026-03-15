@@ -1,11 +1,9 @@
 import React from 'react';
-import {Dimensions, StyleSheet, View} from 'react-native';
+import {StyleSheet, useWindowDimensions, View} from 'react-native';
 // @ts-ignore
 import Icon from 'react-native-vector-icons/Ionicons';
 
 import IconStatsCard from './IconStatsCard';
-
-const {width} = Dimensions.get('window');
 
 interface StatData {
     title?: string;
@@ -23,6 +21,8 @@ interface StatsGridProps {
 }
 
 const StatsGrid: React.FC<StatsGridProps> = ({statsData, style}) => {
+    const {width} = useWindowDimensions();
+
     return (
         <View style={styles.statsContainer}>
             <View style={[styles.statsRow, style]}>

@@ -28,17 +28,17 @@ if (IS_PRODUCTION) {
 const App = () => {
     return (
         <GestureHandlerRootView style={{flex: 1}}>
-            <SafeAreaProvider>
-            <NavigationContainer>
-                <Provider store={store}>
-                    <PersistGate loading={null} persistor={persistor}>
-                        <MainRoutes />
-                    </PersistGate>
-                </Provider>
-            </NavigationContainer>
-            </SafeAreaProvider>
+            <Provider store={store}>
+                <PersistGate loading={null} persistor={persistor}>
+                    <SafeAreaProvider>
+                        <NavigationContainer>
+                            <MainRoutes />
+                        </NavigationContainer>
+                    </SafeAreaProvider>
+                </PersistGate>
+            </Provider>
         </GestureHandlerRootView>
     );
 };
 
-export default App;
+export default IS_PRODUCTION ? Sentry.wrap(App) : App;

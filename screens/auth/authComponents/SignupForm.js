@@ -75,7 +75,8 @@ const SignupForm = () => {
     const emailRef = useRef(null);
     const passwordRef = useRef(null);
 
-    const {serverStatusText, isSubmitting} = useSelector(state => state.auth);
+    const {serverStatusText, submitStatus} = useSelector(state => state.auth);
+    const isSubmitting = submitStatus === 'loading';
 
     const {t} = useTranslation();
     const emailTranslation = t('Email Address');

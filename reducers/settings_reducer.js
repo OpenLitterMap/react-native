@@ -9,10 +9,10 @@ const initialState = {
     saveResultModalVisible: false,
     editValue: '',
     editField: null,
-    savingToggle: false,
+    toggleStatus: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
     deleteAccountError: '',
     saveResultMessage: '',
-    isSaving: false
+    saveStatus: 'idle' // 'idle' | 'loading' | 'succeeded' | 'failed'
 };
 
 /** Privacy toggle endpoint mapping — IDs match SettingsScreen section data */
@@ -81,7 +81,9 @@ export const saveSettings = createAsyncThunk(
             });
 
             if (response.data?.success) {
-                const user = {...getState().auth.user, [dataKey]: dataValue};
+                const currentUser = getState().auth.user;
+                if (!currentUser) return rejectWithValue('No active session');
+                const user = {...currentUser, [dataKey]: dataValue};
                 await AsyncStorage.setItem('user', JSON.stringify(user));
                 dispatch(updateUserObject(user));
 
@@ -113,7 +115,9 @@ export const saveSocialAccounts = createAsyncThunk(
             });
 
             if (response?.data?.message === 'success') {
-                const user = {...getState().auth.user, settings: values};
+                const currentUser = getState().auth.user;
+                if (!currentUser) return rejectWithValue('No active session');
+                const user = {...currentUser, settings: values};
                 await AsyncStorage.setItem('user', JSON.stringify(user));
                 dispatch(updateUserObject(user));
 
@@ -147,7 +151,9 @@ export const toggleSettingsSwitch = createAsyncThunk(
                     value = value === false ? 0 : 1;
                 }
 
-                const user = {...getState().auth.user, [key]: value};
+                const currentUser = getState().auth.user;
+                if (!currentUser) return rejectWithValue('No active session');
+                const user = {...currentUser, [key]: value};
                 await AsyncStorage.setItem('user', JSON.stringify(user));
                 dispatch(updateUserObject(user));
 
@@ -169,7 +175,7 @@ const settingsSlice = createSlice({
     reducers: {
         closeSaveResultModal(state) {
             state.saveResultMessage = '';
-            state.isSaving = false;
+            state.saveStatus = 'idle';
             state.saveResultModalVisible = false;
         },
 
@@ -197,48 +203,52 @@ const settingsSlice = createSlice({
             // Delete Account
             .addCase(deleteAccount.pending, (state) => {
                 state.deleteAccountError = '';
-                state.isSaving = true;
+                state.saveStatus = 'loading';
             })
             .addCase(deleteAccount.fulfilled, (state) => {
-                state.isSaving = false;
+                state.saveStatus = 'succeeded';
             })
             .addCase(deleteAccount.rejected, (state, action) => {
-                state.isSaving = false;
+                state.saveStatus = 'failed';
                 state.deleteAccountError = action.payload;
             })
 
             // Save Settings
             .addCase(saveSettings.pending, state => {
                 state.saveResultModalVisible = true;
-                state.isSaving = true;
+                state.saveStatus = 'loading';
             })
             .addCase(saveSettings.fulfilled, (state, action) => {
+                state.saveStatus = 'idle';
                 state.saveResultMessage = action.payload.message;
             })
             .addCase(saveSettings.rejected, (state, action) => {
+                state.saveStatus = 'idle';
                 state.saveResultMessage = action.payload;
             })
 
             // Save Social Accounts
             .addCase(saveSocialAccounts.pending, state => {
                 state.saveResultModalVisible = true;
-                state.isSaving = true;
+                state.saveStatus = 'loading';
             })
             .addCase(saveSocialAccounts.fulfilled, (state, action) => {
+                state.saveStatus = 'idle';
                 state.saveResultMessage = action.payload;
             })
             .addCase(saveSocialAccounts.rejected, (state, action) => {
+                state.saveStatus = 'idle';
                 state.saveResultMessage = action.payload;
             })
 
             .addCase(toggleSettingsSwitch.pending, (state) => {
-                state.savingToggle = true;
+                state.toggleStatus = 'loading';
             })
             .addCase(toggleSettingsSwitch.fulfilled, (state) => {
-                state.savingToggle = false;
+                state.toggleStatus = 'idle';
             })
             .addCase(toggleSettingsSwitch.rejected, (state) => {
-                state.savingToggle = false;
+                state.toggleStatus = 'failed';
             })
             .addCase(logout, () => initialState);
     }
@@ -251,5 +261,9 @@ export const {
     setEditValue,
     toggleEditModal
 } = settingsSlice.actions;
+
+// Selectors
+export const selectIsSaving = state => state.settings.saveStatus === 'loading';
+export const selectIsTogglingSwitch = state => state.settings.toggleStatus === 'loading';
 
 export default settingsSlice.reducer;

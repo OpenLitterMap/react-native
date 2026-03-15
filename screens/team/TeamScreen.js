@@ -10,7 +10,7 @@ import {getTopTeams, clearTeamsForm} from '../../reducers/team_reducer';
 
 const TeamScreen = ({navigation}) => {
     const dispatch = useDispatch();
-    const actionSheetRef = useRef();
+    const actionSheetRef = useRef(null);
 
     const [showFormType, setShowFormType] = useState(null);
 

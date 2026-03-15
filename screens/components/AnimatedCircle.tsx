@@ -1,10 +1,18 @@
 import * as React from 'react';
-import { Animated, StyleSheet, TextInput, TextStyle, View } from 'react-native';
-import Svg, { Circle, G } from 'react-native-svg';
-import { Body } from './typography';
-import { Colors } from './theme';
+import {StyleSheet, TextStyle, View} from 'react-native';
+import Animated, {
+    useSharedValue,
+    useAnimatedProps,
+    useAnimatedReaction,
+    withTiming,
+    withDelay,
+    runOnJS
+} from 'react-native-reanimated';
+import Svg, {Circle, G} from 'react-native-svg';
+import {Body} from './typography';
+import {Colors} from './theme';
 
-const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
+const AnimatedSvgCircle = Animated.createAnimatedComponent(Circle);
 
 interface AnimatedCircleProps {
     percentage?: number;
@@ -45,58 +53,46 @@ const AnimatedCircle: React.FC<AnimatedCircleProps> = ({
     taglineStyles,
     isValueDisplayed = true
 }) => {
-    const animated = React.useRef(new Animated.Value(startPercentage)).current;
-    const textAnimated = React.useRef(new Animated.Value(startValue)).current;
-    const circleRef = React.useRef<any>();
-    const inputRef = React.useRef<any>();
+    const animated = useSharedValue(startPercentage);
+    const textAnimated = useSharedValue(startValue);
+    const [displayText, setDisplayText] = React.useState(
+        formatDisplayText(startValue, value, valueSuffix)
+    );
     const circumference = 2 * Math.PI * radius;
     const halfCircle = radius + strokeWidth;
 
-    React.useEffect(() => {
-        // Register listeners before starting animations
-        const circleListener = animated.addListener(v => {
-            const maxPercent = (100 * v.value) / max;
-            const strokeDashoffset =
-                circumference - (circumference * maxPercent) / 100;
-
-            if (circleRef?.current) {
-                circleRef.current.setNativeProps({
-                    strokeDashoffset
-                });
-            }
-        });
-
-        const textListener = textAnimated.addListener(v => {
-            if (inputRef?.current) {
-                const suffix = valueSuffix !== undefined ? `${valueSuffix}` : '';
-                const text =
-                    value === Math.floor(value)
-                        ? `${Math.floor(v.value)}${suffix}`
-                        : `${v.value.toFixed(1)}${suffix}`;
-
-                inputRef.current.setNativeProps({ text });
-            }
-        });
-
-        // Start animations after listeners are attached
-        Animated.timing(animated, {
-            delay,
-            toValue: percentage,
-            duration: startPercentage === percentage ? 0 : duration,
-            useNativeDriver: true
-        }).start();
-
-        Animated.timing(textAnimated, {
-            delay,
-            toValue: value,
-            duration: startValue === value ? 0 : duration,
-            useNativeDriver: true
-        }).start();
-
-        return () => {
-            animated.removeListener(circleListener);
-            textAnimated.removeListener(textListener);
+    // Derive strokeDashoffset from animated value via animatedProps
+    const circleAnimatedProps = useAnimatedProps(() => {
+        const clampedValue = Math.min(Math.max(animated.value, 0), max);
+        const offset = circumference - (clampedValue / max) * circumference;
+        return {
+            strokeDashoffset: offset
         };
+    });
+
+    // Update display text reactively
+    useAnimatedReaction(
+        () => textAnimated.value,
+        (currentValue) => {
+            runOnJS(setDisplayText)(formatDisplayText(currentValue, value, valueSuffix));
+        }
+    );
+
+    React.useEffect(() => {
+        const circleTimingConfig = {
+            duration: startPercentage === percentage ? 0 : duration
+        };
+        animated.value = delay > 0
+            ? withDelay(delay, withTiming(percentage, circleTimingConfig))
+            : withTiming(percentage, circleTimingConfig);
+
+        const textTimingConfig = {
+            duration: startValue === value ? 0 : duration
+        };
+        textAnimated.value = delay > 0
+            ? withDelay(delay, withTiming(value, textTimingConfig))
+            : withTiming(value, textTimingConfig);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [percentage, value, duration, delay, max]);
 
     return (
@@ -104,16 +100,13 @@ const AnimatedCircle: React.FC<AnimatedCircleProps> = ({
             style={{
                 justifyContent: 'center',
                 alignItems: 'center'
-            }}
-        >
+            }}>
             <Svg
                 height={radius * 2}
                 width={radius * 2}
-                viewBox={`0 0 ${halfCircle * 2} ${halfCircle * 2}`}
-            >
+                viewBox={`0 0 ${halfCircle * 2} ${halfCircle * 2}`}>
                 <G rotation="-90" origin={`${halfCircle}, ${halfCircle}`}>
-                    <Circle
-                        ref={circleRef}
+                    <AnimatedSvgCircle
                         cx="50%"
                         cy="50%"
                         r={radius}
@@ -121,7 +114,7 @@ const AnimatedCircle: React.FC<AnimatedCircleProps> = ({
                         stroke={color}
                         strokeWidth={strokeWidth}
                         strokeLinecap="round"
-                        strokeDashoffset={circumference}
+                        animatedProps={circleAnimatedProps}
                         strokeDasharray={circumference}
                     />
                     <Circle
@@ -145,11 +138,7 @@ const AnimatedCircle: React.FC<AnimatedCircleProps> = ({
                             justifyContent: 'center'
                         }
                     ]}>
-                    <AnimatedTextInput
-                        ref={inputRef}
-                        underlineColorAndroid="transparent"
-                        editable={false}
-                        defaultValue="0"
+                    <Body
                         style={[
                             {
                                 color: textColor ?? color,
@@ -158,8 +147,9 @@ const AnimatedCircle: React.FC<AnimatedCircleProps> = ({
                             },
                             styles.value,
                             valueStyles
-                        ]}
-                    />
+                        ]}>
+                        {displayText}
+                    </Body>
 
                     <Body
                         family="semiBold"
@@ -169,8 +159,7 @@ const AnimatedCircle: React.FC<AnimatedCircleProps> = ({
                             taglineStyles
                         ]}
                         dictionary={tagline}
-                        values={{ count: nextTarget }}
-                    >
+                        values={{count: nextTarget}}>
                         {tagline}
                     </Body>
                 </View>
@@ -178,6 +167,17 @@ const AnimatedCircle: React.FC<AnimatedCircleProps> = ({
         </View>
     );
 };
+
+function formatDisplayText(
+    currentValue: number,
+    targetValue: number,
+    suffix?: string
+): string {
+    const s = suffix !== undefined ? `${suffix}` : '';
+    return targetValue === Math.floor(targetValue)
+        ? `${Math.floor(currentValue)}${s}`
+        : `${currentValue.toFixed(1)}${s}`;
+}
 
 const styles = StyleSheet.create({
     value: {

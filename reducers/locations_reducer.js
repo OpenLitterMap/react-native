@@ -50,8 +50,15 @@ const locationsSlice = createSlice({
     reducers: {
         goBackLocation(state) {
             state.locationStack.pop();
-            state.children = [];
-            state.childrenStatus = 'idle';
+            // Restore the previous level's cached data, or clear if back to root
+            const prev = state.locationStack[state.locationStack.length - 1];
+            if (prev?.children) {
+                state.children = prev.children;
+                state.childrenStatus = 'succeeded';
+            } else {
+                state.children = [];
+                state.childrenStatus = 'idle';
+            }
         }
     },
     extraReducers: builder => {
@@ -61,7 +68,7 @@ const locationsSlice = createSlice({
             })
             .addCase(fetchCountries.fulfilled, (state, action) => {
                 state.countriesStatus = 'succeeded';
-                state.countries = action.payload;
+                state.countries = Array.isArray(action.payload) ? action.payload : [];
             })
             .addCase(fetchCountries.rejected, (state, action) => {
                 state.countriesStatus = 'failed';
@@ -73,7 +80,11 @@ const locationsSlice = createSlice({
             .addCase(fetchLocationChildren.fulfilled, (state, action) => {
                 state.childrenStatus = 'succeeded';
                 state.children = action.payload.locations;
-                state.locationStack.push(action.payload.parent);
+                // Cache the current children in the stack entry so back navigation can restore them
+                state.locationStack.push({
+                    ...action.payload.parent,
+                    children: action.payload.locations
+                });
             })
             .addCase(fetchLocationChildren.rejected, state => {
                 state.childrenStatus = 'failed';

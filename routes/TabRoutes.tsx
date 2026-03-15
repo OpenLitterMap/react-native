@@ -45,16 +45,16 @@ const TabRoutes: React.FC = () => (
                                 backgroundColor: focused
                                     ? `${Colors.accentLight}`
                                     : 'white',
-                                width: 50,
-                                height: 50,
+                                width: 56,
+                                height: 56,
                                 borderRadius: 100,
                                 justifyContent: 'center',
                                 alignItems: 'center',
                                 alignContent: 'center',
                                 padding: 0,
-                                marginTop: -5
+                                marginTop: -4
                             }}>
-                            <Icon name={iconName} size={24} color={color} />
+                            <Icon name={iconName} size={26} color={color} />
                         </View>
                     );
                 },
@@ -63,7 +63,7 @@ const TabRoutes: React.FC = () => (
                 tabBarShowIcon: true,
                 tabBarShowLabel: false,
                 tabBarIconStyle: {
-                    height: 50,
+                    height: 56,
                     justifyContent: 'center',
                     alignItems: 'center'
                 },
@@ -73,8 +73,9 @@ const TabRoutes: React.FC = () => (
                 tabBarStyle: {
                     backgroundColor: 'white',
                     borderTopWidth: 0,
-                    height: 60,
+                    height: 84,
                     margin: 0,
+                    paddingBottom: 12,
                     padding: 0
                 },
             })}

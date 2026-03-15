@@ -1,9 +1,9 @@
-import React, {useState, useRef} from 'react';
+import React, {useEffect, useState, useRef} from 'react';
 import {
     StyleSheet,
     ScrollView,
     View,
-    Dimensions,
+    useWindowDimensions,
     Pressable
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -18,16 +18,25 @@ import {
     leaveTeam
 } from '../../reducers/team_reducer';
 
-const {width: SCREEN_WIDTH} = Dimensions.get('window');
-
 const TeamDetailsScreen = ({navigation}) => {
     const dispatch = useDispatch();
     const {t} = useTranslation();
-    const actionSheetRef = useRef();
+    const {width: SCREEN_WIDTH} = useWindowDimensions();
+    const actionSheetRef = useRef(null);
     const [isLoading, setIsLoading] = useState(false);
 
     const user = useSelector(state => state.auth.user);
     const selectedTeam = useSelector(state => state.teams.selectedTeam);
+
+    useEffect(() => {
+        if (!selectedTeam || !selectedTeam.id) {
+            navigation.goBack();
+        }
+    }, [selectedTeam, navigation]);
+
+    if (!selectedTeam || !selectedTeam.id) {
+        return null;
+    }
 
     /**
      * activate team
@@ -49,7 +58,7 @@ const TeamDetailsScreen = ({navigation}) => {
     const leave = async () => {
         await dispatch(leaveTeam({teamId: selectedTeam.id}));
 
-        actionSheetRef.current.hide();
+        actionSheetRef.current?.hide();
 
         navigation.navigate('TEAM_HOME');
     };
@@ -137,7 +146,7 @@ const TeamDetailsScreen = ({navigation}) => {
                     <Body style={{textAlign: 'center'}}>
                         {t('You can always rejoin and your contribution will be saved.')}
                     </Body>
-                    <View style={styles.actionButtonContainer}>
+                    <View style={[styles.actionButtonContainer, {width: SCREEN_WIDTH - 40}]}>
                         <Pressable
                             onPress={() => actionSheetRef.current?.hide()}
                             style={[styles.actionButtonStyle]}>
@@ -174,8 +183,7 @@ const styles = StyleSheet.create({
     actionButtonContainer: {
         flexDirection: 'row',
         justifyContent: 'space-around',
-        marginVertical: 40,
-        width: SCREEN_WIDTH - 40
+        marginVertical: 40
     },
     buttonContainer: {
         margin: 20

@@ -8,7 +8,7 @@ import {logout} from './auth_reducer';
 const CAMERAROLL_INCLUDE = ['location', 'filename'];
 
 const initialState = {
-    imagesLoading: false,
+    fetchStatus: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
     galleryImages: [],
     nextGalleryId: 0,
     camerarollImageFetched: false,
@@ -203,7 +203,7 @@ const gallerySlice = createSlice({
     extraReducers: builder => {
         builder
             .addCase(getPhotosFromCameraroll.pending, state => {
-                state.imagesLoading = true;
+                state.fetchStatus = 'loading';
                 state.error = null;
             })
 
@@ -246,11 +246,11 @@ const gallerySlice = createSlice({
                     state.nextPageCursor = action.payload.endCursor;
                 }
 
-                state.imagesLoading = false;
+                state.fetchStatus = 'succeeded';
             })
 
             .addCase(getPhotosFromCameraroll.rejected, (state, action) => {
-                state.imagesLoading = false;
+                state.fetchStatus = 'failed';
                 state.error = action.payload || 'Failed to fetch images';
             })
             .addCase(logout, () => initialState);

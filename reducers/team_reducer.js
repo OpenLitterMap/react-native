@@ -4,7 +4,7 @@ import {changeUsersActiveTeam, logout} from './auth_reducer';
 
 const initialState = {
     topTeams: [],
-    topTeamsLoading: false,
+    topTeamsStatus: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
     userTeams: [],
     teamMembers: [],
     selectedTeam: {},
@@ -242,10 +242,8 @@ export const joinTeam = createAsyncThunk(
                 );
             }
 
-            const activeTeamId = response.data?.activeTeam?.id;
-            if (activeTeamId) {
-                dispatch(changeUsersActiveTeam(activeTeamId));
-            }
+            const activeTeamId = response.data?.activeTeam?.id ?? null;
+            dispatch(changeUsersActiveTeam(activeTeamId));
 
             return {
                 activeTeamId,
@@ -280,6 +278,7 @@ const normalizeTeam = team => {
     }
     return {
         ...team,
+        total_images: team.total_images ?? team.photos ?? 0,
         total_tags: team.total_tags ?? team.total_litter ?? 0,
         total_members: team.total_members ?? team.members ?? 0
     };
@@ -372,19 +371,29 @@ const teamSlice = createSlice({
                 }
 
                 const nextPage = action.payload?.next_page_url;
-
-                state.memberNextPage = nextPage ? nextPage.split('=')[1] : null;
+                if (nextPage) {
+                    try {
+                        const url = new URL(nextPage);
+                        state.memberNextPage = Number(url.searchParams.get('page'));
+                    } catch {
+                        state.memberNextPage = null;
+                    }
+                } else {
+                    state.memberNextPage = null;
+                }
             })
 
             .addCase(getTopTeams.pending, state => {
-                state.topTeamsLoading = true;
+                state.topTeamsStatus = 'loading';
             })
             .addCase(getTopTeams.fulfilled, (state, action) => {
-                state.topTeams = action.payload?.data ?? action.payload;
-                state.topTeamsLoading = false;
+                const raw = action.payload?.data ?? action.payload;
+                state.topTeams = Array.isArray(raw) ? raw.map(normalizeTeam) : [];
+                state.topTeamsStatus = 'succeeded';
             })
-            .addCase(getTopTeams.rejected, (state) => {
-                state.topTeamsLoading = false;
+            .addCase(getTopTeams.rejected, (state, action) => {
+                state.topTeamsStatus = 'failed';
+                state.teamsFormError = action.payload || 'Failed to load teams';
             })
 
             .addCase(getUserTeams.fulfilled, (state, action) => {
@@ -395,6 +404,8 @@ const teamSlice = createSlice({
                 if (action.payload?.team) {
                     state.userTeams.push(normalizeTeam(action.payload.team));
                 }
+                state.teamFormStatus = 'SUCCESS';
+                state.successMessage = action.payload?.message || 'Team joined successfully';
             })
             .addCase(joinTeam.rejected, (state, action) => {
                 state.teamsFormError = action.payload;
@@ -404,5 +415,10 @@ const teamSlice = createSlice({
 });
 
 export const {clearTeamsForm, setSelectedTeam} = teamSlice.actions;
+
+// Selectors
+export const selectTopTeamsLoading = state => state.teams.topTeamsStatus === 'loading';
+export const selectUserTeams = state => state.teams.userTeams;
+export const selectSelectedTeam = state => state.teams.selectedTeam;
 
 export default teamSlice.reducer;

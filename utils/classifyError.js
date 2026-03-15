@@ -44,14 +44,23 @@ export function classifyError(error, section) {
             userMessage = msg || 'Upload failed. Please try again.';
         }
 
-        Sentry.captureException(
-            new Error(JSON.stringify(error.response.data)),
-            {
-                level: 'error',
-                tags: {section, errorType, status: String(status)}
-            }
-        );
     }
+
+    // Report all error types to Sentry (not just server responses)
+    const isServerError = !!error.response;
+    Sentry.captureException(
+        isServerError
+            ? new Error(JSON.stringify(error.response.data))
+            : error,
+        {
+            level: isServerError ? 'error' : 'warning',
+            tags: {
+                section,
+                errorType,
+                ...(isServerError && {status: String(error.response.status)})
+            }
+        }
+    );
 
     return {errorType, userMessage};
 }

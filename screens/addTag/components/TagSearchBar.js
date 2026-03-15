@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState, forwardRef} from 'react';
+import React, {useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState} from 'react';
 import {
     Keyboard,
     SectionList,
@@ -14,7 +14,7 @@ import {makeTagKey} from './tagUtils';
 
 const MAX_RESULTS = 100;
 
-const TagSearchBar = forwardRef(({
+const TagSearchBar = React.forwardRef(({
     objectEntries,
     entriesByCloId,
     currentTags,
@@ -138,6 +138,7 @@ const TagSearchBar = forwardRef(({
     }, []);
 
     const handleBlur = useCallback(() => {
+        if (blurTimerRef.current) clearTimeout(blurTimerRef.current);
         blurTimerRef.current = setTimeout(() => setIsFocused(false), 150);
     }, []);
 
@@ -324,7 +325,7 @@ const TagSearchBar = forwardRef(({
             )}
         </View>
     );
-});
+};
 
 const styles = StyleSheet.create({
     wrapper: {
@@ -483,6 +484,8 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: Colors.accent
     }
+});
+
 });
 
 export default React.memo(TagSearchBar);

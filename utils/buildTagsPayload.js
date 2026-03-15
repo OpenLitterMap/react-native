@@ -9,7 +9,7 @@ const buildTagsPayload = img => {
         category_litter_object_id: tag.cloId,
         litter_object_type_id: tag.typeId ?? null,
         quantity: tag.quantity,
-        picked_up: img.picked_up ? true : false,
+        picked_up: tag.picked_up ?? null,
         materials: tag.materials || [],
         brands: (tag.brands || []).map(b => ({
             id: b.id,
@@ -26,13 +26,13 @@ const buildTagsPayload = img => {
     } else if (tags.length === 0 && img.customTags && img.customTags.length > 0) {
         // Image has only custom tags and no CLO tags.
         // Send each as a custom-only tag in the format the backend expects:
-        // { custom: true, key: "tag-text", quantity: 1, picked_up: bool }
+        // { custom: true, key: "tag-text", quantity: 1, picked_up: null }
         for (const ct of img.customTags) {
             tags.push({
                 custom: true,
                 key: ct,
                 quantity: 1,
-                picked_up: img.picked_up ? true : false
+                picked_up: null
             });
         }
     }

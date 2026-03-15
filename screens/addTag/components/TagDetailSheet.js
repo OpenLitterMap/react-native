@@ -1,4 +1,4 @@
-import React, {useMemo, useState} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import {
     Keyboard,
     KeyboardAvoidingView,
@@ -30,12 +30,22 @@ const TagDetailSheet = ({
     onAddCustomTag,
     onRemoveCustomTag,
     onUpdateQuantity,
+    onSetPickedUp,
     onClose
 }) => {
     const {t} = useTranslation();
     const [materialQuery, setMaterialQuery] = useState('');
     const [brandQuery, setBrandQuery] = useState('');
     const [customTagText, setCustomTagText] = useState('');
+
+    // Reset search inputs when the sheet opens
+    useEffect(() => {
+        if (visible) {
+            setMaterialQuery('');
+            setBrandQuery('');
+            setCustomTagText('');
+        }
+    }, [visible]);
 
     const categoryColor = getCategoryColor(tagEntry?.categoryKey || tag?.fallbackCategoryKey);
     const tagName = tagEntry?.displayName || tag?.fallbackDisplayName || `#${tag?.cloId}`;
@@ -165,14 +175,16 @@ const TagDetailSheet = ({
                                 <View style={styles.quantityRow}>
                                     <Pressable
                                         style={styles.stepperBtn}
-                                        onPress={() =>
+                                        onPress={() => {
+                                            if (qty <= 1) {
+                                                onClose();
+                                            }
                                             onUpdateQuantity(
                                                 tag.cloId,
                                                 tag.typeId,
                                                 qty - 1
-                                            )
-                                        }
-                                        disabled={qty <= 1}>
+                                            );
+                                        }}>
                                         <Icon
                                             name={
                                                 qty <= 1
@@ -213,6 +225,55 @@ const TagDetailSheet = ({
                                                     : '#333'
                                             }
                                         />
+                                    </Pressable>
+                                </View>
+                            </View>
+
+                            {/* Picked Up */}
+                            <View style={styles.section}>
+                                <View style={styles.sectionHeader}>
+                                    <Caption style={styles.sectionLabel}>
+                                        {t('Picked Up')}
+                                    </Caption>
+                                    <Caption
+                                        style={styles.xpHint}
+                                        color="accent">
+                                        +5 XP
+                                    </Caption>
+                                </View>
+                                <View style={styles.pickedUpRow}>
+                                    <Pressable
+                                        style={[
+                                            styles.pickedUpOption,
+                                            tag.picked_up === true && styles.pickedUpOptionActive
+                                        ]}
+                                        onPress={() => onSetPickedUp(tag.cloId, tag.typeId, true)}>
+                                        <Icon name="checkmark" size={16} color={tag.picked_up === true ? Colors.white : '#666'} />
+                                        <Caption style={{color: tag.picked_up === true ? Colors.white : '#666'}}>
+                                            {t('Yes')}
+                                        </Caption>
+                                    </Pressable>
+                                    <Pressable
+                                        style={[
+                                            styles.pickedUpOption,
+                                            tag.picked_up === false && styles.pickedUpOptionNo
+                                        ]}
+                                        onPress={() => onSetPickedUp(tag.cloId, tag.typeId, false)}>
+                                        <Icon name="close" size={16} color={tag.picked_up === false ? Colors.white : '#666'} />
+                                        <Caption style={{color: tag.picked_up === false ? Colors.white : '#666'}}>
+                                            {t('No')}
+                                        </Caption>
+                                    </Pressable>
+                                    <Pressable
+                                        style={[
+                                            styles.pickedUpOption,
+                                            (tag.picked_up === null || tag.picked_up === undefined) && styles.pickedUpOptionNull
+                                        ]}
+                                        onPress={() => onSetPickedUp(tag.cloId, tag.typeId, null)}>
+                                        <Icon name="help" size={16} color={(tag.picked_up === null || tag.picked_up === undefined) ? Colors.white : '#666'} />
+                                        <Caption style={{color: (tag.picked_up === null || tag.picked_up === undefined) ? Colors.white : '#666'}}>
+                                            {t('Unknown')}
+                                        </Caption>
                                     </Pressable>
                                 </View>
                             </View>
@@ -555,16 +616,15 @@ const TagDetailSheet = ({
                                 onPress={() => {
                                     if (customTagText.trim()) {
                                         handleAddCustomTag();
-                                        Keyboard.dismiss();
-                                    } else if (brandQuery.trim() && brandResults.length === 0) {
-                                        handleCreateBrandAsCustomTag();
-                                        Keyboard.dismiss();
-                                    } else if (materialQuery.trim() && materialResults.length === 0) {
-                                        handleCreateMaterialAsCustomTag();
-                                        Keyboard.dismiss();
-                                    } else {
-                                        onClose();
                                     }
+                                    if (brandQuery.trim() && brandResults.length === 0) {
+                                        handleCreateBrandAsCustomTag();
+                                    }
+                                    if (materialQuery.trim() && materialResults.length === 0) {
+                                        handleCreateMaterialAsCustomTag();
+                                    }
+                                    Keyboard.dismiss();
+                                    onClose();
                                 }}>
                                 <Body color="white" style={styles.doneText}>
                                     {customTagText.trim() ||
@@ -759,6 +819,29 @@ const styles = StyleSheet.create({
         fontSize: 13,
         color: '#6366f1',
         fontWeight: '600'
+    },
+    pickedUpRow: {
+        flexDirection: 'row',
+        gap: 8
+    },
+    pickedUpOption: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 6,
+        paddingVertical: 10,
+        borderRadius: 10,
+        backgroundColor: '#f0f0f0'
+    },
+    pickedUpOptionActive: {
+        backgroundColor: Colors.accent
+    },
+    pickedUpOptionNo: {
+        backgroundColor: Colors.error
+    },
+    pickedUpOptionNull: {
+        backgroundColor: '#999'
     },
     doneButton: {
         backgroundColor: Colors.accent,

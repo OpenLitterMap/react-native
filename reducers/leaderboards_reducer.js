@@ -10,8 +10,8 @@ const initialState = {
     },
     currentPage: 1,
     timeFilter: 'today',
-    loading: false,
-    loadingMore: false
+    fetchStatus: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
+    loadMoreStatus: 'idle' // 'idle' | 'loading' | 'succeeded' | 'failed'
 };
 
 export const getLeaderboardData = createAsyncThunk(
@@ -44,9 +44,9 @@ const leaderboardsSlice = createSlice({
             .addCase(getLeaderboardData.pending, (state, action) => {
                 const page = action.meta.arg.page || 1;
                 if (page === 1) {
-                    state.loading = true;
+                    state.fetchStatus = 'loading';
                 } else {
-                    state.loadingMore = true;
+                    state.loadMoreStatus = 'loading';
                 }
             })
             .addCase(getLeaderboardData.fulfilled, (state, action) => {
@@ -70,12 +70,12 @@ const leaderboardsSlice = createSlice({
                 state.paginated.total = action.payload.total || 0;
                 state.currentPage = page;
                 state.timeFilter = action.meta.arg.timeFilter;
-                state.loading = false;
-                state.loadingMore = false;
+                state.fetchStatus = 'succeeded';
+                state.loadMoreStatus = 'idle';
             })
-            .addCase(getLeaderboardData.rejected, state => {
-                state.loading = false;
-                state.loadingMore = false;
+            .addCase(getLeaderboardData.rejected, (state, action) => {
+                state.fetchStatus = 'failed';
+                state.loadMoreStatus = 'idle';
             })
             .addCase(logout, () => initialState);
     }

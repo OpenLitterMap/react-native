@@ -1,136 +1,180 @@
-import React, {useRef} from 'react';
-import {Animated, Dimensions, Image, StyleSheet, View} from 'react-native';
+import React from 'react';
+import {Image, ScrollView, StyleSheet, useWindowDimensions, View} from 'react-native';
+import Animated, {
+    useSharedValue,
+    useAnimatedStyle,
+    useAnimatedScrollHandler,
+    interpolate,
+    Extrapolation,
+    runOnJS
+} from 'react-native-reanimated';
 import {Body, Colors, Title} from '../../components';
 
-const {width: SCREEN_WIDTH} = Dimensions.get('window');
+const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
 
-const Slides = ({data, activeIndex, onScroll, showDots = true}) => {
-    const scrollX = useRef(new Animated.Value(0)).current;
+const AnimatedDot = ({index, scrollX, screenWidth}) => {
+    const animatedStyle = useAnimatedStyle(() => {
+        const inputRange = [
+            (index - 1) * screenWidth,
+            index * screenWidth,
+            (index + 1) * screenWidth
+        ];
+        return {
+            width: interpolate(
+                scrollX.value,
+                inputRange,
+                [8, 24, 8],
+                Extrapolation.CLAMP
+            ),
+            opacity: interpolate(
+                scrollX.value,
+                inputRange,
+                [0.3, 1, 0.3],
+                Extrapolation.CLAMP
+            )
+        };
+    });
 
-    const handleScroll = Animated.event(
-        [{nativeEvent: {contentOffset: {x: scrollX}}}],
-        {useNativeDriver: false, listener: onScroll}
+    return (
+        <Animated.View
+            style={[
+                styles.dot,
+                {backgroundColor: Colors.accent},
+                animatedStyle
+            ]}
+        />
     );
+};
 
-    const renderDots = () => {
-        return data.map((_, i) => {
-            const inputRange = [
-                (i - 1) * SCREEN_WIDTH,
-                i * SCREEN_WIDTH,
-                (i + 1) * SCREEN_WIDTH
-            ];
+const AnimatedSlide = ({slide, index, scrollX, screenWidth}) => {
+    const imageAnimatedStyle = useAnimatedStyle(() => {
+        const inputRange = [
+            (index - 1) * screenWidth,
+            index * screenWidth,
+            (index + 1) * screenWidth
+        ];
+        return {
+            transform: [
+                {
+                    translateX: interpolate(
+                        scrollX.value,
+                        inputRange,
+                        [40, 0, -40],
+                        Extrapolation.CLAMP
+                    )
+                }
+            ]
+        };
+    });
 
-            const dotWidth = scrollX.interpolate({
+    const contentAnimatedStyle = useAnimatedStyle(() => {
+        const inputRange = [
+            (index - 1) * screenWidth,
+            index * screenWidth,
+            (index + 1) * screenWidth
+        ];
+        return {
+            opacity: interpolate(
+                scrollX.value,
                 inputRange,
-                outputRange: [8, 24, 8],
-                extrapolate: 'clamp'
-            });
+                [0, 1, 0],
+                Extrapolation.CLAMP
+            ),
+            transform: [
+                {
+                    translateY: interpolate(
+                        scrollX.value,
+                        inputRange,
+                        [20, 0, 20],
+                        Extrapolation.CLAMP
+                    )
+                }
+            ]
+        };
+    });
 
-            const dotOpacity = scrollX.interpolate({
-                inputRange,
-                outputRange: [0.3, 1, 0.3],
-                extrapolate: 'clamp'
-            });
-
-            return (
-                <Animated.View
-                    key={i}
+    return (
+        <View style={[styles.slide, {width: screenWidth}]}>
+            <Animated.View style={[styles.imageContainer, imageAnimatedStyle]}>
+                <Image
+                    source={slide.image}
                     style={[
-                        styles.dot,
+                        styles.slideImage,
                         {
-                            width: dotWidth,
-                            opacity: dotOpacity,
-                            backgroundColor: Colors.accent
+                            width: screenWidth * 0.6,
+                            height: screenWidth * 0.6
                         }
                     ]}
+                    resizeMode="contain"
                 />
-            );
-        });
-    };
+            </Animated.View>
 
-    const renderSlides = () => {
-        return data.map((slide, i) => {
-            const inputRange = [
-                (i - 1) * SCREEN_WIDTH,
-                i * SCREEN_WIDTH,
-                (i + 1) * SCREEN_WIDTH
-            ];
+            <Animated.View style={[styles.textContainer, contentAnimatedStyle]}>
+                <Title
+                    color="accent"
+                    style={styles.slideTitle}
+                    dictionary={slide.titleText}
+                />
+                <Body
+                    color="muted"
+                    style={styles.slideBody}
+                    dictionary={slide.text}
+                />
+            </Animated.View>
+        </View>
+    );
+};
 
-            const imageTranslateX = scrollX.interpolate({
-                inputRange,
-                outputRange: [40, 0, -40],
-                extrapolate: 'clamp'
-            });
+const Slides = ({data, activeIndex, onScroll, showDots = true}) => {
+    const {width: SCREEN_WIDTH} = useWindowDimensions();
+    const scrollX = useSharedValue(0);
 
-            const contentOpacity = scrollX.interpolate({
-                inputRange,
-                outputRange: [0, 1, 0],
-                extrapolate: 'clamp'
-            });
-
-            const contentTranslateY = scrollX.interpolate({
-                inputRange,
-                outputRange: [20, 0, 20],
-                extrapolate: 'clamp'
-            });
-
-            return (
-                <View key={slide.id} style={styles.slide}>
-                    <Animated.View
-                        style={[
-                            styles.imageContainer,
-                            {transform: [{translateX: imageTranslateX}]}
-                        ]}>
-                        <Image
-                            source={slide.image}
-                            style={styles.slideImage}
-                            resizeMode="contain"
-                        />
-                    </Animated.View>
-
-                    <Animated.View
-                        style={[
-                            styles.textContainer,
-                            {
-                                opacity: contentOpacity,
-                                transform: [{translateY: contentTranslateY}]
-                            }
-                        ]}>
-                        <Title
-                            color="accent"
-                            style={styles.slideTitle}
-                            dictionary={slide.titleText}
-                        />
-                        <Body
-                            color="muted"
-                            style={styles.slideBody}
-                            dictionary={slide.text}
-                        />
-                    </Animated.View>
-                </View>
-            );
-        });
-    };
+    const scrollHandler = useAnimatedScrollHandler({
+        onScroll: (event) => {
+            scrollX.value = event.contentOffset.x;
+            if (onScroll) {
+                runOnJS(onScroll)({nativeEvent: event});
+            }
+        }
+    });
 
     return (
         <View>
-            <Animated.ScrollView
+            <AnimatedScrollView
                 horizontal
                 pagingEnabled
-                onScroll={handleScroll}
+                onScroll={scrollHandler}
                 scrollEventThrottle={16}
                 showsHorizontalScrollIndicator={false}
                 bounces={false}>
-                {renderSlides()}
-            </Animated.ScrollView>
-            {showDots && <View style={styles.dotContainer}>{renderDots()}</View>}
+                {data.map((slide, i) => (
+                    <AnimatedSlide
+                        key={slide.id}
+                        slide={slide}
+                        index={i}
+                        scrollX={scrollX}
+                        screenWidth={SCREEN_WIDTH}
+                    />
+                ))}
+            </AnimatedScrollView>
+            {showDots && (
+                <View style={styles.dotContainer}>
+                    {data.map((_, i) => (
+                        <AnimatedDot
+                            key={i}
+                            index={i}
+                            scrollX={scrollX}
+                            screenWidth={SCREEN_WIDTH}
+                        />
+                    ))}
+                </View>
+            )}
         </View>
     );
 };
 
 const styles = StyleSheet.create({
     slide: {
-        width: SCREEN_WIDTH,
         alignItems: 'center',
         paddingHorizontal: 32
     },
@@ -138,8 +182,6 @@ const styles = StyleSheet.create({
         marginBottom: 0
     },
     slideImage: {
-        width: SCREEN_WIDTH * 0.6,
-        height: SCREEN_WIDTH * 0.6,
         maxHeight: 260
     },
     textContainer: {

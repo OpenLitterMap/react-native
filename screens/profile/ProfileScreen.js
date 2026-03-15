@@ -14,6 +14,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useDispatch, useSelector } from 'react-redux';
 import { useCountUp } from 'use-count-up';
 
+import { useTranslation } from 'react-i18next';
 import { Header } from '../components';
 import { fetchUser } from '../../reducers/auth_reducer';
 import { getStats } from '../../reducers/stats_reducer';
@@ -29,6 +30,7 @@ const BRAND = '#27ae60';
 const TEXT_SECONDARY = '#888888';
 
 const ProfileScreen = ({ navigation }) => {
+    const { t } = useTranslation();
     const dispatch = useDispatch();
 
     const token = useSelector(state => state.auth.token);
@@ -76,13 +78,13 @@ const ProfileScreen = ({ navigation }) => {
                     .then(setXpLevels)
                     .catch(() => {});
 
-                try {
-                    setFetchError(false);
-                    await Promise.all([
-                        dispatch(fetchUser()),
-                        dispatch(getStats())
-                    ]);
-                } catch {
+                setFetchError(false);
+                const [userResult, statsResult] = await Promise.all([
+                    dispatch(fetchUser()),
+                    dispatch(getStats())
+                ]);
+                if (userResult.meta?.requestStatus === 'rejected' ||
+                    statsResult.meta?.requestStatus === 'rejected') {
                     setFetchError(true);
                 }
             };
@@ -125,12 +127,12 @@ const ProfileScreen = ({ navigation }) => {
         setRefreshing(true);
         setFetchError(false);
 
-        try {
-            await Promise.all([
-                dispatch(fetchUser()),
-                dispatch(getStats())
-            ]);
-        } catch {
+        const [userResult, statsResult] = await Promise.all([
+            dispatch(fetchUser()),
+            dispatch(getStats())
+        ]);
+        if (userResult.meta?.requestStatus === 'rejected' ||
+            statsResult.meta?.requestStatus === 'rejected') {
             setFetchError(true);
         }
 
@@ -209,7 +211,7 @@ const ProfileScreen = ({ navigation }) => {
                 {fetchError && prev && (
                     <View style={styles.errorBanner}>
                         <Text style={styles.errorText}>
-                            Showing saved data. Pull to refresh.
+                            {t('Showing saved data. Pull to refresh.')}
                         </Text>
                     </View>
                 )}
@@ -218,13 +220,13 @@ const ProfileScreen = ({ navigation }) => {
                 {fetchError && !prev && !user && (
                     <View style={styles.errorContainer}>
                         <Text style={styles.errorTitle}>
-                            Couldn't load your profile
+                            {t("Couldn't load your profile")}
                         </Text>
                         <Pressable
                             style={styles.retryButton}
                             onPress={onRefresh}
                         >
-                            <Text style={styles.retryText}>Try Again</Text>
+                            <Text style={styles.retryText}>{t('Try Again')}</Text>
                         </Pressable>
                     </View>
                 )}

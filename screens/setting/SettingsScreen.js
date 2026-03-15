@@ -2,12 +2,12 @@ import React from 'react';
 import {
     ActivityIndicator,
     Alert,
-    Dimensions,
     Modal,
     Pressable,
     SectionList,
     StyleSheet,
     Switch,
+    useWindowDimensions,
     View
 } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
@@ -26,17 +26,16 @@ import {
     getUntaggedImages
 } from '../../reducers/images_reducer';
 
-const SCREEN_HEIGHT = Dimensions.get('window').height;
-
 const SettingsScreen = ({navigation}) => {
     const dispatch = useDispatch();
     const {t} = useTranslation();
+    const {height: SCREEN_HEIGHT} = useWindowDimensions();
 
     const user = useSelector(state => state.auth.user);
     const editModalVisible = useSelector(
         state => state.settings.editModalVisible
     );
-    const savingToggle = useSelector(state => state.settings.savingToggle);
+    const savingToggle = useSelector(state => state.settings.toggleStatus === 'loading');
 
     const countryCode = user?.global_flag?.toUpperCase();
 
@@ -78,7 +77,7 @@ const SettingsScreen = ({navigation}) => {
             return null;
         } else {
             return (
-                <View style={styles.switchRow}>
+                <View style={[styles.switchRow, {padding: SCREEN_HEIGHT * 0.01}]}>
                     <Body dictionary={`${item.title}`} />
 
                     {getRowData(item.id, item.key)}
@@ -369,7 +368,7 @@ const SettingsScreen = ({navigation}) => {
                             }
                         ]}
                         renderItem={({item, index, section}) => (
-                            <View style={styles.sectionRow} key={index}>
+                            <View style={[styles.sectionRow, {height: SCREEN_HEIGHT * 0.06}]} key={index}>
                                 {renderRow(item)}
                             </View>
                         )}
@@ -405,8 +404,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         backgroundColor: 'white',
         marginBottom: 2,
-        flexDirection: 'row',
-        height: SCREEN_HEIGHT * 0.06
+        flexDirection: 'row'
     },
     sectionHeaderTitle: {
         paddingLeft: 10,
@@ -418,7 +416,6 @@ const styles = StyleSheet.create({
         flex: 1,
         flexDirection: 'row',
         alignItems: 'center',
-        padding: SCREEN_HEIGHT * 0.01,
         justifyContent: 'space-between'
     },
     waitModal: {

@@ -1,9 +1,6 @@
 import React from 'react';
-import { Dimensions, StyleSheet, View } from 'react-native';
-import PropTypes from 'prop-types';
+import { StyleSheet, useWindowDimensions, View } from 'react-native';
 import { Colors, SubTitle, Title } from '../../components';
-
-const { width } = Dimensions.get('window');
 
 const StatsCard = ({
     style,
@@ -12,8 +9,10 @@ const StatsCard = ({
     fontColor,
     backgroundColor = Colors.accent
 }) => {
+    const { width } = useWindowDimensions();
+
     return (
-        <View style={[styles.container, {backgroundColor}, style]}>
+        <View style={[styles.container, {backgroundColor, width: width / 2 - 30}, style]}>
             <Title style={{color: fontColor}}>{value}</Title>
             <SubTitle family="regular" style={{color: fontColor}}>
                 {title}
@@ -22,23 +21,13 @@ const StatsCard = ({
     );
 };
 
-StatsCard.propTypes = {
-    value: PropTypes.string.isRequired,
-    title: PropTypes.string.isRequired,
-    style: PropTypes.any,
-    fontColor: PropTypes.string,
-    backgroundColor: PropTypes.string
-};
-
 const styles = StyleSheet.create({
     container: {
         backgroundColor: '#cbd8ff',
         justifyContent: 'center',
         padding: 20,
         borderRadius: 12,
-        margin: 10,
-        width: width / 2 - 30
-        // flex: 1
+        margin: 10
     }
 });
 

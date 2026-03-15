@@ -1,13 +1,13 @@
 import React, {useState, useEffect, useRef} from 'react';
 import {
     ActivityIndicator,
-    Dimensions,
     Modal,
     Pressable,
     ScrollView,
     StyleSheet,
     Text,
     TextInput,
+    useWindowDimensions,
     View
 } from 'react-native';
 import {useDispatch, useSelector} from 'react-redux';
@@ -32,12 +32,10 @@ import {
     toggleEditModal
 } from '../../../reducers/settings_reducer';
 
-const SCREEN_WIDTH = Dimensions.get('window').width;
-const SCREEN_HEIGHT = Dimensions.get('window').height;
-
 const SettingsComponent = () => {
     const {t} = useTranslation();
     const dispatch = useDispatch();
+    const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} = useWindowDimensions();
 
     const formikRef = useRef(null);
     const [password, setPassword] = useState('');
@@ -60,7 +58,7 @@ const SettingsComponent = () => {
         state => state.settings.saveResultMessage
     );
     const isSaving = useSelector(
-        state => state.settings.isSaving
+        state => state.settings.saveStatus === 'loading'
     );
     const deleteAccountError = useSelector(
         state => state.settings.deleteAccountError
@@ -195,19 +193,19 @@ const SettingsComponent = () => {
             );
         } else if (formField.key === 'delete-account') {
             return (
-                <View style={styles.deleteAccountContainer}>
-                    <Text style={styles.deleteAccountTitle}>
-                        Are you sure you want to delete your account?
+                <View style={[styles.deleteAccountContainer, {padding: SCREEN_WIDTH * 0.1}]}>
+                    <Text style={[styles.deleteAccountTitle, {fontSize: SCREEN_HEIGHT * 0.045, marginBottom: SCREEN_HEIGHT * 0.025}]}>
+                        {t('Are you sure you want to delete your account?')}
                     </Text>
-                    <Text style={styles.deleteAccountSubtitle}>
-                        All of your data will be deleted.
+                    <Text style={[styles.deleteAccountSubtitle, {fontSize: SCREEN_HEIGHT * 0.035, marginBottom: SCREEN_HEIGHT * 0.025}]}>
+                        {t('All of your data will be deleted.')}
                     </Text>
-                    <Text style={styles.deleteAccountSubtitle}>
-                        This cannot be undone.
+                    <Text style={[styles.deleteAccountSubtitle, {fontSize: SCREEN_HEIGHT * 0.035, marginBottom: SCREEN_HEIGHT * 0.025}]}>
+                        {t('This cannot be undone.')}
                     </Text>
 
                     <TextInput
-                        placeholder="Please enter your password"
+                        placeholder={t('Please enter your password')}
                         placeholderTextColor="grey"
                         style={{
                             height: 40,
@@ -221,10 +219,10 @@ const SettingsComponent = () => {
                     />
 
                     <Pressable
-                        style={styles.deleteAccountButton}
+                        style={[styles.deleteAccountButton, {height: SCREEN_HEIGHT * 0.05, width: SCREEN_WIDTH * 0.8}]}
                         onPress={submitDeleteAccount}>
-                        <Text style={styles.deleteButtonText}>
-                            Delete account
+                        <Text style={[styles.deleteButtonText, {fontSize: SCREEN_HEIGHT * 0.02}]}>
+                            {t('Delete Account')}
                         </Text>
                     </Pressable>
 
@@ -279,12 +277,12 @@ const SettingsComponent = () => {
         };
 
         const SocialSchema = {
-            twitter: Yup.string().url('Please enter a valid url'),
-            facebook: Yup.string().url('Please enter a valid url'),
-            instagram: Yup.string().url('Please enter a valid url'),
-            linkedin: Yup.string().url('Please enter a valid url'),
-            reddit: Yup.string().url('Please enter a valid url'),
-            personal: Yup.string().url('Please enter a valid url')
+            social_twitter: Yup.string().url('Please enter a valid url'),
+            social_facebook: Yup.string().url('Please enter a valid url'),
+            social_instagram: Yup.string().url('Please enter a valid url'),
+            social_linkedin: Yup.string().url('Please enter a valid url'),
+            social_reddit: Yup.string().url('Please enter a valid url'),
+            social_personal: Yup.string().url('Please enter a valid url')
         };
 
         switch (key) {
@@ -316,7 +314,7 @@ const SettingsComponent = () => {
 
         if (success || error) {
             return (
-                <View style={styles.innerModalSuccess}>
+                <View style={[styles.innerModalSuccess, {width: SCREEN_WIDTH * 0.8}]}>
                     <Text style={styles.innerModalHeader}>
                         {success ? successTitle : errorTitle}
                     </Text>
@@ -324,7 +322,7 @@ const SettingsComponent = () => {
                     <Text>{success ? successMessage : errorMessage}</Text>
 
                     <Pressable
-                        style={styles.successButton}
+                        style={[styles.successButton, {height: SCREEN_HEIGHT * 0.05}]}
                         onPress={goBack}>
                         <Text style={styles.buttonText}>{goBackMessage}</Text>
                     </Pressable>
@@ -462,8 +460,6 @@ const styles = StyleSheet.create({
         maxHeight: 48
     },
     deleteAccountButton: {
-        height: SCREEN_HEIGHT * 0.05,
-        width: SCREEN_WIDTH * 0.8,
         marginTop: 20,
         backgroundColor: 'red',
         paddingVertical: 10,
@@ -471,20 +467,11 @@ const styles = StyleSheet.create({
         borderRadius: 8
     },
     deleteButtonText: {
-        color: 'white',
-        fontSize: SCREEN_HEIGHT * 0.02
+        color: 'white'
     },
-    deleteAccountContainer: {
-        padding: SCREEN_WIDTH * 0.1
-    },
-    deleteAccountTitle: {
-        fontSize: SCREEN_HEIGHT * 0.045,
-        marginBottom: SCREEN_HEIGHT * 0.025
-    },
-    deleteAccountSubtitle: {
-        fontSize: SCREEN_HEIGHT * 0.035,
-        marginBottom: SCREEN_HEIGHT * 0.025
-    },
+    deleteAccountContainer: {},
+    deleteAccountTitle: {},
+    deleteAccountSubtitle: {},
     modalContainer: {
         flex: 1,
         backgroundColor: 'rgba(0,0,0,0.6)',
@@ -495,8 +482,7 @@ const styles = StyleSheet.create({
         paddingVertical: 20,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: 'white',
-        width: SCREEN_WIDTH * 0.8
+        backgroundColor: 'white'
     },
     innerModalHeader: {
         textAlign: 'center',
@@ -508,7 +494,6 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         borderRadius: 6,
         backgroundColor: '#2189dc',
-        height: SCREEN_HEIGHT * 0.05,
         marginTop: 20,
         width: '80%'
     },

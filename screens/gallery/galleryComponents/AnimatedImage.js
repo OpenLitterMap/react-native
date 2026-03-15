@@ -2,20 +2,21 @@ import {
     View,
     Pressable,
     Image,
-    Dimensions,
     StyleSheet,
-    Text
+    Text,
+    useWindowDimensions
 } from 'react-native';
 import React from 'react';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { Colors } from '../../components';
 
-const { width } = Dimensions.get('window');
-
 const AnimatedImage = ({ image, isImageGeotagged, selected, onPress }) => {
+    const { width } = useWindowDimensions();
+    const gridSize = width / 3 - 2;
+
     return (
         <Pressable key={image.uri} onPress={onPress}>
-            <View style={styles.grid}>
+            <View style={[styles.grid, {width: gridSize, height: gridSize}]}>
                 <Image
                     source={{ uri: image.uri }}
                     style={[
@@ -32,6 +33,8 @@ const AnimatedImage = ({ image, isImageGeotagged, selected, onPress }) => {
                         style={[
                             styles.grid,
                             {
+                                width: gridSize,
+                                height: gridSize,
                                 position: 'absolute',
                                 backgroundColor: Colors.muted,
                                 opacity: 0.3
@@ -69,8 +72,6 @@ const AnimatedImage = ({ image, isImageGeotagged, selected, onPress }) => {
 
 const styles = StyleSheet.create({
     grid: {
-        width: width / 3 - 2,
-        height: width / 3 - 2,
         margin: 1
     },
     geotaggedIcon: {

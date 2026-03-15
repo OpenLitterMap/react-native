@@ -1,10 +1,13 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import dayjs from '../../../utils/dayjs';
 import { Body, Caption, SubTitle } from '../../components';
 import RankingMedal from './RankingMedal';
 
 const MemberCard = ({ data, teamId, index }) => {
+
+    const {t} = useTranslation();
 
     const isActiveTeam = teamId === data?.team?.id;
     const lastActivity = data?.pivot?.updated_at
@@ -31,7 +34,7 @@ const MemberCard = ({ data, teamId, index }) => {
                     </View>
                 </View>
                 <Body color={isActiveTeam ? 'accent' : 'warn'}>
-                    {isActiveTeam ? 'Active' : 'Inactive'}
+                    {isActiveTeam ? t('Active') : t('Inactive')}
                 </Body>
             </View>
             <View style={{ marginTop: 16, flexDirection: 'row', justifyContent: 'space-between'}}>

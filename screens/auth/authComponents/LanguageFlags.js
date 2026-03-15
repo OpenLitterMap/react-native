@@ -1,18 +1,16 @@
 import React, {useState} from 'react';
 import {
-    Dimensions,
     Image,
     LayoutAnimation,
     Platform,
     Pressable,
     StyleSheet,
     UIManager,
+    useWindowDimensions,
     View
 } from 'react-native';
 
 import {useTranslation} from 'react-i18next';
-
-const {width: SCREEN_WIDTH} = Dimensions.get('window');
 
 if (Platform.OS === 'android') {
     UIManager.setLayoutAnimationEnabledExperimental?.(true);
@@ -31,6 +29,7 @@ const LANGS = [
 
 const LanguageFlags = () => {
     const {i18n} = useTranslation();
+    const {width: SCREEN_WIDTH} = useWindowDimensions();
     const currentLang = i18n.language;
     const [show, setShow] = useState(false);
 
@@ -55,7 +54,7 @@ const LanguageFlags = () => {
     };
 
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, {right: (SCREEN_WIDTH * 0.35) / 2 - 24}]}>
             {show ? (
                 <View style={styles.flagList}>
                     {LANGS.map(item => (
@@ -98,7 +97,6 @@ const styles = StyleSheet.create({
     container: {
         position: 'absolute',
         top: -12,
-        right: (SCREEN_WIDTH * 0.35) / 2 - 24,
         zIndex: 10,
         alignItems: 'flex-end'
     },

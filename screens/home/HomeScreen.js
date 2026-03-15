@@ -3,12 +3,12 @@ import {
     ActivityIndicator,
     Alert,
     Button,
-    Dimensions,
     Modal,
     Platform,
     Pressable,
     StyleSheet,
     Text,
+    useWindowDimensions,
     View
 } from 'react-native';
 import {useDispatch, useSelector} from 'react-redux';
@@ -51,11 +51,9 @@ import {isTagged} from '../../utils/isTagged';
 import buildTagsPayload from '../../utils/buildTagsPayload';
 import {useTranslation} from 'react-i18next';
 
-const SCREEN_WIDTH = Dimensions.get('window').width;
-const SCREEN_HEIGHT = Dimensions.get('window').height;
-
 const HomeScreen = ({navigation}) => {
     const dispatch = useDispatch();
+    const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} = useWindowDimensions();
 
     const isUploadCancelled = useRef(false);
     const abortControllerRef = useRef(null);
@@ -261,7 +259,7 @@ const HomeScreen = ({navigation}) => {
     const renderHelperMessage = () => {
         if (isSelectingImagesToDelete) {
             return (
-                <View style={styles.helperContainer}>
+                <View style={[styles.helperContainer, {width: SCREEN_WIDTH - 150}]}>
                     <Icon
                         color={Colors.muted}
                         name="information-circle-outline"
@@ -300,7 +298,7 @@ const HomeScreen = ({navigation}) => {
         if (isSelectingImagesToDelete) {
             return (
                 <Text
-                    style={styles.normalWhiteText}
+                    style={[styles.normalWhiteText, {fontSize: SCREEN_HEIGHT * 0.02}]}
                     onPress={handleToggleSelecting}>
                     {cancelText}
                 </Text>
@@ -310,7 +308,7 @@ const HomeScreen = ({navigation}) => {
         if (images?.length > 0) {
             return (
                 <Text
-                    style={styles.normalWhiteText}
+                    style={[styles.normalWhiteText, {fontSize: SCREEN_HEIGHT * 0.02}]}
                     onPress={handleToggleSelecting}>
                     {deleteText}
                 </Text>
@@ -334,6 +332,7 @@ const HomeScreen = ({navigation}) => {
      */
     const deleteImages = async () => {
         const selectedImages = images.filter(img => img.selected);
+        let serverFailCount = 0;
 
         for (const image of selectedImages) {
             if (image.uploaded) {
@@ -344,11 +343,19 @@ const HomeScreen = ({navigation}) => {
                 );
 
                 if (result.meta?.requestStatus === 'rejected') {
+                    serverFailCount++;
                     continue;
                 }
             }
 
             dispatch(deleteImage(image.id));
+        }
+
+        if (serverFailCount > 0) {
+            Alert.alert(
+                t('Error!'),
+                t('{{count}} photo(s) could not be deleted from server.', { count: serverFailCount })
+            );
         }
 
         setIsSelectingImagesToDelete(false);
@@ -371,7 +378,6 @@ const HomeScreen = ({navigation}) => {
             imageData.append('lat', img.lat);
             imageData.append('lon', img.lon);
             imageData.append('date', parseInt(img.date));
-            imageData.append('picked_up', img.picked_up ? 1 : 0);
             imageData.append('model', deviceModel);
 
             // Tags are always posted separately via POST /api/v3/tags
@@ -429,6 +435,7 @@ const HomeScreen = ({navigation}) => {
         dispatch(startUploading());
 
         let failedUploads = 0;
+        const failureReasons = [];
 
         if (geotaggedImages.length) {
             for (let i = 0; i < geotaggedImages.length; i++) {
@@ -469,16 +476,19 @@ const HomeScreen = ({navigation}) => {
                             postTagsToPhoto({
                                 photoId: result.payload.serverPhotoId,
                                 tags: tagsPayload,
-                                pickedUp: img.picked_up,
                                 signal: abortControllerRef.current?.signal
                             })
                         );
 
                         if (tagResult.meta?.requestStatus === 'rejected') {
                             failedUploads++;
+                            failureReasons.push(tagResult.payload?.userMessage || 'Tag upload failed');
                         }
                     } else if (result.payload?.serverPhotoId) {
                         dispatch(deleteImage(result.payload.serverPhotoId));
+                    } else if (result.meta?.requestStatus === 'rejected') {
+                        failedUploads++;
+                        failureReasons.push(result.payload?.userMessage || 'Upload failed');
                     }
                 } else if (img.uploaded && tagsPayload && tagsPayload.length > 0) {
                     dispatch(setUploadPhase('tagging'));
@@ -487,27 +497,26 @@ const HomeScreen = ({navigation}) => {
                         postTagsToPhoto({
                             photoId: img.id,
                             tags: tagsPayload,
-                            pickedUp: img.picked_up,
                             signal: abortControllerRef.current?.signal
                         })
                     );
 
                     if (tagResult.meta?.requestStatus === 'rejected') {
                         failedUploads++;
+                        failureReasons.push(tagResult.payload?.userMessage || 'Tag upload failed');
                     }
                 }
             }
         }
 
-        // If cancelled, cancelUploadWrapper already cleaned up state
-        if (isUploadCancelled.current) {
-            return;
-        }
-
-        if (failedUploads > 0) {
+        if (!isUploadCancelled.current && failedUploads > 0) {
+            const uniqueReasons = [...new Set(failureReasons)];
+            const detail = uniqueReasons.length > 0
+                ? uniqueReasons.join('\n')
+                : t('Some uploads failed. You can retry from your uploads.');
             Alert.alert(
                 t('Error!'),
-                t('Some tags failed to upload. You can retry from your uploads.')
+                `${failedUploads} ${failedUploads === 1 ? 'upload' : 'uploads'} failed:\n\n${detail}`
             );
         }
 
@@ -540,9 +549,9 @@ const HomeScreen = ({navigation}) => {
         const total = totalToUpload;
 
         if (uploadPhase === 'tagging') {
-            return `Tagging ${current} of ${total}...`;
+            return t('Tagging {{current}} of {{total}}...', {current, total});
         }
-        return `Uploading ${current} of ${total}...`;
+        return t('Uploading {{current}} of {{total}}...', {current, total});
     };
 
     /**
@@ -553,25 +562,25 @@ const HomeScreen = ({navigation}) => {
 
         if (failedCounts.network > 0) {
             items.push(
-                `${failedCounts.network} failed — no internet connection`
+                `${failedCounts.network} ${t('failed — no internet connection')}`
             );
         }
         if (failedCounts.timeout > 0) {
-            items.push(`${failedCounts.timeout} failed — connection timed out`);
+            items.push(`${failedCounts.timeout} ${t('failed — connection timed out')}`);
         }
         if (failedCounts.server > 0) {
-            items.push(`${failedCounts.server} failed — server error`);
+            items.push(`${failedCounts.server} ${t('failed — server error')}`);
         }
         if (failedCounts.alreadyUploaded > 0) {
-            items.push(`${failedCounts.alreadyUploaded} already uploaded`);
+            items.push(`${failedCounts.alreadyUploaded} ${t('already uploaded')}`);
         }
         if (failedCounts.invalidCoordinates > 0) {
             items.push(
-                `${failedCounts.invalidCoordinates} invalid coordinates`
+                `${failedCounts.invalidCoordinates} ${t('invalid coordinates')}`
             );
         }
         if (failedCounts.unknown > 0) {
-            items.push(`${failedCounts.unknown} failed — unknown error`);
+            items.push(`${failedCounts.unknown} ${t('failed — unknown error')}`);
         }
 
         return items.map((text, i) => (
@@ -606,7 +615,7 @@ const HomeScreen = ({navigation}) => {
                     {/* Uploading spinner with phase-aware progress */}
                     {isUploading && (
                         <View style={styles.modal}>
-                            <Text style={styles.uploadText}>
+                            <Text style={[styles.uploadText, {fontSize: SCREEN_HEIGHT * 0.02}]}>
                                 {totalToUpload > 0
                                     ? renderProgressText()
                                     : t('Please wait while your photos upload')}
@@ -616,7 +625,7 @@ const HomeScreen = ({navigation}) => {
 
                             <Button
                                 onPress={cancelUploadWrapper}
-                                title="Cancel"
+                                title={cancelText}
                             />
                         </View>
                     )}
@@ -624,7 +633,7 @@ const HomeScreen = ({navigation}) => {
                     {/* Upload result */}
                     {showThankYouMessages && (
                         <View style={styles.modal}>
-                            <View style={styles.resultCard}>
+                            <View style={[styles.resultCard, {width: SCREEN_WIDTH * 0.8}]}>
                                 {/* Success state */}
                                 {totalFailed === 0 && (
                                     <>
@@ -650,7 +659,7 @@ const HomeScreen = ({navigation}) => {
                                             style={{marginBottom: 8}}
                                         />
                                         <Text style={styles.resultTitle}>
-                                            Upload incomplete
+                                            {t('Upload incomplete')}
                                         </Text>
                                     </>
                                 )}
@@ -666,8 +675,8 @@ const HomeScreen = ({navigation}) => {
                                             <Text
                                                 style={styles.resultStatLabel}>
                                                 {uploaded === 1
-                                                    ? 'photo uploaded'
-                                                    : 'photos uploaded'}
+                                                    ? t('photo uploaded')
+                                                    : t('photos uploaded')}
                                             </Text>
                                         </View>
                                     ) : tagged > 0 ? (
@@ -679,8 +688,8 @@ const HomeScreen = ({navigation}) => {
                                             <Text
                                                 style={styles.resultStatLabel}>
                                                 {tagged === 1
-                                                    ? 'tag added'
-                                                    : 'tags added'}
+                                                    ? t('tag added')
+                                                    : t('tags added')}
                                             </Text>
                                         </View>
                                     ) : null}
@@ -692,9 +701,9 @@ const HomeScreen = ({navigation}) => {
                                         <Text style={styles.resultFailureTitle}>
                                             {totalFailed}{' '}
                                             {totalFailed === 1
-                                                ? 'item'
-                                                : 'items'}{' '}
-                                            failed
+                                                ? t('item')
+                                                : t('items')}{' '}
+                                            {t('failed')}
                                         </Text>
                                         {renderFailureDetails()}
                                     </View>
@@ -708,7 +717,7 @@ const HomeScreen = ({navigation}) => {
                                             onPress={retryFailedUploads}>
                                             <Text
                                                 style={styles.resultActionText}>
-                                                Retry
+                                                {t('Retry')}
                                             </Text>
                                         </Pressable>
                                     )}
@@ -726,7 +735,7 @@ const HomeScreen = ({navigation}) => {
                                                     styles.resultCloseTextSuccess
                                             ]}>
                                             {totalFailed === 0
-                                                ? 'Done'
+                                                ? t('Done')
                                                 : t('Close')}
                                         </Text>
                                     </Pressable>
@@ -763,7 +772,6 @@ const styles = StyleSheet.create({
     helperContainer: {
         position: 'relative',
         bottom: 30,
-        width: SCREEN_WIDTH - 150,
         height: 80,
         flexDirection: 'row',
         paddingHorizontal: 10,
@@ -775,8 +783,7 @@ const styles = StyleSheet.create({
         backgroundColor: Colors.accentLight
     },
     normalWhiteText: {
-        color: 'white',
-        fontSize: SCREEN_HEIGHT * 0.02
+        color: 'white'
     },
     modal: {
         backgroundColor: 'rgba(0,0,0,0.6)',
@@ -787,7 +794,6 @@ const styles = StyleSheet.create({
     resultCard: {
         backgroundColor: '#ffffff',
         borderRadius: 16,
-        width: SCREEN_WIDTH * 0.8,
         paddingVertical: 28,
         paddingHorizontal: 24,
         alignItems: 'center'
@@ -863,7 +869,6 @@ const styles = StyleSheet.create({
     },
     uploadText: {
         color: 'white',
-        fontSize: SCREEN_HEIGHT * 0.02,
         fontWeight: 'bold',
         marginBottom: 10
     }

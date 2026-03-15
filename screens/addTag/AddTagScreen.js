@@ -2,7 +2,6 @@ import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {
     ActivityIndicator,
     Alert,
-    Animated,
     Keyboard,
     KeyboardAvoidingView,
     Platform,
@@ -11,7 +10,14 @@ import {
     StyleSheet,
     View
 } from 'react-native';
-import {SafeAreaView} from 'react-native-safe-area-context';
+import Animated, {
+    useSharedValue,
+    useAnimatedStyle,
+    withTiming,
+    withSequence,
+    cancelAnimation
+} from 'react-native-reanimated';
+import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import {Pressable} from 'react-native-gesture-handler';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -38,24 +44,29 @@ import {
     removeCustomTagFromTag,
     removeImageCustomTag,
     removeTagV5,
+    setPickedUpOnTag,
     toggleMaterialOnTag,
-    togglePickedUpByIndex,
     updateTagQuantityV5
 } from '../../reducers/images_reducer';
 import {fetchAllTags} from '../../reducers/tags_reducer';
 import {isTagged} from '../../utils/isTagged';
 import buildTagsPayload from '../../utils/buildTagsPayload';
-import {makeTagKey, resolveTagEntry} from './components/tagUtils';
+import {makeTagKey, parseTagKey, resolveTagEntry} from './components/tagUtils';
 
 const AddTagScreen = ({navigation}) => {
     const dispatch = useDispatch();
     const {t} = useTranslation();
+    const insets = useSafeAreaInsets();
 
     // Redux state — use editingPhoto if available, otherwise imagesArray
+    const defaultPickedUp = useSelector(state => state.auth.user?.picked_up ?? null);
     const editingPhoto = useSelector(state => state.images.editingPhoto);
     const galleryImages = useSelector(state => state.images.imagesArray);
     const rawSwiperIndex = useSelector(state => state.images.swiperIndex);
-    const images = editingPhoto ? [editingPhoto] : galleryImages;
+    const images = useMemo(
+        () => editingPhoto ? [editingPhoto] : galleryImages,
+        [editingPhoto, galleryImages]
+    );
     const swiperIndex = editingPhoto ? 0 : rawSwiperIndex;
 
     const {
@@ -65,7 +76,7 @@ const AddTagScreen = ({navigation}) => {
         typeEntriesByKey,
         materialsById,
         brandsById,
-        loading: tagsLoading
+        fetchStatus: tagsFetchStatus
     } = useSelector(state => state.tags, shallowEqual);
 
     const [isSaving, setIsSaving] = useState(false);
@@ -74,17 +85,37 @@ const AddTagScreen = ({navigation}) => {
 
     // Focus mode: hides overlays so user can see full image
     const [focusMode, setFocusMode] = useState(false);
+    const [keyboardVisible, setKeyboardVisible] = useState(false);
     const [showBrowser, setShowBrowser] = useState(false);
     const [detailTag, setDetailTag] = useState(null);
+
+    // Close overlays when navigating to a different image
+    useEffect(() => {
+        setDetailTag(null);
+        setShowBrowser(false);
+    }, [swiperIndex]);
+
+    // Track keyboard visibility
+    useEffect(() => {
+        const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+        const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+        const showSub = Keyboard.addListener(showEvent, () => setKeyboardVisible(true));
+        const hideSub = Keyboard.addListener(hideEvent, () => setKeyboardVisible(false));
+        return () => {
+            showSub.remove();
+            hideSub.remove();
+        };
+    }, []);
+
     // Overlay opacity for focus mode transitions
-    const overlayOpacity = useRef(new Animated.Value(1)).current;
+    const overlayOpacity = useSharedValue(1);
 
     // XP badge pulse animation
-    const xpScale = useRef(new Animated.Value(1)).current;
+    const xpScale = useSharedValue(1);
 
     // Fetch tags on mount if not loaded
     useEffect(() => {
-        if (objectEntries.length === 0 && !tagsLoading) {
+        if (objectEntries.length === 0 && tagsFetchStatus !== 'loading') {
             dispatch(fetchAllTags());
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -104,32 +135,29 @@ const AddTagScreen = ({navigation}) => {
     const currentImage = images[safeIndex];
     const isEditMode = currentImage?.editing === true;
 
-    const currentTags = useMemo(
-        () => currentImage?.tags || [],
-        [currentImage?.tags]
-    );
-    const currentCustomTags = useMemo(
-        () => currentImage?.customTags || [],
-        [currentImage?.customTags]
-    );
-    const pickedUp = currentImage?.picked_up || false;
+    const currentTags = currentImage?.tags || [];
+    const currentCustomTags = currentImage?.customTags || [];
+    const bottomInset = keyboardVisible ? 14 : insets.bottom;
 
-    // XP estimate: 5 (upload) + sum(quantities) + 5 if picked_up
+    const topInsetStyle = useMemo(
+        () => ({paddingTop: insets.top, paddingLeft: insets.left, paddingRight: insets.right}),
+        [insets.top, insets.left, insets.right]
+    );
+
+    // XP estimate: 5 (upload) + sum(quantities) + 5 per picked_up tag
     // + 2 per material + 3 per brand + 1 per custom tag (per-tag and image-level)
     const xpEstimate = useMemo(() => {
         let xp = 5;
         for (const tag of currentTags) {
             xp += tag.quantity;
+            if (tag.picked_up === true) xp += 5;
             xp += (tag.materials?.length || 0) * 2;
             xp += (tag.brands?.length || 0) * 3;
             xp += tag.customTags?.length || 0;
         }
         xp += currentCustomTags.length;
-        if (pickedUp) {
-            xp += 5;
-        }
         return xp;
-    }, [currentTags, currentCustomTags, pickedUp]);
+    }, [currentTags, currentCustomTags]);
 
     // Pulse XP badge when estimate changes
     const prevXp = useRef(xpEstimate);
@@ -138,55 +166,44 @@ const AddTagScreen = ({navigation}) => {
             return;
         }
 
-        const anim = Animated.sequence([
-            Animated.timing(xpScale, {
-                toValue: 1.15,
-                duration: 100,
-                useNativeDriver: true
-            }),
-            Animated.timing(xpScale, {
-                toValue: 1.0,
-                duration: 100,
-                useNativeDriver: true
-            })
-        ]);
-        anim.start();
+        xpScale.value = withSequence(
+            withTiming(1.15, {duration: 100}),
+            withTiming(1.0, {duration: 100})
+        );
         prevXp.current = xpEstimate;
 
-        return () => anim.stop();
+        return () => cancelAnimation(xpScale);
     }, [xpEstimate, xpScale]);
 
     // Image navigation
     const handleIndexChange = useCallback(
         newIndex => {
-            dispatch(changeSwiperIndex(newIndex));
+            const clamped = Math.max(0, Math.min(newIndex, images.length - 1));
+            dispatch(changeSwiperIndex(clamped));
         },
-        [dispatch]
+        [dispatch, images.length]
     );
 
     // Focus mode toggle from ImageViewer gestures
+    // If keyboard is open, dismiss it instead of entering focus mode
     const handleToggleFocus = useCallback(() => {
+        if (keyboardVisible) {
+            Keyboard.dismiss();
+            return;
+        }
         setFocusMode(prev => {
             const next = !prev;
-            Animated.timing(overlayOpacity, {
-                toValue: next ? 0 : 1,
-                duration: 200,
-                useNativeDriver: true
-            }).start();
+            overlayOpacity.value = withTiming(next ? 0 : 1, {duration: 200});
             return next;
         });
-    }, [overlayOpacity]);
+    }, [overlayOpacity, keyboardVisible]);
 
     // When user zooms back to 1x, show overlays
     const handleZoomChange = useCallback(
         isZoomed => {
             if (!isZoomed && focusMode) {
                 setFocusMode(false);
-                Animated.timing(overlayOpacity, {
-                    toValue: 1,
-                    duration: 200,
-                    useNativeDriver: true
-                }).start();
+                overlayOpacity.value = withTiming(1, {duration: 200});
             }
         },
         [focusMode, overlayOpacity]
@@ -208,9 +225,9 @@ const AddTagScreen = ({navigation}) => {
     // Tag actions
     const handleAddTag = useCallback(
         (cloId, typeId) => {
-            dispatch(addTagV5({imageIndex: swiperIndex, cloId, typeId}));
+            dispatch(addTagV5({imageIndex: swiperIndex, cloId, typeId, defaultPickedUp}));
         },
-        [dispatch, swiperIndex]
+        [dispatch, swiperIndex, defaultPickedUp]
     );
 
     const handleRemoveTag = useCallback(
@@ -238,9 +255,12 @@ const AddTagScreen = ({navigation}) => {
         [dispatch, swiperIndex]
     );
 
-    const handleTogglePickedUp = useCallback(() => {
-        dispatch(togglePickedUpByIndex(swiperIndex));
-    }, [dispatch, swiperIndex]);
+    const handleSetPickedUp = useCallback(
+        (cloId, typeId, value) => {
+            dispatch(setPickedUpOnTag({imageIndex: swiperIndex, cloId, typeId, value}));
+        },
+        [dispatch, swiperIndex]
+    );
 
     // Image-level custom tag handlers
     const handleAddImageCustomTag = useCallback(
@@ -271,17 +291,21 @@ const AddTagScreen = ({navigation}) => {
     // Materials and brands as sorted arrays for TagDetailSheet
     const materialsArray = useMemo(
         () =>
-            Object.values(materialsById).sort((a, b) =>
-                a.name.localeCompare(b.name)
-            ),
+            materialsById
+                ? Object.values(materialsById).sort((a, b) =>
+                    a.name.localeCompare(b.name)
+                )
+                : [],
         [materialsById]
     );
 
     const brandsArray = useMemo(
         () =>
-            Object.values(brandsById).sort((a, b) =>
-                a.name.localeCompare(b.name)
-            ),
+            brandsById
+                ? Object.values(brandsById).sort((a, b) =>
+                    a.name.localeCompare(b.name)
+                )
+                : [],
         [brandsById]
     );
 
@@ -299,8 +323,7 @@ const AddTagScreen = ({navigation}) => {
         if (!detailTag) {
             return [null, null];
         }
-        const parts = detailTag.split('-');
-        return [Number(parts[0]), parts[1] !== '' ? Number(parts[1]) : null];
+        return parseTagKey(detailTag);
     }, [detailTag]);
 
     // Find the current tag entry for the detail sheet (stays in sync after edits)
@@ -391,18 +414,20 @@ const AddTagScreen = ({navigation}) => {
         }
 
         setIsSaving(true);
-        const result = await dispatch(editTagsOnPhoto({
-            photoId: currentImage.photoId,
-            tags: payload,
-            pickedUp: currentImage.picked_up
-        }));
-        setIsSaving(false);
+        try {
+            const result = await dispatch(editTagsOnPhoto({
+                photoId: currentImage.photoId,
+                tags: payload
+            }));
 
-        if (result.meta?.requestStatus === 'rejected') {
-            Alert.alert(t('Error!'), t('Failed to update tags. Please try again.'));
-        } else {
-            dispatch(clearEditingPhoto());
-            navigation.goBack();
+            if (result.meta?.requestStatus === 'rejected') {
+                Alert.alert(t('Error!'), t('Failed to update tags. Please try again.'));
+            } else {
+                dispatch(clearEditingPhoto());
+                navigation.goBack();
+            }
+        } finally {
+            setIsSaving(false);
         }
     }, [dispatch, currentImage, navigation, t]);
 
@@ -434,7 +459,14 @@ const AddTagScreen = ({navigation}) => {
     }, []);
 
     // Animated overlay style
-    const overlayAnimatedStyle = {opacity: overlayOpacity};
+    const overlayAnimatedStyle = useAnimatedStyle(() => ({
+        opacity: overlayOpacity.value
+    }));
+
+    // XP badge scale animation style
+    const xpAnimatedStyle = useAnimatedStyle(() => ({
+        transform: [{scale: xpScale.value}]
+    }));
 
     if (!currentImage) {
         return (
@@ -474,18 +506,21 @@ const AddTagScreen = ({navigation}) => {
                         'transparent'
                     ]}
                     locations={[0, 0.6, 1]}>
-                    <SafeAreaView edges={['top', 'left', 'right']}>
+                    <View style={topInsetStyle}>
                         <View style={styles.topBar}>
-                            <Pressable
-                                onPress={() => isEditMode ? navigation.goBack() : navigation.navigate('APP', { screen: 'HOME' })}
+                            <RNPressable
+                                onPress={() => {
+                                    if (isEditMode) dispatch(clearEditingPhoto());
+                                    navigation.goBack();
+                                }}
                                 style={styles.backButton}
-                                hitSlop={8}>
+                                hitSlop={12}>
                                 <Icon
                                     name="arrow-back"
                                     size={22}
                                     color={Colors.white}
                                 />
-                            </Pressable>
+                            </RNPressable>
 
                             <ImageProgressDots
                                 images={images}
@@ -496,18 +531,18 @@ const AddTagScreen = ({navigation}) => {
                             <Animated.View
                                 style={[
                                     styles.xpBadge,
-                                    {transform: [{scale: xpScale}]}
+                                    xpAnimatedStyle
                                 ]}>
                                 <Caption color="accent" family="semiBold">
                                     +{xpEstimate} XP
                                 </Caption>
                             </Animated.View>
                         </View>
-                    </SafeAreaView>
+                    </View>
                 </LinearGradient>
 
-                {/* Arrow buttons for image navigation */}
-                {images.length > 1 && (
+                {/* Arrow buttons for image navigation — hidden when keyboard is open */}
+                {images.length > 1 && !keyboardVisible && (
                     <View
                         style={styles.arrowContainer}
                         pointerEvents="box-none">
@@ -543,19 +578,23 @@ const AddTagScreen = ({navigation}) => {
                 {/* Bottom gradient section */}
                 <KeyboardAvoidingView
                     style={styles.bottomSection}
-                    behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+                    behavior={Platform.OS === 'ios' ? 'position' : undefined}
                     keyboardVerticalOffset={0}>
                     <LinearGradient
-                        colors={[
+                        colors={keyboardVisible ? [
+                            'transparent',
+                            'transparent'
+                        ] : [
                             'transparent',
                             'rgba(0,0,0,0.25)',
                             'rgba(0,0,0,0.6)',
                             'rgba(0,0,0,0.8)'
                         ]}
-                        locations={[0, 0.15, 0.5, 1]}
-                        style={styles.bottomGradient}>
+                        locations={keyboardVisible ? [0, 1] : [0, 0.15, 0.5, 1]}
+                        style={[styles.bottomGradient, keyboardVisible && {paddingBottom: 14}]}>
                         {/* Tag pills */}
                         <TagPills
+                            key={swiperIndex}
                             tags={currentTags}
                             customTags={currentCustomTags}
                             entriesByCloId={entriesByCloId}
@@ -601,88 +640,61 @@ const AddTagScreen = ({navigation}) => {
                             />
                         )}
 
-                        {/* Bottom controls */}
-                        <SafeAreaView edges={['bottom']}>
-                            <View style={styles.bottomControls}>
-                                {/* Picked up toggle */}
-                                <Pressable
-                                    style={[
-                                        styles.pickedUpToggle,
-                                        pickedUp && styles.pickedUpActive
-                                    ]}
-                                    onPress={handleTogglePickedUp}>
-                                    <Icon
-                                        name={
-                                            pickedUp
-                                                ? 'checkmark-circle'
-                                                : 'checkmark-circle-outline'
-                                        }
-                                        size={18}
-                                        color={
-                                            pickedUp
-                                                ? Colors.white
-                                                : Colors.accent
-                                        }
-                                    />
-                                    <Caption
-                                        color={pickedUp ? 'white' : 'white'}
-                                        family="medium"
-                                        style={styles.pickedUpText}>
-                                        Picked Up
-                                    </Caption>
-                                </Pressable>
-
-                                {/* Done / Update Tags / Create Tag button */}
-                                <Pressable
-                                    disabled={isSaving}
-                                    style={({pressed}) => [
-                                        styles.doneButton,
-                                        isEditMode && styles.updateButton,
-                                        pressed && styles.doneButtonPressed,
-                                        isSaving && styles.doneButtonDisabled
-                                    ]}
-                                    onPress={pendingCustomTag ? handleCreatePendingCustomTag : handleDone}>
-                                    {isSaving ? (
-                                        <ActivityIndicator size="small" color={Colors.white} />
-                                    ) : (
-                                        <>
-                                            <Icon
-                                                name={
-                                                    pendingCustomTag
-                                                        ? 'pricetag-outline'
-                                                        : isEditMode
-                                                            ? 'cloud-upload-outline'
-                                                            : allTagged
-                                                                ? 'checkmark'
-                                                                : 'arrow-forward'
-                                                }
-                                                size={18}
-                                                color={Colors.white}
-                                            />
-                                            <Body
-                                                color="white"
-                                                family="semiBold"
-                                                style={styles.doneText}
-                                                dictionary={
-                                                    pendingCustomTag
-                                                        ? 'Create Tag'
-                                                        : isEditMode
-                                                            ? 'Update Tags'
-                                                            : allTagged
-                                                                ? 'Done'
-                                                                : 'Next'
-                                                }
-                                            />
-                                        </>
-                                    )}
-                                </Pressable>
+                        {/* Bottom controls — hidden when keyboard is open */}
+                        {!keyboardVisible && (
+                            <View style={{paddingBottom: bottomInset}}>
+                                <View style={styles.bottomControls}>
+                                    <Pressable
+                                        disabled={isSaving}
+                                        style={({pressed}) => [
+                                            styles.doneButton,
+                                            isEditMode && styles.updateButton,
+                                            pressed && styles.doneButtonPressed,
+                                            isSaving && styles.doneButtonDisabled
+                                        ]}
+                                        onPress={pendingCustomTag ? handleCreatePendingCustomTag : handleDone}>
+                                        {isSaving ? (
+                                            <ActivityIndicator size="small" color={Colors.white} />
+                                        ) : (
+                                            <>
+                                                <Icon
+                                                    name={
+                                                        pendingCustomTag
+                                                            ? 'pricetag-outline'
+                                                            : isEditMode
+                                                                ? 'cloud-upload-outline'
+                                                                : allTagged
+                                                                    ? 'checkmark'
+                                                                    : 'arrow-forward'
+                                                    }
+                                                    size={18}
+                                                    color={Colors.white}
+                                                />
+                                                <Body
+                                                    color="white"
+                                                    family="semiBold"
+                                                    style={styles.doneText}
+                                                    dictionary={
+                                                        pendingCustomTag
+                                                            ? 'Create Tag'
+                                                            : isEditMode
+                                                                ? 'Update Tags'
+                                                                : allTagged
+                                                                    ? 'Done'
+                                                                    : 'Next'
+                                                    }
+                                                />
+                                            </>
+                                        )}
+                                    </Pressable>
+                                </View>
                             </View>
-                        </SafeAreaView>
+                        )}
                     </LinearGradient>
                 </KeyboardAvoidingView>
+
             </Animated.View>
 
-            {/* Tag detail sheet for materials, brands, custom tags */}
             <TagDetailSheet
                 visible={detailTagCurrent != null}
                 tag={detailTagCurrent}
@@ -696,6 +708,7 @@ const AddTagScreen = ({navigation}) => {
                 onAddCustomTag={handleAddCustomTag}
                 onRemoveCustomTag={handleRemoveCustomTag}
                 onUpdateQuantity={handleUpdateQuantity}
+                onSetPickedUp={handleSetPickedUp}
                 onClose={handleCloseDetail}
             />
         </View>
@@ -737,9 +750,9 @@ const styles = StyleSheet.create({
         gap: 12
     },
     backButton: {
-        width: 36,
-        height: 36,
-        borderRadius: 18,
+        width: 40,
+        height: 40,
+        borderRadius: 20,
         backgroundColor: 'rgba(255,255,255,0.15)',
         justifyContent: 'center',
         alignItems: 'center'
@@ -766,10 +779,10 @@ const styles = StyleSheet.create({
         alignItems: 'center'
     },
     bottomSection: {
-        paddingBottom: 0
+        justifyContent: 'center'
     },
     bottomGradient: {
-        paddingBottom: 8
+        paddingBottom: 0
     },
     bottomControls: {
         flexDirection: 'row',
@@ -777,23 +790,6 @@ const styles = StyleSheet.create({
         paddingHorizontal: 16,
         paddingTop: 8,
         gap: 8
-    },
-    pickedUpToggle: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingHorizontal: 12,
-        paddingVertical: 8,
-        borderRadius: 100,
-        borderWidth: 1,
-        borderColor: Colors.accent
-    },
-    pickedUpActive: {
-        backgroundColor: Colors.accent,
-        borderColor: Colors.accent
-    },
-    pickedUpText: {
-        marginLeft: 6,
-        fontSize: 12
     },
     doneButton: {
         marginLeft: 'auto',

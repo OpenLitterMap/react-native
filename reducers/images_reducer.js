@@ -144,15 +144,14 @@ export const uploadImage = createAsyncThunk(
  */
 export const postTagsToPhoto = createAsyncThunk(
     'images/postTagsToPhoto',
-    async ({photoId, tags, pickedUp, signal}, {getState, rejectWithValue}) => {
+    async ({photoId, tags, signal}, {getState, rejectWithValue}) => {
         try {
             const token = getState().auth.token;
             const response = await api.post('/api/v3/tags', {
                 token,
                 data: {
                     photo_id: photoId,
-                    tags,
-                    picked_up: pickedUp ? 1 : 0
+                    tags
                 },
                 signal
             });
@@ -171,15 +170,14 @@ export const postTagsToPhoto = createAsyncThunk(
  */
 export const editTagsOnPhoto = createAsyncThunk(
     'images/editTagsOnPhoto',
-    async ({photoId, tags, pickedUp}, {getState, rejectWithValue}) => {
+    async ({photoId, tags}, {getState, rejectWithValue}) => {
         try {
             const token = getState().auth.token;
             const response = await api.put('/api/v3/tags', {
                 token,
                 data: {
                     photo_id: photoId,
-                    tags,
-                    picked_up: pickedUp ? 1 : 0
+                    tags
                 }
             });
 
@@ -265,7 +263,7 @@ const imagesSlice = createSlice({
          * If the same (cloId, typeId) already exists, increment quantity by 1.
          */
         addTagV5(state, action) {
-            const {imageIndex, cloId, typeId} = action.payload;
+            const {imageIndex, cloId, typeId, defaultPickedUp} = action.payload;
             const image = getTargetImage(state, imageIndex);
             if (!image) {
                 return;
@@ -277,11 +275,12 @@ const imagesSlice = createSlice({
 
             const existing = findTag(image.tags, cloId, typeId);
             if (existing) {
-                existing.quantity += 1;
+                if (existing.quantity < 10) existing.quantity += 1;
             } else {
                 const tag = {
                     cloId,
                     quantity: 1,
+                    picked_up: defaultPickedUp ?? null,
                     materials: [],
                     brands: [],
                     customTags: []
@@ -330,14 +329,17 @@ const imagesSlice = createSlice({
         },
 
         /**
-         * V5 tagging: Toggle picked_up on a single image by index.
-         * payload = imageIndex
+         * Set picked_up on a specific tag within an image.
+         * payload = { imageIndex, cloId, typeId, value }
+         * value: true, false, or null
          */
-        togglePickedUpByIndex(state, action) {
-            const image = getTargetImage(state, action.payload);
-            if (image) {
-                image.picked_up = !image.picked_up;
-            }
+        setPickedUpOnTag(state, action) {
+            const {imageIndex, cloId, typeId, value} = action.payload;
+            const image = getTargetImage(state, imageIndex);
+            if (!image || !image.tags) return;
+            const tag = findTag(image.tags, cloId, typeId);
+            if (!tag) return;
+            tag.picked_up = value;
         },
 
         /**
@@ -551,6 +553,12 @@ const imagesSlice = createSlice({
 
             if (index !== -1) {
                 state.imagesArray.splice(index, 1);
+                // Keep swiperIndex pointing at the same image (or clamp)
+                if (index < state.swiperIndex) {
+                    state.swiperIndex--;
+                } else if (state.swiperIndex >= state.imagesArray.length) {
+                    state.swiperIndex = Math.max(0, state.imagesArray.length - 1);
+                }
             }
         },
 
@@ -719,19 +727,16 @@ const imagesSlice = createSlice({
                 if (idx !== -1) state.imagesArray.splice(idx, 1);
                 state.tagged++;
             })
-            .addCase(postTagsToPhoto.rejected, (state, action) => {
-                const {errorType} = action.payload || {errorType: 'unknown'};
+            .addCase(postTagsToPhoto.rejected, (state) => {
                 state.taggedFailed++;
-
             })
 
             // Edit Tags V3 (PUT — full replace)
             .addCase(editTagsOnPhoto.fulfilled, (state, action) => {
                 // Photo stays in uploads — tags were replaced, not removed
             })
-            .addCase(editTagsOnPhoto.rejected, (state, action) => {
-                const {errorType} = action.payload || {errorType: 'unknown'};
-
+            .addCase(editTagsOnPhoto.rejected, () => {
+                // Photo stays in uploads — will be retried
             })
 
             // Clear all images on logout
@@ -763,7 +768,7 @@ export const {
     setUploadPhase,
     toggleMaterialOnTag,
     togglePickedUp,
-    togglePickedUpByIndex,
+    setPickedUpOnTag,
     toggleSelectedImages,
     updateTagQuantityV5
 } = imagesSlice.actions;

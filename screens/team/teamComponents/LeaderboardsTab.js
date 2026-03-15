@@ -1,22 +1,21 @@
 import React, {useEffect, useState} from 'react';
 import {
     ActivityIndicator,
-    Dimensions,
     FlatList,
     Image,
+    Pressable,
+    ScrollView,
     StyleSheet,
+    useWindowDimensions,
     View
 } from 'react-native';
-import {Picker} from '@react-native-picker/picker';
 import {useDispatch, useSelector} from 'react-redux';
 import {getLeaderboardData} from '../../../reducers/leaderboards_reducer';
 import {flags} from '../../../assets/icons/flags';
 import {useTranslation} from 'react-i18next';
 import {Body, Caption, Colors} from '../../components';
 
-const SCREEN_WIDTH = Dimensions.get('window').width;
-
-const PICKER_ITEMS = [
+const FILTER_OPTIONS = [
     {label: 'Today', value: 'today'},
     {label: 'Yesterday', value: 'yesterday'},
     {label: 'This Month', value: 'this-month'},
@@ -27,12 +26,13 @@ const PICKER_ITEMS = [
 const LeaderboardsTab = () => {
     const dispatch = useDispatch();
     const {t} = useTranslation();
+    const {width: SCREEN_WIDTH} = useWindowDimensions();
     const [selectedValue, setSelectedValue] = useState('today');
 
     const paginated = useSelector(state => state.leaderboard.paginated);
     const currentPage = useSelector(state => state.leaderboard.currentPage);
-    const loading = useSelector(state => state.leaderboard.loading);
-    const loadingMore = useSelector(state => state.leaderboard.loadingMore);
+    const loading = useSelector(state => state.leaderboard.fetchStatus === 'loading');
+    const loadingMore = useSelector(state => state.leaderboard.loadMoreStatus === 'loading');
 
     useEffect(() => {
         dispatch(getLeaderboardData({timeFilter: 'today', page: 1}));
@@ -58,22 +58,30 @@ const LeaderboardsTab = () => {
 
     return (
         <View style={styles.container}>
-            <View style={styles.pickerRow}>
-                <Caption family="semiBold">{t('Timeframe:')}</Caption>
-                <Picker
-                    selectedValue={selectedValue}
-                    style={styles.picker}
-                    itemStyle={styles.pickerItem}
-                    onValueChange={onFilterChange}
-                    mode="dropdown">
-                    {PICKER_ITEMS.map(item => (
-                        <Picker.Item
-                            key={item.value}
-                            label={item.label}
-                            value={item.value}
-                        />
-                    ))}
-                </Picker>
+            <View style={styles.filterRow}>
+                <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={styles.filterScroll}>
+                    {FILTER_OPTIONS.map(item => {
+                        const active = item.value === selectedValue;
+                        return (
+                            <Pressable
+                                key={item.value}
+                                onPress={() => onFilterChange(item.value)}
+                                style={[
+                                    styles.filterChip,
+                                    active && styles.filterChipActive
+                                ]}>
+                                <Caption
+                                    family="semiBold"
+                                    color={active ? 'white' : 'muted'}>
+                                    {t(item.label)}
+                                </Caption>
+                            </Pressable>
+                        );
+                    })}
+                </ScrollView>
             </View>
 
             {!paginated.users.length ? (
@@ -98,10 +106,10 @@ const LeaderboardsTab = () => {
                                 <Image
                                     source={flags[item.global_flag]}
                                     resizeMode="cover"
-                                    style={styles.flag}
+                                    style={[styles.flag, {width: SCREEN_WIDTH * 0.05}]}
                                 />
                             ) : (
-                                <View style={styles.flag} />
+                                <View style={[styles.flag, {width: SCREEN_WIDTH * 0.05}]} />
                             )}
 
                             <Body
@@ -143,19 +151,22 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center'
     },
-    pickerRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingHorizontal: 20,
+    filterRow: {
+        backgroundColor: '#f9fafb',
+        paddingVertical: 10
+    },
+    filterScroll: {
+        paddingHorizontal: 16,
+        gap: 8
+    },
+    filterChip: {
+        paddingHorizontal: 14,
         paddingVertical: 8,
-        backgroundColor: '#f9fafb'
+        borderRadius: 100,
+        backgroundColor: '#f0f0f0'
     },
-    picker: {
-        flex: 1,
-        marginLeft: 8
-    },
-    pickerItem: {
-        height: 44
+    filterChipActive: {
+        backgroundColor: Colors.accent
     },
     row: {
         flexDirection: 'row',
@@ -171,7 +182,6 @@ const styles = StyleSheet.create({
     },
     flag: {
         height: 16,
-        width: SCREEN_WIDTH * 0.05,
         borderRadius: 2,
         marginLeft: 4
     },

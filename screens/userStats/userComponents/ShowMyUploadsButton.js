@@ -1,37 +1,35 @@
-import React from 'react'
-import {View, Text, StyleSheet, Dimensions, TouchableOpacity} from 'react-native'
+import React from 'react';
+import {View, StyleSheet, useWindowDimensions, Pressable} from 'react-native';
+import {Body} from '../../components';
 
-const SCREEN_WIDTH = Dimensions.get('window').width;
-
-const ShowMyUploadsButton = ({ navigation }) => {
-
+const ShowMyUploadsButton = ({navigation}) => {
+    const {width: SCREEN_WIDTH} = useWindowDimensions();
     return (
-        <View style={styles.container}>
-            <TouchableOpacity
-                onPress={() => { navigation.navigate('MY_UPLOADS'); }}
-            >
-                <Text style={styles.text}>View My Uploads</Text>
-            </TouchableOpacity>
+        <View style={[styles.container, {marginLeft: SCREEN_WIDTH * 0.25, marginRight: SCREEN_WIDTH * 0.25}]}>
+            <Pressable onPress={() => navigation.navigate('MY_UPLOADS')}>
+                <Body
+                    color="white"
+                    family="semiBold"
+                    style={styles.text}
+                    dictionary="View My Uploads"
+                />
+            </Pressable>
         </View>
     );
-}
+};
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#27ae60',
         justifyContent: 'center',
-        marginLeft: SCREEN_WIDTH * 0.25,
-        marginRight: SCREEN_WIDTH * 0.25,
         padding: 10,
         borderRadius: 20,
         marginTop: 10
     },
     text: {
         fontSize: 20,
-        color: 'white',
-        textAlign: 'center',
-        fontWeight: 500
+        textAlign: 'center'
     }
 });
 

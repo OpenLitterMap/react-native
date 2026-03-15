@@ -32,7 +32,8 @@ const SigninFormInner = ({
     setHasSubmitted
 }) => {
     const dispatch = useDispatch();
-    const {serverStatusText, isSubmitting} = useSelector(state => state.auth);
+    const {serverStatusText, submitStatus} = useSelector(state => state.auth);
+    const isSubmitting = submitStatus === 'loading';
 
     const loginRef = useRef(null);
     const passwordRef = useRef(null);

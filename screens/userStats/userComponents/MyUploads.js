@@ -274,7 +274,7 @@ const MyUploads = ({ navigation }) => {
                             showsVerticalScrollIndicator={false}
                             maxToRenderPerBatch={10}
                             windowSize={5}
-                            removeClippedSubviews={true}
+                            removeClippedSubviews={false}
                             refreshControl={
                                 <RefreshControl
                                     refreshing={refreshing}

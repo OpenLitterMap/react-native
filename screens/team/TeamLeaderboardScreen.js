@@ -20,10 +20,18 @@ const TeamLeaderboardScreen = ({ navigation }) => {
     const memberNextPage = useSelector(state => state.teams.memberNextPage);
 
     useEffect(() => {
+        if (!selectedTeam?.id) {
+            navigation.goBack();
+            return;
+        }
         if (memberNextPage === 1) {
             loadTeamMembers();
         }
     }, []);
+
+    if (!selectedTeam || !selectedTeam.id) {
+        return null;
+    }
 
     const renderItem = ({ item, index }) => {
         return (

@@ -12,6 +12,18 @@ export const MAX_QUANTITY = 10;
 export const makeTagKey = (cloId, typeId) => `${cloId}-${typeId || ''}`;
 
 /**
+ * Parse a tag key back into (cloId, typeId).
+ * Companion to makeTagKey — keeps the format in one place.
+ */
+export const parseTagKey = key => {
+    const dash = key.indexOf('-');
+    const cloId = Number(key.slice(0, dash));
+    const rest = key.slice(dash + 1);
+    const typeId = rest !== '' ? Number(rest) : null;
+    return [cloId, typeId];
+};
+
+/**
  * Resolve the display entry for a tag from the lookup tables.
  * Type entries take priority when typeId is present.
  */
@@ -21,10 +33,10 @@ export const resolveTagEntry = (
     entriesByCloId,
     typeEntriesByKey
 ) => {
-    if (typeId) {
+    if (typeId != null) {
         return (
-            typeEntriesByKey?.[`${cloId}-${typeId}`] || entriesByCloId[cloId]
+            typeEntriesByKey?.[`${cloId}-${typeId}`] || entriesByCloId?.[cloId]
         );
     }
-    return entriesByCloId[cloId];
+    return entriesByCloId?.[cloId];
 };

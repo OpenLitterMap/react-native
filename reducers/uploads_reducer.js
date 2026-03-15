@@ -5,7 +5,7 @@ import {logout} from './auth_reducer';
 const initialState = {
     uploads: { data: [] },
     userLocations: null, // Cached hierarchical location tree
-    loading: false,
+    fetchStatus: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
     error: null
 };
 
@@ -142,11 +142,11 @@ const uploadsSlice = createSlice({
         builder
 
             .addCase(fetchUploads.pending, (state) => {
-                state.loading = true;
+                state.fetchStatus = 'loading';
                 state.error = null;
             })
             .addCase(fetchUploads.fulfilled, (state, action) => {
-                state.loading = false;
+                state.fetchStatus = 'succeeded';
                 state.error = null;
 
                 if (action.payload.append) {
@@ -162,7 +162,7 @@ const uploadsSlice = createSlice({
                 }
             })
             .addCase(fetchUploads.rejected, (state, action) => {
-                state.loading = false;
+                state.fetchStatus = 'failed';
                 state.error = action.payload;
             })
             .addCase(fetchUserLocations.fulfilled, (state, action) => {

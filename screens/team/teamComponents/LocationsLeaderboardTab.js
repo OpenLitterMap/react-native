@@ -35,7 +35,8 @@ const LocationsLeaderboardTab = () => {
         }
     }, []);
 
-    const data = isAtRoot ? countries : children;
+    const rawData = isAtRoot ? countries : children;
+    const data = Array.isArray(rawData) ? rawData : [];
     const status = isAtRoot ? countriesStatus : childrenStatus;
 
     const filteredData = useMemo(() => {
@@ -67,7 +68,7 @@ const LocationsLeaderboardTab = () => {
         dispatch(goBackLocation());
     };
 
-    if (status === 'loading') {
+    if (status === 'loading' || (status === 'idle' && data.length === 0)) {
         return (
             <View style={styles.loadingContainer}>
                 <ActivityIndicator color={Colors.accent} />
@@ -101,7 +102,7 @@ const LocationsLeaderboardTab = () => {
             <View style={styles.searchContainer}>
                 <TextInput
                     style={styles.searchInput}
-                    placeholder={`Search ${isAtRoot ? 'countries' : currentType === 'state' ? 'states' : 'cities'}...`}
+                    placeholder={t(isAtRoot ? 'Search countries...' : currentType === 'state' ? 'Search states...' : 'Search cities...')}
                     placeholderTextColor={Colors.muted}
                     value={search}
                     onChangeText={setSearch}
@@ -115,7 +116,7 @@ const LocationsLeaderboardTab = () => {
                     <LocationListCard
                         location={item}
                         index={index}
-                        onPress={() => handlePress(item)}
+                        onPress={currentType !== 'city' ? () => handlePress(item) : undefined}
                     />
                 )}
                 keyExtractor={item => `location-${item.id}`}

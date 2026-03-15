@@ -1,8 +1,9 @@
-import {createAsyncThunk, createSlice} from '@reduxjs/toolkit';
+import {createAsyncThunk, createSelector, createSlice} from '@reduxjs/toolkit';
 import api from '../utils/apiClient';
 import {logout} from './auth_reducer';
 
 const initialState = {
+    fetchStatus: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
     error: null,
     totalTags: 0,
     totalImages: 0,
@@ -33,9 +34,11 @@ const statsSlice = createSlice({
     extraReducers: builder => {
         builder
             .addCase(getStats.pending, state => {
+                state.fetchStatus = 'loading';
                 state.error = null;
             })
             .addCase(getStats.fulfilled, (state, action) => {
+                state.fetchStatus = 'succeeded';
                 state.totalTags = action.payload?.total_tags || 0;
                 state.totalImages = action.payload?.total_images || 0;
                 state.totalUsers = action.payload?.total_users || 0;
@@ -47,10 +50,24 @@ const statsSlice = createSlice({
                 state.error = null;
             })
             .addCase(getStats.rejected, (state, action) => {
+                state.fetchStatus = 'failed';
                 state.error = action.payload;
             })
             .addCase(logout, () => initialState);
     }
 });
+
+// Memoized selector — prevents re-renders when unrelated state changes
+export const selectStats = createSelector(
+    state => state.stats,
+    stats => ({
+        totalTags: stats.totalTags,
+        totalImages: stats.totalImages,
+        totalUsers: stats.totalUsers,
+        newUsersToday: stats.newUsersToday,
+        newUsersLast7Days: stats.newUsersLast7Days,
+        newUsersLast30Days: stats.newUsersLast30Days
+    })
+);
 
 export default statsSlice.reducer;

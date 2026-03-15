@@ -2,13 +2,16 @@ import React from 'react';
 import { FlatList, Pressable, StyleSheet, View, ActivityIndicator } from 'react-native';
 import { useSelector } from "react-redux";
 import Icon from 'react-native-vector-icons/Ionicons';
-import { Header, Title, Colors } from '../components';
+import { useTranslation } from 'react-i18next';
+import { Header, Title, Body, Colors } from '../components';
 import { TeamListCard } from './teamComponents';
 
 const TopTeamsScreen = ({ navigation }) => {
 
+    const {t} = useTranslation();
     const topTeams = useSelector(state => state.teams.topTeams);
-    const loading = useSelector(state => state.teams.topTeamsLoading);
+    const topTeamsStatus = useSelector(state => state.teams.topTeamsStatus);
+    const loading = topTeamsStatus === 'loading' || topTeamsStatus === 'idle';
 
     return (
         <>
@@ -22,13 +25,17 @@ const TopTeamsScreen = ({ navigation }) => {
                         />
                     </Pressable>
                 }
-                centerContent={<Title color="white">All Teams</Title>}
+                centerContent={<Title color="white">{t('All Teams')}</Title>}
                 centerContainerStyle={{ flex: 2 }}
             />
 
             {loading ? (
                 <View style={styles.loadingContainer}>
                     <ActivityIndicator color={Colors.accent} />
+                </View>
+            ) : !topTeams.length ? (
+                <View style={styles.emptyContainer}>
+                    <Body color="muted">{t('No teams found')}</Body>
                 </View>
             ) : (
                 <FlatList
@@ -53,6 +60,12 @@ const styles = StyleSheet.create({
         padding: 20
     },
     loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'white'
+    },
+    emptyContainer: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',

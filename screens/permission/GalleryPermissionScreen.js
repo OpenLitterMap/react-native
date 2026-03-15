@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useRef} from 'react';
 import {
     AppState,
     Image,
@@ -24,6 +24,7 @@ import {
 
 const GalleryPermissionScreen = ({navigation}) => {
     const dispatch = useDispatch();
+    const isMounted = useRef(true);
 
     useEffect(() => {
         // Check on initial mount in case permissions were already granted
@@ -31,7 +32,7 @@ const GalleryPermissionScreen = ({navigation}) => {
 
         const handleAppStateChange = nextAppState => {
             if (
-                AppState.currentState.match(/inactive|background/) &&
+                AppState.currentState?.match(/inactive|background/) &&
                 nextAppState === 'active'
             ) {
                 checkGalleryPermission();
@@ -43,12 +44,17 @@ const GalleryPermissionScreen = ({navigation}) => {
             handleAppStateChange
         );
 
-        return () => subscription.remove();
+        return () => {
+            isMounted.current = false;
+            subscription.remove();
+        };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const checkGalleryPermission = async () => {
         const result = await checkCameraRollPermission();
+
+        if (!isMounted.current) return;
 
         if (result === 'granted' || result === 'limited') {
             // Reset gallery and re-fetch so newly-permitted photos appear

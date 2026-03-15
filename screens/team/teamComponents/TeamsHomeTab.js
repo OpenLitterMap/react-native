@@ -19,7 +19,8 @@ const TeamsHomeTab = ({onCreateTeam, onJoinTeam}) => {
     const {t} = useTranslation();
     const topTeams = useSelector(state => state.teams.topTeams);
     const userTeams = useSelector(state => state.teams.userTeams);
-    const isLoading = useSelector(state => state.teams.topTeamsLoading);
+    const topTeamsStatus = useSelector(state => state.teams.topTeamsStatus);
+    const isLoading = topTeamsStatus === 'loading' || topTeamsStatus === 'idle';
 
     const hasNoTeams = !userTeams || userTeams.length === 0;
 

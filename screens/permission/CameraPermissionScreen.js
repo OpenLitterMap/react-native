@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useRef} from 'react';
 import {
     AppState,
     Image,
@@ -20,13 +20,15 @@ import {
 } from '../../utils/permissions';
 
 const CameraPermissionScreen = ({navigation}) => {
+    const isMounted = useRef(true);
+
     useEffect(() => {
         // Check on initial mount in case permissions were already granted
         checkPermissions();
 
         const handleAppStateChange = nextAppState => {
             if (
-                AppState.currentState.match(/inactive|background/) &&
+                AppState.currentState?.match(/inactive|background/) &&
                 nextAppState === 'active'
             ) {
                 checkPermissions();
@@ -38,13 +40,18 @@ const CameraPermissionScreen = ({navigation}) => {
             handleAppStateChange
         );
 
-        return () => subscription.remove();
+        return () => {
+            isMounted.current = false;
+            subscription.remove();
+        };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const checkPermissions = async () => {
         const cameraPermission = await checkCameraPermission();
         const locationPermission = await checkLocationPermission();
+
+        if (!isMounted.current) return;
 
         if (
             cameraPermission === 'granted' &&

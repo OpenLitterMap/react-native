@@ -16,7 +16,7 @@ const initialState = {
     typesById: {}, // { id: { id, key, name } }
     materialsById: {}, // { id: { id, key, name } }
     brandsById: {}, // { id: { id, key, name } }
-    loading: false,
+    fetchStatus: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
     lastFetchedAt: null
 };
 
@@ -266,7 +266,7 @@ const tagsSlice = createSlice({
     extraReducers: builder => {
         builder
             .addCase(fetchAllTags.pending, state => {
-                state.loading = true;
+                state.fetchStatus = 'loading';
             })
             .addCase(fetchAllTags.fulfilled, (state, action) => {
                 state.objectEntries = action.payload.objectEntries;
@@ -277,10 +277,10 @@ const tagsSlice = createSlice({
                 state.materialsById = action.payload.materialsById || {};
                 state.brandsById = action.payload.brandsById || {};
                 state.lastFetchedAt = action.payload.lastFetchedAt;
-                state.loading = false;
+                state.fetchStatus = 'succeeded';
             })
             .addCase(fetchAllTags.rejected, state => {
-                state.loading = false;
+                state.fetchStatus = 'failed';
             })
             .addCase(logout, () => initialState);
     }

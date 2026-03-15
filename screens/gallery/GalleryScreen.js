@@ -1,18 +1,15 @@
 import React, {useState, useEffect, useRef, useCallback} from 'react';
 import {
     ActivityIndicator,
-    Dimensions,
     FlatList,
-    Pressable,
     StyleSheet,
     ToastAndroid,
     Platform,
+    useWindowDimensions,
     View
 } from 'react-native';
-import {SafeAreaView} from 'react-native-safe-area-context';
 import dayjs from '../../utils/dayjs';
-import _ from 'lodash';
-import {PanGestureHandler, State} from 'react-native-gesture-handler';
+import {Gesture, GestureDetector, Pressable} from 'react-native-gesture-handler';
 import {useSelector, useDispatch} from 'react-redux';
 import {useTranslation} from 'react-i18next';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -68,12 +65,12 @@ const GalleryScreen = ({navigation}) => {
 
     // For selecting images with swipe gesture
     const IMAGE_PER_ROW = 3;
-    const {width} = Dimensions.get('window');
+    const {width} = useWindowDimensions();
     const IMAGE_SIZE = width / IMAGE_PER_ROW - 2;
     const IMAGE_MARGIN = 1;
     const ROW_HEIGHT = IMAGE_SIZE + IMAGE_MARGIN * 2;
     const lastGesturePosition = useRef({x: 0, y: 0});
-    const flatListRef = useRef();
+    const flatListRef = useRef(null);
     const scrollOffset = useRef(0);
 
     const [selectedImages, setSelectedImages] = useState([]);
@@ -83,7 +80,8 @@ const GalleryScreen = ({navigation}) => {
 
     const galleryImages = useSelector(state => state.gallery.galleryImages);
     const nonGeotaggedCount = useSelector(selectNonGeotaggedCount);
-    const imagesLoading = useSelector(state => state.gallery.imagesLoading);
+    const imagesLoading = useSelector(state => state.gallery.fetchStatus === 'loading');
+    const galleryError = useSelector(state => state.gallery.error);
     const {user} = useSelector(state => state.auth);
 
     useEffect(() => {
@@ -97,15 +95,14 @@ const GalleryScreen = ({navigation}) => {
         }
     }, [galleryImages]);
 
-    const onGestureEvent = event => {
-        const {x, y} = event.nativeEvent;
-
-        selectItems(x, y);
-
-        lastGesturePosition.current = {x, y};
-    };
-
     const processedImages = useRef(new Set());
+
+    useEffect(() => {
+        const ref = processedImages.current;
+        return () => {
+            ref.clear();
+        };
+    }, []);
 
     const selectItems = (x, y) => {
         const adjustedY = y + scrollOffset.current;
@@ -165,11 +162,16 @@ const GalleryScreen = ({navigation}) => {
         }
     };
 
-    const onHandlerStateChange = ({nativeEvent}) => {
-        if (nativeEvent.state === State.END) {
+    const panGesture = Gesture.Pan()
+        .manualActivation(false)
+        .shouldCancelWhenOutside(true)
+        .onUpdate(event => {
+            selectItems(event.x, event.y);
+            lastGesturePosition.current = {x: event.x, y: event.y};
+        })
+        .onEnd(() => {
             processedImages.current.clear();
-        }
-    };
+        });
 
     const handleScroll = event => {
         scrollOffset.current = event.nativeEvent.contentOffset.y;
@@ -207,10 +209,10 @@ const GalleryScreen = ({navigation}) => {
      * month name (if older than current month but belongs to current year), year
      * @param {Array} images
      */
-    const splitIntoRows = async images => {
+    const splitIntoRows = images => {
         let temp = {};
 
-        const sortedImages = _.orderBy(images, ['date'], ['asc']);
+        const sortedImages = [...images].sort((a, b) => a.date - b.date);
 
         sortedImages.map(image => {
             const dateOfImage = image.date * 1000;
@@ -264,7 +266,7 @@ const GalleryScreen = ({navigation}) => {
             })
         );
 
-        navigation.navigate('APP', { screen: 'HOME' });
+        navigation.goBack();
     };
 
     /**
@@ -335,12 +337,12 @@ const GalleryScreen = ({navigation}) => {
     }, [selectedImages, selectImage, t]);
 
     return (
-        <>
+        <View style={{flex: 1}}>
             <Header
                 leftContent={
                     <Pressable
                         onPress={() => {
-                            navigation.navigate('APP', { screen: 'HOME' });
+                            navigation.goBack();
                         }}>
                         <Body color="white" dictionary={'Cancel'} />
                     </Pressable>
@@ -350,7 +352,10 @@ const GalleryScreen = ({navigation}) => {
                 }
                 centerContainerStyle={{flex: 2}}
                 rightContent={
-                    <Pressable onPress={handleDoneClick}>
+                    <Pressable
+                        onPress={handleDoneClick}
+                        disabled={selectedImages.length === 0}
+                        style={{opacity: selectedImages.length === 0 ? 0.4 : 1}}>
                         <View style={styles.nextButton}>
                             <Body color="white" dictionary={'Next'} />
                             {selectedImages?.length > 0 && (
@@ -413,77 +418,78 @@ const GalleryScreen = ({navigation}) => {
                         </Pressable>
                     )}
 
-                    <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
-                        <PanGestureHandler
-                            onGestureEvent={onGestureEvent}
-                            onHandlerStateChange={onHandlerStateChange}
-                            simultaneousHandlers={flatListRef}>
-                            <FlatList
-                                ref={flatListRef}
-                                contentContainerStyle={
-                                    sortedData.length === 0
-                                        ? styles.emptyContentContainer
-                                        : styles.listContentContainer
-                                }
-                                style={styles.flatList}
-                                alwaysBounceVertical={false}
-                                data={sortedData}
-                                showsVerticalScrollIndicator={false}
-                                renderItem={renderSection}
-                                extraData={selectedImages}
-                                keyExtractor={item => `${item.title}`}
-                                onEndReached={loadMorePhotos}
-                                onEndReachedThreshold={0.05}
-                                onScroll={handleScroll}
-                                scrollEventThrottle={16}
-                                ListEmptyComponent={
-                                    imagesLoading ? (
-                                        <View style={styles.emptyState}>
-                                            <ActivityIndicator
-                                                color={Colors.accent}
-                                            />
-                                        </View>
-                                    ) : (
-                                        <View style={styles.emptyState}>
-                                            <Icon
-                                                name="images-outline"
-                                                size={64}
-                                                color={Colors.muted}
-                                            />
-                                            <Body
-                                                style={styles.emptyStateTitle}
-                                                dictionary="No geotagged photos found"
-                                            />
+                    {galleryError && sortedData.length === 0 && (
+                        <View style={styles.errorContainer}>
+                            <Body color="muted">{t('Could not load photos')}</Body>
+                        </View>
+                    )}
+
+                    <GestureDetector gesture={panGesture}>
+                        <FlatList
+                            ref={flatListRef}
+                            contentContainerStyle={
+                                sortedData.length === 0
+                                    ? styles.emptyContentContainer
+                                    : styles.listContentContainer
+                            }
+                            style={styles.flatList}
+                            alwaysBounceVertical={false}
+                            data={sortedData}
+                            showsVerticalScrollIndicator={false}
+                            renderItem={renderSection}
+                            extraData={selectedImages}
+                            keyExtractor={(item, index) => `${item.title}-${index}`}
+                            onEndReached={loadMorePhotos}
+                            onEndReachedThreshold={0.05}
+                            onScroll={handleScroll}
+                            scrollEventThrottle={16}
+                            ListEmptyComponent={
+                                imagesLoading ? (
+                                    <View style={styles.emptyState}>
+                                        <ActivityIndicator
+                                            color={Colors.accent}
+                                        />
+                                    </View>
+                                ) : (
+                                    <View style={styles.emptyState}>
+                                        <Icon
+                                            name="images-outline"
+                                            size={64}
+                                            color={Colors.muted}
+                                        />
+                                        <Body
+                                            style={styles.emptyStateTitle}
+                                            dictionary="No geotagged photos found"
+                                        />
+                                        <Caption
+                                            style={styles.emptyStateText}
+                                            dictionary="Photos need GPS data to be uploaded. Make sure Location Services are enabled when taking photos."
+                                        />
+                                        {nonGeotaggedCount > 0 && (
                                             <Caption
-                                                style={styles.emptyStateText}
-                                                dictionary="Photos need GPS data to be uploaded. Make sure Location Services are enabled when taking photos."
-                                            />
-                                            {nonGeotaggedCount > 0 && (
-                                                <Caption
-                                                    style={[
-                                                        styles.emptyStateText,
-                                                        styles.warnText
-                                                    ]}>
-                                                    {nonGeotaggedCount}{' '}
-                                                    {nonGeotaggedCount === 1
-                                                        ? t('photo')
-                                                        : t('photos')}{' '}
-                                                    {t('found without GPS data')}
-                                                </Caption>
-                                            )}
-                                        </View>
-                                    )
-                                }
-                            />
-                        </PanGestureHandler>
-                    </SafeAreaView>
+                                                style={[
+                                                    styles.emptyStateText,
+                                                    styles.warnText
+                                                ]}>
+                                                {nonGeotaggedCount}{' '}
+                                                {nonGeotaggedCount === 1
+                                                    ? t('photo')
+                                                    : t('photos')}{' '}
+                                                {t('found without GPS data')}
+                                            </Caption>
+                                        )}
+                                    </View>
+                                )
+                            }
+                        />
+                    </GestureDetector>
                 </View>
             ) : (
                 <View style={styles.container}>
                     <ActivityIndicator color={Colors.accent} />
                 </View>
             )}
-        </>
+        </View>
     );
 };
 
@@ -530,10 +536,6 @@ const styles = StyleSheet.create({
     managePhotosText: {
         marginLeft: 4,
         fontSize: 13
-    },
-    safeArea: {
-        flexDirection: 'row',
-        flex: 1
     },
     nextButton: {
         flexDirection: 'row',
@@ -585,7 +587,11 @@ const styles = StyleSheet.create({
         paddingBottom: 40
     },
     flatList: {
-        flexDirection: 'column'
+        flex: 1
+    },
+    errorContainer: {
+        padding: 20,
+        alignItems: 'center'
     }
 });
 

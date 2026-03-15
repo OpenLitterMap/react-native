@@ -1,7 +1,5 @@
-import React, {useState, useEffect, useRef, FC} from 'react';
+import React, {useState, useEffect, FC} from 'react';
 import {
-    Animated,
-    Dimensions,
     Image,
     Keyboard,
     KeyboardAvoidingView,
@@ -10,8 +8,15 @@ import {
     ScrollView,
     StatusBar,
     StyleSheet,
+    useWindowDimensions,
     View
 } from 'react-native';
+import Animated, {
+    useSharedValue,
+    useAnimatedStyle,
+    withTiming,
+    interpolate
+} from 'react-native-reanimated';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {useDispatch} from 'react-redux';
@@ -25,11 +30,12 @@ interface AuthScreenProps {
 }
 
 const AuthScreen: FC<AuthScreenProps> = ({route, navigation}) => {
-    const [formMode, setFormMode] = useState(route.params.screen);
+    const [formMode, setFormMode] = useState(route.params?.screen || 'LOGIN');
     const dispatch = useDispatch();
+    const {width: screenWidth, height: screenHeight} = useWindowDimensions();
 
     // Animated logo height for smooth keyboard transition
-    const logoHeight = useRef(new Animated.Value(1)).current;
+    const logoHeight = useSharedValue(1);
 
     useEffect(() => {
         const showEvent =
@@ -38,19 +44,15 @@ const AuthScreen: FC<AuthScreenProps> = ({route, navigation}) => {
             Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
 
         const showListener = Keyboard.addListener(showEvent, () => {
-            Animated.timing(logoHeight, {
-                toValue: 0,
-                duration: Platform.OS === 'ios' ? 250 : 150,
-                useNativeDriver: false
-            }).start();
+            logoHeight.value = withTiming(0, {
+                duration: Platform.OS === 'ios' ? 250 : 150
+            });
         });
 
         const hideListener = Keyboard.addListener(hideEvent, () => {
-            Animated.timing(logoHeight, {
-                toValue: 1,
-                duration: Platform.OS === 'ios' ? 250 : 150,
-                useNativeDriver: false
-            }).start();
+            logoHeight.value = withTiming(1, {
+                duration: Platform.OS === 'ios' ? 250 : 150
+            });
         });
 
         const focusListener = navigation.addListener('focus', () => {
@@ -104,19 +106,12 @@ const AuthScreen: FC<AuthScreenProps> = ({route, navigation}) => {
         return <SignupForm />;
     };
 
-    const {height: screenHeight, width: screenWidth} = Dimensions.get('window');
-
     const logoMaxHeight = screenHeight * 0.18;
 
-    const animatedLogoHeight = logoHeight.interpolate({
-        inputRange: [0, 1],
-        outputRange: [0, logoMaxHeight]
-    });
-
-    const animatedLogoOpacity = logoHeight.interpolate({
-        inputRange: [0, 0.5, 1],
-        outputRange: [0, 0, 1]
-    });
+    const animatedLogoStyle = useAnimatedStyle(() => ({
+        height: interpolate(logoHeight.value, [0, 1], [0, logoMaxHeight]),
+        opacity: interpolate(logoHeight.value, [0, 0.5, 1], [0, 0, 1])
+    }));
 
     return (
         <LinearGradient
@@ -158,10 +153,7 @@ const AuthScreen: FC<AuthScreenProps> = ({route, navigation}) => {
                         <Animated.View
                             style={[
                                 styles.logoContainer,
-                                {
-                                    height: animatedLogoHeight,
-                                    opacity: animatedLogoOpacity
-                                }
+                                animatedLogoStyle
                             ]}>
                             <Image
                                 source={require('../../assets/logo/logo.png')}

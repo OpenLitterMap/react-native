@@ -4,7 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import api from '../utils/apiClient';
 
 const initialState = {
-    isSubmitting: false,
+    submitStatus: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
     token: null,
     user: null,
     serverStatusText: '',
@@ -37,13 +37,18 @@ export const checkValidToken = createAsyncThunk(
                 response.data.hasOwnProperty('message') &&
                 response.data.message === 'valid'
             ) {
-                await dispatch(fetchUser(jwt));
+                const userResult = await dispatch(fetchUser(jwt));
+                if (userResult.meta?.requestStatus === 'rejected') {
+                    dispatch(logout());
+                    return rejectWithValue('Session expired');
+                }
                 return jwt;
             } else {
                 dispatch(logout());
                 return rejectWithValue('Token invalid');
             }
         } catch (error) {
+            await AsyncStorage.removeItem('jwt').catch(() => {});
             return rejectWithValue('Please login again.');
         }
     }
@@ -71,7 +76,11 @@ export const createAccount = createAsyncThunk(
                     }
                 }
 
-                await dispatch(fetchUser(token));
+                const userResult = await dispatch(fetchUser(token));
+                if (userResult.meta?.requestStatus === 'rejected') {
+                    dispatch(logout());
+                    return rejectWithValue('Account created but session failed. Please log in.');
+                }
 
                 return token;
             }
@@ -221,7 +230,11 @@ export const userLogin = createAsyncThunk(
                     );
                 }
 
-                await dispatch(fetchUser(token));
+                const userResult = await dispatch(fetchUser(token));
+                if (userResult.meta?.requestStatus === 'rejected') {
+                    dispatch(logout());
+                    return rejectWithValue('Login succeeded but session failed. Please try again.');
+                }
 
                 return token;
             } else {
@@ -271,7 +284,7 @@ const authSlice = createSlice({
          * Resets the auth form and display messages
          */
         loginOrSignupReset(state) {
-            state.isSubmitting = false;
+            state.submitStatus = 'idle';
             state.serverStatusText = '';
         },
 
@@ -299,16 +312,16 @@ const authSlice = createSlice({
             // Create Account
             .addCase(createAccount.pending, state => {
                 state.serverStatusText = '';
-                state.isSubmitting = true;
+                state.submitStatus = 'loading';
             })
             .addCase(createAccount.fulfilled, (state, action) => {
                 if (action.payload) {
                     state.token = action.payload;
                 }
-                state.isSubmitting = false;
+                state.submitStatus = 'idle';
             })
             .addCase(createAccount.rejected, (state, action) => {
-                state.isSubmitting = false;
+                state.submitStatus = 'idle';
                 state.serverStatusText = action.payload;
             })
 
@@ -353,16 +366,16 @@ const authSlice = createSlice({
                     locations: data.locations || null
                 };
 
-                AsyncStorage.setItem('user', JSON.stringify(user));
+                AsyncStorage.setItem('user', JSON.stringify(user)).catch(() => {});
 
                 state.user = user;
-                state.isSubmitting = false;
+                state.submitStatus = 'idle';
             })
             .addCase(fetchUser.rejected, (state, action) => {
                 const payload = action.payload || {};
                 state.serverStatusText =
                     payload.message || 'Failed to load profile';
-                state.isSubmitting = false;
+                state.submitStatus = 'idle';
 
                 // Only clear session on auth errors (401).
                 // Transient failures (timeout, network, 5xx) keep the token
@@ -375,31 +388,31 @@ const authSlice = createSlice({
 
             // Send Reset Password Request
             .addCase(sendResetPasswordRequest.pending, state => {
-                state.isSubmitting = true;
+                state.submitStatus = 'loading';
             })
             .addCase(sendResetPasswordRequest.fulfilled, state => {
-                state.isSubmitting = false;
+                state.submitStatus = 'idle';
                 state.serverStatusText =
                     'An email will be sent if the address exists.';
             })
             .addCase(sendResetPasswordRequest.rejected, state => {
                 state.serverStatusText =
                     'An email will be sent if the address exists.';
-                state.isSubmitting = false;
+                state.submitStatus = 'idle';
             })
 
             // User Login
             .addCase(userLogin.pending, state => {
-                state.isSubmitting = true;
+                state.submitStatus = 'loading';
             })
             .addCase(userLogin.fulfilled, (state, action) => {
                 state.token = action.payload;
                 state.errors = {};
-                state.isSubmitting = false;
+                state.submitStatus = 'idle';
             })
             .addCase(userLogin.rejected, (state, action) => {
                 state.serverStatusText = action.payload || 'Problem with login';
-                state.isSubmitting = false;
+                state.submitStatus = 'idle';
             });
     }
 });
@@ -411,5 +424,10 @@ export const {
     loginOrSignupReset,
     updateUserObject
 } = authSlice.actions;
+
+// Selectors
+export const selectIsSubmitting = state => state.auth.submitStatus === 'loading';
+export const selectUser = state => state.auth.user;
+export const selectToken = state => state.auth.token;
 
 export default authSlice.reducer;

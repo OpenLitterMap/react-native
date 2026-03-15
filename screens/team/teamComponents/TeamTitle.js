@@ -1,6 +1,15 @@
-import React, { useRef } from 'react';
-import { Animated, Easing, Pressable, StyleSheet, View } from 'react-native';
+import React from 'react';
+import { Pressable, StyleSheet, View } from 'react-native';
+import Animated, {
+    useSharedValue,
+    useAnimatedStyle,
+    withTiming,
+    withSequence,
+    Easing as ReanimatedEasing
+} from 'react-native-reanimated';
 import Icon from 'react-native-vector-icons/Ionicons';
+import Clipboard from '@react-native-clipboard/clipboard';
+import { useTranslation } from 'react-i18next';
 
 import { Body, Caption, Colors, Title } from '../../components';
 
@@ -10,40 +19,23 @@ import { Body, Caption, Colors, Title } from '../../components';
  */
 const TeamTitle = ({ identifier, teamName }) => {
 
-    const opacityAnimation = useRef(new Animated.Value(0)).current;
+    const { t } = useTranslation();
+    const opacityAnimation = useSharedValue(0);
 
     /**
      * copy team unique identifier to Clipboard
      */
     const copyIdentifier = async () => {
-        // Clipboard.setString(this.props.identifier);
-        await opacityAnmiation();
+        Clipboard.setString(identifier);
+        opacityAnimation.value = withSequence(
+            withTiming(1, {duration: 500, easing: ReanimatedEasing.elastic(1)}),
+            withTiming(0, {duration: 800, easing: ReanimatedEasing.elastic(1)})
+        );
     };
 
-    /**
-     * opactity animations for Copied message
-     */
-    const opacityAnmiation = async () => {
-        Animated.timing(opacityAnimation, {
-            toValue: 1,
-            duration: 500,
-            useNativeDriver: true,
-            easing: Easing.elastic(1)
-        }).start(returnOpacityAnimation);
-    };
-
-    const returnOpacityAnimation = async () => {
-        Animated.timing(opacityAnimation, {
-            toValue: 0,
-            duration: 800,
-            useNativeDriver: true,
-            easing: Easing.elastic(1)
-        }).start();
-    };
-
-    const opacityStyle = {
-        opacity: opacityAnimation
-    };
+    const opacityStyle = useAnimatedStyle(() => ({
+        opacity: opacityAnimation.value
+    }));
 
     return (
         <View>
@@ -66,7 +58,7 @@ const TeamTitle = ({ identifier, teamName }) => {
             {/* Copied message */}
             <Animated.View style={opacityStyle}>
                 <Caption color="accent" style={{ textAlign: 'center' }}>
-                    Copied
+                    {t('Copied')}
                 </Caption>
             </Animated.View>
         </View>

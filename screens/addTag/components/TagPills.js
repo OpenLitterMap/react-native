@@ -1,20 +1,13 @@
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import React, {useCallback, useState} from 'react';
 import {
-    LayoutAnimation,
-    Platform,
     Pressable,
     StyleSheet,
-    UIManager,
     View
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {Caption, Colors} from '../../components';
 import {getCategoryColor} from './categoryColors';
 import {makeTagKey, resolveTagEntry, MAX_QUANTITY} from './tagUtils';
-
-if (Platform.OS === 'android') {
-    UIManager.setLayoutAnimationEnabledExperimental?.(true);
-}
 
 const TagPills = ({
     tags,
@@ -27,22 +20,10 @@ const TagPills = ({
     onOpenDetail
 }) => {
     const [expandedKey, setExpandedKey] = useState(null);
-    const prevTagCount = useRef(tags?.length || 0);
-
-    const tagCount = (tags?.length || 0) + (customTags?.length || 0);
-    useEffect(() => {
-        if (tagCount !== prevTagCount.current) {
-            LayoutAnimation.configureNext(
-                LayoutAnimation.create(200, 'easeInEaseOut', 'opacity')
-            );
-            prevTagCount.current = tagCount;
-        }
-    }, [tagCount]);
+    const safeTags = Array.isArray(tags) ? tags : [];
+    const hasCustom = Array.isArray(customTags) && customTags.length > 0;
 
     const handlePillPress = useCallback(key => {
-        LayoutAnimation.configureNext(
-            LayoutAnimation.create(150, 'easeInEaseOut', 'opacity')
-        );
         setExpandedKey(prev => (prev === key ? null : key));
     }, []);
 
@@ -75,16 +56,14 @@ const TagPills = ({
         [onRemove, onUpdateQuantity]
     );
 
-    const hasCustomTags = customTags && customTags.length > 0;
-
-    if ((!tags || tags.length === 0) && !hasCustomTags) {
+    if (safeTags.length === 0 && !hasCustom) {
         return null;
     }
 
     return (
         <View style={styles.container}>
             <View style={styles.pillsWrap}>
-                {tags.map(tag => {
+                {safeTags.map(tag => {
                     const tagKey = makeTagKey(tag.cloId, tag.typeId);
                     const entry = resolveTagEntry(
                         tag.cloId,
@@ -97,52 +76,42 @@ const TagPills = ({
                         ? entry.categoryDisplayName
                         : null;
                     const label = category ? `${name} · ${category}` : name;
-                    const qty = tag.quantity;
+                    const qty = Math.max(1, Number(tag.quantity) || 1);
                     const isExpanded = expandedKey === tagKey;
                     const categoryColor = getCategoryColor(entry?.categoryKey || tag.fallbackCategoryKey);
 
-                    if (isExpanded) {
-                        return (
-                            <View
-                                key={tagKey}
-                                style={[
-                                    styles.pillExpanded,
-                                    {borderLeftColor: categoryColor}
-                                ]}>
-                                <Pressable
-                                    style={styles.stepperBtn}
-                                    onPress={() =>
-                                        handleDecrement(
-                                            tag.cloId,
-                                            tag.typeId,
-                                            qty
-                                        )
-                                    }
-                                    hitSlop={4}>
-                                    <Icon
-                                        name={
-                                            qty <= 1
-                                                ? 'trash-outline'
-                                                : 'remove'
+                    return (
+                        <View key={tagKey} style={styles.pillWrapper}>
+                            <Pressable
+                                style={({pressed}) => [
+                                    styles.pill,
+                                    isExpanded && styles.pillExpanded,
+                                    {borderLeftColor: categoryColor},
+                                    pressed && !isExpanded && styles.pillPressed
+                                ]}
+                                onPress={() => handlePillPress(tagKey)}>
+                                {isExpanded && (
+                                    <Pressable
+                                        style={styles.inlineBtn}
+                                        onPress={() =>
+                                            handleDecrement(tag.cloId, tag.typeId, qty)
                                         }
-                                        size={16}
-                                        color={
-                                            qty <= 1
-                                                ? Colors.error
-                                                : Colors.white
-                                        }
-                                    />
-                                </Pressable>
-
-                                <Pressable
-                                    style={styles.expandedBody}
-                                    onPress={() => handlePillPress(tagKey)}>
-                                    <Caption
-                                        color="white"
-                                        family="medium"
-                                        style={styles.pillText}>
-                                        {label}
-                                    </Caption>
+                                        hitSlop={4}>
+                                        <Icon
+                                            name={qty <= 1 ? 'trash-outline' : 'remove'}
+                                            size={16}
+                                            color={qty <= 1 ? Colors.error : Colors.white}
+                                        />
+                                    </Pressable>
+                                )}
+                                <Caption
+                                    color="white"
+                                    family="medium"
+                                    numberOfLines={1}
+                                    style={styles.pillText}>
+                                    {label}
+                                </Caption>
+                                {isExpanded && (
                                     <View style={styles.qtyInline}>
                                         <Caption
                                             color="white"
@@ -151,92 +120,53 @@ const TagPills = ({
                                             {qty}
                                         </Caption>
                                     </View>
-                                </Pressable>
-
-                                <Pressable
-                                    style={[
-                                        styles.stepperBtn,
-                                        qty >= MAX_QUANTITY &&
-                                            styles.stepperBtnDisabled
-                                    ]}
-                                    onPress={() =>
-                                        handleIncrement(
-                                            tag.cloId,
-                                            tag.typeId,
-                                            qty
-                                        )
-                                    }
-                                    disabled={qty >= MAX_QUANTITY}
-                                    hitSlop={4}>
-                                    <Icon
-                                        name="add"
-                                        size={16}
-                                        color={
-                                            qty >= MAX_QUANTITY
-                                                ? 'rgba(255,255,255,0.3)'
-                                                : Colors.white
+                                )}
+                                {isExpanded && (
+                                    <Pressable
+                                        style={[
+                                            styles.inlineBtn,
+                                            qty >= MAX_QUANTITY && styles.inlineBtnDisabled
+                                        ]}
+                                        onPress={() =>
+                                            handleIncrement(tag.cloId, tag.typeId, qty)
                                         }
-                                    />
-                                </Pressable>
-
-                                <Pressable
-                                    style={styles.detailBtn}
-                                    onPress={() =>
-                                        onOpenDetail && onOpenDetail(tag)
-                                    }
-                                    hitSlop={4}>
-                                    <Icon
-                                        name="ellipsis-horizontal"
-                                        size={14}
-                                        color={Colors.white}
-                                    />
-                                </Pressable>
-
-                                <Pressable
-                                    style={styles.removeBtn}
-                                    onPress={() =>
-                                        handleRemove(tag.cloId, tag.typeId)
-                                    }
-                                    hitSlop={4}>
-                                    <Icon
-                                        name="close"
-                                        size={14}
-                                        color={Colors.white}
-                                    />
-                                </Pressable>
-                            </View>
-                        );
-                    }
-
-                    return (
-                        <View key={tagKey} style={styles.pillWrapper}>
-                            <Pressable
-                                style={({pressed}) => [
-                                    styles.pill,
-                                    {borderLeftColor: categoryColor},
-                                    pressed && styles.pillPressed
-                                ]}
-                                onPress={() => handlePillPress(tagKey)}>
-                                <Caption
-                                    color="white"
-                                    family="medium"
-                                    style={styles.pillText}>
-                                    {label}
-                                </Caption>
-                                <Pressable
-                                    onPress={() =>
-                                        handleRemove(tag.cloId, tag.typeId)
-                                    }
-                                    hitSlop={6}
-                                    style={styles.closeBtn}>
-                                    <Icon
-                                        name="close"
-                                        size={13}
-                                        color="rgba(255,255,255,0.7)"
-                                    />
-                                </Pressable>
+                                        disabled={qty >= MAX_QUANTITY}
+                                        hitSlop={4}>
+                                        <Icon
+                                            name="add"
+                                            size={16}
+                                            color={qty >= MAX_QUANTITY ? 'rgba(255,255,255,0.3)' : Colors.white}
+                                        />
+                                    </Pressable>
+                                )}
+                                {isExpanded && (
+                                    <Pressable
+                                        style={styles.inlineBtn}
+                                        onPress={() => onOpenDetail && onOpenDetail(tag)}
+                                        hitSlop={4}>
+                                        <Icon
+                                            name="ellipsis-horizontal"
+                                            size={14}
+                                            color={Colors.white}
+                                        />
+                                    </Pressable>
+                                )}
+                                {isExpanded && (
+                                    <Pressable
+                                        style={styles.inlineBtnDanger}
+                                        onPress={() =>
+                                            handleRemove(tag.cloId, tag.typeId)
+                                        }
+                                        hitSlop={4}>
+                                        <Icon
+                                            name="close"
+                                            size={14}
+                                            color={Colors.white}
+                                        />
+                                    </Pressable>
+                                )}
                             </Pressable>
-                            {qty > 1 && (
+                            {!isExpanded && qty > 1 && (
                                 <View style={styles.qtyBadge}>
                                     <Caption
                                         color="accent"
@@ -246,7 +176,7 @@ const TagPills = ({
                                     </Caption>
                                 </View>
                             )}
-                            {(tag.materials?.length > 0 ||
+                            {!isExpanded && (tag.materials?.length > 0 ||
                                 tag.brands?.length > 0 ||
                                 tag.customTags?.length > 0) && (
                                 <View style={styles.extrasDot} />
@@ -254,7 +184,7 @@ const TagPills = ({
                         </View>
                     );
                 })}
-                {hasCustomTags &&
+                {hasCustom &&
                     customTags.map(ct => (
                         <View key={`custom-${ct}`} style={styles.pillWrapper}>
                             <View style={[styles.pill, styles.customPillColor]}>
@@ -323,7 +253,8 @@ const styles = StyleSheet.create({
         backgroundColor: '#229954'
     },
     pillText: {
-        fontSize: 13
+        fontSize: 13,
+        flexShrink: 1
     },
     closeBtn: {
         width: 20,
@@ -352,21 +283,29 @@ const styles = StyleSheet.create({
         lineHeight: 13
     },
     pillExpanded: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: Colors.accent,
-        borderRadius: 100,
-        borderLeftWidth: 3,
-        paddingLeft: 2,
-        paddingRight: 2,
+        paddingLeft: 4,
+        paddingRight: 4,
         height: 38,
-        gap: 2
+        gap: 3
     },
-    expandedBody: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingHorizontal: 4,
-        gap: 6
+    inlineBtn: {
+        width: 34,
+        height: 34,
+        borderRadius: 17,
+        backgroundColor: 'rgba(255,255,255,0.2)',
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
+    inlineBtnDisabled: {
+        opacity: 0.4
+    },
+    inlineBtnDanger: {
+        width: 34,
+        height: 34,
+        borderRadius: 17,
+        backgroundColor: 'rgba(231,76,60,0.7)',
+        justifyContent: 'center',
+        alignItems: 'center'
     },
     qtyInline: {
         minWidth: 22,
@@ -380,35 +319,6 @@ const styles = StyleSheet.create({
     qtyInlineText: {
         fontSize: 12,
         lineHeight: 15
-    },
-    stepperBtn: {
-        width: 28,
-        height: 28,
-        borderRadius: 14,
-        backgroundColor: 'rgba(0,0,0,0.15)',
-        justifyContent: 'center',
-        alignItems: 'center'
-    },
-    stepperBtnDisabled: {
-        opacity: 0.5
-    },
-    detailBtn: {
-        width: 24,
-        height: 24,
-        borderRadius: 12,
-        backgroundColor: 'rgba(255,255,255,0.2)',
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginLeft: 2
-    },
-    removeBtn: {
-        width: 24,
-        height: 24,
-        borderRadius: 12,
-        backgroundColor: 'rgba(0,0,0,0.25)',
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginLeft: 2
     },
     extrasDot: {
         position: 'absolute',
