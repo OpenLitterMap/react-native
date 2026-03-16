@@ -124,7 +124,11 @@ const UploadImagesGrid = ({images, isSelecting, navigation, untaggedCount, onTag
     const previewTile = untaggedPreview && untaggedCount > 0
         ? [{...untaggedPreview, _untaggedPreview: true}]
         : [];
-    const gridData = [...previewTile, ...(images || [])];
+    // Filter out any image that duplicates the preview (same server ID)
+    const localImages = untaggedPreview
+        ? (images || []).filter(img => img.id !== untaggedPreview.id)
+        : (images || []);
+    const gridData = [...previewTile, ...localImages];
 
     // Show empty state only if no local images AND no untagged preview
     if (gridData.length === 0) {
