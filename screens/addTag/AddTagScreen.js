@@ -17,7 +17,7 @@ import Animated, {
     withSequence,
     cancelAnimation
 } from 'react-native-reanimated';
-import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {Pressable} from 'react-native-gesture-handler';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -98,7 +98,7 @@ const AddTagScreen = ({navigation}) => {
         setDetailTag(null);
         setShowBrowser(false);
         setPendingCustomTag(null);
-    }, [swiperIndex]);
+    }, [safeIndex]);
 
     // Track keyboard visibility
     useEffect(() => {
@@ -224,42 +224,40 @@ const AddTagScreen = ({navigation}) => {
         [focusMode, overlayOpacity]
     );
 
-    // Arrow navigation
-    const goToPrev = useCallback(() => {
-        if (swiperIndex > 0) {
-            dispatch(changeSwiperIndex(swiperIndex - 1));
-        }
-    }, [dispatch, swiperIndex]);
+    // Arrow navigation — routes through handleIndexChange for consistent prefetch
+    const goToPrev = useCallback(
+        () => handleIndexChange(safeIndex - 1),
+        [handleIndexChange, safeIndex]
+    );
 
-    const goToNext = useCallback(() => {
-        if (swiperIndex < images.length - 1) {
-            dispatch(changeSwiperIndex(swiperIndex + 1));
-        }
-    }, [dispatch, swiperIndex, images.length]);
+    const goToNext = useCallback(
+        () => handleIndexChange(safeIndex + 1),
+        [handleIndexChange, safeIndex]
+    );
 
     // Tag actions
     const handleAddTag = useCallback(
         (cloId, typeId) => {
-            dispatch(addTagV5({imageIndex: swiperIndex, cloId, typeId, defaultPickedUp}));
+            dispatch(addTagV5({imageIndex: safeIndex, cloId, typeId, defaultPickedUp}));
         },
-        [dispatch, swiperIndex, defaultPickedUp]
+        [dispatch, safeIndex, defaultPickedUp]
     );
 
     const handleRemoveTag = useCallback(
         (cloId, typeId) => {
-            dispatch(removeTagV5({imageIndex: swiperIndex, cloId, typeId}));
+            dispatch(removeTagV5({imageIndex: safeIndex, cloId, typeId}));
         },
-        [dispatch, swiperIndex]
+        [dispatch, safeIndex]
     );
 
     const handleUpdateQuantity = useCallback(
         (cloId, typeId, newQuantity) => {
             if (newQuantity <= 0) {
-                dispatch(removeTagV5({imageIndex: swiperIndex, cloId, typeId}));
+                dispatch(removeTagV5({imageIndex: safeIndex, cloId, typeId}));
             } else {
                 dispatch(
                     updateTagQuantityV5({
-                        imageIndex: swiperIndex,
+                        imageIndex: safeIndex,
                         cloId,
                         typeId,
                         quantity: newQuantity
@@ -267,40 +265,40 @@ const AddTagScreen = ({navigation}) => {
                 );
             }
         },
-        [dispatch, swiperIndex]
+        [dispatch, safeIndex]
     );
 
     const handleSetPickedUp = useCallback(
         (cloId, typeId, value) => {
-            dispatch(setPickedUpOnTag({imageIndex: swiperIndex, cloId, typeId, value}));
+            dispatch(setPickedUpOnTag({imageIndex: safeIndex, cloId, typeId, value}));
         },
-        [dispatch, swiperIndex]
+        [dispatch, safeIndex]
     );
 
     // Image-level custom tag handlers
     const handleAddImageCustomTag = useCallback(
         text => {
-            dispatch(addImageCustomTag({imageIndex: swiperIndex, text}));
+            dispatch(addImageCustomTag({imageIndex: safeIndex, text}));
         },
-        [dispatch, swiperIndex]
+        [dispatch, safeIndex]
     );
 
     const handleCreatePendingCustomTag = useCallback(() => {
         if (pendingCustomTag) {
-            dispatch(addImageCustomTag({imageIndex: swiperIndex, text: pendingCustomTag}));
+            dispatch(addImageCustomTag({imageIndex: safeIndex, text: pendingCustomTag}));
             setPendingCustomTag(null);
             if (searchBarRef.current) {
                 searchBarRef.current.clearQuery();
             }
             Keyboard.dismiss();
         }
-    }, [dispatch, swiperIndex, pendingCustomTag]);
+    }, [dispatch, safeIndex, pendingCustomTag]);
 
     const handleRemoveImageCustomTag = useCallback(
         text => {
-            dispatch(removeImageCustomTag({imageIndex: swiperIndex, text}));
+            dispatch(removeImageCustomTag({imageIndex: safeIndex, text}));
         },
-        [dispatch, swiperIndex]
+        [dispatch, safeIndex]
     );
 
     // Materials and brands as sorted arrays for TagDetailSheet
@@ -379,14 +377,14 @@ const AddTagScreen = ({navigation}) => {
             }
             dispatch(
                 actionCreator({
-                    imageIndex: swiperIndex,
+                    imageIndex: safeIndex,
                     cloId: detailCloId,
                     typeId: detailTypeId,
                     ...extraPayload
                 })
             );
         },
-        [dispatch, swiperIndex, detailTag, detailCloId, detailTypeId]
+        [dispatch, safeIndex, detailTag, detailCloId, detailTypeId]
     );
 
     const handleToggleMaterial = useCallback(
@@ -415,11 +413,17 @@ const AddTagScreen = ({navigation}) => {
     );
 
     const allTagged = useMemo(
-        () => isEditMode ? false : images.every(img => isTagged(img)),
+        () => !isEditMode && images.length > 0 && images.every(img => isTagged(img)),
         [images, isEditMode]
     );
 
     const advanceOrClose = useCallback(() => {
+        if (!currentImage?.id) {
+            dispatch(clearEditingPhoto());
+            navigation.goBack();
+            return;
+        }
+
         if (editingPhotos.length > 1) {
             // More photos in queue — remove current and stay
             dispatch(removeEditingPhoto(currentImage.id));
@@ -430,7 +434,7 @@ const AddTagScreen = ({navigation}) => {
             dispatch(clearEditingPhoto());
             navigation.goBack();
         }
-    }, [dispatch, editingPhotos.length, currentImage, navigation]);
+    }, [dispatch, editingPhotos.length, currentImage?.id, navigation]);
 
     const handleUpdateTags = useCallback(async () => {
         if (!currentImage?.photoId) return;
@@ -492,16 +496,16 @@ const AddTagScreen = ({navigation}) => {
 
         if (allTagged) {
             navigation.navigate('APP', { screen: 'HOME' });
-        } else if (swiperIndex < images.length - 1) {
-            dispatch(changeSwiperIndex(swiperIndex + 1));
+        } else if (safeIndex < images.length - 1) {
+            handleIndexChange(safeIndex + 1);
         } else {
             // On last image but not all tagged — loop to first untagged
             const firstUntagged = images.findIndex(img => !isTagged(img));
             if (firstUntagged !== -1) {
-                dispatch(changeSwiperIndex(firstUntagged));
+                handleIndexChange(firstUntagged);
             }
         }
-    }, [isEditMode, handleUpdateTags, allTagged, navigation, dispatch, swiperIndex, images]);
+    }, [isEditMode, handleUpdateTags, allTagged, navigation, dispatch, safeIndex, images]);
 
     const handleBrowsePress = useCallback(() => {
         setShowBrowser(prev => !prev);
@@ -540,7 +544,7 @@ const AddTagScreen = ({navigation}) => {
             {/* Full-screen image viewer */}
             <ImageViewer
                 images={images}
-                currentIndex={swiperIndex}
+                currentIndex={safeIndex}
                 onIndexChange={handleIndexChange}
                 onToggleFocus={handleToggleFocus}
                 onZoomChange={handleZoomChange}
@@ -577,13 +581,13 @@ const AddTagScreen = ({navigation}) => {
                             {isEditMode && untaggedCount != null ? (
                                 <View style={styles.untaggedCounter}>
                                     <Caption color="white" family="semiBold">
-                                        {swiperIndex + 1} / {untaggedCount}
+                                        {safeIndex + 1} / {untaggedCount}
                                     </Caption>
                                 </View>
                             ) : (
                                 <ImageProgressDots
                                     images={images}
-                                    currentIndex={swiperIndex}
+                                    currentIndex={safeIndex}
                                     onIndexChange={handleIndexChange}
                                 />
                             )}
@@ -619,7 +623,7 @@ const AddTagScreen = ({navigation}) => {
                     <View
                         style={styles.arrowContainer}
                         pointerEvents="box-none">
-                        {swiperIndex > 0 ? (
+                        {safeIndex > 0 ? (
                             <Pressable
                                 style={styles.arrowButton}
                                 onPress={goToPrev}>
@@ -632,7 +636,7 @@ const AddTagScreen = ({navigation}) => {
                         ) : (
                             <View />
                         )}
-                        {swiperIndex < images.length - 1 ? (
+                        {safeIndex < images.length - 1 ? (
                             <Pressable
                                 style={styles.arrowButton}
                                 onPress={goToNext}>
@@ -667,7 +671,7 @@ const AddTagScreen = ({navigation}) => {
                         style={[styles.bottomGradient, keyboardVisible && {paddingBottom: 14}]}>
                         {/* Tag pills */}
                         <TagPills
-                            key={swiperIndex}
+                            key={safeIndex}
                             tags={currentTags}
                             customTags={currentCustomTags}
                             entriesByCloId={entriesByCloId}
@@ -681,7 +685,7 @@ const AddTagScreen = ({navigation}) => {
                         {/* Tag suggestions from other images */}
                         <TagSuggestions
                             images={images}
-                            currentIndex={swiperIndex}
+                            currentIndex={safeIndex}
                             currentTags={currentTags}
                             entriesByCloId={entriesByCloId}
                             typeEntriesByKey={typeEntriesByKey}
