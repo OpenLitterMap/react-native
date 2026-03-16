@@ -717,8 +717,8 @@ const AddTagScreen = ({navigation}) => {
                             />
                         )}
 
-                        {/* Bottom controls — hidden when keyboard is open */}
-                        {!keyboardVisible && (
+                        {/* Bottom controls — hidden when keyboard is open (except in edit mode) */}
+                        {(!keyboardVisible || isEditMode) && (
                             <View style={{paddingBottom: bottomInset}}>
                                 <View style={styles.bottomControls}>
                                     <Pressable
