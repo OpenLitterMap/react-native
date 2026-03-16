@@ -115,6 +115,8 @@ const HomeScreen = ({navigation}) => {
     useEffect(() => {
         if (uploadAbortReason === 'token-expired') {
             isUploadCancelled.current = true;
+            // Abort the in-flight request immediately, don't wait for it to settle
+            abortControllerRef.current?.abort();
         }
     }, [uploadAbortReason]);
 
@@ -218,8 +220,9 @@ const HomeScreen = ({navigation}) => {
     const compareVersions = (latestVersion, currentVersion) => {
         const latest = latestVersion.split('.');
         const current = currentVersion.split('.');
+        const max = Math.max(latest.length, current.length);
 
-        for (let i = 0; i < latest.length; i++) {
+        for (let i = 0; i < max; i++) {
             const latestPart = parseInt(latest[i], 10) || 0;
             const currentPart = parseInt(current[i], 10) || 0;
 
@@ -351,7 +354,7 @@ const HomeScreen = ({navigation}) => {
     const handleToggleSelecting = () => {
         dispatch(deselectAllImages());
 
-        setIsSelectingImagesToDelete(!isSelectingImagesToDelete);
+        setIsSelectingImagesToDelete(prev => !prev);
     };
 
     /**
@@ -404,7 +407,10 @@ const HomeScreen = ({navigation}) => {
 
             imageData.append('lat', img.lat);
             imageData.append('lon', img.lon);
-            imageData.append('date', parseInt(img.date));
+            const timestamp = Number(img.date);
+            if (Number.isFinite(timestamp)) {
+                imageData.append('date', String(Math.round(timestamp)));
+            }
             imageData.append('model', deviceModel);
 
             // Tags are always posted separately via POST /api/v3/tags
@@ -561,7 +567,9 @@ const HomeScreen = ({navigation}) => {
     };
 
     /**
-     * Retry only the failed uploads (images still in state)
+     * Retry uploads. Re-runs uploadPhotos on all remaining images.
+     * Already-uploaded images skip the upload step and only re-post tags.
+     * Tag posts are idempotent (PUT replaces).
      */
     const retryFailedUploads = () => {
         dispatch(closeThankYouMessages());
