@@ -57,7 +57,7 @@ const UploadImagesGrid = ({images, isSelecting, navigation, untaggedCount, onTag
                 <Pressable onPress={isSelecting ? undefined : onTagUntagged} disabled={isSelecting || fetchingUntagged}>
                     <View style={{width: tileSize, height: tileSize, marginHorizontal: 0.5, marginTop: 1, opacity: isSelecting ? 0.3 : 1}}>
                         <Image
-                            style={{width: tileSize, height: tileSize, opacity: 0.7}}
+                            style={{width: tileSize, height: tileSize}}
                             source={{uri: resolveUri(item.filename)}}
                             resizeMode="cover"
                         />
