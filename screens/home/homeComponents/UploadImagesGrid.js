@@ -54,8 +54,8 @@ const UploadImagesGrid = ({images, isSelecting, navigation, untaggedCount, onTag
         // Special tile for untagged server photos
         if (item._untaggedPreview) {
             return (
-                <Pressable onPress={onTagUntagged} disabled={fetchingUntagged}>
-                    <View style={{width: tileSize, height: tileSize, marginHorizontal: 0.5, marginTop: 1}}>
+                <Pressable onPress={isSelecting ? undefined : onTagUntagged} disabled={isSelecting || fetchingUntagged}>
+                    <View style={{width: tileSize, height: tileSize, marginHorizontal: 0.5, marginTop: 1, opacity: isSelecting ? 0.3 : 1}}>
                         <Image
                             style={{width: tileSize, height: tileSize, opacity: 0.7}}
                             source={{uri: resolveUri(item.filename)}}
