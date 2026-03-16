@@ -13,30 +13,30 @@ import {
 } from 'react-native';
 import {useDispatch, useSelector} from 'react-redux';
 import {setDeviceModel} from '../../reducers/settings_reducer';
-import {
-    cancelUpload,
-    checkAppVersion,
-    closeThankYouMessages,
-    resetThankYouMessages,
-    showThankYouMessagesAfterUpload,
-    startUploading
-} from '../../reducers/shared_reducer';
+import {checkAppVersion} from '../../reducers/shared_reducer';
 import {
     deleteImage,
     deselectAllImages,
-    postTagsToPhoto,
-    resetUploadState,
-    selectSelectedCount,
-    setCurrentUploadIndex,
-    setTotalToUpload,
-    setUploadAbortReason,
-    setUploadPhase,
-    uploadImage
+    selectSelectedCount
 } from '../../reducers/images_reducer';
 import {
     fetchNextUntaggedPhoto,
     fetchUntaggedCount
 } from '../../reducers/server_photos_reducer';
+import {
+    cancelUpload,
+    closeThankYouMessages,
+    postTagsToPhoto,
+    resetThankYouMessages,
+    resetUploadState,
+    setCurrentUploadIndex,
+    setTotalToUpload,
+    setUploadAbortReason,
+    setUploadPhase,
+    showThankYouMessagesAfterUpload,
+    startUploading,
+    uploadImage
+} from '../../reducers/upload_flow_reducer';
 import {getPhotosFromCameraroll} from '../../reducers/gallery_reducer';
 import {fetchAllTags} from '../../reducers/tags_reducer';
 import {deleteUploadPhoto} from '../../reducers/uploads_reducer';
@@ -76,23 +76,23 @@ const HomeScreen = ({navigation}) => {
         };
     }, []);
 
-    const appVersion = useSelector(state => state.shared.appVersion);
+    const appVersion = useSelector(state => state.shared?.appVersion);
     const images = useSelector(state => state.images.imagesArray);
-    const showUploadModal = useSelector(state => state.shared.showUploadModal);
+    const showUploadModal = useSelector(state => state.uploadFlow.showUploadModal);
     const deviceModel = useSelector(state => state.settings.deviceModel);
     const showThankYouMessages = useSelector(
-        state => state.shared.showThankYouMessages
+        state => state.uploadFlow.showThankYouMessages
     );
     const token = useSelector(state => state.auth.token);
     const user = useSelector(state => state.auth.user);
     // Upload progress
-    const uploadPhase = useSelector(state => state.images.uploadPhase);
+    const uploadPhase = useSelector(state => state.uploadFlow.uploadPhase);
     const isUploading = uploadPhase !== 'idle';
     const currentUploadIndex = useSelector(
-        state => state.images.currentUploadIndex
+        state => state.uploadFlow.currentUploadIndex
     );
     const uploadAbortReason = useSelector(
-        state => state.images.uploadAbortReason
+        state => state.uploadFlow.uploadAbortReason
     );
 
     // Number of selected images (memoized)
@@ -102,12 +102,12 @@ const HomeScreen = ({navigation}) => {
     const [fetchingUntagged, setFetchingUntagged] = useState(false);
 
     // Uploads
-    const totalToUpload = useSelector(state => state.images.totalToUpload);
-    const uploaded = useSelector(state => state.images.uploaded);
-    const uploadFailed = useSelector(state => state.images.uploadFailed);
-    const tagged = useSelector(state => state.images.tagged);
-    const taggedFailed = useSelector(state => state.images.taggedFailed);
-    const failedCounts = useSelector(state => state.images.failedCounts);
+    const totalToUpload = useSelector(state => state.uploadFlow.totalToUpload);
+    const uploaded = useSelector(state => state.uploadFlow.uploaded);
+    const uploadFailed = useSelector(state => state.uploadFlow.uploadFailed);
+    const tagged = useSelector(state => state.uploadFlow.tagged);
+    const taggedFailed = useSelector(state => state.uploadFlow.taggedFailed);
+    const failedCounts = useSelector(state => state.uploadFlow.failedCounts);
 
     // Abort the upload loop if token expires mid-upload
     useEffect(() => {

@@ -18,22 +18,6 @@ const imagesTransform = createTransform(
             img => !img.editing && !(img.uploaded && !img.uri)
         ),
         swiperIndex: 0,
-        totalToUpload: 0,
-        uploaded: 0,
-        uploadFailed: 0,
-        tagged: 0,
-        taggedFailed: 0,
-        uploadPhase: 'idle',
-        currentUploadIndex: 0,
-        uploadAbortReason: null,
-        failedCounts: {
-            alreadyUploaded: 0,
-            invalidCoordinates: 0,
-            timeout: 0,
-            network: 0,
-            server: 0,
-            unknown: 0
-        },
         customTagError: null
     }),
     { whitelist: ['images'] }

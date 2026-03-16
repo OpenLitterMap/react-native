@@ -1,7 +1,7 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { logout } from '../reducers/auth_reducer';
-import { setUploadAbortReason } from '../reducers/images_reducer';
+import { setUploadAbortReason } from '../reducers/upload_flow_reducer';
 
 /**
  * Register a global axios response interceptor.
@@ -28,7 +28,7 @@ export default function setupAxiosInterceptors(store) {
 
                 // If an upload is in progress, signal it to stop gracefully
                 const state = store.getState();
-                if (state.images?.uploadPhase !== 'idle') {
+                if (state.uploadFlow?.uploadPhase !== 'idle') {
                     store.dispatch(setUploadAbortReason('token-expired'));
                 }
 

@@ -3,9 +3,7 @@ import api from '../utils/apiClient';
 import {logout} from './auth_reducer';
 
 const initialState = {
-    appVersion: null,
-    showUploadModal: false,
-    showThankYouMessages: false
+    appVersion: null
 };
 
 export const checkAppVersion = createAsyncThunk(
@@ -26,44 +24,18 @@ export const checkAppVersion = createAsyncThunk(
 const sharedSlice = createSlice({
     name: 'shared',
     initialState,
-    reducers: {
-        cancelUpload(state) {
-            state.showUploadModal = false;
-        },
-
-        closeThankYouMessages(state) {
-            state.showUploadModal = false;
-            state.showThankYouMessages = false;
-        },
-
-        resetThankYouMessages(state) {
-            state.showThankYouMessages = false;
-        },
-
-        showThankYouMessagesAfterUpload(state) {
-            state.showThankYouMessages = true;
-        },
-
-        startUploading(state) {
-            state.showUploadModal = true;
-        }
-    },
-
     extraReducers: builder => {
         builder
             .addCase(checkAppVersion.fulfilled, (state, action) => {
                 state.appVersion = action.payload;
             })
+            .addCase(checkAppVersion.rejected, (state) => {
+                if (state.appVersion === null) {
+                    state.appVersion = {};
+                }
+            })
             .addCase(logout, () => initialState);
     }
 });
-
-export const {
-    cancelUpload,
-    closeThankYouMessages,
-    resetThankYouMessages,
-    showThankYouMessagesAfterUpload,
-    startUploading
-} = sharedSlice.actions;
 
 export default sharedSlice.reducer;

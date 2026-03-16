@@ -1,7 +1,6 @@
-import {createSlice, createAsyncThunk, createSelector} from '@reduxjs/toolkit';
-import api from '../utils/apiClient';
-import {classifyError} from '../utils/classifyError';
+import {createSlice, createSelector} from '@reduxjs/toolkit';
 import {logout} from './auth_reducer';
+import {uploadImage, postTagsToPhoto} from './upload_flow_reducer';
 
 /** Find a tag in tags by (cloId, typeId). */
 const findTag = (tags, cloId, typeId) =>
@@ -20,7 +19,7 @@ const CUSTOM_TAG_REGEX = /^[\w\s:-]+$/;
 
 /**
  * Resolve target image for tag actions.
- * If editingPhoto exists, returns it (edit mode from My Uploads).
+ * If editingPhoto exists, returns it (edit mode from My Uploads). 
  * Otherwise returns imagesArray[imageIndex] (normal tagging flow).
  */
 const getTargetImage = (state, imageIndex) => {
@@ -32,109 +31,11 @@ const getTargetImage = (state, imageIndex) => {
 
 const initialState = {
     imagesArray: [],
-    editingPhoto: null, // Separate slot for My Uploads edit mode — not persisted, doesn't affect HomeScreen
     swiperIndex: 0,
-
-    // Upload progress
-    totalToUpload: 0,
-    uploaded: 0,
-    uploadFailed: 0,
-    tagged: 0,
-    taggedFailed: 0,
-
-    // Upload phase tracking
-    uploadPhase: 'idle', // 'idle' | 'uploading' | 'tagging'
-    currentUploadIndex: 0,
-    uploadAbortReason: null, // null | 'token-expired' | 'cancelled'
-
-    failedCounts: {
-        alreadyUploaded: 0,
-        invalidCoordinates: 0,
-        timeout: 0,
-        network: 0,
-        server: 0,
-        unknown: 0
-    },
 
     // Custom tag validation feedback (null = no error)
     customTagError: null
 };
-
-/**
- * API Requests
- * - uploadImage
- * - postTagsToPhoto
- */
-
-export const uploadImage = createAsyncThunk(
-    'images/uploadImage',
-    async (
-        {
-            imageData,
-            photoId,
-            imageUri,
-            enableAdminTagging,
-            photoHasTags,
-            signal
-        },
-        {getState, rejectWithValue}
-    ) => {
-        try {
-            const token = getState().auth.token;
-            const response = await api.post('/api/v3/upload', {
-                token,
-                data: imageData,
-                headers: {'Content-Type': 'multipart/form-data'},
-                signal
-            });
-
-            if (!response.data?.success) {
-                return rejectWithValue({
-                    errorType: 'unknown',
-                    userMessage: 'Upload failed with no success flag'
-                });
-            }
-
-            return {
-                photoId,
-                imageUri,
-                serverPhotoId: response.data.photo_id,
-                enableAdminTagging,
-                photoHasTags
-            };
-        } catch (error) {
-            return rejectWithValue(classifyError(error, 'image_upload'));
-        }
-    }
-);
-
-/**
- * Post tags to a photo using the v3 API.
- *
- * Expects { token, photoId, tags, pickedUp } where tags is an array of
- * resolved tag objects: [{ object: {id, key}, category: {id, key}, quantity, picked_up, materials: [], brands: [], custom_tags: [] }]
- */
-export const postTagsToPhoto = createAsyncThunk(
-    'images/postTagsToPhoto',
-    async ({photoId, tags, signal}, {getState, rejectWithValue}) => {
-        try {
-            const token = getState().auth.token;
-            const response = await api.post('/api/v3/tags', {
-                token,
-                data: {
-                    photo_id: photoId,
-                    tags
-                },
-                signal
-            });
-
-            return {photoId};
-        } catch (error) {
-            return rejectWithValue(classifyError(error, 'post_tags_v3'));
-        }
-    }
-);
-
 
 /** Build dedup sets from current state for O(1) lookups. */
 const buildDedupSets = state => {
@@ -532,41 +433,6 @@ const imagesSlice = createSlice({
             });
         },
 
-        resetUploadState(state) {
-            state.totalToUpload = 0;
-            state.uploaded = 0;
-            state.uploadFailed = 0;
-            state.tagged = 0;
-            state.taggedFailed = 0;
-            state.uploadPhase = 'idle';
-            state.currentUploadIndex = 0;
-            state.uploadAbortReason = null;
-            state.failedCounts = {
-                alreadyUploaded: 0,
-                invalidCoordinates: 0,
-                timeout: 0,
-                network: 0,
-                server: 0,
-                unknown: 0
-            };
-        },
-
-        setTotalToUpload(state, action) {
-            state.totalToUpload = action.payload;
-        },
-
-        setUploadPhase(state, action) {
-            state.uploadPhase = action.payload;
-        },
-
-        setCurrentUploadIndex(state, action) {
-            state.currentUploadIndex = action.payload;
-        },
-
-        setUploadAbortReason(state, action) {
-            state.uploadAbortReason = action.payload;
-        },
-
         /**
          * toggles picked_up status on an image based on id
          */
@@ -599,74 +465,21 @@ const imagesSlice = createSlice({
     extraReducers: builder => {
         builder
 
-            // Upload Image
+            // Update imagesArray when upload/tag thunks complete
             .addCase(uploadImage.fulfilled, (state, action) => {
                 const {photoId, imageUri, serverPhotoId} = action.payload;
-
-                // Find the exact image — match by URI (unique) when
-                // available, falling back to ID for uploaded images.
                 const index = state.imagesArray.findIndex(img =>
                     imageUri ? img.uri === imageUri : img.id === photoId
                 );
-
                 if (index !== -1) {
                     state.imagesArray[index].id = serverPhotoId;
                     state.imagesArray[index].uploaded = true;
                 }
-
-                state.uploaded++;
             })
-            .addCase(uploadImage.rejected, (state, action) => {
-                const {errorType} = action.payload || {errorType: 'unknown'};
-
-                state.uploadFailed += 1;
-
-
-                switch (errorType) {
-                    case 'photo-already-uploaded':
-                        state.failedCounts.alreadyUploaded += 1;
-                        break;
-                    case 'invalid-coordinates':
-                        state.failedCounts.invalidCoordinates += 1;
-                        break;
-                    case 'timeout':
-                        state.failedCounts.timeout += 1;
-                        break;
-                    case 'network':
-                        state.failedCounts.network += 1;
-                        break;
-                    case 'server':
-                        state.failedCounts.server += 1;
-                        break;
-                    default:
-                        state.failedCounts.unknown += 1;
-                }
-            })
-
-            // Post Tags V3
             .addCase(postTagsToPhoto.fulfilled, (state, action) => {
                 const {photoId} = action.payload;
                 const idx = state.imagesArray.findIndex(img => img.id === photoId);
                 if (idx !== -1) state.imagesArray.splice(idx, 1);
-                state.tagged++;
-            })
-            .addCase(postTagsToPhoto.rejected, (state, action) => {
-                state.taggedFailed++;
-
-                const errorType = action.payload?.errorType || 'unknown';
-                switch (errorType) {
-                    case 'timeout':
-                        state.failedCounts.timeout += 1;
-                        break;
-                    case 'network':
-                        state.failedCounts.network += 1;
-                        break;
-                    case 'server':
-                        state.failedCounts.server += 1;
-                        break;
-                    default:
-                        state.failedCounts.unknown += 1;
-                }
             })
 
             // Clear all images on logout
@@ -691,11 +504,6 @@ export const {
     setBrandQuantity,
     removeImageCustomTag,
     removeTagV5,
-    resetUploadState,
-    setCurrentUploadIndex,
-    setTotalToUpload,
-    setUploadAbortReason,
-    setUploadPhase,
     toggleMaterialOnTag,
     togglePickedUp,
     setPickedUpOnTag,
