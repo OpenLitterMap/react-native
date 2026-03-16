@@ -66,6 +66,7 @@ const AddTagScreen = ({navigation}) => {
     const editingPhotos = useSelector(state => state.photos.editingPhotos) || [];
     const galleryImages = useSelector(state => state.photos.imagesArray);
     const rawSwiperIndex = useSelector(state => state.photos.swiperIndex);
+    const untaggedCount = useSelector(state => state.serverPhotos.untaggedCount);
     const isEditMode = editingPhotos.length > 0;
     const images = useMemo(
         () => isEditMode ? editingPhotos : galleryImages,
@@ -179,11 +180,20 @@ const AddTagScreen = ({navigation}) => {
         return () => cancelAnimation(xpScale);
     }, [xpEstimate, xpScale]);
 
-    // Image navigation
+    // Image navigation — fetch more when reaching the last photo in edit mode
     const handleIndexChange = useCallback(
         newIndex => {
             const clamped = Math.max(0, Math.min(newIndex, images.length - 1));
             dispatch(changeSwiperIndex(clamped));
+
+            // When swiping to last photo in editing queue, prefetch more
+            if (isEditMode && clamped >= editingPhotos.length - 1) {
+                dispatch(fetchNextUntaggedPhoto({perPage: 2})).then(result => {
+                    if (result.meta?.requestStatus === 'fulfilled') {
+                        dispatch(loadPhotoForEditing({photos: result.payload}));
+                    }
+                });
+            }
         },
         [dispatch, images.length]
     );
@@ -565,11 +575,19 @@ const AddTagScreen = ({navigation}) => {
                                 />
                             </RNPressable>
 
-                            <ImageProgressDots
-                                images={images}
-                                currentIndex={swiperIndex}
-                                onIndexChange={handleIndexChange}
-                            />
+                            {isEditMode && untaggedCount != null ? (
+                                <View style={styles.untaggedCounter}>
+                                    <Caption color="white" family="semiBold">
+                                        {(untaggedCount - swiperIndex)} / {untaggedCount}
+                                    </Caption>
+                                </View>
+                            ) : (
+                                <ImageProgressDots
+                                    images={images}
+                                    currentIndex={swiperIndex}
+                                    onIndexChange={handleIndexChange}
+                                />
+                            )}
 
                             {isEditMode && (
                                 <RNPressable
@@ -816,6 +834,11 @@ const styles = StyleSheet.create({
     deletePhotoButton: {
         marginLeft: 'auto',
         padding: 8
+    },
+    untaggedCounter: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center'
     },
     xpBadge: {
         paddingHorizontal: 12,
