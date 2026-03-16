@@ -20,6 +20,21 @@ export const requestCameraRollPermission = async () => {
 
                 // Photos accessible; GPS may or may not be available
                 return mediaLocation === 'granted' ? 'granted' : 'limited';
+            } else if (Platform.Version >= 29) {
+                // Android 29-32: scoped storage requires ACCESS_MEDIA_LOCATION for EXIF GPS
+                result = await request(
+                    PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE
+                );
+
+                if (result !== 'granted') {
+                    return 'denied';
+                }
+
+                const mediaLocation = await request(
+                    PERMISSIONS.ANDROID.ACCESS_MEDIA_LOCATION
+                );
+
+                return mediaLocation === 'granted' ? 'granted' : 'limited';
             } else {
                 result = await request(
                     PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE
@@ -74,6 +89,20 @@ export const checkCameraRollPermission = async () => {
             );
 
             // Photos accessible; GPS depends on media location permission
+            return mediaLocation === 'granted' ? 'granted' : 'limited';
+        } else if (Platform.Version >= 29) {
+            const readStorage = await check(
+                PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE
+            );
+
+            if (readStorage !== 'granted') {
+                return 'denied';
+            }
+
+            const mediaLocation = await check(
+                PERMISSIONS.ANDROID.ACCESS_MEDIA_LOCATION
+            );
+
             return mediaLocation === 'granted' ? 'granted' : 'limited';
         } else {
             return await check(PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE);

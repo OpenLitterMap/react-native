@@ -2,13 +2,13 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
     ActivityIndicator,
     Alert,
-    FlatList,
     Linking,
     Pressable,
     RefreshControl,
     StyleSheet,
     View
 } from 'react-native';
+import { FlashList } from '@shopify/flash-list';
 import { Body, Colors, Header } from '../../components';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useDispatch, useSelector } from 'react-redux';
@@ -43,6 +43,7 @@ const MyUploads = ({ navigation }) => {
     const [loading, setLoading] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
     const [loadingMore, setLoadingMore] = useState(false);
+    const loadingMoreRef = useRef(false);
     const [showFilter, setShowFilter] = useState(false);
     const [filters, setFilters] = useState({ ...EMPTY_FILTERS });
 
@@ -103,12 +104,16 @@ const MyUploads = ({ navigation }) => {
     }, [dispatch, loadData]);
 
     const onEndReached = useCallback(() => {
-        if (loadingMore || !uploads.next_page_url) return;
+        if (loadingMoreRef.current || !uploads.next_page_url) return;
 
+        loadingMoreRef.current = true;
         setLoadingMore(true);
         const nextPage = (uploads.current_page || 1) + 1;
-        loadData(true, nextPage).then(() => setLoadingMore(false));
-    }, [loadingMore, uploads, loadData]);
+        loadData(true, nextPage).finally(() => {
+            loadingMoreRef.current = false;
+            setLoadingMore(false);
+        });
+    }, [uploads, loadData]);
 
     const applyFilters = useCallback(
         (newFilters) => {
@@ -262,19 +267,17 @@ const MyUploads = ({ navigation }) => {
                     />
                 ) : (
                     <>
-                        <FlatList
+                        <FlashList
                             data={uploads?.data}
                             keyExtractor={item => item.id.toString()}
                             renderItem={renderItem}
+                            estimatedItemSize={100}
                             ListHeaderComponent={listHeader}
                             ListEmptyComponent={listEmpty}
                             ListFooterComponent={listFooter}
                             onEndReached={onEndReached}
                             onEndReachedThreshold={0.5}
                             showsVerticalScrollIndicator={false}
-                            maxToRenderPerBatch={10}
-                            windowSize={5}
-                            removeClippedSubviews={false}
                             refreshControl={
                                 <RefreshControl
                                     refreshing={refreshing}

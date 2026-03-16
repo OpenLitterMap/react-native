@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Pressable, StyleSheet, View, FlatList, ActivityIndicator} from 'react-native';
+import { Pressable, StyleSheet, View, ActivityIndicator} from 'react-native';
+import { FlashList } from '@shopify/flash-list';
 import { useTranslation } from 'react-i18next';
 import { Header, Colors, Body, SubTitle } from '../components';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -79,13 +80,13 @@ const TeamLeaderboardScreen = ({ navigation }) => {
                     teamName={selectedTeam?.name}
                     identifier={selectedTeam.identifier}
                 />
-                <FlatList
+                <FlashList
                     contentContainerStyle={styles.flatListStyle}
-                    alwaysBounceVertical={false}
                     data={teamMembers}
                     showsVerticalScrollIndicator={false}
                     renderItem={ ({ item, index }) => renderItem({ item, index }) }
                     keyExtractor={item => `team-${item.id}`}
+                    estimatedItemSize={80}
                     ListFooterComponent={
                         <>
                             {memberNextPage && (

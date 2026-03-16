@@ -323,7 +323,8 @@ const teamSlice = createSlice({
                 state.successMessage = '';
             })
             .addCase(createTeam.fulfilled, (state, action) => {
-                if (action.payload?.team) {
+                if (action.payload?.team &&
+                    !state.userTeams.some(t => t.id === action.payload.team.id)) {
                     state.userTeams.push(normalizeTeam(action.payload.team));
                 }
                 state.teamFormStatus = 'SUCCESS';
@@ -382,6 +383,9 @@ const teamSlice = createSlice({
                     state.memberNextPage = null;
                 }
             })
+            .addCase(getTeamMembers.rejected, (state, action) => {
+                state.teamsFormError = action.payload || 'Failed to load members';
+            })
 
             .addCase(getTopTeams.pending, state => {
                 state.topTeamsStatus = 'loading';
@@ -401,7 +405,8 @@ const teamSlice = createSlice({
             })
 
             .addCase(joinTeam.fulfilled, (state, action) => {
-                if (action.payload?.team) {
+                if (action.payload?.team &&
+                    !state.userTeams.some(t => t.id === action.payload.team.id)) {
                     state.userTeams.push(normalizeTeam(action.payload.team));
                 }
                 state.teamFormStatus = 'SUCCESS';

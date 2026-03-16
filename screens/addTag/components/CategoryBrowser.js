@@ -1,7 +1,9 @@
 import React, {useCallback, useMemo, useState} from 'react';
-import {FlatList, ScrollView, StyleSheet, View} from 'react-native';
+import {ScrollView, StyleSheet, View} from 'react-native';
+import {FlashList} from '@shopify/flash-list';
 import {Pressable} from 'react-native-gesture-handler';
 import Icon from 'react-native-vector-icons/Ionicons';
+import {useTranslation} from 'react-i18next';
 import {Body, Caption, Colors} from '../../components';
 import {getCategoryColor} from './categoryColors';
 import {makeTagKey} from './tagUtils';
@@ -13,6 +15,7 @@ const CategoryBrowser = ({
     onAddTag,
     onClose
 }) => {
+    const {t} = useTranslation();
     const [selectedCategoryId, setSelectedCategoryId] = useState(null);
 
     const taggedKeys = useMemo(() => {
@@ -115,7 +118,7 @@ const CategoryBrowser = ({
                                     <Caption
                                         color="muted"
                                         style={styles.typeBadgeText}>
-                                        type
+                                        {t('type')}
                                     </Caption>
                                 </View>
                             )}
@@ -152,7 +155,7 @@ const CategoryBrowser = ({
                 </Pressable>
             );
         },
-        [taggedKeys, handleSelect]
+        [taggedKeys, handleSelect, t]
     );
 
     const keyExtractor = useCallback((item, index) => {
@@ -169,7 +172,7 @@ const CategoryBrowser = ({
                     color="text"
                     family="semiBold"
                     style={styles.headerTitle}>
-                    Browse Categories
+                    {t('Browse Categories')}
                 </Caption>
                 <Pressable onPress={onClose} hitSlop={8}>
                     <Icon name="close" size={18} color={Colors.muted} />
@@ -217,12 +220,12 @@ const CategoryBrowser = ({
             </ScrollView>
 
             {/* Results list */}
-            <FlatList
+            <FlashList
                 data={deduped}
                 renderItem={renderItem}
                 keyExtractor={keyExtractor}
+                estimatedItemSize={50}
                 keyboardShouldPersistTaps="handled"
-                style={styles.list}
                 contentContainerStyle={styles.listContent}
             />
         </View>

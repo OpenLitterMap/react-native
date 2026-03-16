@@ -110,6 +110,7 @@ const SettingsScreen = ({navigation}) => {
                     <Switch
                         onValueChange={() => toggleSwitch(id, key)}
                         value={getSwitchValue(key) !== 0}
+                        disabled={savingToggle}
                     />
                 );
         }
@@ -125,15 +126,14 @@ const SettingsScreen = ({navigation}) => {
         const ok = t('OK');
         const cancel = t('Cancel');
 
-        // Needs translation
         if (key === 'enable_admin_tagging') {
-            title = user?.enable_admin_tagging ? 'Turn off' : 'Turn on';
+            title = user?.enable_admin_tagging ? t('Turn off') : t('Turn on');
 
             subtitle += user?.enable_admin_tagging
-                ? ' \n' + 'Only you will be able to tag your uploads'
-                : ' \n' + 'Our volunteers will tag your uploads';
+                ? ' \n' + t('Only you will be able to tag your uploads')
+                : ' \n' + t('Our volunteers will tag your uploads');
         } else {
-            title = 'Change setting?';
+            title = t('Change setting?');
         }
 
         Alert.alert(

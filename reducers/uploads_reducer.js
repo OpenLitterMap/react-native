@@ -1,10 +1,12 @@
 import {createAsyncThunk, createSlice} from '@reduxjs/toolkit';
 import api from '../utils/apiClient';
 import {logout} from './auth_reducer';
+import {editTagsOnPhoto} from './images_reducer';
 
 const initialState = {
     uploads: { data: [] },
-    userLocations: null, // Cached hierarchical location tree
+    userLocations: null, // Cached hierarchical location tree (null = unfetched)
+    locationsError: null, // Error from last fetchUserLocations attempt
     fetchStatus: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
     error: null
 };
@@ -27,17 +29,13 @@ export const fetchUploads = createAsyncThunk(
             if (filters.filterDateFrom) {
                 params.date_from =
                     filters.filterDateFrom instanceof Date
-                        ? filters.filterDateFrom
-                              .toISOString()
-                              .split('T')[0]
+                        ? `${filters.filterDateFrom.getFullYear()}-${String(filters.filterDateFrom.getMonth() + 1).padStart(2, '0')}-${String(filters.filterDateFrom.getDate()).padStart(2, '0')}`
                         : filters.filterDateFrom;
             }
             if (filters.filterDateTo) {
                 params.date_to =
                     filters.filterDateTo instanceof Date
-                        ? filters.filterDateTo
-                              .toISOString()
-                              .split('T')[0]
+                        ? `${filters.filterDateTo.getFullYear()}-${String(filters.filterDateTo.getMonth() + 1).padStart(2, '0')}-${String(filters.filterDateTo.getDate()).padStart(2, '0')}`
                         : filters.filterDateTo;
             }
             if (filters.filterCountry) {
@@ -167,10 +165,11 @@ const uploadsSlice = createSlice({
             })
             .addCase(fetchUserLocations.fulfilled, (state, action) => {
                 state.userLocations = action.payload;
+                state.locationsError = null;
             })
-            .addCase(fetchUserLocations.rejected, (state) => {
-                // Mark as empty array (not null) so we don't retry infinitely
-                state.userLocations = [];
+            .addCase(fetchUserLocations.rejected, (state, action) => {
+                // Keep null so FilterSheet retries on next open
+                state.locationsError = action.payload || 'Failed to load locations';
             })
             .addCase(deleteUploadPhoto.fulfilled, (state, action) => {
                 const photoId = action.payload;
@@ -185,6 +184,15 @@ const uploadsSlice = createSlice({
             })
             .addCase(deleteUploadPhoto.rejected, (state, action) => {
                 state.error = action.payload;
+            })
+            .addCase(editTagsOnPhoto.fulfilled, (state, action) => {
+                const {photoId, photoTags} = action.payload;
+                if (state.uploads?.data) {
+                    const photo = state.uploads.data.find(p => p.id === photoId);
+                    if (photo && photoTags) {
+                        photo.new_tags = photoTags;
+                    }
+                }
             })
             .addCase(logout, () => initialState);
     }

@@ -1,7 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import {
     ActivityIndicator,
-    FlatList,
     Image,
     Pressable,
     ScrollView,
@@ -10,6 +9,7 @@ import {
     View
 } from 'react-native';
 import {useDispatch, useSelector} from 'react-redux';
+import {FlashList} from '@shopify/flash-list';
 import {getLeaderboardData} from '../../../reducers/leaderboards_reducer';
 import {flags} from '../../../assets/icons/flags';
 import {useTranslation} from 'react-i18next';
@@ -89,11 +89,12 @@ const LeaderboardsTab = () => {
                     <Body color="muted">{t('No data found')}</Body>
                 </View>
             ) : (
-                <FlatList
+                <FlashList
                     data={paginated.users}
                     keyExtractor={(user, i) =>
                         `${user.rank}-${user.username || user.name || i}`
                     }
+                    estimatedItemSize={60}
                     renderItem={({item}) => (
                         <View style={styles.row}>
                             <Body
@@ -115,7 +116,7 @@ const LeaderboardsTab = () => {
                             <Body
                                 style={styles.username}
                                 numberOfLines={1}>
-                                {item.username || item.name || 'Anon'}
+                                {item.username || item.name || t('Anon')}
                             </Body>
                             <Body
                                 color="accent"

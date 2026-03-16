@@ -80,11 +80,17 @@ const locationsSlice = createSlice({
             .addCase(fetchLocationChildren.fulfilled, (state, action) => {
                 state.childrenStatus = 'succeeded';
                 state.children = action.payload.locations;
-                // Cache the current children in the stack entry so back navigation can restore them
-                state.locationStack.push({
-                    ...action.payload.parent,
-                    children: action.payload.locations
-                });
+                // Prevent duplicate stack entries when re-entering the same location
+                const parentId = action.payload.parent.id;
+                const alreadyInStack = state.locationStack.some(
+                    entry => entry.id === parentId
+                );
+                if (!alreadyInStack) {
+                    state.locationStack.push({
+                        ...action.payload.parent,
+                        children: action.payload.locations
+                    });
+                }
             })
             .addCase(fetchLocationChildren.rejected, state => {
                 state.childrenStatus = 'failed';

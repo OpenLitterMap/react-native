@@ -160,7 +160,7 @@ const SignupForm = () => {
                                 color="#ff8a80"
                             />
                             <Text style={styles.serverErrorText}>
-                                {serverStatusText}
+                                {t(serverStatusText)}
                             </Text>
                         </View>
                     )}

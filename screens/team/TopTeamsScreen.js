@@ -1,5 +1,6 @@
 import React from 'react';
-import { FlatList, Pressable, StyleSheet, View, ActivityIndicator } from 'react-native';
+import { Pressable, StyleSheet, View, ActivityIndicator } from 'react-native';
+import { FlashList } from '@shopify/flash-list';
 import { useSelector } from "react-redux";
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useTranslation } from 'react-i18next';
@@ -38,16 +39,17 @@ const TopTeamsScreen = ({ navigation }) => {
                     <Body color="muted">{t('No teams found')}</Body>
                 </View>
             ) : (
-                <FlatList
-                    data={topTeams}
-                    keyExtractor={(item, index) => `${item?.id || item?.name}${index}`}
-                    renderItem={({ item, index }) => (
-                        <TeamListCard team={item} index={index} />
-                    )}
-                    style={styles.container}
-                    contentContainerStyle={{ paddingBottom: 20 }}
-                    initialNumToRender={15}
-                />
+                <View style={styles.container}>
+                    <FlashList
+                        data={topTeams}
+                        keyExtractor={(item, index) => `${item?.id || item?.name}${index}`}
+                        renderItem={({ item, index }) => (
+                            <TeamListCard team={item} index={index} />
+                        )}
+                        estimatedItemSize={120}
+                        contentContainerStyle={{ paddingBottom: 20 }}
+                    />
+                </View>
             )}
         </>
     );

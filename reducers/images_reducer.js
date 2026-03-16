@@ -55,7 +55,10 @@ const initialState = {
         network: 0,
         server: 0,
         unknown: 0
-    }
+    },
+
+    // Custom tag validation feedback (null = no error)
+    customTagError: null
 };
 
 /**
@@ -323,7 +326,7 @@ const imagesSlice = createSlice({
             } else {
                 const tag = findTag(image.tags, cloId, typeId);
                 if (tag) {
-                    tag.quantity = quantity;
+                    tag.quantity = Math.min(quantity, 10);
                 }
             }
         },
@@ -394,6 +397,29 @@ const imagesSlice = createSlice({
         },
 
         /**
+         * Update the quantity of a brand on a specific tag.
+         * payload = { imageIndex, cloId, typeId?, brandId, quantity }
+         * Removes the brand if quantity <= 0.
+         */
+        setBrandQuantity(state, action) {
+            const {imageIndex, cloId, typeId, brandId, quantity} = action.payload;
+            const image = getTargetImage(state, imageIndex);
+            if (!image?.tags) return;
+
+            const tag = findTag(image.tags, cloId, typeId);
+            if (!tag?.brands) return;
+
+            if (quantity <= 0) {
+                tag.brands = tag.brands.filter(b => b.id !== brandId);
+            } else {
+                const brand = tag.brands.find(b => b.id === brandId);
+                if (brand) {
+                    brand.quantity = Math.min(quantity, 10);
+                }
+            }
+        },
+
+        /**
          * Remove a brand from a specific tag.
          * payload = { imageIndex, cloId, typeId?, brandId }
          */
@@ -432,9 +458,15 @@ const imagesSlice = createSlice({
                 tag.customTags = [];
             }
             const trimmed = text.trim().slice(0, 100);
-            if (trimmed.length < 3 || !CUSTOM_TAG_REGEX.test(trimmed)) {
+            if (trimmed.length < 3) {
+                state.customTagError = 'too_short';
                 return;
             }
+            if (!CUSTOM_TAG_REGEX.test(trimmed)) {
+                state.customTagError = 'invalid_chars';
+                return;
+            }
+            state.customTagError = null;
             if (!tag.customTags.includes(trimmed)) {
                 tag.customTags.push(trimmed);
             }
@@ -475,9 +507,15 @@ const imagesSlice = createSlice({
             }
 
             const trimmed = text.trim().slice(0, 100);
-            if (trimmed.length < 3 || !CUSTOM_TAG_REGEX.test(trimmed)) {
+            if (trimmed.length < 3) {
+                state.customTagError = 'too_short';
                 return;
             }
+            if (!CUSTOM_TAG_REGEX.test(trimmed)) {
+                state.customTagError = 'invalid_chars';
+                return;
+            }
+            state.customTagError = null;
             if (!image.customTags.includes(trimmed)) {
                 image.customTags.push(trimmed);
             }
@@ -534,6 +572,10 @@ const imagesSlice = createSlice({
             state.editingPhoto = null;
         },
 
+        clearCustomTagError(state) {
+            state.customTagError = null;
+        },
+
 
         /**
          * When enable_admin_tagging is turned on, remove server-fetched
@@ -553,11 +595,13 @@ const imagesSlice = createSlice({
 
             if (index !== -1) {
                 state.imagesArray.splice(index, 1);
-                // Keep swiperIndex pointing at the same image (or clamp)
-                if (index < state.swiperIndex) {
+                // Keep swiperIndex in bounds
+                if (state.imagesArray.length === 0) {
+                    state.swiperIndex = 0;
+                } else if (index < state.swiperIndex) {
                     state.swiperIndex--;
                 } else if (state.swiperIndex >= state.imagesArray.length) {
-                    state.swiperIndex = Math.max(0, state.imagesArray.length - 1);
+                    state.swiperIndex = state.imagesArray.length - 1;
                 }
             }
         },
@@ -727,8 +771,23 @@ const imagesSlice = createSlice({
                 if (idx !== -1) state.imagesArray.splice(idx, 1);
                 state.tagged++;
             })
-            .addCase(postTagsToPhoto.rejected, (state) => {
+            .addCase(postTagsToPhoto.rejected, (state, action) => {
                 state.taggedFailed++;
+
+                const errorType = action.payload?.errorType || 'unknown';
+                switch (errorType) {
+                    case 'timeout':
+                        state.failedCounts.timeout += 1;
+                        break;
+                    case 'network':
+                        state.failedCounts.network += 1;
+                        break;
+                    case 'server':
+                        state.failedCounts.server += 1;
+                        break;
+                    default:
+                        state.failedCounts.unknown += 1;
+                }
             })
 
             // Edit Tags V3 (PUT — full replace)
@@ -751,6 +810,7 @@ export const {
     addImages,
     addTagV5,
     changeSwiperIndex,
+    clearCustomTagError,
     clearEditingPhoto,
     clearUploadedImages,
     deleteImage,
@@ -759,6 +819,7 @@ export const {
     loadPhotoForEditing,
     removeBrandFromTag,
     removeCustomTagFromTag,
+    setBrandQuantity,
     removeImageCustomTag,
     removeTagV5,
     resetUploadState,

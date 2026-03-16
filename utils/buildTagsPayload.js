@@ -5,7 +5,7 @@
  * Shared between HomeScreen (upload) and AddTagScreen (edit).
  */
 const buildTagsPayload = img => {
-    const tags = (img.tags || []).map(tag => ({
+    const tags = (img.tags || []).filter(tag => tag.cloId != null).map(tag => ({
         category_litter_object_id: tag.cloId,
         litter_object_type_id: tag.typeId ?? null,
         quantity: tag.quantity,
@@ -18,10 +18,10 @@ const buildTagsPayload = img => {
         custom_tags: tag.customTags || []
     }));
 
-    // Attach image-level custom tags to the first tag entry (deduplicated)
+    // Attach image-level custom tags to the first tag entry (deduplicated across ALL tags)
     if (tags.length > 0 && img.customTags && img.customTags.length > 0) {
-        const existing = new Set(tags[0].custom_tags);
-        const newTags = img.customTags.filter(ct => !existing.has(ct));
+        const allExisting = new Set(tags.flatMap(t => t.custom_tags));
+        const newTags = img.customTags.filter(ct => !allExisting.has(ct));
         tags[0].custom_tags = [...tags[0].custom_tags, ...newTags];
     } else if (tags.length === 0 && img.customTags && img.customTags.length > 0) {
         // Image has only custom tags and no CLO tags.

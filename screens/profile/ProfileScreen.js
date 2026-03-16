@@ -76,7 +76,9 @@ const ProfileScreen = ({ navigation }) => {
 
                 fetchXpLevels(token)
                     .then(setXpLevels)
-                    .catch(() => {});
+                    .catch(e => {
+                        if (__DEV__) console.warn('[Profile] fetchXpLevels failed:', e);
+                    });
 
                 setFetchError(false);
                 const [userResult, statsResult] = await Promise.all([
@@ -232,26 +234,26 @@ const ProfileScreen = ({ navigation }) => {
                 )}
 
                 {/* Community stats */}
-                <Text style={styles.sectionTitle}>Community</Text>
+                <Text style={styles.sectionTitle}>{t('Community')}</Text>
                 <View style={styles.communityGrid}>
                     <CommunityCell
                         value={totalTags}
                         startValue={prevGlobal?.totalTags}
-                        label="total litter"
+                        label={t('total litter')}
                         color="#14b8a6"
                         reduceMotion={reduceMotion}
                     />
                     <CommunityCell
                         value={totalImages}
                         startValue={prevGlobal?.totalImages}
-                        label="total photos"
+                        label={t('total photos')}
                         color="#8b5cf6"
                         reduceMotion={reduceMotion}
                     />
                     <CommunityCell
                         value={totalUsers}
                         startValue={prevGlobal?.totalUsers}
-                        label="total users"
+                        label={t('total users')}
                         color="#f59e0b"
                         reduceMotion={reduceMotion}
                     />
@@ -260,15 +262,15 @@ const ProfileScreen = ({ navigation }) => {
                 <View style={styles.newUsersRow}>
                     <NewUsersBadge
                         value={newUsersToday}
-                        label="today"
+                        label={t('today')}
                     />
                     <NewUsersBadge
                         value={newUsersLast7Days}
-                        label="this week"
+                        label={t('this week')}
                     />
                     <NewUsersBadge
                         value={newUsersLast30Days}
-                        label="this month"
+                        label={t('this month')}
                     />
                 </View>
 
@@ -280,7 +282,7 @@ const ProfileScreen = ({ navigation }) => {
                 <View style={styles.divider} />
 
                 {/* Your stats */}
-                <Text style={styles.sectionTitle}>Your Stats</Text>
+                <Text style={styles.sectionTitle}>{t('Your Stats')}</Text>
                 <StatsGrid
                     rank={rank}
                     prevRank={prev?.position}
@@ -317,7 +319,7 @@ const ProfileScreen = ({ navigation }) => {
                             photos === 0 && styles.actionTextDisabled
                         ]}
                     >
-                        View My Uploads
+                        {t('View My Uploads')}
                     </Text>
                     <Icon
                         name="chevron-forward"

@@ -1,5 +1,6 @@
 import React from 'react';
-import {FlatList, Image, Pressable, Text, useWindowDimensions, View} from 'react-native';
+import {Image, Pressable, Text, useWindowDimensions, View} from 'react-native';
+import {FlashList} from '@shopify/flash-list';
 import {useDispatch} from 'react-redux';
 import {Body, SubTitle} from '../../components';
 import {isTagged} from '../../../utils/isTagged';
@@ -110,7 +111,7 @@ const UploadImagesGrid = ({images, isSelecting, navigation}) => {
     return (
         <View style={{paddingTop: 1, paddingHorizontal: 0.5}}>
             {images && (
-                <FlatList
+                <FlashList
                     contentContainerStyle={{paddingBottom: 100}}
                     data={images}
                     extraData={images}
@@ -118,6 +119,7 @@ const UploadImagesGrid = ({images, isSelecting, navigation}) => {
                         (img.uri || img.id || index).toString()
                     }
                     numColumns={3}
+                    estimatedItemSize={140}
                     renderItem={renderImage}
                     keyboardShouldPersistTaps="handled"
                 />

@@ -54,6 +54,7 @@ import {useTranslation} from 'react-i18next';
 const HomeScreen = ({navigation}) => {
     const dispatch = useDispatch();
     const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} = useWindowDimensions();
+    const {t} = useTranslation();
 
     const isUploadCancelled = useRef(false);
     const abortControllerRef = useRef(null);
@@ -65,6 +66,9 @@ const HomeScreen = ({navigation}) => {
         return () => {
             if (retryTimerRef.current) {
                 clearTimeout(retryTimerRef.current);
+            }
+            if (abortControllerRef.current) {
+                abortControllerRef.current.abort();
             }
         };
     }, []);
@@ -114,11 +118,11 @@ const HomeScreen = ({navigation}) => {
             images.length > 0
         ) {
             Alert.alert(
-                'Upload Interrupted',
-                'Your session expired during upload. Your photos are preserved — press Upload to continue.',
+                t('Upload Interrupted'),
+                t('Your session expired during upload. Your photos are preserved — press Upload to continue.'),
                 [
                     {
-                        text: 'OK',
+                        text: t('OK'),
                         onPress: () => dispatch(setUploadAbortReason(null))
                     }
                 ]
@@ -154,7 +158,6 @@ const HomeScreen = ({navigation}) => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [token]);
 
-    const {t} = useTranslation();
     const cancelText = t('Cancel');
     const deleteText = t('Delete');
 
@@ -190,8 +193,8 @@ const HomeScreen = ({navigation}) => {
         const current = currentVersion.split('.');
 
         for (let i = 0; i < latest.length; i++) {
-            const latestPart = parseInt(latest[i], 10);
-            const currentPart = parseInt(current[i], 10);
+            const latestPart = parseInt(latest[i], 10) || 0;
+            const currentPart = parseInt(current[i], 10) || 0;
 
             if (latestPart > currentPart) {
                 return 1;
@@ -401,19 +404,19 @@ const HomeScreen = ({navigation}) => {
         if (skippedCount > 0) {
             const confirmed = await new Promise(resolve => {
                 Alert.alert(
-                    'Missing GPS Data',
-                    `${geotaggedImages.length} of ${
+                    t('Missing GPS Data'),
+                    `${geotaggedImages.length} ${t('of')} ${
                         images.length
-                    } photos will be uploaded. ${skippedCount} ${
-                        skippedCount === 1 ? 'photo' : 'photos'
-                    } skipped (no GPS data).`,
+                    } ${t('photos will be uploaded.')} ${skippedCount} ${
+                        skippedCount === 1 ? t('photo') : t('photos')
+                    } ${t('skipped (no GPS data).')}`,
                     [
                         {
-                            text: 'Cancel',
+                            text: t('Cancel'),
                             onPress: () => resolve(false),
                             style: 'cancel'
                         },
-                        {text: 'Continue', onPress: () => resolve(true)}
+                        {text: t('Continue'), onPress: () => resolve(true)}
                     ]
                 );
             });
@@ -484,8 +487,6 @@ const HomeScreen = ({navigation}) => {
                             failedUploads++;
                             failureReasons.push(tagResult.payload?.userMessage || 'Tag upload failed');
                         }
-                    } else if (result.payload?.serverPhotoId) {
-                        dispatch(deleteImage(result.payload.serverPhotoId));
                     } else if (result.meta?.requestStatus === 'rejected') {
                         failedUploads++;
                         failureReasons.push(result.payload?.userMessage || 'Upload failed');
@@ -512,11 +513,11 @@ const HomeScreen = ({navigation}) => {
         if (!isUploadCancelled.current && failedUploads > 0) {
             const uniqueReasons = [...new Set(failureReasons)];
             const detail = uniqueReasons.length > 0
-                ? uniqueReasons.join('\n')
+                ? uniqueReasons.map(r => t(r)).join('\n')
                 : t('Some uploads failed. You can retry from your uploads.');
             Alert.alert(
                 t('Error!'),
-                `${failedUploads} ${failedUploads === 1 ? 'upload' : 'uploads'} failed:\n\n${detail}`
+                `${failedUploads} ${failedUploads === 1 ? t('upload') : t('uploads')} ${t('failed')}:\n\n${detail}`
             );
         }
 

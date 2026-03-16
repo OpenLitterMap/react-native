@@ -1,13 +1,13 @@
 import React, {useState, useEffect, useRef, useCallback} from 'react';
 import {
     ActivityIndicator,
-    FlatList,
     StyleSheet,
     ToastAndroid,
     Platform,
     useWindowDimensions,
     View
 } from 'react-native';
+import {FlashList} from '@shopify/flash-list';
 import dayjs from '../../utils/dayjs';
 import {Gesture, GestureDetector, Pressable} from 'react-native-gesture-handler';
 import {useSelector, useDispatch} from 'react-redux';
@@ -69,8 +69,8 @@ const GalleryScreen = ({navigation}) => {
     const IMAGE_SIZE = width / IMAGE_PER_ROW - 2;
     const IMAGE_MARGIN = 1;
     const ROW_HEIGHT = IMAGE_SIZE + IMAGE_MARGIN * 2;
+    const SECTION_HEADER_HEIGHT = 39; // marginTop(16) + marginBottom(5) + text(~18)
     const lastGesturePosition = useRef({x: 0, y: 0});
-    const flatListRef = useRef(null);
     const scrollOffset = useRef(0);
 
     const [selectedImages, setSelectedImages] = useState([]);
@@ -106,7 +106,10 @@ const GalleryScreen = ({navigation}) => {
 
     const selectItems = (x, y) => {
         const adjustedY = y + scrollOffset.current;
-        const column = Math.floor(x / (IMAGE_SIZE + IMAGE_MARGIN * 2));
+        const column = Math.min(
+            IMAGE_PER_ROW - 1,
+            Math.floor(x / (IMAGE_SIZE + IMAGE_MARGIN * 2))
+        );
 
         let accumulatedHeight = 0;
 
@@ -119,13 +122,16 @@ const GalleryScreen = ({navigation}) => {
             const rowsInSection = Math.ceil(
                 section.data.length / IMAGE_PER_ROW
             );
-            const sectionHeight = rowsInSection * ROW_HEIGHT;
+            const sectionHeight =
+                SECTION_HEADER_HEIGHT + rowsInSection * ROW_HEIGHT;
 
             if (
                 adjustedY >= accumulatedHeight &&
                 adjustedY < accumulatedHeight + sectionHeight
             ) {
-                const sectionRelativeY = adjustedY - accumulatedHeight;
+                const sectionRelativeY =
+                    adjustedY - accumulatedHeight - SECTION_HEADER_HEIGHT;
+                if (sectionRelativeY < 0) break; // tap is on section header
                 const row = Math.floor(sectionRelativeY / ROW_HEIGHT);
                 const index = row * IMAGE_PER_ROW + column;
 
@@ -425,19 +431,17 @@ const GalleryScreen = ({navigation}) => {
                     )}
 
                     <GestureDetector gesture={panGesture}>
-                        <FlatList
-                            ref={flatListRef}
+                        <FlashList
                             contentContainerStyle={
                                 sortedData.length === 0
                                     ? styles.emptyContentContainer
                                     : styles.listContentContainer
                             }
-                            style={styles.flatList}
-                            alwaysBounceVertical={false}
                             data={sortedData}
                             showsVerticalScrollIndicator={false}
                             renderItem={renderSection}
                             extraData={selectedImages}
+                            estimatedItemSize={300}
                             keyExtractor={(item, index) => `${item.title}-${index}`}
                             onEndReached={loadMorePhotos}
                             onEndReachedThreshold={0.05}

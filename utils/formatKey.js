@@ -7,5 +7,8 @@
  * butts        → "Butts"
  */
 export const formatKey = (key) => {
-    return key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    if (!key) return '';
+    return key
+        .replace(/_/g, ' ')
+        .replace(/(^|\s)\S/g, l => l.toUpperCase());
 };

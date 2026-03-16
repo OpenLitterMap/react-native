@@ -1,6 +1,5 @@
-import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { URL } from '../../../actions/types';
+import api from '../../../utils/apiClient';
 
 const CACHE_KEY = 'xp_levels_cache';
 const CACHE_TTL = 7 * 24 * 60 * 60 * 1000; // 7 days
@@ -39,14 +38,7 @@ export const fetchXpLevels = async (token) => {
             }
         }
 
-        const response = await axios({
-            url: `${URL}/api/levels`,
-            method: 'GET',
-            headers: {
-                Authorization: `Bearer ${token}`,
-                Accept: 'application/json'
-            }
-        });
+        const response = await api.get('/api/levels', { token });
 
         const levels = normalizeLevels(response.data);
 
@@ -105,9 +97,10 @@ export const getCurrentLevel = (xp = 0, levels) => {
         }
     }
 
-    const progress = nextLevel
-        ? (xp - currentLevel.xp) / (nextLevel.xp - currentLevel.xp)
-        : 1;
+    const range = nextLevel ? nextLevel.xp - currentLevel.xp : 0;
+    const progress = range > 0
+        ? (xp - currentLevel.xp) / range
+        : nextLevel ? 0 : 1;
 
     const xpToNext = nextLevel ? nextLevel.xp - xp : 0;
 

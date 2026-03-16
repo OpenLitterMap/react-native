@@ -89,10 +89,11 @@ const AddTagScreen = ({navigation}) => {
     const [showBrowser, setShowBrowser] = useState(false);
     const [detailTag, setDetailTag] = useState(null);
 
-    // Close overlays when navigating to a different image
+    // Close overlays and clear pending state when navigating to a different image
     useEffect(() => {
         setDetailTag(null);
         setShowBrowser(false);
+        setPendingCustomTag(null);
     }, [swiperIndex]);
 
     // Track keyboard visibility
@@ -130,7 +131,7 @@ const AddTagScreen = ({navigation}) => {
 
     // Clamp swiperIndex to valid range to prevent out-of-bounds access
     const safeIndex = images.length > 0
-        ? Math.min(swiperIndex, images.length - 1)
+        ? Math.max(0, Math.min(swiperIndex, images.length - 1))
         : 0;
     const currentImage = images[safeIndex];
     const isEditMode = currentImage?.editing === true;
@@ -149,7 +150,7 @@ const AddTagScreen = ({navigation}) => {
     const xpEstimate = useMemo(() => {
         let xp = 5;
         for (const tag of currentTags) {
-            xp += tag.quantity;
+            xp += tag.quantity || 1;
             if (tag.picked_up === true) xp += 5;
             xp += (tag.materials?.length || 0) * 2;
             xp += (tag.brands?.length || 0) * 3;
@@ -472,11 +473,9 @@ const AddTagScreen = ({navigation}) => {
         return (
             <SafeAreaView style={styles.emptyContainer} edges={['top', 'left', 'right']}>
                 <Icon name="images-outline" size={48} color={Colors.muted} />
-                <Body color="muted" style={styles.emptyText}>
-                    No images selected
-                </Body>
+                <Body color="muted" style={styles.emptyText} dictionary="No images selected" />
                 <Pressable onPress={handleDone} style={styles.emptyButton}>
-                    <Body color="accent">Go Back</Body>
+                    <Body color="accent" dictionary="Go Back" />
                 </Pressable>
             </SafeAreaView>
         );

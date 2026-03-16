@@ -36,7 +36,8 @@ export const fetchAllTags = createAsyncThunk(
                     try {
                         const parsed = JSON.parse(cached);
                         const age = Date.now() - parsed.lastFetchedAt;
-                        if (age < CACHE_TTL_MS) {
+                        // Rebuild if language changed since cache was built
+                        if (age < CACHE_TTL_MS && parsed.language === i18n.language) {
                             return parsed;
                         }
                     } catch {
@@ -234,7 +235,8 @@ export const fetchAllTags = createAsyncThunk(
                 typesById,
                 materialsById,
                 brandsById,
-                lastFetchedAt: Date.now()
+                lastFetchedAt: Date.now(),
+                language: i18n.language
             };
 
             // Persist to cache

@@ -27,7 +27,7 @@ export function getTagsFromBackend(newTags) {
         const tagMaterials = [];
         const tagBrands = [];
 
-        if (apiTag.extra_tags) {
+        if (Array.isArray(apiTag.extra_tags)) {
             for (const extra of apiTag.extra_tags) {
                 if (extra.type === 'material' && extra.tag?.id) {
                     tagMaterials.push(extra.tag.id);
@@ -69,7 +69,7 @@ export function getTagsFromBackend(newTags) {
             fallbackCategoryKey: catKey || undefined
         };
 
-        if (apiTag.litter_object_type_id) {
+        if (apiTag.litter_object_type_id != null) {
             tag.typeId = apiTag.litter_object_type_id;
         }
 

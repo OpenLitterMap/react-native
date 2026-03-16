@@ -219,10 +219,11 @@ const SettingsComponent = () => {
                     />
 
                     <Pressable
-                        style={[styles.deleteAccountButton, {height: SCREEN_HEIGHT * 0.05, width: SCREEN_WIDTH * 0.8}]}
-                        onPress={submitDeleteAccount}>
+                        style={[styles.deleteAccountButton, {height: SCREEN_HEIGHT * 0.05, width: SCREEN_WIDTH * 0.8}, isSaving && {opacity: 0.5}]}
+                        onPress={submitDeleteAccount}
+                        disabled={isSaving}>
                         <Text style={[styles.deleteButtonText, {fontSize: SCREEN_HEIGHT * 0.02}]}>
-                            {t('Delete Account')}
+                            {isSaving ? t('Deleting...') : t('Delete Account')}
                         </Text>
                     </Pressable>
 
@@ -391,7 +392,10 @@ const SettingsComponent = () => {
      * Send a request to delete the account and all associated data
      */
     const submitDeleteAccount = async () => {
-        await dispatch(deleteAccount({password}));
+        const result = await dispatch(deleteAccount({password}));
+        if (result.meta?.requestStatus === 'rejected') {
+            setPassword('');
+        }
     };
 
     return (
