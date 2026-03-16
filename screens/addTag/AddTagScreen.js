@@ -180,22 +180,27 @@ const AddTagScreen = ({navigation}) => {
         return () => cancelAnimation(xpScale);
     }, [xpEstimate, xpScale]);
 
-    // Image navigation — fetch more when reaching the last photo in edit mode
+    // Track whether a prefetch is already in flight
+    const prefetchingRef = useRef(false);
+
+    // Image navigation — prefetch more when approaching the end of the editing queue
     const handleIndexChange = useCallback(
         newIndex => {
             const clamped = Math.max(0, Math.min(newIndex, images.length - 1));
             dispatch(changeSwiperIndex(clamped));
 
-            // When swiping to last photo in editing queue, prefetch more
-            if (isEditMode && clamped >= editingPhotos.length - 1) {
-                dispatch(fetchNextUntaggedPhoto({perPage: 2})).then(result => {
+            // Prefetch when within 1 photo of the end of the queue
+            if (isEditMode && clamped >= editingPhotos.length - 2 && !prefetchingRef.current) {
+                prefetchingRef.current = true;
+                dispatch(fetchNextUntaggedPhoto({perPage: 3})).then(result => {
+                    prefetchingRef.current = false;
                     if (result.meta?.requestStatus === 'fulfilled') {
                         dispatch(loadPhotoForEditing({photos: result.payload}));
                     }
                 });
             }
         },
-        [dispatch, images.length]
+        [dispatch, images.length, isEditMode, editingPhotos.length]
     );
 
     // Focus mode toggle from ImageViewer gestures
@@ -578,7 +583,7 @@ const AddTagScreen = ({navigation}) => {
                             {isEditMode && untaggedCount != null ? (
                                 <View style={styles.untaggedCounter}>
                                     <Caption color="white" family="semiBold">
-                                        {(untaggedCount - swiperIndex)} / {untaggedCount}
+                                        {swiperIndex + 1} / {untaggedCount}
                                     </Caption>
                                 </View>
                             ) : (
