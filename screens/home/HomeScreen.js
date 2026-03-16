@@ -251,7 +251,7 @@ const HomeScreen = ({navigation}) => {
                 }
             }
         }
-    }, [appVersion]);
+    }, [appVersion, navigation]);
 
     /**
      * Navigate to album screen
@@ -266,11 +266,6 @@ const HomeScreen = ({navigation}) => {
     const renderActionButton = () => {
         let status = 'NO_IMAGES';
         let fabFunction = loadGallery;
-
-        if (images?.length === 0) {
-            status = 'NO_IMAGES';
-            fabFunction = loadGallery;
-        }
 
         if (isSelectingImagesToDelete) {
             status = 'SELECTING';
@@ -497,7 +492,10 @@ const HomeScreen = ({navigation}) => {
                         })
                     );
 
-                    if (
+                    if (result.meta?.requestStatus === 'rejected') {
+                        failedUploads++;
+                        failureReasons.push(result.payload?.userMessage || 'Upload failed');
+                    } else if (
                         tagsPayload &&
                         tagsPayload.length > 0 &&
                         result.payload?.serverPhotoId
@@ -516,9 +514,15 @@ const HomeScreen = ({navigation}) => {
                             failedUploads++;
                             failureReasons.push(tagResult.payload?.userMessage || 'Tag upload failed');
                         }
-                    } else if (result.meta?.requestStatus === 'rejected') {
+                    } else if (
+                        result.meta?.requestStatus === 'fulfilled' &&
+                        tagsPayload &&
+                        tagsPayload.length > 0 &&
+                        !result.payload?.serverPhotoId
+                    ) {
+                        // Upload succeeded but no server photo ID — can't post tags
                         failedUploads++;
-                        failureReasons.push(result.payload?.userMessage || 'Upload failed');
+                        failureReasons.push('Upload succeeded but server did not return photo ID');
                     }
                 } else if (img.uploaded && tagsPayload && tagsPayload.length > 0) {
                     dispatch(setUploadPhase('tagging'));
@@ -551,7 +555,9 @@ const HomeScreen = ({navigation}) => {
         }
 
         dispatch(setUploadPhase('idle'));
-        dispatch(showThankYouMessagesAfterUpload());
+        if (!isUploadCancelled.current) {
+            dispatch(showThankYouMessagesAfterUpload());
+        }
     };
 
     /**
