@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import {Pressable} from 'react-native-gesture-handler';
 import Icon from 'react-native-vector-icons/Ionicons';
+import {useTranslation} from 'react-i18next';
 import {Body, Caption, Colors} from '../../components';
 import {getCategoryColor} from './categoryColors';
 import {makeTagKey} from './tagUtils';
@@ -25,6 +26,7 @@ const TagSearchBar = React.forwardRef(({
     onBrowsePress,
     showBrowser
 }, ref) => {
+    const {t} = useTranslation();
     const [query, setQuery] = useState('');
     const [isFocused, setIsFocused] = useState(false);
     const blurTimerRef = useRef(null);
@@ -227,10 +229,10 @@ const TagSearchBar = React.forwardRef(({
         [taggedKeys, handleSelect]
     );
 
-    const keyExtractor = useCallback((item, index) => {
+    const keyExtractor = useCallback((item) => {
         return item.isType
-            ? `type-${item.cloId}-${item.typeId}-${index}`
-            : `obj-${item.cloId}-${index}`;
+            ? `type-${item.cloId}-${item.typeId}`
+            : `obj-${item.cloId}`;
     }, []);
 
     return (
@@ -259,7 +261,7 @@ const TagSearchBar = React.forwardRef(({
                 />
                 <TextInput
                     style={styles.input}
-                    placeholder="Search tags..."
+                    placeholder={t('Search tags...')}
                     placeholderTextColor={Colors.muted}
                     value={query}
                     onChangeText={setQuery}
@@ -325,7 +327,7 @@ const TagSearchBar = React.forwardRef(({
             )}
         </View>
     );
-};
+});
 
 const styles = StyleSheet.create({
     wrapper: {
@@ -484,8 +486,6 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: Colors.accent
     }
-});
-
 });
 
 export default React.memo(TagSearchBar);

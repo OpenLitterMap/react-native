@@ -185,8 +185,8 @@ const TagPills = ({
                     );
                 })}
                 {hasCustom &&
-                    customTags.map(ct => (
-                        <View key={`custom-${ct}`} style={styles.pillWrapper}>
+                    customTags.map((ct, i) => (
+                        <View key={`custom-${ct}-${i}`} style={styles.pillWrapper}>
                             <View style={[styles.pill, styles.customPillColor]}>
                                 <Icon
                                     name="pricetag-outline"

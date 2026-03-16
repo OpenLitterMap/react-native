@@ -9,7 +9,7 @@ export const MAX_QUANTITY = 10;
  * Build a unique key for a (cloId, typeId) pair.
  * Used for Set lookups, React keys, and detail sheet state.
  */
-export const makeTagKey = (cloId, typeId) => `${cloId}-${typeId || ''}`;
+export const makeTagKey = (cloId, typeId) => `${cloId}-${typeId ?? ''}`;
 
 /**
  * Parse a tag key back into (cloId, typeId).

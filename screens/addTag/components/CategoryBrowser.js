@@ -158,10 +158,10 @@ const CategoryBrowser = ({
         [taggedKeys, handleSelect, t]
     );
 
-    const keyExtractor = useCallback((item, index) => {
+    const keyExtractor = useCallback((item) => {
         return item.isType
             ? `type-${item.cloId}-${item.typeId}`
-            : `obj-${item.cloId}-${index}`;
+            : `obj-${item.cloId}`;
     }, []);
 
     return (
