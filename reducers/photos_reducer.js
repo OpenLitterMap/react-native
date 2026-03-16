@@ -24,15 +24,15 @@ const CUSTOM_TAG_REGEX = /^[\w\s:-]+$/;
  * Otherwise returns imagesArray[imageIndex] (normal tagging flow).
  */
 const getTargetImage = (state, imageIndex) => {
-    if (state.editingPhoto) {
-        return state.editingPhoto;
+    if (state.editingPhotos.length > 0) {
+        return state.editingPhotos[imageIndex] || state.editingPhotos[0];
     }
     return state.imagesArray[imageIndex];
 };
 
 const initialState = {
     imagesArray: [],
-    editingPhoto: null, // Photo loaded from server for tag editing (My Uploads / untagged queue)
+    editingPhotos: [], // Photos loaded from server for tag editing (My Uploads / untagged queue)
     swiperIndex: 0,
 
     // Custom tag validation feedback (null = no error)
@@ -383,31 +383,55 @@ const photosSlice = createSlice({
             image.customTags = image.customTags.filter(t => t !== text);
         },
 
+        /**
+         * Load one or more API photos for tag editing.
+         * payload = { photo } for single, { photos } for batch
+         */
         loadPhotoForEditing(state, action) {
-            const photo = action.payload.photo;
-            const {tags, imageCustomTags} = getTagsFromBackend(photo.new_tags);
+            const photos = action.payload.photos
+                ? action.payload.photos
+                : [action.payload.photo];
 
-            state.editingPhoto = {
-                id: photo.id,
-                photoId: photo.id,
-                date: photo.datetime ?? null,
-                lat: photo.lat ?? null,
-                lon: photo.lon ?? null,
-                filename: photo.filename,
-                uri: null,
-                type: 'web',
-                platform: photo.platform ?? 'web',
-                tags,
-                customTags: imageCustomTags,
-                picked_up: !!photo.picked_up,
-                selected: false,
-                uploaded: true,
-                editing: true
-            };
+            const converted = photos.map(photo => {
+                const {tags, imageCustomTags} = getTagsFromBackend(photo.new_tags);
+                return {
+                    id: photo.id,
+                    photoId: photo.id,
+                    date: photo.datetime ?? null,
+                    lat: photo.lat ?? null,
+                    lon: photo.lon ?? null,
+                    filename: photo.filename,
+                    uri: null,
+                    type: 'web',
+                    platform: photo.platform ?? 'web',
+                    tags,
+                    customTags: imageCustomTags,
+                    picked_up: !!photo.picked_up,
+                    selected: false,
+                    uploaded: true,
+                    editing: true
+                };
+            });
+
+            // Deduplicate by ID against existing editing photos
+            const existingIds = new Set(state.editingPhotos.map(p => p.id));
+            for (const photo of converted) {
+                if (!existingIds.has(photo.id)) {
+                    state.editingPhotos.push(photo);
+                }
+            }
+        },
+
+        /**
+         * Remove a specific photo from the editing queue by ID.
+         */
+        removeEditingPhoto(state, action) {
+            const photoId = action.payload;
+            state.editingPhotos = state.editingPhotos.filter(p => p.id !== photoId);
         },
 
         clearEditingPhoto(state) {
-            state.editingPhoto = null;
+            state.editingPhotos = [];
         },
 
         clearCustomTagError(state) {
@@ -530,6 +554,7 @@ export const {
     deleteSelectedImages,
     deselectAllImages,
     loadPhotoForEditing,
+    removeEditingPhoto,
     removeBrandFromTag,
     removeCustomTagFromTag,
     setBrandQuantity,

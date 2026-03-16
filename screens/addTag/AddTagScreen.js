@@ -45,9 +45,12 @@ import {
     setPickedUpOnTag,
     toggleMaterialOnTag,
     updateTagQuantityV5,
-    clearEditingPhoto
+    clearEditingPhoto,
+    loadPhotoForEditing,
+    removeEditingPhoto
 } from '../../reducers/photos_reducer';
-import {editTagsOnPhoto} from '../../reducers/server_photos_reducer';
+import {editTagsOnPhoto, fetchNextUntaggedPhoto} from '../../reducers/server_photos_reducer';
+import {deleteUploadPhoto} from '../../reducers/uploads_reducer';
 import {fetchAllTags} from '../../reducers/tags_reducer';
 import {isTagged} from '../../utils/isTagged';
 import buildTagsPayload from '../../utils/buildTagsPayload';
@@ -58,16 +61,17 @@ const AddTagScreen = ({navigation}) => {
     const {t} = useTranslation();
     const insets = useSafeAreaInsets();
 
-    // Redux state — use editingPhoto if available, otherwise imagesArray
+    // Redux state — use editingPhotos queue if available, otherwise imagesArray
     const defaultPickedUp = useSelector(state => state.auth.user?.picked_up ?? null);
-    const editingPhoto = useSelector(state => state.photos.editingPhoto);
+    const editingPhotos = useSelector(state => state.photos.editingPhotos);
     const galleryImages = useSelector(state => state.photos.imagesArray);
     const rawSwiperIndex = useSelector(state => state.photos.swiperIndex);
+    const isEditMode = editingPhotos.length > 0;
     const images = useMemo(
-        () => editingPhoto ? [editingPhoto] : galleryImages,
-        [editingPhoto, galleryImages]
+        () => isEditMode ? editingPhotos : galleryImages,
+        [isEditMode, editingPhotos, galleryImages]
     );
-    const swiperIndex = editingPhoto ? 0 : rawSwiperIndex;
+    const swiperIndex = isEditMode ? Math.min(rawSwiperIndex, Math.max(0, images.length - 1)) : rawSwiperIndex;
 
     const {
         objectEntries,
@@ -134,7 +138,6 @@ const AddTagScreen = ({navigation}) => {
         ? Math.max(0, Math.min(swiperIndex, images.length - 1))
         : 0;
     const currentImage = images[safeIndex];
-    const isEditMode = currentImage?.editing === true;
 
     const currentTags = currentImage?.tags || [];
     const currentCustomTags = currentImage?.customTags || [];
@@ -405,6 +408,23 @@ const AddTagScreen = ({navigation}) => {
         [images]
     );
 
+    const advanceOrClose = useCallback(() => {
+        if (editingPhotos.length > 1) {
+            // More photos in queue — remove current and stay
+            dispatch(removeEditingPhoto(currentImage.id));
+            // Fetch 1 more to keep queue filled
+            dispatch(fetchNextUntaggedPhoto({perPage: 1})).then(result => {
+                if (result.meta?.requestStatus === 'fulfilled') {
+                    dispatch(loadPhotoForEditing({photos: result.payload}));
+                }
+            });
+        } else {
+            // Last photo — go back
+            dispatch(clearEditingPhoto());
+            navigation.goBack();
+        }
+    }, [dispatch, editingPhotos.length, currentImage, navigation]);
+
     const handleUpdateTags = useCallback(async () => {
         if (!currentImage?.photoId) return;
 
@@ -424,13 +444,38 @@ const AddTagScreen = ({navigation}) => {
             if (result.meta?.requestStatus === 'rejected') {
                 Alert.alert(t('Error!'), t('Failed to update tags. Please try again.'));
             } else {
-                dispatch(clearEditingPhoto());
-                navigation.goBack();
+                advanceOrClose();
             }
         } finally {
             setIsSaving(false);
         }
-    }, [dispatch, currentImage, navigation, t]);
+    }, [dispatch, currentImage, advanceOrClose, t]);
+
+    const handleDeletePhoto = useCallback(async () => {
+        if (!currentImage?.photoId) return;
+
+        Alert.alert(
+            t('Delete Photo'),
+            t('This will permanently delete this photo from the server.'),
+            [
+                {text: t('Cancel'), style: 'cancel'},
+                {
+                    text: t('Delete'),
+                    style: 'destructive',
+                    onPress: async () => {
+                        const result = await dispatch(
+                            deleteUploadPhoto({photoId: currentImage.photoId})
+                        );
+                        if (result.meta?.requestStatus === 'fulfilled') {
+                            advanceOrClose();
+                        } else {
+                            Alert.alert(t('Error'), t('Failed to delete photo.'));
+                        }
+                    }
+                }
+            ]
+        );
+    }, [dispatch, currentImage, advanceOrClose, t]);
 
     const handleDone = useCallback(() => {
         if (isEditMode) {
@@ -526,6 +571,19 @@ const AddTagScreen = ({navigation}) => {
                                 currentIndex={swiperIndex}
                                 onIndexChange={handleIndexChange}
                             />
+
+                            {isEditMode && (
+                                <RNPressable
+                                    onPress={handleDeletePhoto}
+                                    style={styles.deletePhotoButton}
+                                    hitSlop={12}>
+                                    <Icon
+                                        name="trash-outline"
+                                        size={20}
+                                        color="#ff6b6b"
+                                    />
+                                </RNPressable>
+                            )}
 
                             <Animated.View
                                 style={[
@@ -756,8 +814,11 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center'
     },
-    xpBadge: {
+    deletePhotoButton: {
         marginLeft: 'auto',
+        padding: 8
+    },
+    xpBadge: {
         paddingHorizontal: 12,
         paddingVertical: 4,
         backgroundColor: Colors.accentLight,

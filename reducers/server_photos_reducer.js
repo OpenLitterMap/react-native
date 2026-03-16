@@ -41,22 +41,26 @@ export const fetchUntaggedCount = createAsyncThunk(
 /**
  * Fetch one untagged photo and load it into editingPhoto for tagging.
  */
+/**
+ * Fetch up to 2 untagged photos for the editing queue.
+ * Returns array of photo objects.
+ */
 export const fetchNextUntaggedPhoto = createAsyncThunk(
     'serverPhotos/fetchNextUntaggedPhoto',
-    async (_, {getState, rejectWithValue}) => {
+    async ({perPage = 2} = {}, {getState, rejectWithValue}) => {
         try {
             const token = getState().auth.token;
             const response = await api.get('/api/v3/user/photos', {
                 token,
-                params: {tagged: false, per_page: 1}
+                params: {tagged: false, per_page: perPage}
             });
 
-            const photo = response.data?.photos?.[0];
-            if (!photo) {
+            const photos = response.data?.photos;
+            if (!photos || photos.length === 0) {
                 return rejectWithValue('No untagged photos found');
             }
 
-            return photo;
+            return photos;
         } catch (error) {
             return rejectWithValue(
                 error.response?.data?.message || 'Network Error'

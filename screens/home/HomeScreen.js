@@ -181,9 +181,9 @@ const HomeScreen = ({navigation}) => {
     const handleTagNextUntagged = async () => {
         setFetchingUntagged(true);
         try {
-            const result = await dispatch(fetchNextUntaggedPhoto());
+            const result = await dispatch(fetchNextUntaggedPhoto({perPage: 2}));
             if (result.meta?.requestStatus === 'fulfilled') {
-                dispatch(loadPhotoForEditing({photo: result.payload}));
+                dispatch(loadPhotoForEditing({photos: result.payload}));
                 navigation.navigate('ADD_TAGS');
             } else {
                 Alert.alert(
