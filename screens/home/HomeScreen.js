@@ -331,7 +331,9 @@ const HomeScreen = ({navigation}) => {
             );
         }
 
-        if (images?.length > 0) {
+        // Only show Delete when there are local images (not just server preview tiles)
+        const hasLocalImages = images?.some(img => img.uri);
+        if (hasLocalImages) {
             return (
                 <Text
                     style={[styles.normalWhiteText, {fontSize: SCREEN_HEIGHT * 0.02}]}
