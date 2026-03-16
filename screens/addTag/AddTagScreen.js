@@ -46,7 +46,8 @@ import {
     toggleMaterialOnTag,
     updateTagQuantityV5,
     clearEditingPhoto,
-    removeEditingPhoto
+    removeEditingPhoto,
+    trimEditingPhotos
 } from '../../reducers/photos_reducer';
 import {editTagsOnPhoto, fetchAndLoadUntagged} from '../../reducers/server_photos_reducer';
 import {deleteUploadPhoto} from '../../reducers/uploads_reducer';
@@ -188,6 +189,11 @@ const AddTagScreen = ({navigation}) => {
         newIndex => {
             const clamped = Math.max(0, Math.min(newIndex, images.length - 1));
             dispatch(changeSwiperIndex(clamped));
+
+            // Trim old photos behind current to prevent unbounded memory growth
+            if (isEditMode && clamped > 5) {
+                dispatch(trimEditingPhotos(clamped));
+            }
 
             // Prefetch when within 3 photos of the end of the queue
             if (isEditMode && clamped >= editingPhotos.length - 3 && !prefetchingRef.current) {

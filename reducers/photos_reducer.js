@@ -442,6 +442,22 @@ const photosSlice = createSlice({
             state.editingPhotos = [];
         },
 
+        /**
+         * Trim editing photos behind the current index to prevent unbounded growth.
+         * Keeps WINDOW_BEHIND photos behind current for back-swipe.
+         * Also adjusts swiperIndex to account for removed items.
+         * payload = currentIndex
+         */
+        trimEditingPhotos(state, action) {
+            const WINDOW_BEHIND = 3;
+            const currentIndex = action.payload;
+            const trimCount = currentIndex - WINDOW_BEHIND;
+            if (trimCount > 0 && state.editingPhotos.length > WINDOW_BEHIND + 5) {
+                state.editingPhotos.splice(0, trimCount);
+                state.swiperIndex = Math.max(0, state.swiperIndex - trimCount);
+            }
+        },
+
         clearCustomTagError(state) {
             state.customTagError = null;
         },
@@ -564,6 +580,7 @@ export const {
     clearCustomTagError,
     clearEditingPhoto,
     clearUploadedImages,
+    trimEditingPhotos,
     deleteImage,
     deleteSelectedImages,
     deselectAllImages,
