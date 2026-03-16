@@ -388,11 +388,16 @@ const photosSlice = createSlice({
          * payload = { photo } for single, { photos } for batch
          */
         loadPhotoForEditing(state, action) {
-            const photos = action.payload.photos
-                ? action.payload.photos
-                : action.payload.photo
-                    ? [action.payload.photo]
-                    : [];
+            const payload = action.payload;
+            if (!payload) return;
+
+            const photos = Array.isArray(payload.photos)
+                ? payload.photos
+                : payload.photo
+                    ? [payload.photo]
+                    : Array.isArray(payload)
+                        ? payload
+                        : [];
 
             if (photos.length === 0) return;
 
