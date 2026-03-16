@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
     ActivityIndicator,
     Alert,
@@ -25,20 +25,7 @@ import {
     fetchAndLoadUntagged,
     fetchUntaggedCount
 } from '../../reducers/server_photos_reducer';
-import {
-    cancelUpload,
-    closeThankYouMessages,
-    postTagsToPhoto,
-    resetThankYouMessages,
-    resetUploadState,
-    setCurrentUploadIndex,
-    setTotalToUpload,
-    setUploadAbortReason,
-    setUploadPhase,
-    showThankYouMessagesAfterUpload,
-    startUploading,
-    uploadImage
-} from '../../reducers/upload_flow_reducer';
+import {closeThankYouMessages, setUploadAbortReason} from '../../reducers/upload_flow_reducer';
 import {getPhotosFromCameraroll} from '../../reducers/gallery_reducer';
 import {fetchAllTags} from '../../reducers/tags_reducer';
 import {deleteUploadPhoto} from '../../reducers/uploads_reducer';
@@ -47,41 +34,38 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import {Body, Colors, Header, Title} from '../components';
 
 import {checkCameraRollPermission} from '../../utils/permissions';
-import {isGeotagged} from '../../utils/isGeotagged';
 
 // Components
 import {ActionButton, UploadButton, UploadImagesGrid} from './homeComponents';
 import DeviceInfo from 'react-native-device-info';
 import {isTagged} from '../../utils/isTagged';
-import buildTagsPayload from '../../utils/buildTagsPayload';
 import {useTranslation} from 'react-i18next';
+import useUploadPhotos from './useUploadPhotos';
 
 const HomeScreen = ({navigation}) => {
     const dispatch = useDispatch();
     const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} = useWindowDimensions();
     const {t} = useTranslation();
 
-    const isUploadCancelled = useRef(false);
-    const abortControllerRef = useRef(null);
-    const retryTimerRef = useRef(null);
+    const {
+        uploadPhotos,
+        cancelUploadFlow,
+        retryFailedUploads,
+        isUploadCancelled,
+        uploadAbortRef,
+        cleanup: uploadCleanup
+    } = useUploadPhotos();
+
     const [isSelectingImagesToDelete, setIsSelectingImagesToDelete] =
         useState(false);
 
     useEffect(() => {
-        return () => {
-            if (retryTimerRef.current) {
-                clearTimeout(retryTimerRef.current);
-            }
-            if (abortControllerRef.current) {
-                abortControllerRef.current.abort();
-            }
-        };
-    }, []);
+        return uploadCleanup;
+    }, [uploadCleanup]);
 
     const appVersion = useSelector(state => state.shared?.appVersion);
     const images = useSelector(state => state.photos.imagesArray);
     const showUploadModal = useSelector(state => state.uploadFlow.showUploadModal);
-    const deviceModel = useSelector(state => state.settings.deviceModel);
     const showThankYouMessages = useSelector(
         state => state.uploadFlow.showThankYouMessages
     );
@@ -116,7 +100,7 @@ const HomeScreen = ({navigation}) => {
         if (uploadAbortReason === 'token-expired') {
             isUploadCancelled.current = true;
             // Abort the in-flight request immediately, don't wait for it to settle
-            abortControllerRef.current?.abort();
+            uploadAbortRef.current?.abort();
         }
     }, [uploadAbortReason]);
 
@@ -171,15 +155,7 @@ const HomeScreen = ({navigation}) => {
     const cancelText = t('Cancel');
     const deleteText = t('Delete');
 
-    const cancelUploadWrapper = () => {
-        isUploadCancelled.current = true;
-        // Abort any in-flight axios request
-        if (abortControllerRef.current) {
-            abortControllerRef.current.abort();
-        }
-        dispatch(resetUploadState());
-        dispatch(cancelUpload());
-    };
+    const cancelUploadWrapper = cancelUploadFlow;
 
     const handleTagNextUntagged = async () => {
         setFetchingUntagged(true);
@@ -389,193 +365,6 @@ const HomeScreen = ({navigation}) => {
         }
 
         setIsSelectingImagesToDelete(false);
-    };
-
-    const getImageDataForUpload = img => {
-        const isGeoTagged = isGeotagged(img);
-        const photoHasTags = isTagged(img);
-
-        // Upload any local image (gallery or camera) that has valid GPS
-        if (!img.uploaded && isGeoTagged) {
-            let imageData = new FormData();
-
-            imageData.append('photo', {
-                name: img.filename,
-                type: 'image/jpeg',
-                uri: img.uri
-            });
-
-            imageData.append('lat', img.lat);
-            imageData.append('lon', img.lon);
-            const timestamp = Number(img.date);
-            if (Number.isFinite(timestamp)) {
-                imageData.append('date', String(Math.round(timestamp)));
-            }
-            imageData.append('model', deviceModel);
-
-            // Tags are always posted separately via POST /api/v3/tags
-            return [imageData, photoHasTags, isGeoTagged];
-        } else if (img.uploaded) {
-            return [null, photoHasTags, true];
-        }
-
-        return [null, false, false];
-    };
-
-    /**
-     * Upload photos, 1 photo per request.
-     * Two-step for v5 tags: upload photo first, then POST tags separately.
-     */
-    const uploadPhotos = async () => {
-        // Pre-upload validation: filter out non-geotagged gallery images
-        const geotaggedImages = images.filter(isGeotagged);
-        const skippedCount = images.length - geotaggedImages.length;
-
-        if (skippedCount > 0) {
-            const confirmed = await new Promise(resolve => {
-                Alert.alert(
-                    t('Missing GPS Data'),
-                    `${geotaggedImages.length} ${t('of')} ${
-                        images.length
-                    } ${t('photos will be uploaded.')} ${skippedCount} ${
-                        skippedCount === 1 ? t('photo') : t('photos')
-                    } ${t('skipped (no GPS data).')}`,
-                    [
-                        {
-                            text: t('Cancel'),
-                            onPress: () => resolve(false),
-                            style: 'cancel'
-                        },
-                        {text: t('Continue'), onPress: () => resolve(true)}
-                    ]
-                );
-            });
-
-            if (!confirmed) {
-                return;
-            }
-        }
-
-        dispatch(resetUploadState());
-        dispatch(resetThankYouMessages());
-        isUploadCancelled.current = false;
-        abortControllerRef.current = new AbortController();
-
-        // Count all items as work (gallery uploads + web tagging)
-        dispatch(setTotalToUpload(geotaggedImages.length));
-
-        // shared.js -> showUploadModal = true
-        dispatch(startUploading());
-
-        let failedUploads = 0;
-        const failureReasons = [];
-
-        if (geotaggedImages.length) {
-            for (let i = 0; i < geotaggedImages.length; i++) {
-                const img = geotaggedImages[i];
-
-                if (isUploadCancelled.current) {
-                    break;
-                }
-
-                dispatch(setCurrentUploadIndex(i));
-
-                const [imageData, , isGeoTagged] = getImageDataForUpload(img);
-
-                const tagsPayload = buildTagsPayload(img);
-
-                if (!img.uploaded && isGeoTagged) {
-                    dispatch(setUploadPhase('uploading'));
-
-                    const result = await dispatch(
-                        uploadImage({
-                            imageData,
-                            photoId: img.id,
-                            imageUri: img.uri,
-                            enableAdminTagging: user?.enable_admin_tagging,
-                            photoHasTags: false, // tags always posted separately
-                            signal: abortControllerRef.current?.signal
-                        })
-                    );
-
-                    if (result.meta?.requestStatus === 'rejected') {
-                        failedUploads++;
-                        failureReasons.push(result.payload?.userMessage || 'Upload failed');
-                    } else if (
-                        tagsPayload &&
-                        tagsPayload.length > 0 &&
-                        result.payload?.serverPhotoId
-                    ) {
-                        dispatch(setUploadPhase('tagging'));
-
-                        const tagResult = await dispatch(
-                            postTagsToPhoto({
-                                photoId: result.payload.serverPhotoId,
-                                tags: tagsPayload,
-                                signal: abortControllerRef.current?.signal
-                            })
-                        );
-
-                        if (tagResult.meta?.requestStatus === 'rejected') {
-                            failedUploads++;
-                            failureReasons.push(tagResult.payload?.userMessage || 'Tag upload failed');
-                        }
-                    } else if (
-                        result.meta?.requestStatus === 'fulfilled' &&
-                        tagsPayload &&
-                        tagsPayload.length > 0 &&
-                        !result.payload?.serverPhotoId
-                    ) {
-                        // Upload succeeded but no server photo ID — can't post tags
-                        failedUploads++;
-                        failureReasons.push('Upload succeeded but server did not return photo ID');
-                    }
-                } else if (img.uploaded && tagsPayload && tagsPayload.length > 0) {
-                    dispatch(setUploadPhase('tagging'));
-
-                    const tagResult = await dispatch(
-                        postTagsToPhoto({
-                            photoId: img.id,
-                            tags: tagsPayload,
-                            signal: abortControllerRef.current?.signal
-                        })
-                    );
-
-                    if (tagResult.meta?.requestStatus === 'rejected') {
-                        failedUploads++;
-                        failureReasons.push(tagResult.payload?.userMessage || 'Tag upload failed');
-                    }
-                }
-            }
-        }
-
-        if (!isUploadCancelled.current && failedUploads > 0) {
-            const uniqueReasons = [...new Set(failureReasons)];
-            const detail = uniqueReasons.length > 0
-                ? uniqueReasons.map(r => t(r)).join('\n')
-                : t('Some uploads failed. You can retry from your uploads.');
-            Alert.alert(
-                t('Error!'),
-                `${failedUploads} ${failedUploads === 1 ? t('upload') : t('uploads')} ${t('failed')}:\n\n${detail}`
-            );
-        }
-
-        dispatch(setUploadPhase('idle'));
-        if (!isUploadCancelled.current) {
-            dispatch(showThankYouMessagesAfterUpload());
-        }
-    };
-
-    /**
-     * Retry uploads. Re-runs uploadPhotos on all remaining images.
-     * Already-uploaded images skip the upload step and only re-post tags.
-     * Tag posts are idempotent (PUT replaces).
-     */
-    const retryFailedUploads = () => {
-        dispatch(closeThankYouMessages());
-        dispatch(resetUploadState());
-        // Small delay to let modal close, then re-trigger
-        retryTimerRef.current = setTimeout(() => uploadPhotos(), 300);
     };
 
     /**
