@@ -331,8 +331,8 @@ const HomeScreen = ({navigation}) => {
             );
         }
 
-        // Only show Delete when there are local images (not just server preview tiles)
-        const hasLocalImages = images?.some(img => img.uri);
+        // Only show Delete when there are local gallery images (not server uploads)
+        const hasLocalImages = images?.some(img => !img.uploaded);
         if (hasLocalImages) {
             return (
                 <Text
