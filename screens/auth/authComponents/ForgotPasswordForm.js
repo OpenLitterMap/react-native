@@ -64,7 +64,7 @@ const ForgotPasswordForm = () => {
                                 color={Colors.accentLight}
                             />
                             <Text style={styles.serverMessageText}>
-                                {serverStatusText}
+                                {t(serverStatusText)}
                             </Text>
                         </View>
                     )}

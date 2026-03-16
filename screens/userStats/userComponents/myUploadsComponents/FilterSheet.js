@@ -65,6 +65,7 @@ const FilterSheet = ({ visible, filters, onApply, onClose }) => {
     // Sync draft when modal opens
     useEffect(() => {
         if (visible) setDraft({ ...filters });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [visible]);
 
     // Derive cascading options from location tree

@@ -69,7 +69,7 @@ const leaderboardsSlice = createSlice({
                     action.payload.hasNextPage || false;
                 state.paginated.total = action.payload.total || 0;
                 state.currentPage = page;
-                state.timeFilter = action.meta.arg.timeFilter;
+                state.timeFilter = action.meta.arg?.timeFilter ?? state.timeFilter;
                 state.fetchStatus = 'succeeded';
                 state.loadMoreStatus = 'idle';
             })

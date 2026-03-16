@@ -29,7 +29,7 @@ const MemberCard = ({ data, teamId, index }) => {
                                 {data.username && <Caption>{data.username}</Caption>}
                             </>
                         ) : (
-                            <SubTitle>{data?.username || 'Anonymous'}</SubTitle>
+                            <SubTitle>{data?.username || t('Anonymous')}</SubTitle>
                         )}
                     </View>
                 </View>
@@ -40,15 +40,15 @@ const MemberCard = ({ data, teamId, index }) => {
             <View style={{ marginTop: 16, flexDirection: 'row', justifyContent: 'space-between'}}>
                 <View style={{ justifyContent: 'center', alignItems: 'center' }}>
                     <Body>{data?.pivot?.total_photos}</Body>
-                    <Caption>PHOTOS</Caption>
+                    <Caption>{t('Photos')}</Caption>
                 </View>
                 <View style={{ justifyContent: 'center', alignItems: 'center'}}>
                     <Body>{data?.pivot?.total_litter}</Body>
-                    <Caption>LITTER</Caption>
+                    <Caption>{t('Litter')}</Caption>
                 </View>
                 <View style={{ justifyContent: 'center', alignItems: 'center' }}>
                     <Body>{lastActivity}</Body>
-                    <Caption>LAST ACTIVITY</Caption>
+                    <Caption>{t('Last Activity')}</Caption>
                 </View>
             </View>
         </View>

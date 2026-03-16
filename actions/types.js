@@ -14,4 +14,12 @@ if (CURRENT_ENVIRONMENT === 'production') {
     ENDPOINT = 'http://192.168.1.28:8000';
 }
 
+if (__DEV__ && !ENDPOINT) {
+    console.warn(
+        'OLM: ENDPOINT is empty — CURRENT_ENVIRONMENT is',
+        JSON.stringify(CURRENT_ENVIRONMENT),
+        '. Set CURRENT_ENVIRONMENT to "production" or "local" in .env'
+    );
+}
+
 export const URL = ENDPOINT;

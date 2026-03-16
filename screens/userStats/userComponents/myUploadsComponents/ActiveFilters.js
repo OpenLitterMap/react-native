@@ -71,7 +71,7 @@ const ActiveFilters = ({ filters, onRemoveFilter, onClearAll }) => {
         const from = dayjs(filters.filterDateFrom).format('MMM D');
         const to = filters.filterDateTo
             ? dayjs(filters.filterDateTo).format('MMM D')
-            : 'now';
+            : t('now');
         chips.push({
             key: 'filterDate',
             label: `${from} – ${to}`
@@ -79,7 +79,7 @@ const ActiveFilters = ({ filters, onRemoveFilter, onClearAll }) => {
     } else if (filters.filterDateTo) {
         chips.push({
             key: 'filterDate',
-            label: `Until ${dayjs(filters.filterDateTo).format('MMM D')}`
+            label: `${t('Until')} ${dayjs(filters.filterDateTo).format('MMM D')}`
         });
     }
 

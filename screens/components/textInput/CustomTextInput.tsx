@@ -10,6 +10,7 @@ import {
     View,
     ViewStyle
 } from 'react-native';
+import {useTranslation} from 'react-i18next';
 import {Colors} from '../theme';
 
 interface CustomTextInputProps {
@@ -47,6 +48,7 @@ const CustomTextInput = ({
     ref,
     ...rest
 }: CustomTextInputProps) => {
+    const {t} = useTranslation();
     const hasError = touched && error;
     const isDark = variant === 'dark';
 
@@ -68,7 +70,7 @@ const CustomTextInput = ({
                             styles.errorLabel,
                             isDark && styles.errorLabelDark
                         ]}>
-                        {errorText || error}
+                        {errorText || t(error)}
                     </Text>
                 </View>
             )}

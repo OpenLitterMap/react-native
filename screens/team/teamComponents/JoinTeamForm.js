@@ -67,13 +67,13 @@ const JoinTeamForm = ({ backPress }) => {
                         />
                         {touched.id && errors.id && (
                             <Caption color="error" style={styles.errorText}>
-                                {errors.id}
+                                {t(errors.id)}
                             </Caption>
                         )}
 
                         {teamsFormError ? (
                             <Caption color="error" style={styles.serverError}>
-                                {teamsFormError}
+                                {t(teamsFormError)}
                             </Caption>
                         ) : null}
 

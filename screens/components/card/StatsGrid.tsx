@@ -26,9 +26,9 @@ const StatsGrid: React.FC<StatsGridProps> = ({statsData, style}) => {
     return (
         <View style={styles.statsContainer}>
             <View style={[styles.statsRow, style]}>
-                {statsData.map(stat => (
+                {statsData.map((stat, i) => (
                     <IconStatsCard
-                        key={`${stat.title}`}
+                        key={stat.title || `stat-${i}`}
                         imageContent={
                             stat.icon && (
                                 <Icon

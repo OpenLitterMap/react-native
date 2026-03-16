@@ -143,8 +143,12 @@ export const toggleSettingsSwitch = createAsyncThunk(
             });
 
             if (response.status === 200) {
-                const key = Object.keys(response.data)[0];
-                let value = Object.values(response.data)[0];
+                const keys = Object.keys(response.data);
+                if (keys.length === 0) {
+                    return rejectWithValue('Empty response from server');
+                }
+                const key = keys[0];
+                let value = response.data[key];
 
                 // Convert boolean values to 0 or 1 for certain keys
                 if (key !== 'show_name' && key !== 'show_username') {

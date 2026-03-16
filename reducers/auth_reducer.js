@@ -393,11 +393,11 @@ const authSlice = createSlice({
             .addCase(sendResetPasswordRequest.fulfilled, state => {
                 state.submitStatus = 'idle';
                 state.serverStatusText =
-                    'An email will be sent if the address exists.';
+                    'An email will be sent if the address exists';
             })
             .addCase(sendResetPasswordRequest.rejected, state => {
                 state.serverStatusText =
-                    'An email will be sent if the address exists.';
+                    'An email will be sent if the address exists';
                 state.submitStatus = 'idle';
             })
 

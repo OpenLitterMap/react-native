@@ -42,9 +42,16 @@ const SigninFormInner = ({
     const loginTranslation = t('Email or Username');
     const passwordTranslation = t('Password');
 
+    // Clear server error when user starts editing after a failed submit
+    const prevSubmittedRef = useRef(false);
     useEffect(() => {
-        dispatch(clearStatusText());
-    }, [values.login, values.password, dispatch]);
+        if (prevSubmittedRef.current && serverStatusText) {
+            dispatch(clearStatusText());
+        }
+    }, [values.login, values.password]); // eslint-disable-line react-hooks/exhaustive-deps
+    useEffect(() => {
+        prevSubmittedRef.current = hasSubmitted;
+    }, [hasSubmitted]);
 
     const handleFormSubmit = () => {
         setHasSubmitted(true);

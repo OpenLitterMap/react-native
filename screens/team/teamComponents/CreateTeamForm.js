@@ -97,7 +97,7 @@ const CreateTeamForm = ({ backPress }) => {
                                 />
                                 {touched.name && errors.name && (
                                     <Caption color="error" style={styles.errorText}>
-                                        {errors.name}
+                                        {t(errors.name)}
                                     </Caption>
                                 )}
 
@@ -127,13 +127,13 @@ const CreateTeamForm = ({ backPress }) => {
                                 {touched.identifier &&
                                     errors.identifier && (
                                         <Caption color="error" style={styles.errorText}>
-                                            {errors.identifier}
+                                            {t(errors.identifier)}
                                         </Caption>
                                     )}
 
                                 {teamsFormError ? (
                                     <Caption color="error" style={styles.serverError}>
-                                        {teamsFormError}
+                                        {t(teamsFormError)}
                                     </Caption>
                                 ) : null}
 

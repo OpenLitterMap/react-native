@@ -18,7 +18,7 @@ const {store, persistor} = configureAppStore();
 
 setupAxiosInterceptors(store);
 
-if (IS_PRODUCTION) {
+if (IS_PRODUCTION && SENTRY_DSN) {
     Sentry.init({
         dsn: SENTRY_DSN,
         tracePropagationTargets: [],
