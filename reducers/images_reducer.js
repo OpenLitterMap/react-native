@@ -58,37 +58,60 @@ const initialState = {
     },
 
     // Custom tag validation feedback (null = no error)
-    customTagError: null
+    customTagError: null,
+
+    // Server-side untagged photo count (null = not fetched yet)
+    untaggedCount: null
 };
 
 /**
  * API Requests
- * - getUntaggedImages
+ * - fetchUntaggedCount
+ * - fetchNextUntaggedPhoto
  * - uploadImage
  * - postTagsToPhoto
  * - editTagsOnPhoto
  */
 
-export const getUntaggedImages = createAsyncThunk(
-    'images/getUntaggedImages',
+/**
+ * Fetch the count of untagged photos from the server.
+ * Lightweight alternative to downloading all untagged photos.
+ */
+export const fetchUntaggedCount = createAsyncThunk(
+    'images/fetchUntaggedCount',
     async (_, {getState, rejectWithValue}) => {
+        try {
+            const token = getState().auth.token;
+            const response = await api.get('/api/v3/user/photos/stats', {token});
+            return response.data?.leftToTag ?? 0;
+        } catch (error) {
+            return rejectWithValue(
+                error.response?.data?.message || 'Network Error'
+            );
+        }
+    }
+);
+
+/**
+ * Fetch one untagged photo and load it into editingPhoto for tagging.
+ */
+export const fetchNextUntaggedPhoto = createAsyncThunk(
+    'images/fetchNextUntaggedPhoto',
+    async (_, {getState, dispatch, rejectWithValue}) => {
         try {
             const token = getState().auth.token;
             const response = await api.get('/api/v3/user/photos', {
                 token,
-                params: {
-                    tagged: false,
-                    per_page: 100
-                }
+                params: {tagged: false, per_page: 1}
             });
 
-            if (response?.data?.photos?.length > 0) {
-                return {
-                    images: response.data.photos
-                };
-            } else {
-                return rejectWithValue('No photos found');
+            const photo = response.data?.photos?.[0];
+            if (!photo) {
+                return rejectWithValue('No untagged photos found');
             }
+
+            dispatch(loadPhotoForEditing({photo}));
+            return photo;
         } catch (error) {
             return rejectWithValue(
                 error.response?.data?.message || 'Network Error'
@@ -691,33 +714,8 @@ const imagesSlice = createSlice({
     extraReducers: builder => {
         builder
 
-            .addCase(getUntaggedImages.fulfilled, (state, action) => {
-                if (!action.payload.images) {
-                    return;
-                }
-
-                const dedup = buildDedupSets(state);
-                action.payload.images.forEach(image => {
-                    if (!isDuplicate(dedup, image)) {
-                        state.imagesArray.push({
-                            id: image.id,
-                            date: image.datetime ?? null,
-                            lat: image.lat ?? null,
-                            lon: image.lon ?? null,
-                            filename: image.filename,
-                            uri: null,
-                            type: image.platform || 'web',
-                            platform: image.platform ?? 'web',
-
-                            tags: [],
-                            customTags: [],
-                            picked_up: image.picked_up,
-
-                            selected: false,
-                            uploaded: true
-                        });
-                    }
-                });
+            .addCase(fetchUntaggedCount.fulfilled, (state, action) => {
+                state.untaggedCount = action.payload;
             })
 
             // Upload Image
@@ -793,6 +791,10 @@ const imagesSlice = createSlice({
             // Edit Tags V3 (PUT — full replace)
             .addCase(editTagsOnPhoto.fulfilled, (state, action) => {
                 // Photo stays in uploads — tags were replaced, not removed
+                // Decrement untagged count (optimistic — photo was just tagged)
+                if (state.untaggedCount > 0) {
+                    state.untaggedCount--;
+                }
             })
             .addCase(editTagsOnPhoto.rejected, () => {
                 // Photo stays in uploads — will be retried

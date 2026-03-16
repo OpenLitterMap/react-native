@@ -24,7 +24,8 @@ import {
 import {
     deleteImage,
     deselectAllImages,
-    getUntaggedImages,
+    fetchNextUntaggedPhoto,
+    fetchUntaggedCount,
     postTagsToPhoto,
     resetUploadState,
     selectSelectedCount,
@@ -45,7 +46,7 @@ import {checkCameraRollPermission} from '../../utils/permissions';
 import {isGeotagged} from '../../utils/isGeotagged';
 
 // Components
-import {ActionButton, UploadButton, UploadImagesGrid} from './homeComponents';
+import {ActionButton, UntaggedBadge, UploadButton, UploadImagesGrid} from './homeComponents';
 import DeviceInfo from 'react-native-device-info';
 import {isTagged} from '../../utils/isTagged';
 import buildTagsPayload from '../../utils/buildTagsPayload';
@@ -94,6 +95,8 @@ const HomeScreen = ({navigation}) => {
 
     // Number of selected images (memoized)
     const selected = useSelector(selectSelectedCount);
+    const untaggedCount = useSelector(state => state.images.untaggedCount);
+    const [fetchingUntagged, setFetchingUntagged] = useState(false);
 
     // Uploads
     const totalToUpload = useSelector(state => state.images.totalToUpload);
@@ -139,7 +142,7 @@ const HomeScreen = ({navigation}) => {
 
         const checkPermissionsAndFetchData = async () => {
             if (!user?.enable_admin_tagging && token) {
-                await dispatch(getUntaggedImages());
+                dispatch(fetchUntaggedCount());
             }
 
             // Pre-fetch tags for the v5 tagging UI
@@ -169,6 +172,25 @@ const HomeScreen = ({navigation}) => {
         }
         dispatch(resetUploadState());
         dispatch(cancelUpload());
+    };
+
+    const handleTagNextUntagged = async () => {
+        setFetchingUntagged(true);
+        try {
+            const result = await dispatch(fetchNextUntaggedPhoto());
+            if (result.meta?.requestStatus === 'fulfilled') {
+                navigation.navigate('ADD_TAGS');
+            } else {
+                Alert.alert(
+                    t('No Photos'),
+                    t('No untagged photos found on the server.')
+                );
+            }
+        } catch {
+            Alert.alert(t('Error'), t('Failed to fetch photo. Please try again.'));
+        } finally {
+            setFetchingUntagged(false);
+        }
     };
 
     async function checkGalleryPermission() {
@@ -760,6 +782,11 @@ const HomeScreen = ({navigation}) => {
 
             {renderActionButton()}
             {renderUploadButton()}
+            <UntaggedBadge
+                count={untaggedCount}
+                onPress={handleTagNextUntagged}
+                loading={fetchingUntagged}
+            />
         </>
     );
 };
