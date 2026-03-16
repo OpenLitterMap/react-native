@@ -19,11 +19,10 @@ import {
     clearEditingPhoto,
     deleteImage,
     deselectAllImages,
-    loadPhotoForEditing,
     selectSelectedCount
 } from '../../reducers/photos_reducer';
 import {
-    fetchNextUntaggedPhoto,
+    fetchAndLoadUntagged,
     fetchUntaggedCount
 } from '../../reducers/server_photos_reducer';
 import {
@@ -182,13 +181,12 @@ const HomeScreen = ({navigation}) => {
 
     const handleTagNextUntagged = async () => {
         setFetchingUntagged(true);
-        const result = await dispatch(fetchNextUntaggedPhoto({perPage: 5}));
+        dispatch(clearEditingPhoto());
+        dispatch(changeSwiperIndex(0));
+        const result = await dispatch(fetchAndLoadUntagged({perPage: 5}));
         setFetchingUntagged(false);
 
-        if (result.meta?.requestStatus === 'fulfilled' && Array.isArray(result.payload) && result.payload.length > 0) {
-            dispatch(clearEditingPhoto());
-            dispatch(loadPhotoForEditing({photos: result.payload}));
-            dispatch(changeSwiperIndex(0));
+        if (result.meta?.requestStatus === 'fulfilled') {
             navigation.navigate('ADD_TAGS');
         } else {
             const errorMsg = result.payload || 'No untagged photos found';

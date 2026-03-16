@@ -46,10 +46,9 @@ import {
     toggleMaterialOnTag,
     updateTagQuantityV5,
     clearEditingPhoto,
-    loadPhotoForEditing,
     removeEditingPhoto
 } from '../../reducers/photos_reducer';
-import {editTagsOnPhoto, fetchNextUntaggedPhoto} from '../../reducers/server_photos_reducer';
+import {editTagsOnPhoto, fetchAndLoadUntagged} from '../../reducers/server_photos_reducer';
 import {deleteUploadPhoto} from '../../reducers/uploads_reducer';
 import {fetchAllTags} from '../../reducers/tags_reducer';
 import {isTagged} from '../../utils/isTagged';
@@ -192,11 +191,8 @@ const AddTagScreen = ({navigation}) => {
             // Prefetch when within 3 photos of the end of the queue
             if (isEditMode && clamped >= editingPhotos.length - 3 && !prefetchingRef.current) {
                 prefetchingRef.current = true;
-                dispatch(fetchNextUntaggedPhoto({perPage: 5})).then(result => {
+                dispatch(fetchAndLoadUntagged({perPage: 5})).finally(() => {
                     prefetchingRef.current = false;
-                    if (result.meta?.requestStatus === 'fulfilled') {
-                        dispatch(loadPhotoForEditing({photos: result.payload}));
-                    }
                 });
             }
         },
@@ -419,20 +415,16 @@ const AddTagScreen = ({navigation}) => {
     );
 
     const allTagged = useMemo(
-        () => images.every(img => isTagged(img)),
-        [images]
+        () => isEditMode ? false : images.every(img => isTagged(img)),
+        [images, isEditMode]
     );
 
     const advanceOrClose = useCallback(() => {
         if (editingPhotos.length > 1) {
             // More photos in queue — remove current and stay
             dispatch(removeEditingPhoto(currentImage.id));
-            // Fetch 1 more to keep queue filled
-            dispatch(fetchNextUntaggedPhoto({perPage: 1})).then(result => {
-                if (result.meta?.requestStatus === 'fulfilled') {
-                    dispatch(loadPhotoForEditing({photos: result.payload}));
-                }
-            });
+            // Fetch more to keep queue filled
+            dispatch(fetchAndLoadUntagged({perPage: 3}));
         } else {
             // Last photo — go back
             dispatch(clearEditingPhoto());
@@ -529,9 +521,11 @@ const AddTagScreen = ({navigation}) => {
         transform: [{scale: xpScale.value}]
     }));
 
-    // If no images available, redirect back to HomeScreen immediately
+    // If no images available, redirect back to HomeScreen (one-shot)
+    const hasNavigatedBackRef = useRef(false);
     useEffect(() => {
-        if (!currentImage && images.length === 0) {
+        if (!currentImage && images.length === 0 && !hasNavigatedBackRef.current) {
+            hasNavigatedBackRef.current = true;
             navigation.goBack();
         }
     }, [currentImage, images.length, navigation]);

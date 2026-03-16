@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {FlatList, Image, Pressable, Text, useWindowDimensions, View} from 'react-native';
 import {useDispatch} from 'react-redux';
 import {Body, Colors, SubTitle} from '../../components';
@@ -7,17 +7,7 @@ import {
     changeSwiperIndex,
     toggleSelectedImages
 } from '../../../reducers/photos_reducer';
-import {URL, IS_PRODUCTION} from '../../../actions/types';
-
-const resolveUri = uri => {
-    if (!IS_PRODUCTION && uri?.includes('127.0.0.1')) {
-        const match = URL.match(/:\/\/([^:/]+)/);
-        if (match) {
-            return uri.replace('127.0.0.1', match[1]);
-        }
-    }
-    return uri;
-};
+import resolveUri from '../../../utils/resolveUri';
 
 const UploadImagesGrid = ({images, isSelecting, navigation, untaggedCount, onTagUntagged, fetchingUntagged, untaggedPreview}) => {
     const {width: SCREEN_WIDTH} = useWindowDimensions();
@@ -50,7 +40,7 @@ const UploadImagesGrid = ({images, isSelecting, navigation, untaggedCount, onTag
      */
     const tileSize = SCREEN_WIDTH / 3 - 2;
 
-    const renderImage = ({item, index}) => {
+    const renderImage = useCallback(({item, index}) => {
         // Special tile for untagged server photos
         if (item._untaggedPreview) {
             return (
@@ -118,17 +108,18 @@ const UploadImagesGrid = ({images, isSelecting, navigation, untaggedCount, onTag
                 </View>
             </Pressable>
         );
-    };
+    }, [tileSize, isSelecting, onTagUntagged, fetchingUntagged, untaggedCount, untaggedPreview, dispatch, navigation]);
 
     // Build data: prepend untagged preview tile if available
-    const previewTile = untaggedPreview && untaggedCount > 0
-        ? [{...untaggedPreview, _untaggedPreview: true}]
-        : [];
-    // Filter out any image that duplicates the preview (same server ID)
-    const localImages = untaggedPreview
-        ? (images || []).filter(img => img.id !== untaggedPreview.id)
-        : (images || []);
-    const gridData = [...previewTile, ...localImages];
+    const gridData = useMemo(() => {
+        const previewTile = untaggedPreview && untaggedCount > 0
+            ? [{...untaggedPreview, _untaggedPreview: true}]
+            : [];
+        const localImages = untaggedPreview
+            ? (images || []).filter(img => img.id !== untaggedPreview.id)
+            : (images || []);
+        return [...previewTile, ...localImages];
+    }, [images, untaggedPreview, untaggedCount]);
 
     // Show empty state only if no local images AND no untagged preview
     if (gridData.length === 0) {

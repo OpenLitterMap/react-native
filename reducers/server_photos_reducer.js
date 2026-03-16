@@ -2,6 +2,7 @@ import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
 import api from '../utils/apiClient';
 import {classifyError} from '../utils/classifyError';
 import {logout} from './auth_reducer';
+import {loadPhotoForEditing} from './photos_reducer';
 
 const initialState = {
     // Server-side untagged photo count (null = not fetched yet)
@@ -19,16 +20,26 @@ export const fetchUntaggedCount = createAsyncThunk(
     async (_, {getState, rejectWithValue}) => {
         try {
             const token = getState().auth.token;
-            const [statsRes, previewRes] = await Promise.all([
+            const [statsResult, previewResult] = await Promise.allSettled([
                 api.get('/api/v3/user/photos/stats', {token}),
                 api.get('/api/v3/user/photos', {
                     token,
                     params: {tagged: false, per_page: 1}
                 })
             ]);
+
+            // Stats is required; preview is best-effort
+            if (statsResult.status === 'rejected') {
+                return rejectWithValue(
+                    statsResult.reason?.response?.data?.message || 'Network Error'
+                );
+            }
+
             return {
-                count: statsRes.data?.leftToTag ?? 0,
-                preview: previewRes.data?.photos?.[0] ?? null
+                count: statsResult.value.data?.leftToTag ?? 0,
+                preview: previewResult.status === 'fulfilled'
+                    ? previewResult.value.data?.photos?.[0] ?? null
+                    : null
             };
         } catch (error) {
             return rejectWithValue(
@@ -39,10 +50,7 @@ export const fetchUntaggedCount = createAsyncThunk(
 );
 
 /**
- * Fetch one untagged photo and load it into editingPhoto for tagging.
- */
-/**
- * Fetch up to 2 untagged photos for the editing queue.
+ * Fetch untagged photos for the editing queue.
  * Returns array of photo objects.
  */
 export const fetchNextUntaggedPhoto = createAsyncThunk(
@@ -66,6 +74,22 @@ export const fetchNextUntaggedPhoto = createAsyncThunk(
                 error.response?.data?.message || 'Network Error'
             );
         }
+    }
+);
+
+/**
+ * Fetch untagged photos and load them into the editing queue.
+ * Composes fetchNextUntaggedPhoto + loadPhotoForEditing to avoid
+ * repeating this pattern in every UI component.
+ */
+export const fetchAndLoadUntagged = createAsyncThunk(
+    'serverPhotos/fetchAndLoadUntagged',
+    async ({perPage = 5} = {}, {dispatch}) => {
+        const result = await dispatch(fetchNextUntaggedPhoto({perPage}));
+        if (result.meta?.requestStatus === 'fulfilled') {
+            dispatch(loadPhotoForEditing({photos: result.payload}));
+        }
+        return result;
     }
 );
 

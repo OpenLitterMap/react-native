@@ -1,7 +1,7 @@
 import React, {useCallback, useEffect, useMemo, useRef} from 'react';
 import {Image, StyleSheet, useWindowDimensions, View} from 'react-native';
 import {Gesture, GestureDetector} from 'react-native-gesture-handler';
-import {URL, IS_PRODUCTION} from '../../../actions/types';
+import resolveUri from '../../../utils/resolveUri';
 import Animated, {
     useSharedValue,
     useAnimatedStyle,
@@ -18,15 +18,6 @@ const SWIPE_VELOCITY = 400;
 const ZOOM_THRESHOLD = 1.02;
 const SNAP_DURATION = 250;
 
-const resolveUri = uri => {
-    if (!IS_PRODUCTION && uri?.includes('127.0.0.1')) {
-        const match = URL.match(/:\/\/([^:/]+)/);
-        if (match) {
-            return uri.replace('127.0.0.1', match[1]);
-        }
-    }
-    return uri;
-};
 
 /**
  * Single slide that renders an image at a fixed horizontal offset.
@@ -116,13 +107,17 @@ const ImageViewer = ({
         resolveImageUri(currentIndex + 1)
     ], [currentIndex, resolveImageUri]);
 
-    // Prefetch next 2 images for smooth swiping
+    // Prefetch next 2 images for smooth swiping (deduplicated)
+    const prefetchedUris = useRef(new Set());
     useEffect(() => {
         const uris = [
             resolveImageUri(currentIndex + 1),
             resolveImageUri(currentIndex + 2)
-        ].filter(Boolean);
-        uris.forEach(uri => Image.prefetch(uri).catch(() => {}));
+        ].filter(uri => uri && !prefetchedUris.current.has(uri));
+        uris.forEach(uri => {
+            prefetchedUris.current.add(uri);
+            Image.prefetch(uri).catch(() => {});
+        });
     }, [currentIndex, resolveImageUri]);
 
     // Stable JS-thread callback for runOnJS — uses ref to avoid stale closure

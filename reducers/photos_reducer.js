@@ -395,9 +395,7 @@ const photosSlice = createSlice({
                 ? payload.photos
                 : payload.photo
                     ? [payload.photo]
-                    : Array.isArray(payload)
-                        ? payload
-                        : [];
+                    : [];
 
             if (photos.length === 0) return;
 
