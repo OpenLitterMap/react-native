@@ -14,7 +14,9 @@ const imagesTransform = createTransform(
     }),
     // On REHYDRATE: merge imagesArray into default state
     (outboundState) => ({
-        imagesArray: (outboundState?.imagesArray || []).filter(img => !img.editing),
+        imagesArray: (outboundState?.imagesArray || []).filter(
+            img => !img.editing && !(img.uploaded && !img.uri)
+        ),
         editingPhoto: null,
         swiperIndex: 0,
         totalToUpload: 0,
@@ -32,36 +34,37 @@ const imagesTransform = createTransform(
             network: 0,
             server: 0,
             unknown: 0
-        }
+        },
+        customTagError: null,
+        untaggedCount: null
     }),
     { whitelist: ['images'] }
 );
 
 // Configuration for Redux Persist
 const persistConfig = {
-  key: 'root',
-  storage: AsyncStorage,
-  whitelist: ['auth', 'images'],
-  transforms: [imagesTransform]
+    key: 'root',
+    storage: AsyncStorage,
+    whitelist: ['auth', 'images'],
+    transforms: [imagesTransform]
 };
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
 
 export default function configureAppStore(initialState = {}) {
-  const store = configureStore({
-    reducer: persistedReducer,
-    middleware: (getDefaultMiddleware) =>
-        getDefaultMiddleware({
-          serializableCheck: {
-            // Ignore these action types in the serializability check
-            ignoredActions: ['persist/PERSIST', 'persist/REHYDRATE'],
-          },
-        }).concat(__DEV__ ? [require('redux-immutable-state-invariant').default()] : []),
-    preloadedState: initialState,
-    devTools: __DEV__, // Automatically enable/disable Redux DevTools
-  });
+    const store = configureStore({
+        reducer: persistedReducer,
+        middleware: (getDefaultMiddleware) =>
+            getDefaultMiddleware({
+                serializableCheck: {
+                    ignoredActions: ['persist/PERSIST', 'persist/REHYDRATE']
+                }
+            }).concat(__DEV__ ? [require('redux-immutable-state-invariant').default()] : []),
+        preloadedState: initialState,
+        devTools: __DEV__
+    });
 
-  const persistor = persistStore(store);
+    const persistor = persistStore(store);
 
-  return { store, persistor };
+    return { store, persistor };
 }
