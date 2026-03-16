@@ -109,7 +109,7 @@ const UploadImagesGrid = ({images, isSelecting, navigation}) => {
     }
 
     return (
-        <View style={{paddingTop: 1, paddingHorizontal: 0.5}}>
+        <View style={{paddingTop: 1, paddingHorizontal: 0.5, flex: 1}}>
             {images && (
                 <FlashList
                     contentContainerStyle={{paddingBottom: 100}}
