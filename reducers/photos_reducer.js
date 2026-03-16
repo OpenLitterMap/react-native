@@ -389,9 +389,6 @@ const photosSlice = createSlice({
          */
         loadPhotoForEditing(state, action) {
             const payload = action.payload;
-            if (__DEV__) {
-                console.log('[photos] loadPhotoForEditing payload type:', typeof payload, 'isArray:', Array.isArray(payload), 'keys:', payload ? Object.keys(payload) : 'null');
-            }
             if (!payload) return;
 
             const photos = Array.isArray(payload.photos)
@@ -402,9 +399,6 @@ const photosSlice = createSlice({
                         ? payload
                         : [];
 
-            if (__DEV__) {
-                console.log('[photos] loadPhotoForEditing photos count:', photos.length);
-            }
             if (photos.length === 0) return;
 
             const converted = photos.map(photo => {
@@ -429,6 +423,7 @@ const photosSlice = createSlice({
             });
 
             // Deduplicate by ID against existing editing photos
+            if (!state.editingPhotos) state.editingPhotos = [];
             const existingIds = new Set(state.editingPhotos.map(p => p.id));
             for (const photo of converted) {
                 if (!existingIds.has(photo.id)) {
@@ -442,7 +437,7 @@ const photosSlice = createSlice({
          */
         removeEditingPhoto(state, action) {
             const photoId = action.payload;
-            state.editingPhotos = state.editingPhotos.filter(p => p.id !== photoId);
+            state.editingPhotos = (state.editingPhotos || []).filter(p => p.id !== photoId);
         },
 
         clearEditingPhoto(state) {

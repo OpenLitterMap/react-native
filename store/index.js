@@ -17,6 +17,7 @@ const imagesTransform = createTransform(
         imagesArray: (outboundState?.imagesArray || []).filter(
             img => !img.editing && !(img.uploaded && !img.uri)
         ),
+        editingPhotos: [],
         swiperIndex: 0,
         customTagError: null
     }),
