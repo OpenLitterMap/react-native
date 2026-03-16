@@ -1,12 +1,23 @@
 import React from 'react';
 import {FlatList, Image, Pressable, Text, useWindowDimensions, View} from 'react-native';
 import {useDispatch} from 'react-redux';
-import {Body, SubTitle} from '../../components';
+import {Body, Colors, SubTitle} from '../../components';
 import {isTagged} from '../../../utils/isTagged';
 import {
     changeSwiperIndex,
     toggleSelectedImages
 } from '../../../reducers/images_reducer';
+import {URL, IS_PRODUCTION} from '../../../actions/types';
+
+const resolveUri = uri => {
+    if (!IS_PRODUCTION && uri?.includes('127.0.0.1')) {
+        const match = URL.match(/:\/\/([^:/]+)/);
+        if (match) {
+            return uri.replace('127.0.0.1', match[1]);
+        }
+    }
+    return uri;
+};
 
 const UploadImagesGrid = ({images, isSelecting, navigation, untaggedCount, onTagUntagged, fetchingUntagged, untaggedPreview}) => {
     const {width: SCREEN_WIDTH} = useWindowDimensions();
@@ -47,7 +58,7 @@ const UploadImagesGrid = ({images, isSelecting, navigation, untaggedCount, onTag
                     <View style={{width: tileSize, height: tileSize, marginHorizontal: 0.5, marginTop: 1}}>
                         <Image
                             style={{width: tileSize, height: tileSize, opacity: 0.7}}
-                            source={{uri: item.filename}}
+                            source={{uri: resolveUri(item.filename)}}
                             resizeMode="cover"
                         />
                         <View style={{position: 'absolute', top: 5, left: 5}}>
@@ -179,7 +190,7 @@ const styles = {
         position: 'absolute',
         bottom: 6,
         right: 6,
-        backgroundColor: '#e74c3c',
+        backgroundColor: Colors.accent,
         borderRadius: 12,
         minWidth: 24,
         height: 24,
