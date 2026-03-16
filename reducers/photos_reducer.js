@@ -1,4 +1,5 @@
 import {createSlice, createSelector} from '@reduxjs/toolkit';
+import {getTagsFromBackend} from '../utils/getTagsFromBackend';
 import {logout} from './auth_reducer';
 import {uploadImage, postTagsToPhoto} from './upload_flow_reducer';
 
@@ -31,6 +32,7 @@ const getTargetImage = (state, imageIndex) => {
 
 const initialState = {
     imagesArray: [],
+    editingPhoto: null, // Photo loaded from server for tag editing (My Uploads / untagged queue)
     swiperIndex: 0,
 
     // Custom tag validation feedback (null = no error)
@@ -60,8 +62,8 @@ const isDuplicate = (dedupSets, image) => {
     return dedupSets.ids.has(image.id);
 };
 
-const imagesSlice = createSlice({
-    name: 'images',
+const photosSlice = createSlice({
+    name: 'photos',
 
     initialState,
 
@@ -381,6 +383,33 @@ const imagesSlice = createSlice({
             image.customTags = image.customTags.filter(t => t !== text);
         },
 
+        loadPhotoForEditing(state, action) {
+            const photo = action.payload.photo;
+            const {tags, imageCustomTags} = getTagsFromBackend(photo.new_tags);
+
+            state.editingPhoto = {
+                id: photo.id,
+                photoId: photo.id,
+                date: photo.datetime ?? null,
+                lat: photo.lat ?? null,
+                lon: photo.lon ?? null,
+                filename: photo.filename,
+                uri: null,
+                type: 'web',
+                platform: photo.platform ?? 'web',
+                tags,
+                customTags: imageCustomTags,
+                picked_up: !!photo.picked_up,
+                selected: false,
+                uploaded: true,
+                editing: true
+            };
+        },
+
+        clearEditingPhoto(state) {
+            state.editingPhoto = null;
+        },
+
         clearCustomTagError(state) {
             state.customTagError = null;
         },
@@ -495,10 +524,12 @@ export const {
     addTagV5,
     changeSwiperIndex,
     clearCustomTagError,
+    clearEditingPhoto,
     clearUploadedImages,
     deleteImage,
     deleteSelectedImages,
     deselectAllImages,
+    loadPhotoForEditing,
     removeBrandFromTag,
     removeCustomTagFromTag,
     setBrandQuantity,
@@ -509,13 +540,13 @@ export const {
     setPickedUpOnTag,
     toggleSelectedImages,
     updateTagQuantityV5
-} = imagesSlice.actions;
+} = photosSlice.actions;
 
 // Memoized selectors
-const selectImagesArray = state => state.images.imagesArray;
+const selectImagesArray = state => state.photos.imagesArray;
 export const selectSelectedCount = createSelector(
     [selectImagesArray],
     images => images.filter(img => img.selected).length
 );
 
-export default imagesSlice.reducer;
+export default photosSlice.reducer;

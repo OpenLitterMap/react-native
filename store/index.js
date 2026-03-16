@@ -20,14 +20,14 @@ const imagesTransform = createTransform(
         swiperIndex: 0,
         customTagError: null
     }),
-    { whitelist: ['images'] }
+    { whitelist: ['photos'] }
 );
 
 // Configuration for Redux Persist
 const persistConfig = {
     key: 'root',
     storage: AsyncStorage,
-    whitelist: ['auth', 'images'],
+    whitelist: ['auth', 'photos'],
     transforms: [imagesTransform]
 };
 

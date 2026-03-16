@@ -13,7 +13,7 @@ import { Body, Colors, Header } from '../../components';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useDispatch, useSelector } from 'react-redux';
 import { clearUploads, deleteUploadPhoto, fetchUploads } from '../../../reducers/uploads_reducer';
-import { loadPhotoForEditing } from '../../../reducers/server_photos_reducer';
+import { loadPhotoForEditing } from '../../../reducers/photos_reducer';
 import ActionButton from '../../home/homeComponents/ActionButton';
 import { useTranslation } from 'react-i18next';
 import { URL } from '../../../actions/types';

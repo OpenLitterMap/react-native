@@ -2,7 +2,7 @@ import { combineReducers } from '@reduxjs/toolkit';
 
 import auth from './auth_reducer';
 import gallery from './gallery_reducer';
-import images from './images_reducer';
+import photos from './photos_reducer';
 import serverPhotos from './server_photos_reducer';
 import uploadFlow from './upload_flow_reducer';
 import uploads from './uploads_reducer';
@@ -17,7 +17,7 @@ import teams from './team_reducer';
 export const rootReducer = combineReducers({
     auth,
     gallery,
-    images,
+    photos,
     serverPhotos,
     uploadFlow,
     uploads,

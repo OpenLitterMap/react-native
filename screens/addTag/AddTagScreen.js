@@ -44,12 +44,10 @@ import {
     removeTagV5,
     setPickedUpOnTag,
     toggleMaterialOnTag,
-    updateTagQuantityV5
-} from '../../reducers/images_reducer';
-import {
-    clearEditingPhoto,
-    editTagsOnPhoto
-} from '../../reducers/server_photos_reducer';
+    updateTagQuantityV5,
+    clearEditingPhoto
+} from '../../reducers/photos_reducer';
+import {editTagsOnPhoto} from '../../reducers/server_photos_reducer';
 import {fetchAllTags} from '../../reducers/tags_reducer';
 import {isTagged} from '../../utils/isTagged';
 import buildTagsPayload from '../../utils/buildTagsPayload';
@@ -62,9 +60,9 @@ const AddTagScreen = ({navigation}) => {
 
     // Redux state — use editingPhoto if available, otherwise imagesArray
     const defaultPickedUp = useSelector(state => state.auth.user?.picked_up ?? null);
-    const editingPhoto = useSelector(state => state.serverPhotos.editingPhoto);
-    const galleryImages = useSelector(state => state.images.imagesArray);
-    const rawSwiperIndex = useSelector(state => state.images.swiperIndex);
+    const editingPhoto = useSelector(state => state.photos.editingPhoto);
+    const galleryImages = useSelector(state => state.photos.imagesArray);
+    const rawSwiperIndex = useSelector(state => state.photos.swiperIndex);
     const images = useMemo(
         () => editingPhoto ? [editingPhoto] : galleryImages,
         [editingPhoto, galleryImages]

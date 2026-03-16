@@ -1,6 +1,5 @@
 import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
 import api from '../utils/apiClient';
-import {getTagsFromBackend} from '../utils/getTagsFromBackend';
 import {classifyError} from '../utils/classifyError';
 import {logout} from './auth_reducer';
 
@@ -8,9 +7,7 @@ const initialState = {
     // Server-side untagged photo count (null = not fetched yet)
     untaggedCount: null,
     // Preview of next untagged photo (for HomeScreen badge tile)
-    untaggedPreview: null,
-    // Photo loaded for editing from My Uploads or untagged queue
-    editingPhoto: null
+    untaggedPreview: null
 };
 
 /**
@@ -46,7 +43,7 @@ export const fetchUntaggedCount = createAsyncThunk(
  */
 export const fetchNextUntaggedPhoto = createAsyncThunk(
     'serverPhotos/fetchNextUntaggedPhoto',
-    async (_, {getState, dispatch, rejectWithValue}) => {
+    async (_, {getState, rejectWithValue}) => {
         try {
             const token = getState().auth.token;
             const response = await api.get('/api/v3/user/photos', {
@@ -59,7 +56,6 @@ export const fetchNextUntaggedPhoto = createAsyncThunk(
                 return rejectWithValue('No untagged photos found');
             }
 
-            dispatch(loadPhotoForEditing({photo}));
             return photo;
         } catch (error) {
             return rejectWithValue(
@@ -97,43 +93,6 @@ export const editTagsOnPhoto = createAsyncThunk(
 const serverPhotosSlice = createSlice({
     name: 'serverPhotos',
     initialState,
-    reducers: {
-        /**
-         * Load an existing API photo for tag editing.
-         * Converts API new_tags format to local tags format.
-         * payload = { photo } where photo is the API photo object
-         */
-        loadPhotoForEditing(state, action) {
-            const photo = action.payload.photo;
-
-            const {tags, imageCustomTags} = getTagsFromBackend(photo.new_tags);
-
-            state.editingPhoto = {
-                id: photo.id,
-                photoId: photo.id,
-                date: photo.datetime ?? null,
-                lat: photo.lat ?? null,
-                lon: photo.lon ?? null,
-                filename: photo.filename,
-                uri: null,
-                type: 'web',
-                platform: photo.platform ?? 'web',
-
-                tags,
-                customTags: imageCustomTags,
-                picked_up: !!photo.picked_up,
-
-                selected: false,
-                uploaded: true,
-                editing: true
-            };
-        },
-
-        clearEditingPhoto(state) {
-            state.editingPhoto = null;
-        }
-    },
-
     extraReducers: builder => {
         builder
             .addCase(fetchUntaggedCount.fulfilled, (state, action) => {
@@ -149,7 +108,5 @@ const serverPhotosSlice = createSlice({
             .addCase(logout, () => initialState);
     }
 });
-
-export const {loadPhotoForEditing, clearEditingPhoto} = serverPhotosSlice.actions;
 
 export default serverPhotosSlice.reducer;

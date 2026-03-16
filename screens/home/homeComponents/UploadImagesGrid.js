@@ -6,7 +6,7 @@ import {isTagged} from '../../../utils/isTagged';
 import {
     changeSwiperIndex,
     toggleSelectedImages
-} from '../../../reducers/images_reducer';
+} from '../../../reducers/photos_reducer';
 import {URL, IS_PRODUCTION} from '../../../actions/types';
 
 const resolveUri = uri => {

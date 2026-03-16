@@ -17,8 +17,9 @@ import {checkAppVersion} from '../../reducers/shared_reducer';
 import {
     deleteImage,
     deselectAllImages,
+    loadPhotoForEditing,
     selectSelectedCount
-} from '../../reducers/images_reducer';
+} from '../../reducers/photos_reducer';
 import {
     fetchNextUntaggedPhoto,
     fetchUntaggedCount
@@ -77,7 +78,7 @@ const HomeScreen = ({navigation}) => {
     }, []);
 
     const appVersion = useSelector(state => state.shared?.appVersion);
-    const images = useSelector(state => state.images.imagesArray);
+    const images = useSelector(state => state.photos.imagesArray);
     const showUploadModal = useSelector(state => state.uploadFlow.showUploadModal);
     const deviceModel = useSelector(state => state.settings.deviceModel);
     const showThankYouMessages = useSelector(
@@ -182,6 +183,7 @@ const HomeScreen = ({navigation}) => {
         try {
             const result = await dispatch(fetchNextUntaggedPhoto());
             if (result.meta?.requestStatus === 'fulfilled') {
+                dispatch(loadPhotoForEditing({photo: result.payload}));
                 navigation.navigate('ADD_TAGS');
             } else {
                 Alert.alert(

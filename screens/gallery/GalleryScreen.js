@@ -23,7 +23,7 @@ import {
     getPhotosFromCameraroll,
     selectNonGeotaggedCount
 } from '../../reducers/gallery_reducer';
-import {addImages} from '../../reducers/images_reducer';
+import {addImages} from '../../reducers/photos_reducer';
 
 /**
  * fn to check if arg date is "today", this "week", this "month"

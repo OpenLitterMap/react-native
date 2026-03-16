@@ -24,7 +24,7 @@ import {
 } from '../../reducers/settings_reducer';
 import {
     getUntaggedImages
-} from '../../reducers/images_reducer';
+} from '../../reducers/photos_reducer';
 
 const SettingsScreen = ({navigation}) => {
     const dispatch = useDispatch();
