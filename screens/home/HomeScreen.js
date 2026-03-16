@@ -24,8 +24,6 @@ import {
 import {
     deleteImage,
     deselectAllImages,
-    fetchNextUntaggedPhoto,
-    fetchUntaggedCount,
     postTagsToPhoto,
     resetUploadState,
     selectSelectedCount,
@@ -35,6 +33,10 @@ import {
     setUploadPhase,
     uploadImage
 } from '../../reducers/images_reducer';
+import {
+    fetchNextUntaggedPhoto,
+    fetchUntaggedCount
+} from '../../reducers/server_photos_reducer';
 import {getPhotosFromCameraroll} from '../../reducers/gallery_reducer';
 import {fetchAllTags} from '../../reducers/tags_reducer';
 import {deleteUploadPhoto} from '../../reducers/uploads_reducer';
@@ -95,8 +97,8 @@ const HomeScreen = ({navigation}) => {
 
     // Number of selected images (memoized)
     const selected = useSelector(selectSelectedCount);
-    const untaggedCount = useSelector(state => state.images.untaggedCount);
-    const untaggedPreview = useSelector(state => state.images.untaggedPreview);
+    const untaggedCount = useSelector(state => state.serverPhotos.untaggedCount);
+    const untaggedPreview = useSelector(state => state.serverPhotos.untaggedPreview);
     const [fetchingUntagged, setFetchingUntagged] = useState(false);
 
     // Uploads

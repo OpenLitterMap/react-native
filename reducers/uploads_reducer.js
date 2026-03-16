@@ -1,7 +1,7 @@
 import {createAsyncThunk, createSlice} from '@reduxjs/toolkit';
 import api from '../utils/apiClient';
 import {logout} from './auth_reducer';
-import {editTagsOnPhoto} from './images_reducer';
+import {editTagsOnPhoto} from './server_photos_reducer';
 
 const initialState = {
     uploads: { data: [] },

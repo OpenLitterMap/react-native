@@ -12,12 +12,11 @@ const imagesTransform = createTransform(
     (inboundState) => ({
         imagesArray: inboundState.imagesArray
     }),
-    // On REHYDRATE: merge imagesArray into default state
+    // On REHYDRATE: merge imagesArray into default state, strip server images
     (outboundState) => ({
         imagesArray: (outboundState?.imagesArray || []).filter(
             img => !img.editing && !(img.uploaded && !img.uri)
         ),
-        editingPhoto: null,
         swiperIndex: 0,
         totalToUpload: 0,
         uploaded: 0,
@@ -35,9 +34,7 @@ const imagesTransform = createTransform(
             server: 0,
             unknown: 0
         },
-        customTagError: null,
-        untaggedCount: null,
-        untaggedPreview: null
+        customTagError: null
     }),
     { whitelist: ['images'] }
 );
