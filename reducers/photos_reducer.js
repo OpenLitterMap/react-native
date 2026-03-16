@@ -390,7 +390,11 @@ const photosSlice = createSlice({
         loadPhotoForEditing(state, action) {
             const photos = action.payload.photos
                 ? action.payload.photos
-                : [action.payload.photo];
+                : action.payload.photo
+                    ? [action.payload.photo]
+                    : [];
+
+            if (photos.length === 0) return;
 
             const converted = photos.map(photo => {
                 const {tags, imageCustomTags} = getTagsFromBackend(photo.new_tags);

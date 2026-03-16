@@ -180,21 +180,19 @@ const HomeScreen = ({navigation}) => {
 
     const handleTagNextUntagged = async () => {
         setFetchingUntagged(true);
-        try {
-            const result = await dispatch(fetchNextUntaggedPhoto({perPage: 2}));
-            if (result.meta?.requestStatus === 'fulfilled') {
-                dispatch(loadPhotoForEditing({photos: result.payload}));
-                navigation.navigate('ADD_TAGS');
-            } else {
-                Alert.alert(
-                    t('No Photos'),
-                    t('No untagged photos found on the server.')
-                );
-            }
-        } catch {
-            Alert.alert(t('Error'), t('Failed to fetch photo. Please try again.'));
-        } finally {
-            setFetchingUntagged(false);
+        const result = await dispatch(fetchNextUntaggedPhoto({perPage: 2}));
+        setFetchingUntagged(false);
+
+        if (result.meta?.requestStatus === 'fulfilled' && Array.isArray(result.payload) && result.payload.length > 0) {
+            dispatch(loadPhotoForEditing({photos: result.payload}));
+            navigation.navigate('ADD_TAGS');
+        } else {
+            const errorMsg = result.payload || 'No untagged photos found';
+            if (__DEV__) console.warn('[HomeScreen] fetchNextUntaggedPhoto:', errorMsg);
+            Alert.alert(
+                t('No Photos'),
+                t('No untagged photos found on the server.')
+            );
         }
     };
 
