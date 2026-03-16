@@ -61,7 +61,9 @@ const initialState = {
     customTagError: null,
 
     // Server-side untagged photo count (null = not fetched yet)
-    untaggedCount: null
+    untaggedCount: null,
+    // Preview of next untagged photo (for HomeScreen badge tile)
+    untaggedPreview: null
 };
 
 /**
@@ -74,16 +76,25 @@ const initialState = {
  */
 
 /**
- * Fetch the count of untagged photos from the server.
- * Lightweight alternative to downloading all untagged photos.
+ * Fetch untagged count + one preview photo for the HomeScreen badge.
+ * Two lightweight calls instead of downloading 100 photos.
  */
 export const fetchUntaggedCount = createAsyncThunk(
     'images/fetchUntaggedCount',
     async (_, {getState, rejectWithValue}) => {
         try {
             const token = getState().auth.token;
-            const response = await api.get('/api/v3/user/photos/stats', {token});
-            return response.data?.leftToTag ?? 0;
+            const [statsRes, previewRes] = await Promise.all([
+                api.get('/api/v3/user/photos/stats', {token}),
+                api.get('/api/v3/user/photos', {
+                    token,
+                    params: {tagged: false, per_page: 1}
+                })
+            ]);
+            return {
+                count: statsRes.data?.leftToTag ?? 0,
+                preview: previewRes.data?.photos?.[0] ?? null
+            };
         } catch (error) {
             return rejectWithValue(
                 error.response?.data?.message || 'Network Error'
@@ -715,7 +726,8 @@ const imagesSlice = createSlice({
         builder
 
             .addCase(fetchUntaggedCount.fulfilled, (state, action) => {
-                state.untaggedCount = action.payload;
+                state.untaggedCount = action.payload.count;
+                state.untaggedPreview = action.payload.preview;
             })
 
             // Upload Image

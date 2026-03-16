@@ -8,7 +8,7 @@ import {
     toggleSelectedImages
 } from '../../../reducers/images_reducer';
 
-const UploadImagesGrid = ({images, isSelecting, navigation}) => {
+const UploadImagesGrid = ({images, isSelecting, navigation, untaggedCount, onTagUntagged, fetchingUntagged, untaggedPreview}) => {
     const {width: SCREEN_WIDTH} = useWindowDimensions();
     const dispatch = useDispatch();
 
@@ -37,13 +37,40 @@ const UploadImagesGrid = ({images, isSelecting, navigation}) => {
      * Flatlist expects "item" as the first key.
      * Each "item" is an image.
      */
+    const tileSize = SCREEN_WIDTH / 3 - 2;
+
     const renderImage = ({item, index}) => {
+        // Special tile for untagged server photos
+        if (item._untaggedPreview) {
+            return (
+                <Pressable onPress={onTagUntagged} disabled={fetchingUntagged}>
+                    <View style={{width: tileSize, height: tileSize, marginHorizontal: 0.5, marginTop: 1}}>
+                        <Image
+                            style={{width: tileSize, height: tileSize, opacity: 0.7}}
+                            source={{uri: item.filename}}
+                            resizeMode="cover"
+                        />
+                        <View style={{position: 'absolute', top: 5, left: 5}}>
+                            <Text>☁</Text>
+                        </View>
+                        <View style={styles.untaggedCountBadge}>
+                            <Text style={styles.untaggedCountText}>
+                                {untaggedCount}
+                            </Text>
+                        </View>
+                    </View>
+                </Pressable>
+            );
+        }
+
         const imageHasTags = isTagged(item);
+        // Adjust index to account for prepended preview tile
+        const realIndex = untaggedPreview ? index - 1 : index;
         return (
-            <Pressable onPress={() => imagePressed(index)}>
-                <View style={{width: SCREEN_WIDTH / 3 - 2, height: SCREEN_WIDTH / 3 - 2, marginHorizontal: 0.5, marginTop: 1}}>
+            <Pressable onPress={() => imagePressed(realIndex)}>
+                <View style={{width: tileSize, height: tileSize, marginHorizontal: 0.5, marginTop: 1}}>
                     <Image
-                        style={{width: SCREEN_WIDTH / 3 - 2, height: SCREEN_WIDTH / 3 - 2}}
+                        style={{width: tileSize, height: tileSize}}
                         source={{uri: item.uri ?? item.filename}}
                         resizeMode="cover"
                     />
@@ -82,8 +109,14 @@ const UploadImagesGrid = ({images, isSelecting, navigation}) => {
         );
     };
 
-    // Show empty state illustration when no images
-    if (!images || images.length === 0) {
+    // Build data: prepend untagged preview tile if available
+    const previewTile = untaggedPreview && untaggedCount > 0
+        ? [{...untaggedPreview, _untaggedPreview: true}]
+        : [];
+    const gridData = [...previewTile, ...(images || [])];
+
+    // Show empty state only if no local images AND no untagged preview
+    if (gridData.length === 0) {
         return (
             <View
                 style={{
@@ -109,19 +142,19 @@ const UploadImagesGrid = ({images, isSelecting, navigation}) => {
 
     return (
         <View style={{paddingTop: 1, paddingHorizontal: 0.5}}>
-            {images && (
-                <FlatList
-                    contentContainerStyle={{paddingBottom: 100}}
-                    data={images}
-                    extraData={images}
-                    keyExtractor={(img, index) =>
-                        (img.uri || img.id || index).toString()
-                    }
-                    numColumns={3}
-                    renderItem={renderImage}
-                    keyboardShouldPersistTaps="handled"
-                />
-            )}
+            <FlatList
+                contentContainerStyle={{paddingBottom: 100}}
+                data={gridData}
+                extraData={[images, untaggedCount]}
+                keyExtractor={(img, index) =>
+                    img._untaggedPreview
+                        ? 'untagged-preview'
+                        : (img.uri || img.id || index).toString()
+                }
+                numColumns={3}
+                renderItem={renderImage}
+                keyboardShouldPersistTaps="handled"
+            />
         </View>
     );
 };
@@ -141,6 +174,23 @@ const styles = {
         borderRadius: 100,
         justifyContent: 'center',
         alignItems: 'center'
+    },
+    untaggedCountBadge: {
+        position: 'absolute',
+        bottom: 6,
+        right: 6,
+        backgroundColor: '#e74c3c',
+        borderRadius: 12,
+        minWidth: 24,
+        height: 24,
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingHorizontal: 6
+    },
+    untaggedCountText: {
+        color: 'white',
+        fontSize: 12,
+        fontWeight: '700'
     }
 };
 

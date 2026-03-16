@@ -46,7 +46,7 @@ import {checkCameraRollPermission} from '../../utils/permissions';
 import {isGeotagged} from '../../utils/isGeotagged';
 
 // Components
-import {ActionButton, UntaggedBadge, UploadButton, UploadImagesGrid} from './homeComponents';
+import {ActionButton, UploadButton, UploadImagesGrid} from './homeComponents';
 import DeviceInfo from 'react-native-device-info';
 import {isTagged} from '../../utils/isTagged';
 import buildTagsPayload from '../../utils/buildTagsPayload';
@@ -96,6 +96,7 @@ const HomeScreen = ({navigation}) => {
     // Number of selected images (memoized)
     const selected = useSelector(selectSelectedCount);
     const untaggedCount = useSelector(state => state.images.untaggedCount);
+    const untaggedPreview = useSelector(state => state.images.untaggedPreview);
     const [fetchingUntagged, setFetchingUntagged] = useState(false);
 
     // Uploads
@@ -773,6 +774,10 @@ const HomeScreen = ({navigation}) => {
                     navigation={navigation}
                     images={images}
                     isSelecting={isSelectingImagesToDelete}
+                    untaggedCount={untaggedCount}
+                    untaggedPreview={untaggedPreview}
+                    onTagUntagged={handleTagNextUntagged}
+                    fetchingUntagged={fetchingUntagged}
                 />
 
                 <View style={styles.bottomContainer}>
@@ -782,11 +787,6 @@ const HomeScreen = ({navigation}) => {
 
             {renderActionButton()}
             {renderUploadButton()}
-            <UntaggedBadge
-                count={untaggedCount}
-                onPress={handleTagNextUntagged}
-                loading={fetchingUntagged}
-            />
         </>
     );
 };

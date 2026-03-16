@@ -36,7 +36,8 @@ const imagesTransform = createTransform(
             unknown: 0
         },
         customTagError: null,
-        untaggedCount: null
+        untaggedCount: null,
+        untaggedPreview: null
     }),
     { whitelist: ['images'] }
 );
