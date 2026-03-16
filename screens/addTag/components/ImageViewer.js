@@ -1,5 +1,5 @@
-import React, {useCallback, useEffect, useMemo, useRef} from 'react';
-import {Image, StyleSheet, useWindowDimensions, View} from 'react-native';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {ActivityIndicator, Image, StyleSheet, useWindowDimensions, View} from 'react-native';
 import {Gesture, GestureDetector} from 'react-native-gesture-handler';
 import resolveUri from '../../../utils/resolveUri';
 import Animated, {
@@ -24,13 +24,34 @@ const SNAP_DURATION = 250;
  * Does NOT receive any animated style — avoids Reanimated crash from
  * toggling useAnimatedStyle across mount/unmount cycles.
  */
-const Slide = React.memo(({uri, offsetX, screenWidth, screenHeight}) => (
-    <View style={[styles.slide, {left: offsetX, width: screenWidth}]}>
-        {uri && (
+const SlideImage = React.memo(({uri, screenWidth, screenHeight}) => {
+    const [loading, setLoading] = useState(true);
+    return (
+        <>
+            {loading && (
+                <ActivityIndicator
+                    style={styles.slideLoader}
+                    color="rgba(255,255,255,0.5)"
+                    size="large"
+                />
+            )}
             <Image
                 source={{uri}}
                 style={{width: screenWidth, height: screenHeight}}
                 resizeMode="contain"
+                onLoad={() => setLoading(false)}
+            />
+        </>
+    );
+});
+
+const Slide = React.memo(({uri, offsetX, screenWidth, screenHeight}) => (
+    <View style={[styles.slide, {left: offsetX, width: screenWidth}]}>
+        {uri && (
+            <SlideImage
+                uri={uri}
+                screenWidth={screenWidth}
+                screenHeight={screenHeight}
             />
         )}
     </View>
@@ -91,34 +112,49 @@ const ImageViewer = ({
         };
     };
 
-    // Resolve URI for a given index — null if out of bounds.
-    const resolveImageUri = useCallback((idx) => {
+    // Resolve URI for a given index — reads directly from images array.
+    const getUri = (idx) => {
         if (idx < 0 || idx >= images.length) return null;
         const img = images[idx];
         if (!img) return null;
         return resolveUri(img.uri || img.filename);
-    }, [images]);
+    };
 
-    // Resolve URIs for [prev, current, next] — null if out of bounds.
-    // Always returns 3 entries so the JSX renders 3 stable slots (no mount/unmount).
-    const slotUris = useMemo(() => [
-        resolveImageUri(currentIndex - 1),
-        resolveImageUri(currentIndex),
-        resolveImageUri(currentIndex + 1)
-    ], [currentIndex, resolveImageUri]);
+    // Compute the 3 visible URIs. Use a ref to avoid unnecessary re-renders
+    // when the images array grows (prefetch appends) but the visible 3 are unchanged.
+    const prevSlotUris = useRef([null, null, null]);
+    const slotUris = useMemo(() => {
+        const next = [
+            getUri(currentIndex - 1),
+            getUri(currentIndex),
+            getUri(currentIndex + 1)
+        ];
+        // Return same reference if URIs haven't changed (prevents Image remount)
+        if (
+            next[0] === prevSlotUris.current[0] &&
+            next[1] === prevSlotUris.current[1] &&
+            next[2] === prevSlotUris.current[2]
+        ) {
+            return prevSlotUris.current;
+        }
+        prevSlotUris.current = next;
+        return next;
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [currentIndex, images]);
 
     // Prefetch next 2 images for smooth swiping (deduplicated)
     const prefetchedUris = useRef(new Set());
     useEffect(() => {
         const uris = [
-            resolveImageUri(currentIndex + 1),
-            resolveImageUri(currentIndex + 2)
+            getUri(currentIndex + 1),
+            getUri(currentIndex + 2)
         ].filter(uri => uri && !prefetchedUris.current.has(uri));
         uris.forEach(uri => {
             prefetchedUris.current.add(uri);
             Image.prefetch(uri).catch(() => {});
         });
-    }, [currentIndex, resolveImageUri]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [currentIndex, images.length]);
 
     // Stable JS-thread callback for runOnJS — uses ref to avoid stale closure
     const commitIndexChange = useCallback(
@@ -357,10 +393,10 @@ const ImageViewer = ({
                             zoomStyle
                         ]}>
                         {slotUris[1] && (
-                            <Image
-                                source={{uri: slotUris[1]}}
-                                style={{width: SCREEN_WIDTH, height: SCREEN_HEIGHT}}
-                                resizeMode="contain"
+                            <SlideImage
+                                uri={slotUris[1]}
+                                screenWidth={SCREEN_WIDTH}
+                                screenHeight={SCREEN_HEIGHT}
                             />
                         )}
                     </Animated.View>
@@ -386,6 +422,14 @@ const styles = StyleSheet.create({
     },
     strip: {
         flex: 1
+    },
+    slideLoader: {
+        position: 'absolute',
+        top: '50%',
+        left: '50%',
+        marginTop: -18,
+        marginLeft: -18,
+        zIndex: 1
     },
     slide: {
         position: 'absolute',
