@@ -25,7 +25,7 @@ const CUSTOM_TAG_REGEX = /^[\w\s:-]+$/;
  */
 const getTargetImage = (state, imageIndex) => {
     if (state.editingPhotos.length > 0) {
-        return state.editingPhotos[imageIndex] || state.editingPhotos[0];
+        return state.editingPhotos[imageIndex];
     }
     return state.imagesArray[imageIndex];
 };
@@ -136,7 +136,7 @@ const photosSlice = createSlice({
                     brands: [],
                     customTags: []
                 };
-                if (typeId) {
+                if (typeId != null) {
                     tag.typeId = typeId;
                 }
                 image.tags.push(tag);
@@ -481,6 +481,12 @@ const photosSlice = createSlice({
          */
         deleteSelectedImages(state) {
             state.imagesArray = state.imagesArray.filter(img => !img.selected);
+            // Re-clamp swiperIndex after bulk deletion
+            if (state.imagesArray.length === 0) {
+                state.swiperIndex = 0;
+            } else if (state.swiperIndex >= state.imagesArray.length) {
+                state.swiperIndex = state.imagesArray.length - 1;
+            }
         },
 
         /**
