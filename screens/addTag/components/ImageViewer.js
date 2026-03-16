@@ -26,6 +26,12 @@ const SNAP_DURATION = 250;
  */
 const SlideImage = React.memo(({uri, screenWidth, screenHeight}) => {
     const [loading, setLoading] = useState(true);
+
+    // Reset loading when URI changes (component is reused across slides)
+    useEffect(() => {
+        setLoading(true);
+    }, [uri]);
+
     return (
         <>
             {loading && (
@@ -40,6 +46,7 @@ const SlideImage = React.memo(({uri, screenWidth, screenHeight}) => {
                 style={{width: screenWidth, height: screenHeight}}
                 resizeMode="contain"
                 onLoad={() => setLoading(false)}
+                onError={() => setLoading(false)}
             />
         </>
     );
@@ -59,12 +66,17 @@ const Slide = React.memo(({uri, offsetX, screenWidth, screenHeight}) => (
 
 const ImageViewer = ({
     images,
-    currentIndex,
+    currentIndex: rawCurrentIndex,
     onIndexChange,
     onToggleFocus,
     onZoomChange
 }) => {
     const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} = useWindowDimensions();
+
+    // Clamp index locally to prevent out-of-bounds access when array shrinks
+    const currentIndex = images?.length
+        ? Math.max(0, Math.min(rawCurrentIndex, images.length - 1))
+        : 0;
 
     // --- Shared values for worklet-safe access ---
     // These mirror the JS props so gesture worklets always read current values.
@@ -142,19 +154,22 @@ const ImageViewer = ({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentIndex, images]);
 
-    // Prefetch next 2 images for smooth swiping (deduplicated)
+    // Prefetch next 2 images for smooth swiping (deduplicated, only marked after success)
     const prefetchedUris = useRef(new Set());
-    useEffect(() => {
-        const uris = [
-            getUri(currentIndex + 1),
-            getUri(currentIndex + 2)
-        ].filter(uri => uri && !prefetchedUris.current.has(uri));
-        uris.forEach(uri => {
-            prefetchedUris.current.add(uri);
-            Image.prefetch(uri).catch(() => {});
-        });
+    const prefetchTargets = useMemo(
+        () => [getUri(currentIndex + 1), getUri(currentIndex + 2)].filter(Boolean),
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [currentIndex, images.length]);
+        [currentIndex, images]
+    );
+    useEffect(() => {
+        prefetchTargets
+            .filter(uri => !prefetchedUris.current.has(uri))
+            .forEach(uri => {
+                Image.prefetch(uri)
+                    .then(() => prefetchedUris.current.add(uri))
+                    .catch(() => {});
+            });
+    }, [prefetchTargets]);
 
     // Stable JS-thread callback for runOnJS — uses ref to avoid stale closure
     const commitIndexChange = useCallback(
@@ -342,7 +357,7 @@ const ImageViewer = ({
         ]
     }));
 
-    // Reset on index change — runs after React re-renders with new visibleImages
+    // Reset on index or center image change — handles both swipe and in-place replacement
     useEffect(() => {
         cancelAnimation(stripOffset);
         cancelAnimation(zoomX);
@@ -357,7 +372,7 @@ const ImageViewer = ({
         stripOffset.value = 0;
         isSwipeProcessing.value = false;
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [currentIndex]);
+    }, [currentIndex, slotUris[1]]);
 
     // Cancel animations on unmount
     useEffect(() => {
@@ -370,7 +385,7 @@ const ImageViewer = ({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    if (!images || !images[currentIndex]) return null;
+    if (!images || images.length === 0 || !images[currentIndex]) return null;
 
     return (
         <View style={styles.container}>
