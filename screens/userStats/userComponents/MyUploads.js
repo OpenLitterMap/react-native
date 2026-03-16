@@ -2,13 +2,13 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
     ActivityIndicator,
     Alert,
+    FlatList,
     Linking,
     Pressable,
     RefreshControl,
     StyleSheet,
     View
 } from 'react-native';
-import { FlashList } from '@shopify/flash-list';
 import { Body, Colors, Header } from '../../components';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useDispatch, useSelector } from 'react-redux';
@@ -267,17 +267,19 @@ const MyUploads = ({ navigation }) => {
                     />
                 ) : (
                     <>
-                        <FlashList
+                        <FlatList
                             data={uploads?.data}
                             keyExtractor={item => item.id.toString()}
                             renderItem={renderItem}
-                            estimatedItemSize={100}
                             ListHeaderComponent={listHeader}
                             ListEmptyComponent={listEmpty}
                             ListFooterComponent={listFooter}
                             onEndReached={onEndReached}
                             onEndReachedThreshold={0.5}
                             showsVerticalScrollIndicator={false}
+                            maxToRenderPerBatch={10}
+                            windowSize={5}
+                            removeClippedSubviews={false}
                             refreshControl={
                                 <RefreshControl
                                     refreshing={refreshing}
