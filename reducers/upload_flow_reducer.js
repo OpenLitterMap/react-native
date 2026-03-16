@@ -176,23 +176,23 @@ const uploadFlowSlice = createSlice({
                 state.uploadFailed += 1;
 
                 switch (errorType) {
-                    case 'photo-already-uploaded':
-                        state.failedCounts.alreadyUploaded += 1;
-                        break;
-                    case 'invalid-coordinates':
-                        state.failedCounts.invalidCoordinates += 1;
-                        break;
-                    case 'timeout':
-                        state.failedCounts.timeout += 1;
-                        break;
-                    case 'network':
-                        state.failedCounts.network += 1;
-                        break;
-                    case 'server':
-                        state.failedCounts.server += 1;
-                        break;
-                    default:
-                        state.failedCounts.unknown += 1;
+                case 'photo-already-uploaded':
+                    state.failedCounts.alreadyUploaded += 1;
+                    break;
+                case 'invalid-coordinates':
+                    state.failedCounts.invalidCoordinates += 1;
+                    break;
+                case 'timeout':
+                    state.failedCounts.timeout += 1;
+                    break;
+                case 'network':
+                    state.failedCounts.network += 1;
+                    break;
+                case 'server':
+                    state.failedCounts.server += 1;
+                    break;
+                default:
+                    state.failedCounts.unknown += 1;
                 }
             })
 
@@ -208,17 +208,17 @@ const uploadFlowSlice = createSlice({
                 state.taggedFailed++;
 
                 switch (errorType) {
-                    case 'timeout':
-                        state.failedCounts.timeout += 1;
-                        break;
-                    case 'network':
-                        state.failedCounts.network += 1;
-                        break;
-                    case 'server':
-                        state.failedCounts.server += 1;
-                        break;
-                    default:
-                        state.failedCounts.unknown += 1;
+                case 'timeout':
+                    state.failedCounts.timeout += 1;
+                    break;
+                case 'network':
+                    state.failedCounts.network += 1;
+                    break;
+                case 'server':
+                    state.failedCounts.server += 1;
+                    break;
+                default:
+                    state.failedCounts.unknown += 1;
                 }
             })
 

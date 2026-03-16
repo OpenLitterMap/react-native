@@ -287,14 +287,14 @@ const SettingsComponent = () => {
         };
 
         switch (key) {
-            case 'name':
-                return NameSchema;
-            case 'username':
-                return UsernameSchema;
-            case 'email':
-                return EmailSchema;
-            case 'social':
-                return SocialSchema;
+        case 'name':
+            return NameSchema;
+        case 'username':
+            return UsernameSchema;
+        case 'email':
+            return EmailSchema;
+        case 'social':
+            return SocialSchema;
         }
     };
 
@@ -377,14 +377,14 @@ const SettingsComponent = () => {
         }
 
         switch (key) {
-            case 'name':
-                return dispatch(setEditValue(user.name));
-            case 'username':
-                return dispatch(setEditValue(user.username));
-            case 'email':
-                return dispatch(setEditValue(user.email));
-            case 'social':
-                return dispatch(setEditValue(user.settings));
+        case 'name':
+            return dispatch(setEditValue(user.name));
+        case 'username':
+            return dispatch(setEditValue(user.username));
+        case 'email':
+            return dispatch(setEditValue(user.email));
+        case 'social':
+            return dispatch(setEditValue(user.settings));
         }
     };
 

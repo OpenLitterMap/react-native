@@ -91,28 +91,28 @@ const SettingsScreen = ({navigation}) => {
      */
     const getRowData = (id, key) => {
         switch (key) {
-            case 'name':
-                return user?.name;
-            case 'username':
-                return user?.username;
-            case 'email':
-                return user?.email;
-            case 'delete-account':
-                return (
-                    <Icon
-                        name="chevron-forward-outline"
-                        color={Colors.muted}
-                        size={24}
-                    />
-                );
-            default:
-                return (
-                    <Switch
-                        onValueChange={() => toggleSwitch(id, key)}
-                        value={getSwitchValue(key) !== 0}
-                        disabled={savingToggle}
-                    />
-                );
+        case 'name':
+            return user?.name;
+        case 'username':
+            return user?.username;
+        case 'email':
+            return user?.email;
+        case 'delete-account':
+            return (
+                <Icon
+                    name="chevron-forward-outline"
+                    color={Colors.muted}
+                    size={24}
+                />
+            );
+        default:
+            return (
+                <Switch
+                    onValueChange={() => toggleSwitch(id, key)}
+                    value={getSwitchValue(key) !== 0}
+                    disabled={savingToggle}
+                />
+            );
         }
     };
 
@@ -205,24 +205,24 @@ const SettingsScreen = ({navigation}) => {
      */
     const getSwitchValue = key => {
         switch (key) {
-            case 'name-maps':
-                return user?.show_name_maps;
-            case 'username-maps':
-                return user?.show_username_maps;
-            case 'name-leaderboard':
-                return user?.show_name === false ? 0 : 1;
-            case 'username-leaderboard':
-                return user?.show_username === false ? 0 : 1;
-            case 'name-createdby':
-                return user?.show_name_createdby;
-            case 'username-createdby':
-                return user?.show_username_createdby;
-            case 'picked-up':
-                return user?.picked_up === false ? 0 : 1;
-            case 'enable_admin_tagging':
-                return Number(user?.enable_admin_tagging);
-            default:
-                break;
+        case 'name-maps':
+            return user?.show_name_maps;
+        case 'username-maps':
+            return user?.show_username_maps;
+        case 'name-leaderboard':
+            return user?.show_name === false ? 0 : 1;
+        case 'username-leaderboard':
+            return user?.show_username === false ? 0 : 1;
+        case 'name-createdby':
+            return user?.show_name_createdby;
+        case 'username-createdby':
+            return user?.show_username_createdby;
+        case 'picked-up':
+            return user?.picked_up === false ? 0 : 1;
+        case 'enable_admin_tagging':
+            return Number(user?.enable_admin_tagging);
+        default:
+            break;
         }
     };
 
@@ -318,7 +318,7 @@ const SettingsScreen = ({navigation}) => {
                                         id: 12,
                                         key: 'enable_admin_tagging',
                                         title: 'Enable crowdsourced tagging'
-                                    },
+                                    }
                                 ]
                             },
                             {

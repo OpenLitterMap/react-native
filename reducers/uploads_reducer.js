@@ -14,9 +14,9 @@ const initialState = {
 export const fetchUploads = createAsyncThunk(
     'uploads/fetchUploads',
     async ({
-       page = 1,
-       filters = {},
-       append = false
+        page = 1,
+        filters = {},
+        append = false
     }, { getState, rejectWithValue }
     ) => {
         try {
