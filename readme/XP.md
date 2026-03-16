@@ -186,6 +186,6 @@ Note: This uses a flat 1 XP per object regardless of key. The special overrides 
 | `screens/addTag/AddTagScreen.js` | XP badge display + pulse animation |
 | `screens/addTag/components/TagDetailSheet.js` | XP hints per section (+2, +3, +1) |
 | `reducers/tags_reducer.js` | `entriesByCloId` lookup, `materialsById`, `brandsById` |
-| `reducers/images_reducer.js` | `tags` with `{ cloId, quantity, materials, brands, customTags }` |
+| `reducers/photos_reducer.js` | `tags` with `{ cloId, quantity, materials, brands, customTags }` |
 | `screens/profile/components/LevelHero.js` | Level progress bar on Profile screen |
 | `screens/profile/helpers/xpLevels.js` | Fetches + caches level thresholds from API |

@@ -33,25 +33,27 @@
 ### Store
 | File | Purpose |
 |------|---------|
-| `store/index.js` | configureStore with redux-persist (whitelist: auth, images), AsyncStorage, redux-immutable-state-invariant (dev) |
+| `store/index.js` | configureStore with redux-persist (whitelist: auth, photos), AsyncStorage, redux-immutable-state-invariant (dev) |
 
-### Reducers (11 slices)
+### Reducers (14 slices)
 | File | Slice Key | API Calls | Status |
 |------|-----------|-----------|--------|
 | `reducers/index.js` | Root combiner | 0 | OK |
 | `reducers/auth_reducer.js` | `auth` | 5 | Active — Sanctum auth |
 | `reducers/gallery_reducer.js` | `gallery` | 1 | CameraRoll fetch, EXIF GPS fallback, derived selectors |
-| `reducers/images_reducer.js` | `images` | 4 | Active, core — CLO tagging |
+| `reducers/photos_reducer.js` | `photos` | 0 | Active — local images, tagging, swiperIndex (persisted) |
+| `reducers/server_photos_reducer.js` | `serverPhotos` | 2 | Active — untagged count, preview, editTagsOnPhoto |
+| `reducers/upload_flow_reducer.js` | `uploadFlow` | 2 | Active — upload phase, counters, modal, uploadImage/postTagsToPhoto |
 | `reducers/leaderboards_reducer.js` | `leaderboard` | 1 | Active |
 | `reducers/locations_reducer.js` | `locations` | 2 | Active |
 | `reducers/uploads_reducer.js` | `uploads` | 3 | Active |
 | `reducers/settings_reducer.js` | `settings` | 4 | Active |
-| `reducers/shared_reducer.js` | `shared` | 1 | Active |
+| `reducers/shared_reducer.js` | `shared` | 1 | Active — appVersion only |
 | `reducers/stats_reducer.js` | `stats` | 1 | Active |
 | `reducers/tags_reducer.js` | `tags` | 1 | Active, cached 7 days |
 | `reducers/team_reducer.js` | `teams` | 8 | Active |
 
-**Removed:** `camera_reducer.js` (unused), `web_reducer.js` (dead code), `litter_reducer.js` (superseded by v5 tagging in images_reducer)
+**Removed:** `camera_reducer.js` (unused), `web_reducer.js` (dead code), `litter_reducer.js` (superseded by v5 tagging), `images_reducer.js` (split into photos, serverPhotos, uploadFlow)
 
 ### Routes
 | File | Purpose |
@@ -162,14 +164,14 @@
 | 4 | `sendResetPasswordRequest` | POST | `/api/password/email` | `{email}` | `response.data` | None | OK |
 | 5 | `userLogin` | POST | `/api/auth/token` | `{identifier, password}` | `token`, `user` | None | OK |
 
-### Images (images_reducer.js) — 4 endpoints
+### Photos / Server Photos / Upload Flow — 4 endpoints
 
-| # | Thunk | Method | URL | Payload | Response Fields Read | Auth | Status |
-|---|-------|--------|-----|---------|---------------------|------|--------|
-| 6 | `getUntaggedImages` | GET | `/api/v3/user/photos` | params: `{tagged: false, per_page: 100}` | `photos[].{id,datetime,lat,lon,filename,picked_up,platform}` | Bearer | OK |
-| 7 | `uploadImage` | POST | `/api/v3/upload` | FormData: `photo, lat, lon, date, picked_up, model` | `success`, `photo_id` | Bearer | OK — backend also returns `xp_awarded`, `user_xp_total`, `city`, `state`, `country` |
-| 8 | `postTagsToPhoto` | POST | `/api/v3/tags` | `{photo_id, tags[{category_litter_object_id, litter_object_type_id, quantity, picked_up, materials, brands, custom_tags}]}` | `response.status` | Bearer | OK |
-| 9 | `editTagsOnPhoto` | PUT | `/api/v3/tags` | Same as #8 | `photoTags` | Bearer | OK — PUT atomically replaces all tags |
+| # | Thunk | Reducer | Method | URL | Payload | Response Fields Read | Auth | Status |
+|---|-------|---------|--------|-----|---------|---------------------|------|--------|
+| 6 | `fetchUntaggedCount` / `fetchNextUntaggedPhoto` | `server_photos_reducer.js` | GET | `/api/v3/user/photos` | params: `{tagged: false, ...}` | `photos[].{id,datetime,lat,lon,filename,picked_up,platform}`, `pagination.total` | Bearer | OK |
+| 7 | `uploadImage` | `upload_flow_reducer.js` | POST | `/api/v3/upload` | FormData: `photo, lat, lon, date, picked_up, model` | `success`, `photo_id` | Bearer | OK — backend also returns `xp_awarded`, `user_xp_total`, `city`, `state`, `country` |
+| 8 | `postTagsToPhoto` | `upload_flow_reducer.js` | POST | `/api/v3/tags` | `{photo_id, tags[{category_litter_object_id, litter_object_type_id, quantity, picked_up, materials, brands, custom_tags}]}` | `response.status` | Bearer | OK |
+| 9 | `editTagsOnPhoto` | `server_photos_reducer.js` | PUT | `/api/v3/tags` | Same as #8 | `photoTags` | Bearer | OK — PUT atomically replaces all tags |
 
 ### My Uploads (uploads_reducer.js) — 3 endpoints
 
@@ -324,14 +326,23 @@ store
 │   └── error: string | null
 │   (Derived selector: selectNonGeotaggedCount)
 │
-├── images (persisted — imagesArray only via transform)
+├── photos (persisted — imagesArray only via transform)
 │   ├── imagesArray: array (core image collection with tags, customTags per image)
-│   ├── swiperIndex: number
+│   └── swiperIndex: number
+│
+├── serverPhotos
+│   ├── untaggedCount: number
+│   ├── editingPhoto: object | null
+│   └── preview: object | null
+│
+├── uploadFlow
 │   ├── totalToUpload / uploaded / uploadFailed / tagged / taggedFailed: numbers
 │   ├── uploadPhase: 'idle' | 'uploading' | 'tagging'
 │   ├── currentUploadIndex: number
 │   ├── uploadAbortReason: null | 'token-expired' | 'cancelled'
-│   └── failedCounts: { alreadyUploaded, invalidCoordinates, timeout, network, server, unknown }
+│   ├── failedCounts: { alreadyUploaded, invalidCoordinates, timeout, network, server, unknown }
+│   ├── showUploadModal: boolean
+│   └── showThankYouMessages: boolean
 │
 ├── uploads
 │   ├── uploads: { data[], total, current_page, next_page_url, ... }
@@ -343,10 +354,7 @@ store
 │   └── paginated: { users: array }
 │
 ├── shared
-│   ├── appVersion: object | null
-│   ├── isUploading: boolean
-│   ├── showUploadModal: boolean
-│   └── showThankYouMessages: boolean
+│   └── appVersion: object | null
 │
 ├── settings
 │   ├── deviceModel: string

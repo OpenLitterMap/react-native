@@ -38,7 +38,7 @@ Traces the complete path from photo selection to upload FormData.
       └─ User selects geotagged photos only
       └─ dispatch(addImages({ images: selectedImages, picked_up }))
 
-  [5] images_reducer.js — addImages reducer
+  [5] photos_reducer.js — addImages reducer
       └─ lat: image.lat ?? null    ✅ FIXED (was ?? 0)
       └─ lon: image.lon ?? null    ✅ FIXED (was ?? 0)
 
@@ -51,7 +51,7 @@ Traces the complete path from photo selection to upload FormData.
       └─ Rejects null, undefined, AND 0,0 coordinates
       └─ Uploaded images always pass
 
-  [8] images_reducer.js — uploadImage thunk
+  [8] upload_flow_reducer.js — uploadImage thunk
       └─ POST /api/v3/upload
       └─ Only valid coordinates reach backend
 ```
@@ -66,11 +66,11 @@ Traces the complete path from photo selection to upload FormData.
 | GPS detection | `gallery_reducer.js` | Each photo gets `hasGps` boolean, counts tracked |
 | Gallery display | `GalleryScreen.js` | All photos shown, non-GPS dimmed and non-selectable |
 | Gallery → images | `GalleryScreen.js` | `dispatch(addImages({ images: sortedArray }))` — only selected (geotagged) images |
-| Null-safe storage | `images_reducer.js` | `lat: image.lat ?? null, lon: image.lon ?? null` — missing GPS stays null |
+| Null-safe storage | `photos_reducer.js` | `lat: image.lat ?? null, lon: image.lon ?? null` — missing GPS stays null |
 | Pre-upload filter | `HomeScreen.js` | `isGeotagged()` filters before upload, Alert shows skip count |
 | isGeotagged check | `utils/isGeotagged.js` | Rejects null, undefined, AND 0,0 — returns false for invalid GPS |
 | FormData build | `HomeScreen.js` | Only geotagged images reach FormData |
-| Upload | `images_reducer.js` | POST with FormData to backend |
+| Upload | `upload_flow_reducer.js` | POST with FormData to backend |
 
 ---
 
@@ -97,7 +97,7 @@ On Android 13+, `READ_MEDIA_IMAGES` grants photo access but NOT location metadat
 
 `images_reducer.js` used `lat: image.lat ?? 0` which silently converted missing GPS to 0,0.
 
-**Fix**: Changed to `lat: image.lat ?? null` in both `addImages` reducer and `getUntaggedImages.fulfilled` handler.
+**Fix**: Changed to `lat: image.lat ?? null` in both `addImages` reducer and `fetchNextUntaggedPhoto.fulfilled` handler.
 
 ### Problem 3: `isGeotagged(0,0)` returning true (FIXED)
 
@@ -145,7 +145,7 @@ This recovers GPS for ~85% → ~95% of photos on Android. The remaining ~5% are 
 
 | Priority | Fix | Status |
 |----------|-----|--------|
-| P0 | Change `?? 0` to `?? null` in images_reducer.js | **DONE** |
+| P0 | Change `?? 0` to `?? null` in photos_reducer.js | **DONE** |
 | P0 | Add 0,0 check to `isGeotagged()` | **DONE** |
 | P1 | Fix `checkCameraRollPermission()` to verify ACCESS_MEDIA_LOCATION on Android 13+ | **DONE** |
 | P1 | Show all photos in gallery with GPS visual indicators | **DONE** |

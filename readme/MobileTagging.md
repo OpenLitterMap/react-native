@@ -15,7 +15,7 @@ The v5 tagging system uses a full-screen image viewer with overlay controls. Tag
 - `screens/addTag/components/ImageProgressDots.js` — Visual tagged/untagged progress indicator for multi-image batches
 - `screens/addTag/components/categoryColors.js` — Category-to-color mapping constant (`CATEGORY_COLORS`, `getCategoryColor`)
 - `reducers/tags_reducer.js` — Tag data fetch, search index (objects + types), materials/brands lookups, AsyncStorage cache (7-day TTL)
-- `reducers/images_reducer.js` — Per-image tag storage (`tags`), `swiperIndex`, upload thunks, `findTag`/`filterOutTag` helpers
+- `reducers/photos_reducer.js` — Per-image tag storage (`tags`), `swiperIndex`, `findTag`/`filterOutTag` helpers
 - `utils/formatKey.js` — Converts snake_case API keys to Title Case for display
 
 ## Tag Data Source
@@ -178,7 +178,7 @@ When tagging multiple images, `TagSuggestions` scans all other images in the ses
 
 ## Per-Image Tag Storage
 
-Tags on each image in `state.images.imagesArray`:
+Tags on each image in `state.photos.imagesArray`:
 
 ```js
 image.tags = [
@@ -191,7 +191,7 @@ image.picked_up = true
 
 Display names are resolved at render time from `state.tags.entriesByCloId[cloId]`.
 
-## Key Actions (images_reducer)
+## Key Actions (photos_reducer)
 
 ### Tag helpers (module-level)
 - `findTag(tags, cloId, typeId)` — Find a tag by (cloId, typeId) match

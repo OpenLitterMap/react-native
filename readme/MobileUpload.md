@@ -9,9 +9,9 @@ The upload flow lets users select photos from their gallery, tag them with the v
 - `screens/home/homeComponents/UploadButton.js` — Upload trigger button
 - `screens/home/homeComponents/UploadImagesGrid.js` — 3-column image grid display
 - `screens/home/homeComponents/ActionButton.js` — FAB for gallery/delete actions
-- `reducers/images_reducer.js` — Image state management, v5 tag actions, and upload thunks
+- `reducers/photos_reducer.js` — Local image state (imagesArray, tagging, swiperIndex)
+- `reducers/upload_flow_reducer.js` — Upload phase, counters, modal state, `uploadImage`/`postTagsToPhoto` thunks
 - `reducers/uploads_reducer.js` — Photo deletion thunk (`deleteUploadPhoto`)
-- `reducers/shared_reducer.js` — Upload modal and "thank you" message state
 - `utils/isGeotagged.js` — GPS validation (rejects null, undefined, and 0,0 coordinates)
 - `utils/isTagged.js` — Checks for tags or custom tags
 
@@ -74,11 +74,19 @@ Before upload, `uploadPhotos()` filters images:
 
 After a gallery image is uploaded, `type` stays `'gallery'` but `uploaded` becomes `true`. All server-state routing (skip binary upload, tag-only path, server deletion, GPS bypass) uses the `uploaded` boolean, not `type`.
 
-## Redux State (`state.images`)
+## Redux State
+
+### `state.photos` (persisted — imagesArray only)
 ```
 {
     imagesArray: array,       // All images (each has tags, customTags, picked_up, etc.)
     swiperIndex: number,      // Currently selected image index in AddTagScreen
+}
+```
+
+### `state.uploadFlow` (not persisted)
+```
+{
     totalToUpload: number,
     uploaded: number,
     uploadFailed: number,
@@ -87,7 +95,9 @@ After a gallery image is uploaded, `type` stays `'gallery'` but `uploaded` becom
     uploadPhase: 'idle' | 'uploading' | 'tagging',
     currentUploadIndex: number,
     uploadAbortReason: null | 'token-expired' | 'cancelled',
-    failedCounts: { alreadyUploaded, invalidCoordinates, timeout, network, server, unknown }
+    failedCounts: { alreadyUploaded, invalidCoordinates, timeout, network, server, unknown },
+    showUploadModal: boolean,
+    showThankYouMessages: boolean,
 }
 ```
 

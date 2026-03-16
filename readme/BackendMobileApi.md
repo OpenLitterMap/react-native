@@ -167,7 +167,7 @@ Auth required. Returns GeoJSON for the authenticated user's photos.
 
 | Method | Route | Mobile File | Status |
 |--------|-------|-------------|--------|
-| POST | `/api/v3/upload` | `images_reducer.js` → `uploadImage` | **Active** |
+| POST | `/api/v3/upload` | `upload_flow_reducer.js` → `uploadImage` | **Active** |
 | POST | `/api/photos/upload/with-or-without-tags` | — | **Removed** |
 
 ### Upload — `POST /api/v3/upload`
@@ -197,8 +197,8 @@ Errors: `"photo-already-uploaded"`, `"invalid-coordinates"` (rejects 0,0)
 
 | Method | Route | Mobile File | Status |
 |--------|-------|-------------|--------|
-| POST | `/api/v3/tags` | `images_reducer.js` → `postTagsToPhoto` | Active |
-| PUT | `/api/v3/tags` | `images_reducer.js` → `editTagsOnPhoto` | Active — **full replace** (not merge) |
+| POST | `/api/v3/tags` | `upload_flow_reducer.js` → `postTagsToPhoto` | Active |
+| PUT | `/api/v3/tags` | `server_photos_reducer.js` → `editTagsOnPhoto` | Active — **full replace** (not merge) |
 
 ### Post Tags — `POST /api/v3/tags`
 
@@ -322,7 +322,7 @@ After tagging, `photo.xp` is auto-calculated:
 
 | Method | Route | Mobile File | Status |
 |--------|-------|-------------|--------|
-| GET | `/api/v3/user/photos?tagged=false` | `images_reducer.js` → `getUntaggedImages` | **Active** |
+| GET | `/api/v3/user/photos?tagged=false` | `server_photos_reducer.js` → `fetchUntaggedCount` / `fetchNextUntaggedPhoto` | **Active** |
 | GET | `/api/v2/photos/get-untagged-uploads` | — | **Removed** |
 
 ### Untagged Photos — `GET /api/v3/user/photos?tagged=false&per_page=100`
