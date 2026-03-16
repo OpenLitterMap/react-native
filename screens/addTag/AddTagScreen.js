@@ -93,6 +93,13 @@ const AddTagScreen = ({navigation}) => {
     const [showBrowser, setShowBrowser] = useState(false);
     const [detailTag, setDetailTag] = useState(null);
 
+    // Clamp swiperIndex to valid range to prevent out-of-bounds access
+    // Must be declared before any hook that references it
+    const safeIndex = images.length > 0
+        ? Math.max(0, Math.min(swiperIndex, images.length - 1))
+        : 0;
+    const currentImage = images[safeIndex];
+
     // Close overlays and clear pending state when navigating to a different image
     useEffect(() => {
         setDetailTag(null);
@@ -132,12 +139,6 @@ const AddTagScreen = ({navigation}) => {
             StatusBar.setBarStyle('light-content');
         }, [])
     );
-
-    // Clamp swiperIndex to valid range to prevent out-of-bounds access
-    const safeIndex = images.length > 0
-        ? Math.max(0, Math.min(swiperIndex, images.length - 1))
-        : 0;
-    const currentImage = images[safeIndex];
 
     const currentTags = currentImage?.tags || [];
     const currentCustomTags = currentImage?.customTags || [];
@@ -284,8 +285,9 @@ const AddTagScreen = ({navigation}) => {
     );
 
     const handleCreatePendingCustomTag = useCallback(() => {
-        if (pendingCustomTag) {
-            dispatch(addImageCustomTag({imageIndex: safeIndex, text: pendingCustomTag}));
+        const text = pendingCustomTag?.trim();
+        if (text) {
+            dispatch(addImageCustomTag({imageIndex: safeIndex, text}));
             setPendingCustomTag(null);
             if (searchBarRef.current) {
                 searchBarRef.current.clearQuery();
@@ -440,7 +442,7 @@ const AddTagScreen = ({navigation}) => {
         if (!currentImage?.photoId) return;
 
         const payload = buildTagsPayload(currentImage);
-        if (!payload) {
+        if (!payload || payload.length === 0) {
             Alert.alert(t('Error!'), t('Please add at least one tag before saving.'));
             return;
         }
@@ -505,7 +507,7 @@ const AddTagScreen = ({navigation}) => {
                 handleIndexChange(firstUntagged);
             }
         }
-    }, [isEditMode, handleUpdateTags, allTagged, navigation, dispatch, safeIndex, images]);
+    }, [isEditMode, handleUpdateTags, handleIndexChange, allTagged, navigation, safeIndex, images]);
 
     const handleBrowsePress = useCallback(() => {
         setShowBrowser(prev => !prev);
@@ -595,7 +597,8 @@ const AddTagScreen = ({navigation}) => {
                             {isEditMode && (
                                 <RNPressable
                                     onPress={handleDeletePhoto}
-                                    style={styles.deletePhotoButton}
+                                    disabled={isSaving}
+                                    style={[styles.deletePhotoButton, isSaving && {opacity: 0.3}]}
                                     hitSlop={12}>
                                     <Icon
                                         name="trash-outline"
