@@ -54,18 +54,20 @@ MainRoutes (Stack)
 ```
 
 
-### State Management — Redux Toolkit (11 slices)
+### State Management — Redux Toolkit (14 slices)
 
 | Slice | File | Key Data | Persisted |
 |-------|------|----------|-----------|
 | `auth` | `auth_reducer.js` | token, user profile | Yes |
-| `images` | `images_reducer.js` | imagesArray (photos + tags), upload state | imagesArray only |
+| `photos` | `photos_reducer.js` | imagesArray (local gallery photos + tags), editingPhoto, swiperIndex | Yes (imagesArray only) |
+| `serverPhotos` | `server_photos_reducer.js` | untaggedCount, untaggedPreview, editTagsOnPhoto thunk | No |
+| `uploadFlow` | `upload_flow_reducer.js` | uploadPhase, counters, modal state, uploadImage/postTagsToPhoto thunks | No |
 | `gallery` | `gallery_reducer.js` | CameraRoll photos, GPS metadata | No |
 | `tags` | `tags_reducer.js` | Search index, materials, brands (cached 7-day TTL) | AsyncStorage cache |
 | `teams` | `team_reducer.js` | User teams, team members, top teams | No |
-| `uploads` | `uploads_reducer.js` | Upload history, stats | No |
+| `uploads` | `uploads_reducer.js` | Upload history (My Uploads), stats | No |
 | `settings` | `settings_reducer.js` | User preferences, privacy toggles | No |
-| `shared` | `shared_reducer.js` | Upload modal state, app version | No |
+| `shared` | `shared_reducer.js` | App version | No |
 | `stats` | `stats_reducer.js` | Global statistics | No |
 | `leaderboard` | `leaderboards_reducer.js` | Leaderboard data | No |
 | `locations` | `locations_reducer.js` | Location hierarchy | No |
@@ -128,7 +130,7 @@ All endpoints verified against Laravel backend. See `readme/AUDIT.md` §2 for co
 ```
 ├── actions/types.js          # Environment config, API URL selection
 ├── store/index.js            # Redux store + persist config
-├── reducers/                 # 11 Redux slices (all use createSlice + createAsyncThunk)
+├── reducers/                 # 14 Redux slices (all use createSlice + createAsyncThunk)
 ├── routes/                   # React Navigation v6 navigators
 ├── screens/
 │   ├── home/                 # HomeScreen (upload orchestration) + homeComponents/
@@ -206,7 +208,7 @@ i18next with `react-i18next`. Translation keys are **full British English string
 
 - **BUG-11**: `TopTeamsScreen` uses fake 3s loading instead of actual API loading state
 - **No test coverage**: Jest configured but no test files exist
-- **Upload state split**: `shared.showUploadModal`/`showThankYouMessages` + `images.uploadPhase` track overlapping state across two reducers. Needs consolidation to a single enum (deferred — requires spec)
+- **Upload state consolidated**: Upload modal + phase now in single `uploadFlow` slice (formerly split across `shared` and `images`)
 
 ## Build Notes
 
