@@ -63,7 +63,7 @@ const AddTagScreen = ({navigation}) => {
 
     // Redux state — use editingPhotos queue if available, otherwise imagesArray
     const defaultPickedUp = useSelector(state => state.auth.user?.picked_up ?? null);
-    const editingPhotos = useSelector(state => state.photos.editingPhotos);
+    const editingPhotos = useSelector(state => state.photos.editingPhotos) || [];
     const galleryImages = useSelector(state => state.photos.imagesArray);
     const rawSwiperIndex = useSelector(state => state.photos.swiperIndex);
     const isEditMode = editingPhotos.length > 0;
@@ -514,16 +514,15 @@ const AddTagScreen = ({navigation}) => {
         transform: [{scale: xpScale.value}]
     }));
 
+    // If no images available, redirect back to HomeScreen immediately
+    useEffect(() => {
+        if (!currentImage && images.length === 0) {
+            navigation.goBack();
+        }
+    }, [currentImage, images.length, navigation]);
+
     if (!currentImage) {
-        return (
-            <SafeAreaView style={styles.emptyContainer} edges={['top', 'left', 'right']}>
-                <Icon name="images-outline" size={48} color={Colors.muted} />
-                <Body color="muted" style={styles.emptyText} dictionary="No images selected" />
-                <Pressable onPress={handleDone} style={styles.emptyButton}>
-                    <Body color="accent" dictionary="Go Back" />
-                </Pressable>
-            </SafeAreaView>
-        );
+        return null;
     }
 
     return (
