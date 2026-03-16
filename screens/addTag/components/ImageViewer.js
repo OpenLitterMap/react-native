@@ -100,21 +100,30 @@ const ImageViewer = ({
         };
     };
 
+    // Resolve URI for a given index — null if out of bounds.
+    const resolveImageUri = useCallback((idx) => {
+        if (idx < 0 || idx >= images.length) return null;
+        const img = images[idx];
+        if (!img) return null;
+        return resolveUri(img.uri || img.filename);
+    }, [images]);
+
     // Resolve URIs for [prev, current, next] — null if out of bounds.
     // Always returns 3 entries so the JSX renders 3 stable slots (no mount/unmount).
-    const slotUris = useMemo(() => {
-        const resolve = idx => {
-            if (idx < 0 || idx >= images.length) return null;
-            const img = images[idx];
-            if (!img) return null;
-            return resolveUri(img.uri || img.filename);
-        };
-        return [
-            resolve(currentIndex - 1),
-            resolve(currentIndex),
-            resolve(currentIndex + 1)
-        ];
-    }, [currentIndex, images]);
+    const slotUris = useMemo(() => [
+        resolveImageUri(currentIndex - 1),
+        resolveImageUri(currentIndex),
+        resolveImageUri(currentIndex + 1)
+    ], [currentIndex, resolveImageUri]);
+
+    // Prefetch next 2 images for smooth swiping
+    useEffect(() => {
+        const uris = [
+            resolveImageUri(currentIndex + 1),
+            resolveImageUri(currentIndex + 2)
+        ].filter(Boolean);
+        uris.forEach(uri => Image.prefetch(uri).catch(() => {}));
+    }, [currentIndex, resolveImageUri]);
 
     // Stable JS-thread callback for runOnJS — uses ref to avoid stale closure
     const commitIndexChange = useCallback(

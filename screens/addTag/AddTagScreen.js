@@ -189,10 +189,10 @@ const AddTagScreen = ({navigation}) => {
             const clamped = Math.max(0, Math.min(newIndex, images.length - 1));
             dispatch(changeSwiperIndex(clamped));
 
-            // Prefetch when within 1 photo of the end of the queue
-            if (isEditMode && clamped >= editingPhotos.length - 2 && !prefetchingRef.current) {
+            // Prefetch when within 3 photos of the end of the queue
+            if (isEditMode && clamped >= editingPhotos.length - 3 && !prefetchingRef.current) {
                 prefetchingRef.current = true;
-                dispatch(fetchNextUntaggedPhoto({perPage: 3})).then(result => {
+                dispatch(fetchNextUntaggedPhoto({perPage: 5})).then(result => {
                     prefetchingRef.current = false;
                     if (result.meta?.requestStatus === 'fulfilled') {
                         dispatch(loadPhotoForEditing({photos: result.payload}));

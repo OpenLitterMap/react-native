@@ -15,6 +15,8 @@ import {useDispatch, useSelector} from 'react-redux';
 import {setDeviceModel} from '../../reducers/settings_reducer';
 import {checkAppVersion} from '../../reducers/shared_reducer';
 import {
+    changeSwiperIndex,
+    clearEditingPhoto,
     deleteImage,
     deselectAllImages,
     loadPhotoForEditing,
@@ -180,11 +182,13 @@ const HomeScreen = ({navigation}) => {
 
     const handleTagNextUntagged = async () => {
         setFetchingUntagged(true);
-        const result = await dispatch(fetchNextUntaggedPhoto({perPage: 2}));
+        const result = await dispatch(fetchNextUntaggedPhoto({perPage: 5}));
         setFetchingUntagged(false);
 
         if (result.meta?.requestStatus === 'fulfilled' && Array.isArray(result.payload) && result.payload.length > 0) {
+            dispatch(clearEditingPhoto());
             dispatch(loadPhotoForEditing({photos: result.payload}));
+            dispatch(changeSwiperIndex(0));
             navigation.navigate('ADD_TAGS');
         } else {
             const errorMsg = result.payload || 'No untagged photos found';
