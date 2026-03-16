@@ -23,12 +23,37 @@ const imagesTransform = createTransform(
     { whitelist: ['photos'] }
 );
 
+// Migrate persisted state from old 'images' key to 'photos'
+const migrations = {
+    0: (state) => {
+        if (state?.images) {
+            return {
+                ...state,
+                photos: state.images,
+                images: undefined
+            };
+        }
+        return state;
+    }
+};
+
 // Configuration for Redux Persist
 const persistConfig = {
     key: 'root',
+    version: 0,
     storage: AsyncStorage,
     whitelist: ['auth', 'photos'],
-    transforms: [imagesTransform]
+    transforms: [imagesTransform],
+    migrate: (state, currentVersion) => {
+        if (!state) return Promise.resolve(state);
+        let migrated = state;
+        for (let v = (state._persist?.version ?? -1) + 1; v <= currentVersion; v++) {
+            if (migrations[v]) {
+                migrated = migrations[v](migrated);
+            }
+        }
+        return Promise.resolve(migrated);
+    }
 };
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
