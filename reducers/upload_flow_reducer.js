@@ -169,6 +169,10 @@ const uploadFlowSlice = createSlice({
             })
             .addCase(uploadImage.rejected, (state, action) => {
                 const {errorType} = action.payload || {errorType: 'unknown'};
+
+                // Don't count user cancellation as a failure
+                if (errorType === 'cancelled') return;
+
                 state.uploadFailed += 1;
 
                 switch (errorType) {
@@ -196,9 +200,13 @@ const uploadFlowSlice = createSlice({
                 state.tagged++;
             })
             .addCase(postTagsToPhoto.rejected, (state, action) => {
+                const errorType = action.payload?.errorType || 'unknown';
+
+                // Don't count user cancellation as a failure
+                if (errorType === 'cancelled') return;
+
                 state.taggedFailed++;
 
-                const errorType = action.payload?.errorType || 'unknown';
                 switch (errorType) {
                     case 'timeout':
                         state.failedCounts.timeout += 1;
