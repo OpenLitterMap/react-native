@@ -166,9 +166,10 @@ export default function useUploadPhotos() {
             );
         }
 
-        dispatch(setUploadPhase('idle'));
         if (!isUploadCancelled.current) {
             dispatch(showThankYouMessagesAfterUpload());
+        } else {
+            dispatch(setUploadPhase('idle'));
         }
     }, [dispatch, images, user?.enable_admin_tagging, deviceModel, getImageDataForUpload, t]);
 

@@ -1,7 +1,7 @@
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {
     ActivityIndicator,
-    Alert,
+    InteractionManager,
     Keyboard,
     KeyboardAvoidingView,
     Platform,
@@ -18,13 +18,13 @@ import Animated, {
     cancelAnimation
 } from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import {Pressable} from 'react-native-gesture-handler';
-import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {shallowEqual, useDispatch, useSelector} from 'react-redux';
 import {useFocusEffect} from '@react-navigation/native';
 import {useTranslation} from 'react-i18next';
 import {Body, Caption, Colors} from '../components';
+
+// Components
 import ImageViewer from './components/ImageViewer';
 import TagPills from './components/TagPills';
 import TagSearchBar from './components/TagSearchBar';
@@ -32,107 +32,54 @@ import TagSuggestions from './components/TagSuggestions';
 import CategoryBrowser from './components/CategoryBrowser';
 import ImageProgressDots from './components/ImageProgressDots';
 import TagDetailSheet from './components/TagDetailSheet';
-import {
-    addBrandToTag,
-    addCustomTagToTag,
-    addImageCustomTag,
-    addTagV5,
-    changeSwiperIndex,
-    removeBrandFromTag,
-    removeCustomTagFromTag,
-    removeImageCustomTag,
-    removeTagV5,
-    setPickedUpOnTag,
-    toggleMaterialOnTag,
-    updateTagQuantityV5,
-    clearEditingPhoto,
-    removeEditingPhoto,
-    trimEditingPhotos
-} from '../../reducers/photos_reducer';
-import {editTagsOnPhoto, fetchAndLoadUntagged} from '../../reducers/server_photos_reducer';
-import {deleteUploadPhoto} from '../../reducers/uploads_reducer';
-import {fetchAllTags} from '../../reducers/tags_reducer';
-import {isTagged} from '../../utils/isTagged';
-import buildTagsPayload from '../../utils/buildTagsPayload';
+
+// Hooks
+import useTaggingQueue from './hooks/useTaggingQueue';
+import useTagDraft from './hooks/useTagDraft';
+
+// Utils
 import {makeTagKey, parseTagKey, resolveTagEntry} from './components/tagUtils';
+import {clearEditingPhoto} from '../../reducers/photos_reducer';
 
 const AddTagScreen = ({navigation}) => {
     const dispatch = useDispatch();
     const {t} = useTranslation();
     const insets = useSafeAreaInsets();
 
-    // Redux state — use editingPhotos queue if available, otherwise imagesArray
-    const defaultPickedUp = useSelector(state => state.auth.user?.picked_up ?? null);
-    const editingPhotos = useSelector(state => state.photos.editingPhotos) || [];
-    const galleryImages = useSelector(state => state.photos.imagesArray);
-    const rawSwiperIndex = useSelector(state => state.photos.swiperIndex);
-    const untaggedCount = useSelector(state => state.serverPhotos.untaggedCount);
-    const isEditMode = editingPhotos.length > 0;
-    const images = useMemo(
-        () => isEditMode ? editingPhotos : galleryImages,
-        [isEditMode, editingPhotos, galleryImages]
-    );
-    const swiperIndex = isEditMode ? Math.min(rawSwiperIndex, Math.max(0, images.length - 1)) : rawSwiperIndex;
+    // --- Layer A: Queue ---
+    const queue = useTaggingQueue(navigation);
+    const {
+        photos, activePhoto, activeIndex, isEditMode, untaggedCount, allTagged,
+        goToIndex, commitDraft, deleteCurrent, handleDone: queueHandleDone
+    } = queue;
 
+    // --- Layer C: Draft ---
+    const defaultPickedUp = useSelector(state => state.auth.user?.picked_up ?? null);
+    const draft = useTagDraft(activePhoto, defaultPickedUp);
+    const {currentTags, currentCustomTags, xpEstimate} = draft;
+
+    // Getter for queue callbacks to read current draft state
+    const draftRef = useRef({currentTags, currentCustomTags});
+    draftRef.current = {currentTags, currentCustomTags};
+    const getDraft = useCallback(() => draftRef.current, []);
+
+    // --- UI state ---
+    const [showBrowser, setShowBrowser] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+
+    // --- Tags catalogue ---
     const {
         objectEntries,
         categoriesById,
         entriesByCloId,
         typeEntriesByKey,
         materialsById,
-        brandsById,
-        fetchStatus: tagsFetchStatus
+        brandsById
     } = useSelector(state => state.tags, shallowEqual);
 
-    const [isSaving, setIsSaving] = useState(false);
     const [pendingCustomTag, setPendingCustomTag] = useState(null);
     const searchBarRef = useRef(null);
-
-    // Focus mode: hides overlays so user can see full image
-    const [focusMode, setFocusMode] = useState(false);
-    const [keyboardVisible, setKeyboardVisible] = useState(false);
-    const [showBrowser, setShowBrowser] = useState(false);
     const [detailTag, setDetailTag] = useState(null);
-
-    // Clamp swiperIndex to valid range to prevent out-of-bounds access
-    // Must be declared before any hook that references it
-    const safeIndex = images.length > 0
-        ? Math.max(0, Math.min(swiperIndex, images.length - 1))
-        : 0;
-    const currentImage = images[safeIndex];
-
-    // Close overlays and clear pending state when navigating to a different image
-    useEffect(() => {
-        setDetailTag(null);
-        setShowBrowser(false);
-        setPendingCustomTag(null);
-    }, [safeIndex]);
-
-    // Track keyboard visibility
-    useEffect(() => {
-        const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
-        const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
-        const showSub = Keyboard.addListener(showEvent, () => setKeyboardVisible(true));
-        const hideSub = Keyboard.addListener(hideEvent, () => setKeyboardVisible(false));
-        return () => {
-            showSub.remove();
-            hideSub.remove();
-        };
-    }, []);
-
-    // Overlay opacity for focus mode transitions
-    const overlayOpacity = useSharedValue(1);
-
-    // XP badge pulse animation
-    const xpScale = useSharedValue(1);
-
-    // Fetch tags on mount if not loaded
-    useEffect(() => {
-        if (objectEntries.length === 0 && tagsFetchStatus !== 'loading') {
-            dispatch(fetchAllTags());
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
 
     // Set status bar style when screen is focused
     useFocusEffect(
@@ -141,196 +88,93 @@ const AddTagScreen = ({navigation}) => {
         }, [])
     );
 
-    const currentTags = currentImage?.tags || [];
-    const currentCustomTags = currentImage?.customTags || [];
-    const bottomInset = keyboardVisible ? 14 : insets.bottom;
+    // Close overlays when navigating to a different image
+    useEffect(() => {
+        setDetailTag(null);
+        setPendingCustomTag(null);
+        setShowBrowser(false);
+    }, [activeIndex]);
 
     const topInsetStyle = useMemo(
         () => ({paddingTop: insets.top, paddingLeft: insets.left, paddingRight: insets.right}),
         [insets.top, insets.left, insets.right]
     );
 
-    // XP estimate: 5 (upload) + sum(quantities) + 5 per picked_up tag
-    // + 2 per material + 3 per brand + 1 per custom tag (per-tag and image-level)
-    const xpEstimate = useMemo(() => {
-        let xp = 5;
-        for (const tag of currentTags) {
-            xp += tag.quantity || 1;
-            if (tag.picked_up === true) xp += 5;
-            xp += (tag.materials?.length || 0) * 2;
-            xp += (tag.brands?.length || 0) * 3;
-            xp += tag.customTags?.length || 0;
-        }
-        xp += currentCustomTags.length;
-        return xp;
-    }, [currentTags, currentCustomTags]);
-
-    // Pulse XP badge when estimate changes
+    // XP badge pulse animation
+    const xpScale = useSharedValue(1);
     const prevXp = useRef(xpEstimate);
     useEffect(() => {
-        if (xpEstimate === prevXp.current) {
-            return;
+        if (xpEstimate !== prevXp.current) {
+            prevXp.current = xpEstimate;
+            xpScale.value = withSequence(
+                withTiming(1.15, {duration: 100}),
+                withTiming(1.0, {duration: 100})
+            );
         }
-
-        xpScale.value = withSequence(
-            withTiming(1.15, {duration: 100}),
-            withTiming(1.0, {duration: 100})
-        );
-        prevXp.current = xpEstimate;
-
-        return () => cancelAnimation(xpScale);
     }, [xpEstimate, xpScale]);
+    const xpAnimatedStyle = useAnimatedStyle(() => ({
+        transform: [{scale: xpScale.value}]
+    }));
 
-    // Track whether a prefetch is already in flight
-    const prefetchingRef = useRef(false);
-
-    // Image navigation — prefetch more when approaching the end of the editing queue
-    const handleIndexChange = useCallback(
-        newIndex => {
-            const clamped = Math.max(0, Math.min(newIndex, images.length - 1));
-            dispatch(changeSwiperIndex(clamped));
-
-            // Trim old photos behind current to prevent unbounded memory growth
-            if (isEditMode && clamped > 5) {
-                dispatch(trimEditingPhotos(clamped));
-            }
-
-            // Prefetch when within 3 photos of the end of the queue
-            if (isEditMode && clamped >= editingPhotos.length - 3 && !prefetchingRef.current) {
-                prefetchingRef.current = true;
-                dispatch(fetchAndLoadUntagged({perPage: 5})).finally(() => {
-                    prefetchingRef.current = false;
-                });
-            }
-        },
-        [dispatch, images.length, isEditMode, editingPhotos.length]
-    );
-
-    // Focus mode toggle from ImageViewer gestures
-    // If keyboard is open, dismiss it instead of entering focus mode
-    const handleToggleFocus = useCallback(() => {
-        if (keyboardVisible) {
-            Keyboard.dismiss();
-            return;
-        }
-        setFocusMode(prev => {
-            const next = !prev;
-            overlayOpacity.value = withTiming(next ? 0 : 1, {duration: 200});
-            return next;
-        });
-    }, [overlayOpacity, keyboardVisible]);
-
-    // When user zooms back to 1x, show overlays
-    const handleZoomChange = useCallback(
-        isZoomed => {
-            if (!isZoomed && focusMode) {
-                setFocusMode(false);
-                overlayOpacity.value = withTiming(1, {duration: 200});
-            }
-        },
-        [focusMode, overlayOpacity]
-    );
-
-    // Arrow navigation — routes through handleIndexChange for consistent prefetch
-    const goToPrev = useCallback(
-        () => handleIndexChange(safeIndex - 1),
-        [handleIndexChange, safeIndex]
-    );
-
-    const goToNext = useCallback(
-        () => handleIndexChange(safeIndex + 1),
-        [handleIndexChange, safeIndex]
-    );
-
-    // Tag actions
+    // --- Tag actions (delegate to draft) ---
     const handleAddTag = useCallback(
         (cloId, typeId) => {
-            dispatch(addTagV5({imageIndex: safeIndex, cloId, typeId, defaultPickedUp}));
+            if (__DEV__) console.log('[Tag] addTag cloId:', cloId, 'typeId:', typeId, 'index:', activeIndex);
+            draft.addTag(cloId, typeId);
         },
-        [dispatch, safeIndex, defaultPickedUp]
+        [draft.addTag, activeIndex]
     );
 
     const handleRemoveTag = useCallback(
-        (cloId, typeId) => {
-            dispatch(removeTagV5({imageIndex: safeIndex, cloId, typeId}));
-        },
-        [dispatch, safeIndex]
+        (cloId, typeId) => draft.removeTag(cloId, typeId),
+        [draft.removeTag]
     );
 
     const handleUpdateQuantity = useCallback(
-        (cloId, typeId, newQuantity) => {
-            if (newQuantity <= 0) {
-                dispatch(removeTagV5({imageIndex: safeIndex, cloId, typeId}));
-            } else {
-                dispatch(
-                    updateTagQuantityV5({
-                        imageIndex: safeIndex,
-                        cloId,
-                        typeId,
-                        quantity: newQuantity
-                    })
-                );
-            }
-        },
-        [dispatch, safeIndex]
+        (cloId, typeId, newQuantity) => draft.updateQuantity(cloId, typeId, newQuantity),
+        [draft.updateQuantity]
     );
 
-    const handleSetPickedUp = useCallback(
-        (cloId, typeId, value) => {
-            dispatch(setPickedUpOnTag({imageIndex: safeIndex, cloId, typeId, value}));
-        },
-        [dispatch, safeIndex]
-    );
-
-    // Image-level custom tag handlers
+    // Image-level custom tags
     const handleAddImageCustomTag = useCallback(
-        text => {
-            dispatch(addImageCustomTag({imageIndex: safeIndex, text}));
-        },
-        [dispatch, safeIndex]
+        text => draft.addImageCustomTag(text),
+        [draft.addImageCustomTag]
     );
 
     const handleCreatePendingCustomTag = useCallback(() => {
         const text = pendingCustomTag?.trim();
         if (text) {
-            dispatch(addImageCustomTag({imageIndex: safeIndex, text}));
+            if (__DEV__) console.log('[Tag] createCustomTag:', text, 'index:', activeIndex);
+            draft.addImageCustomTag(text);
             setPendingCustomTag(null);
             if (searchBarRef.current) {
                 searchBarRef.current.clearQuery();
             }
             Keyboard.dismiss();
         }
-    }, [dispatch, safeIndex, pendingCustomTag]);
+    }, [draft.addImageCustomTag, pendingCustomTag, activeIndex]);
 
     const handleRemoveImageCustomTag = useCallback(
-        text => {
-            dispatch(removeImageCustomTag({imageIndex: safeIndex, text}));
-        },
-        [dispatch, safeIndex]
+        text => draft.removeImageCustomTag(text),
+        [draft.removeImageCustomTag]
     );
 
-    // Materials and brands as sorted arrays for TagDetailSheet
+    // Materials and brands for detail sheet
     const materialsArray = useMemo(
-        () =>
-            materialsById
-                ? Object.values(materialsById).sort((a, b) =>
-                    a.name.localeCompare(b.name)
-                )
-                : [],
+        () => materialsById
+            ? Object.values(materialsById).sort((a, b) => a.name.localeCompare(b.name))
+            : [],
         [materialsById]
     );
 
     const brandsArray = useMemo(
-        () =>
-            brandsById
-                ? Object.values(brandsById).sort((a, b) =>
-                    a.name.localeCompare(b.name)
-                )
-                : [],
+        () => brandsById
+            ? Object.values(brandsById).sort((a, b) => a.name.localeCompare(b.name))
+            : [],
         [brandsById]
     );
 
-    // Tag detail sheet handlers — store key string instead of full object
+    // --- Detail sheet ---
     const handleOpenDetail = useCallback(tag => {
         setDetailTag(makeTagKey(tag.cloId, tag.typeId));
     }, []);
@@ -339,183 +183,79 @@ const AddTagScreen = ({navigation}) => {
         setDetailTag(null);
     }, []);
 
-    // Parse detailTag key back to cloId/typeId
     const [detailCloId, detailTypeId] = useMemo(() => {
-        if (!detailTag) {
-            return [null, null];
-        }
+        if (!detailTag) return [null, null];
         return parseTagKey(detailTag);
     }, [detailTag]);
 
-    // Find the current tag entry for the detail sheet (stays in sync after edits)
     const detailTagCurrent = useMemo(() => {
-        if (!detailTag) {
-            return null;
-        }
+        if (!detailTag) return null;
         return currentTags.find(
-            t =>
-                t.cloId === detailCloId &&
-                (t.typeId ?? null) === (detailTypeId ?? null)
+            tag => tag.cloId === detailCloId && (tag.typeId ?? null) === (detailTypeId ?? null)
         );
     }, [detailTag, detailCloId, detailTypeId, currentTags]);
 
     const detailTagEntry = useMemo(() => {
-        if (!detailTag) {
-            return null;
-        }
-        return resolveTagEntry(
-            detailCloId,
-            detailTypeId,
-            entriesByCloId,
-            typeEntriesByKey
-        );
-    }, [
-        detailTag,
-        detailCloId,
-        detailTypeId,
-        typeEntriesByKey,
-        entriesByCloId
-    ]);
+        if (!detailTag) return null;
+        return resolveTagEntry(detailCloId, detailTypeId, entriesByCloId, typeEntriesByKey);
+    }, [detailTag, detailCloId, detailTypeId, typeEntriesByKey, entriesByCloId]);
 
-    // Factory for detail sheet dispatch handlers
-    const dispatchDetailAction = useCallback(
-        (actionCreator, extraPayload) => {
-            if (!detailTag) {
-                return;
-            }
-            dispatch(
-                actionCreator({
-                    imageIndex: safeIndex,
-                    cloId: detailCloId,
-                    typeId: detailTypeId,
-                    ...extraPayload
-                })
-            );
+    // Detail sheet actions — delegate to draft with cloId/typeId from detail
+    const handleDetailToggleMaterial = useCallback(
+        materialId => {
+            if (__DEV__) console.log('[Tag] toggleMaterial:', materialId, 'on cloId:', detailCloId);
+            draft.toggleMaterial(detailCloId, detailTypeId, materialId);
         },
-        [dispatch, safeIndex, detailTag, detailCloId, detailTypeId]
+        [draft.toggleMaterial, detailCloId, detailTypeId]
+    );
+    const handleDetailAddBrand = useCallback(
+        brandId => {
+            if (__DEV__) console.log('[Tag] addBrand:', brandId, 'on cloId:', detailCloId);
+            draft.addBrand(detailCloId, detailTypeId, brandId);
+        },
+        [draft.addBrand, detailCloId, detailTypeId]
+    );
+    const handleDetailRemoveBrand = useCallback(
+        brandId => draft.removeBrand(detailCloId, detailTypeId, brandId),
+        [draft.removeBrand, detailCloId, detailTypeId]
+    );
+    const handleDetailAddCustomTag = useCallback(
+        text => draft.addCustomTag(detailCloId, detailTypeId, text),
+        [draft.addCustomTag, detailCloId, detailTypeId]
+    );
+    const handleDetailRemoveCustomTag = useCallback(
+        text => draft.removeCustomTag(detailCloId, detailTypeId, text),
+        [draft.removeCustomTag, detailCloId, detailTypeId]
+    );
+    const handleDetailSetPickedUp = useCallback(
+        (cloId, typeId, value) => draft.setPickedUp(cloId, typeId, value),
+        [draft.setPickedUp]
     );
 
-    const handleToggleMaterial = useCallback(
-        materialId => dispatchDetailAction(toggleMaterialOnTag, {materialId}),
-        [dispatchDetailAction]
-    );
-
-    const handleAddBrand = useCallback(
-        brandId => dispatchDetailAction(addBrandToTag, {brandId}),
-        [dispatchDetailAction]
-    );
-
-    const handleRemoveBrand = useCallback(
-        brandId => dispatchDetailAction(removeBrandFromTag, {brandId}),
-        [dispatchDetailAction]
-    );
-
-    const handleAddCustomTag = useCallback(
-        text => dispatchDetailAction(addCustomTagToTag, {text}),
-        [dispatchDetailAction]
-    );
-
-    const handleRemoveCustomTag = useCallback(
-        text => dispatchDetailAction(removeCustomTagFromTag, {text}),
-        [dispatchDetailAction]
-    );
-
-    const allTagged = useMemo(
-        () => !isEditMode && images.length > 0 && images.every(img => isTagged(img)),
-        [images, isEditMode]
-    );
-
-    const advanceOrClose = useCallback(() => {
-        if (!currentImage?.id) {
-            dispatch(clearEditingPhoto());
-            navigation.goBack();
-            return;
-        }
-
-        if (editingPhotos.length > 1) {
-            // More photos in queue — remove current and stay
-            dispatch(removeEditingPhoto(currentImage.id));
-            // Fetch more to keep queue filled
-            dispatch(fetchAndLoadUntagged({perPage: 3}));
-        } else {
-            // Last photo — go back
-            dispatch(clearEditingPhoto());
-            navigation.goBack();
-        }
-    }, [dispatch, editingPhotos.length, currentImage?.id, navigation]);
-
-    const handleUpdateTags = useCallback(async () => {
-        if (!currentImage?.photoId) return;
-
-        const payload = buildTagsPayload(currentImage);
-        if (!payload || payload.length === 0) {
-            Alert.alert(t('Error!'), t('Please add at least one tag before saving.'));
-            return;
-        }
-
-        setIsSaving(true);
-        try {
-            const result = await dispatch(editTagsOnPhoto({
-                photoId: currentImage.photoId,
-                tags: payload
-            }));
-
-            if (result.meta?.requestStatus === 'rejected') {
-                Alert.alert(t('Error!'), t('Failed to update tags. Please try again.'));
-            } else {
-                advanceOrClose();
+    // --- Done / Save ---
+    // Commit draft before advancing in gallery mode (swipe via arrows)
+    const handleIndexChangeWithCommit = useCallback(
+        newIndex => {
+            if (!isEditMode) {
+                if (__DEV__) console.log('[Tag] commitDraft before index change →', newIndex);
+                commitDraft(getDraft);
             }
-        } finally {
-            setIsSaving(false);
-        }
-    }, [dispatch, currentImage, advanceOrClose, t]);
-
-    const handleDeletePhoto = useCallback(async () => {
-        if (!currentImage?.photoId) return;
-
-        Alert.alert(
-            t('Delete Photo'),
-            t('This will permanently delete this photo from the server.'),
-            [
-                {text: t('Cancel'), style: 'cancel'},
-                {
-                    text: t('Delete'),
-                    style: 'destructive',
-                    onPress: async () => {
-                        const result = await dispatch(
-                            deleteUploadPhoto({photoId: currentImage.photoId})
-                        );
-                        if (result.meta?.requestStatus === 'fulfilled') {
-                            advanceOrClose();
-                        } else {
-                            Alert.alert(t('Error'), t('Failed to delete photo.'));
-                        }
-                    }
-                }
-            ]
-        );
-    }, [dispatch, currentImage, advanceOrClose, t]);
+            goToIndex(newIndex);
+        },
+        [isEditMode, commitDraft, getDraft, goToIndex]
+    );
 
     const handleDone = useCallback(() => {
-        if (isEditMode) {
-            handleUpdateTags();
+        if (__DEV__) console.log('[UI] Done button pressed, pendingCustomTag:', !!pendingCustomTag);
+        if (pendingCustomTag) {
+            handleCreatePendingCustomTag();
             return;
         }
-
-        if (allTagged) {
-            navigation.navigate('APP', { screen: 'HOME' });
-        } else if (safeIndex < images.length - 1) {
-            handleIndexChange(safeIndex + 1);
-        } else {
-            // On last image but not all tagged — loop to first untagged
-            const firstUntagged = images.findIndex(img => !isTagged(img));
-            if (firstUntagged !== -1) {
-                handleIndexChange(firstUntagged);
-            }
-        }
-    }, [isEditMode, handleUpdateTags, handleIndexChange, allTagged, navigation, safeIndex, images]);
+        queueHandleDone(getDraft, setIsSaving);
+    }, [pendingCustomTag, handleCreatePendingCustomTag, queueHandleDone, getDraft]);
 
     const handleBrowsePress = useCallback(() => {
+        Keyboard.dismiss();
         setShowBrowser(prev => !prev);
     }, []);
 
@@ -523,263 +263,154 @@ const AddTagScreen = ({navigation}) => {
         setShowBrowser(false);
     }, []);
 
-    // Animated overlay style
-    const overlayAnimatedStyle = useAnimatedStyle(() => ({
-        opacity: overlayOpacity.value
-    }));
-
-    // XP badge scale animation style
-    const xpAnimatedStyle = useAnimatedStyle(() => ({
-        transform: [{scale: xpScale.value}]
-    }));
-
-    // If no images available, redirect back to HomeScreen (one-shot)
-    const hasNavigatedBackRef = useRef(false);
-    useEffect(() => {
-        if (!currentImage && images.length === 0 && !hasNavigatedBackRef.current) {
-            hasNavigatedBackRef.current = true;
-            navigation.goBack();
-        }
-    }, [currentImage, images.length, navigation]);
-
-    if (!currentImage) {
+    if (!activePhoto) {
         return null;
     }
 
     return (
         <View style={styles.container}>
-
-            {/* Full-screen image viewer */}
+            {/* Layer 1: Image viewer — fills entire screen, gestures only here */}
             <ImageViewer
-                images={images}
-                currentIndex={safeIndex}
-                onIndexChange={handleIndexChange}
-                onToggleFocus={handleToggleFocus}
-                onZoomChange={handleZoomChange}
+                images={photos}
+                currentIndex={activeIndex}
+                onIndexChange={handleIndexChangeWithCommit}
             />
 
-            {/* Overlays — hidden in focus mode */}
-            <Animated.View
-                style={[styles.overlayContainer, overlayAnimatedStyle]}
-                pointerEvents={focusMode ? 'none' : 'box-none'}>
-                {/* Top gradient overlay */}
-                <LinearGradient
-                    colors={[
-                        'rgba(0,0,0,0.65)',
-                        'rgba(0,0,0,0.25)',
-                        'transparent'
-                    ]}
-                    locations={[0, 0.6, 1]}>
-                    <View style={topInsetStyle}>
-                        <View style={styles.topBar}>
-                            <RNPressable
-                                onPress={() => {
-                                    if (isEditMode) dispatch(clearEditingPhoto());
-                                    navigation.goBack();
-                                }}
-                                style={styles.backButton}
-                                hitSlop={12}>
-                                <Icon
-                                    name="arrow-back"
-                                    size={22}
-                                    color={Colors.white}
-                                />
-                            </RNPressable>
+            {/* Layer 2: Top bar — absolute, floats over image */}
+            <View style={[styles.topBarOverlay, {paddingTop: insets.top}]} pointerEvents="box-none">
+                <View style={styles.topBar}>
+                    <RNPressable
+                        onPress={() => {
+                            if (isEditMode) dispatch(clearEditingPhoto());
+                            InteractionManager.runAfterInteractions(() => navigation.goBack());
+                        }}
+                        style={styles.backButton}
+                        hitSlop={12}>
+                        <Icon name="arrow-back" size={22} color={Colors.white} />
+                    </RNPressable>
 
-                            {isEditMode && untaggedCount != null ? (
-                                <View style={styles.untaggedCounter}>
-                                    <Caption color="white" family="semiBold">
-                                        {safeIndex + 1} / {untaggedCount}
-                                    </Caption>
-                                </View>
-                            ) : (
-                                <ImageProgressDots
-                                    images={images}
-                                    currentIndex={safeIndex}
-                                    onIndexChange={handleIndexChange}
-                                />
-                            )}
-
-                            {isEditMode && (
-                                <RNPressable
-                                    onPress={handleDeletePhoto}
-                                    disabled={isSaving}
-                                    style={[styles.deletePhotoButton, isSaving && {opacity: 0.3}]}
-                                    hitSlop={12}>
-                                    <Icon
-                                        name="trash-outline"
-                                        size={20}
-                                        color="#ff6b6b"
-                                    />
-                                </RNPressable>
-                            )}
-
-                            <Animated.View
-                                style={[
-                                    styles.xpBadge,
-                                    xpAnimatedStyle
-                                ]}>
-                                <Caption color="accent" family="semiBold">
-                                    +{xpEstimate} XP
-                                </Caption>
-                            </Animated.View>
+                    {isEditMode && untaggedCount != null ? (
+                        <View style={styles.untaggedCounter}>
+                            <Caption color="white" family="semiBold">
+                                {activeIndex + 1} / {untaggedCount}
+                            </Caption>
                         </View>
-                    </View>
-                </LinearGradient>
+                    ) : (
+                        <ImageProgressDots
+                            images={photos}
+                            currentIndex={activeIndex}
+                            onIndexChange={handleIndexChangeWithCommit}
+                        />
+                    )}
 
-                {/* Arrow buttons for image navigation — hidden when keyboard is open */}
-                {images.length > 1 && !keyboardVisible && (
-                    <View
-                        style={styles.arrowContainer}
-                        pointerEvents="box-none">
-                        {safeIndex > 0 ? (
-                            <Pressable
-                                style={styles.arrowButton}
-                                onPress={goToPrev}>
-                                <Icon
-                                    name="chevron-back"
-                                    size={24}
-                                    color={Colors.white}
-                                />
-                            </Pressable>
-                        ) : (
-                            <View />
-                        )}
-                        {safeIndex < images.length - 1 ? (
-                            <Pressable
-                                style={styles.arrowButton}
-                                onPress={goToNext}>
-                                <Icon
-                                    name="chevron-forward"
-                                    size={24}
-                                    color={Colors.white}
-                                />
-                            </Pressable>
-                        ) : (
-                            <View />
-                        )}
-                    </View>
+                    {isEditMode && (
+                        <RNPressable
+                            onPress={deleteCurrent}
+                            disabled={isSaving}
+                            style={[styles.deletePhotoButton, isSaving && {opacity: 0.3}]}
+                            hitSlop={12}>
+                            <Icon name="trash-outline" size={20} color="#ff6b6b" />
+                        </RNPressable>
+                    )}
+
+                    <Animated.View style={[styles.xpBadge, xpAnimatedStyle]}>
+                        <Caption color="accent" family="semiBold">
+                            +{xpEstimate} XP
+                        </Caption>
+                    </Animated.View>
+                </View>
+            </View>
+
+            {/* Layer 3: Editor panel — absolute bottom, floats over image.
+                Sibling of ImageViewer (not nested inside it or a shared box-none parent).
+                Touches here go directly to the editor — they CANNOT reach the
+                ImageViewer's GestureDetector because they are separate native view trees. */}
+            <KeyboardAvoidingView
+                style={[styles.editorPanel, {paddingBottom: insets.bottom}]}
+                behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+                keyboardVerticalOffset={0}>
+                <TagPills
+                    tags={currentTags}
+                    customTags={currentCustomTags}
+                    entriesByCloId={entriesByCloId}
+                    typeEntriesByKey={typeEntriesByKey}
+                    onRemove={handleRemoveTag}
+                    onRemoveCustomTag={handleRemoveImageCustomTag}
+                    onUpdateQuantity={handleUpdateQuantity}
+                    onOpenDetail={handleOpenDetail}
+                />
+
+                <TagSuggestions
+                    images={photos}
+                    currentIndex={activeIndex}
+                    currentTags={currentTags}
+                    entriesByCloId={entriesByCloId}
+                    typeEntriesByKey={typeEntriesByKey}
+                    onAddTag={handleAddTag}
+                />
+
+                <TagSearchBar
+                    ref={searchBarRef}
+                    objectEntries={objectEntries}
+                    entriesByCloId={entriesByCloId}
+                    currentTags={currentTags}
+                    customTags={currentCustomTags}
+                    onAddTag={handleAddTag}
+                    onAddCustomTag={handleAddImageCustomTag}
+                    onPendingCustomTag={setPendingCustomTag}
+                    onBrowsePress={handleBrowsePress}
+                    showBrowser={showBrowser}
+                />
+
+                {showBrowser && (
+                    <CategoryBrowser
+                        categoriesById={categoriesById}
+                        objectEntries={objectEntries}
+                        currentTags={currentTags}
+                        onAddTag={handleAddTag}
+                        onClose={handleCloseBrowser}
+                    />
                 )}
 
-                {/* Bottom gradient section */}
-                <KeyboardAvoidingView
-                    style={styles.bottomSection}
-                    behavior={Platform.OS === 'ios' ? 'position' : undefined}
-                    keyboardVerticalOffset={0}>
-                    <LinearGradient
-                        colors={keyboardVisible ? [
-                            'transparent',
-                            'transparent'
-                        ] : [
-                            'transparent',
-                            'rgba(0,0,0,0.25)',
-                            'rgba(0,0,0,0.6)',
-                            'rgba(0,0,0,0.8)'
-                        ]}
-                        locations={keyboardVisible ? [0, 1] : [0, 0.15, 0.5, 1]}
-                        style={[styles.bottomGradient, keyboardVisible && {paddingBottom: 14}]}>
-                        {/* Tag pills */}
-                        <TagPills
-                            key={safeIndex}
-                            tags={currentTags}
-                            customTags={currentCustomTags}
-                            entriesByCloId={entriesByCloId}
-                            typeEntriesByKey={typeEntriesByKey}
-                            onRemove={handleRemoveTag}
-                            onRemoveCustomTag={handleRemoveImageCustomTag}
-                            onUpdateQuantity={handleUpdateQuantity}
-                            onOpenDetail={handleOpenDetail}
-                        />
-
-                        {/* Tag suggestions from other images */}
-                        <TagSuggestions
-                            images={images}
-                            currentIndex={safeIndex}
-                            currentTags={currentTags}
-                            entriesByCloId={entriesByCloId}
-                            typeEntriesByKey={typeEntriesByKey}
-                            onAddTag={handleAddTag}
-                        />
-
-                        {/* Search bar */}
-                        <TagSearchBar
-                            ref={searchBarRef}
-                            objectEntries={objectEntries}
-                            entriesByCloId={entriesByCloId}
-                            currentTags={currentTags}
-                            customTags={currentCustomTags}
-                            onAddTag={handleAddTag}
-                            onAddCustomTag={handleAddImageCustomTag}
-                            onPendingCustomTag={setPendingCustomTag}
-                            onBrowsePress={handleBrowsePress}
-                            showBrowser={showBrowser}
-                        />
-
-                        {/* Category browser */}
-                        {showBrowser && (
-                            <CategoryBrowser
-                                categoriesById={categoriesById}
-                                objectEntries={objectEntries}
-                                currentTags={currentTags}
-                                onAddTag={handleAddTag}
-                                onClose={handleCloseBrowser}
-                            />
-                        )}
-
-                        {/* Bottom controls — hidden when keyboard is open (except in edit mode) */}
-                        {(!keyboardVisible || isEditMode) && (
-                            <View style={{paddingBottom: bottomInset}}>
-                                <View style={styles.bottomControls}>
-                                    <Pressable
-                                        disabled={isSaving}
-                                        style={({pressed}) => [
-                                            styles.doneButton,
-                                            isEditMode && styles.updateButton,
-                                            pressed && styles.doneButtonPressed,
-                                            isSaving && styles.doneButtonDisabled
-                                        ]}
-                                        onPress={pendingCustomTag ? handleCreatePendingCustomTag : handleDone}>
-                                        {isSaving ? (
-                                            <ActivityIndicator size="small" color={Colors.white} />
-                                        ) : (
-                                            <>
-                                                <Icon
-                                                    name={
-                                                        pendingCustomTag
-                                                            ? 'pricetag-outline'
-                                                            : isEditMode
-                                                                ? 'cloud-upload-outline'
-                                                                : allTagged
-                                                                    ? 'checkmark'
-                                                                    : 'arrow-forward'
-                                                    }
-                                                    size={18}
-                                                    color={Colors.white}
-                                                />
-                                                <Body
-                                                    color="white"
-                                                    family="semiBold"
-                                                    style={styles.doneText}
-                                                    dictionary={
-                                                        pendingCustomTag
-                                                            ? 'Create Tag'
-                                                            : isEditMode
-                                                                ? 'Update Tags'
-                                                                : allTagged
-                                                                    ? 'Done'
-                                                                    : 'Next'
-                                                    }
-                                                />
-                                            </>
-                                        )}
-                                    </Pressable>
-                                </View>
-                            </View>
-                        )}
-                    </LinearGradient>
-                </KeyboardAvoidingView>
-
-            </Animated.View>
+                <View>
+                    <View style={styles.bottomControls}>
+                        <RNPressable
+                            disabled={isSaving}
+                            style={[
+                                styles.doneButton,
+                                isEditMode && styles.updateButton,
+                                isSaving && styles.doneButtonDisabled
+                            ]}
+                            onPress={handleDone}>
+                            {isSaving ? (
+                                <ActivityIndicator size="small" color={Colors.white} />
+                            ) : (
+                                <>
+                                    <Icon
+                                        name={
+                                            pendingCustomTag ? 'pricetag-outline'
+                                                : isEditMode ? 'cloud-upload-outline'
+                                                    : allTagged ? 'checkmark' : 'arrow-forward'
+                                        }
+                                        size={18}
+                                        color={Colors.white}
+                                    />
+                                    <Body
+                                        color="white"
+                                        family="semiBold"
+                                        style={styles.doneText}
+                                        dictionary={
+                                            pendingCustomTag ? 'Create Tag'
+                                                : isEditMode ? 'Update Tags'
+                                                    : allTagged ? 'Done' : 'Next'
+                                        }
+                                    />
+                                </>
+                            )}
+                        </RNPressable>
+                    </View>
+                </View>
+            </KeyboardAvoidingView>
 
             <TagDetailSheet
                 visible={detailTagCurrent != null}
@@ -788,13 +419,13 @@ const AddTagScreen = ({navigation}) => {
                 materials={materialsArray}
                 brands={brandsArray}
                 brandsById={brandsById}
-                onToggleMaterial={handleToggleMaterial}
-                onAddBrand={handleAddBrand}
-                onRemoveBrand={handleRemoveBrand}
-                onAddCustomTag={handleAddCustomTag}
-                onRemoveCustomTag={handleRemoveCustomTag}
+                onToggleMaterial={handleDetailToggleMaterial}
+                onAddBrand={handleDetailAddBrand}
+                onRemoveBrand={handleDetailRemoveBrand}
+                onAddCustomTag={handleDetailAddCustomTag}
+                onRemoveCustomTag={handleDetailRemoveCustomTag}
                 onUpdateQuantity={handleUpdateQuantity}
-                onSetPickedUp={handleSetPickedUp}
+                onSetPickedUp={handleDetailSetPickedUp}
                 onClose={handleCloseDetail}
             />
         </View>
@@ -806,27 +437,22 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#000'
     },
-    emptyContainer: {
-        flex: 1,
-        backgroundColor: '#000',
-        justifyContent: 'center',
-        alignItems: 'center',
-        gap: 16
+    topBarOverlay: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: 10,
+        backgroundColor: 'rgba(0,0,0,0.4)'
     },
-    emptyText: {
-        marginTop: 8
-    },
-    emptyButton: {
-        marginTop: 16,
-        paddingHorizontal: 24,
-        paddingVertical: 12,
-        borderRadius: 100,
-        borderWidth: 1,
-        borderColor: Colors.accent
-    },
-    overlayContainer: {
-        ...StyleSheet.absoluteFillObject,
-        justifyContent: 'space-between'
+    editorPanel: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        zIndex: 5,
+        backgroundColor: 'rgba(0,0,0,0.7)',
+        paddingTop: 8
     },
     topBar: {
         flexDirection: 'row',
@@ -858,41 +484,22 @@ const styles = StyleSheet.create({
         backgroundColor: Colors.accentLight,
         borderRadius: 100
     },
-    arrowContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingHorizontal: 8
-    },
-    arrowButton: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-        backgroundColor: 'rgba(0,0,0,0.4)',
-        justifyContent: 'center',
-        alignItems: 'center'
-    },
-    bottomSection: {
-        justifyContent: 'center'
-    },
-    bottomGradient: {
-        paddingBottom: 0
-    },
     bottomControls: {
         flexDirection: 'row',
         alignItems: 'center',
         paddingHorizontal: 16,
         paddingTop: 8,
-        gap: 8
+        paddingBottom: 4
     },
     doneButton: {
-        marginLeft: 'auto',
+        flex: 1,
         flexDirection: 'row',
         alignItems: 'center',
-        paddingHorizontal: 20,
-        paddingVertical: 10,
+        justifyContent: 'center',
+        paddingHorizontal: 24,
+        paddingVertical: 14,
         backgroundColor: Colors.accent,
-        borderRadius: 100,
+        borderRadius: 14,
         gap: 6
     },
     doneButtonPressed: {

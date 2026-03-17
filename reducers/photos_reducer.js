@@ -435,7 +435,12 @@ const photosSlice = createSlice({
          */
         removeEditingPhoto(state, action) {
             const photoId = action.payload;
+            const removedIndex = (state.editingPhotos || []).findIndex(p => p.id === photoId);
             state.editingPhotos = (state.editingPhotos || []).filter(p => p.id !== photoId);
+            // Keep swiperIndex in bounds after removal
+            if (removedIndex !== -1 && state.swiperIndex >= state.editingPhotos.length) {
+                state.swiperIndex = Math.max(0, state.editingPhotos.length - 1);
+            }
         },
 
         clearEditingPhoto(state) {
@@ -456,6 +461,19 @@ const photosSlice = createSlice({
                 state.editingPhotos.splice(0, trimCount);
                 state.swiperIndex = Math.max(0, state.swiperIndex - trimCount);
             }
+        },
+
+        /**
+         * Commit a local draft's tags/customTags back to a photo in imagesArray.
+         * Used by the tagging screen to persist draft edits before advancing.
+         * payload = { imageIndex, tags, customTags }
+         */
+        commitDraftToPhoto(state, action) {
+            const {imageIndex, tags, customTags} = action.payload;
+            const image = state.imagesArray[imageIndex];
+            if (!image) return;
+            image.tags = tags;
+            image.customTags = customTags;
         },
 
         clearCustomTagError(state) {
@@ -580,6 +598,7 @@ export const {
     clearCustomTagError,
     clearEditingPhoto,
     clearUploadedImages,
+    commitDraftToPhoto,
     trimEditingPhotos,
     deleteImage,
     deleteSelectedImages,

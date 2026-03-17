@@ -1,14 +1,12 @@
 import * as Sentry from '@sentry/react-native';
 import {createAsyncThunk, createSlice} from '@reduxjs/toolkit';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import api from '../utils/apiClient';
 
 const initialState = {
     submitStatus: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
     token: null,
     user: null,
-    serverStatusText: '',
-    errors: {}
+    serverStatusText: ''
 };
 
 /**
@@ -48,7 +46,7 @@ export const checkValidToken = createAsyncThunk(
                 return rejectWithValue('Token invalid');
             }
         } catch (error) {
-            await AsyncStorage.removeItem('jwt').catch(() => {});
+            dispatch(logout());
             return rejectWithValue('Please login again.');
         }
     }
@@ -64,8 +62,6 @@ export const createAccount = createAsyncThunk(
 
             if (response.data?.token) {
                 const token = response.data.token;
-
-                await AsyncStorage.setItem('jwt', token);
 
                 if (response.data?.user) {
                     if (__DEV__) {
@@ -222,14 +218,6 @@ export const userLogin = createAsyncThunk(
             if (response.status === 200) {
                 const token = response.data.token;
 
-                try {
-                    await AsyncStorage.setItem('jwt', token);
-                } catch (error) {
-                    return rejectWithValue(
-                        'Unable to save token to asyncstore'
-                    );
-                }
-
                 const userResult = await dispatch(fetchUser(token));
                 if (userResult.meta?.requestStatus === 'rejected') {
                     dispatch(logout());
@@ -267,16 +255,11 @@ const authSlice = createSlice({
         },
 
         /**
-         * Logout user
-         * reset state to initial
-         *
-         * AsyncStorage is cleared via redux-persist (auth slice is persisted).
-         * The 'jwt' key is also removed explicitly since it's stored outside
-         * the persisted slice.
+         * Logout user — reset state to initial.
+         * Pure reducer — no side effects. redux-persist handles storage cleanup
+         * when auth slice rehydrates as initialState.
          */
         logout() {
-            AsyncStorage.removeItem('jwt').catch(() => {});
-            AsyncStorage.removeItem('user').catch(() => {});
             return initialState;
         },
 
@@ -366,8 +349,6 @@ const authSlice = createSlice({
                     locations: data.locations || null
                 };
 
-                AsyncStorage.setItem('user', JSON.stringify(user)).catch(() => {});
-
                 state.user = user;
                 state.submitStatus = 'idle';
             })
@@ -407,7 +388,6 @@ const authSlice = createSlice({
             })
             .addCase(userLogin.fulfilled, (state, action) => {
                 state.token = action.payload;
-                state.errors = {};
                 state.submitStatus = 'idle';
             })
             .addCase(userLogin.rejected, (state, action) => {

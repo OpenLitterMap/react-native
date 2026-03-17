@@ -22,6 +22,28 @@ import {URL} from '../actions/types';
  *       signal
  *   });
  */
+/**
+ * Per-endpoint timeout configuration.
+ * Uploads need longer (large multipart on 3G).
+ * Auth/profile should be fast.
+ * Default covers general fetches.
+ */
+const TIMEOUT_MS = {
+    upload: 120000,   // 2 min — large multipart on slow networks
+    auth: 15000,      // 15s — login/register/validate should be fast
+    default: 30000    // 30s — general API calls
+};
+
+const getTimeout = (path, options) => {
+    // Caller can override with explicit timeout
+    if (options.timeout) return options.timeout;
+    // Upload endpoints
+    if (path.includes('/upload')) return TIMEOUT_MS.upload;
+    // Auth endpoints
+    if (path.includes('/auth/') || path.includes('/validate-token') || path.includes('/password/')) return TIMEOUT_MS.auth;
+    return TIMEOUT_MS.default;
+};
+
 const makeRequest = (method) => async (path, options = {}) => {
     const {token, data, params, signal, headers: extraHeaders} = options;
 
@@ -45,7 +67,8 @@ const makeRequest = (method) => async (path, options = {}) => {
         headers,
         data,
         params,
-        signal
+        signal,
+        timeout: getTimeout(path, options)
     });
 };
 

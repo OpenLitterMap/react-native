@@ -57,7 +57,6 @@
 	<true/>
 	<key>UIAppFonts</key>
 	<array>
-		<string>Avenir-Black.ttf</string>
 		<string>Poppins-Thin.ttf</string>
 		<string>Poppins-SemiBold.ttf</string>
 		<string>Poppins-Regular.ttf</string>
@@ -85,6 +84,8 @@
 		<string>UIInterfaceOrientationLandscapeRight</string>
 		<string>UIInterfaceOrientationPortrait</string>
 	</array>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
 </dict>

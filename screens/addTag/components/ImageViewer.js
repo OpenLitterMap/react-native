@@ -32,15 +32,17 @@ const SlideImage = React.memo(({uri, screenWidth, screenHeight}) => {
         setLoading(true);
     }, [uri]);
 
+    // ActivityIndicator always mounted — hidden via opacity instead of conditional
+    // mount/unmount. Under Fabric, {loading && <ActivityIndicator>} causes
+    // "Attempt to mount already mounted component view" when loading state toggles
+    // rapidly during swipe transitions.
     return (
         <>
-            {loading && (
-                <ActivityIndicator
-                    style={styles.slideLoader}
-                    color="rgba(255,255,255,0.5)"
-                    size="large"
-                />
-            )}
+            <ActivityIndicator
+                style={[styles.slideLoader, {opacity: loading ? 1 : 0}]}
+                color="rgba(255,255,255,0.5)"
+                size="large"
+            />
             <Image
                 source={{uri}}
                 style={{width: screenWidth, height: screenHeight}}
@@ -64,12 +66,14 @@ const Slide = React.memo(({uri, offsetX, screenWidth, screenHeight}) => (
     </View>
 ));
 
+/**
+ * Image viewer with pinch-to-zoom, double-tap zoom, and horizontal swipe.
+ * No single-tap gesture — this is a tag editor first, photo viewer second.
+ */
 const ImageViewer = ({
     images,
     currentIndex: rawCurrentIndex,
-    onIndexChange,
-    onToggleFocus,
-    onZoomChange
+    onIndexChange
 }) => {
     const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} = useWindowDimensions();
 
@@ -79,11 +83,9 @@ const ImageViewer = ({
         : 0;
 
     // --- Shared values for worklet-safe access ---
-    // These mirror the JS props so gesture worklets always read current values.
     const indexSV = useSharedValue(currentIndex);
     const countSV = useSharedValue(images?.length ?? 0);
 
-    // Keep shared values in sync with props
     useEffect(() => {
         indexSV.value = currentIndex;
     }, [currentIndex, indexSV]);
@@ -92,15 +94,9 @@ const ImageViewer = ({
         countSV.value = images?.length ?? 0;
     }, [images?.length, countSV]);
 
-    // Use ref for callbacks so worklet closures are never stale
+    // Use ref for callback so worklet closure is never stale
     const onIndexChangeRef = useRef(onIndexChange);
     onIndexChangeRef.current = onIndexChange;
-
-    const onZoomChangeRef = useRef(onZoomChange);
-    onZoomChangeRef.current = onZoomChange;
-
-    const onToggleFocusRef = useRef(onToggleFocus);
-    onToggleFocusRef.current = onToggleFocus;
 
     // Zoom (current image only)
     const scale = useSharedValue(1);
@@ -124,7 +120,7 @@ const ImageViewer = ({
         };
     };
 
-    // Resolve URI for a given index — reads directly from images array.
+    // Resolve URI for a given index
     const getUri = (idx) => {
         if (idx < 0 || idx >= images.length) return null;
         const img = images[idx];
@@ -132,8 +128,7 @@ const ImageViewer = ({
         return resolveUri(img.uri || img.filename);
     };
 
-    // Compute the 3 visible URIs. Use a ref to avoid unnecessary re-renders
-    // when the images array grows (prefetch appends) but the visible 3 are unchanged.
+    // Compute the 3 visible URIs
     const prevSlotUris = useRef([null, null, null]);
     const slotUris = useMemo(() => {
         const next = [
@@ -141,7 +136,6 @@ const ImageViewer = ({
             getUri(currentIndex),
             getUri(currentIndex + 1)
         ];
-        // Return same reference if URIs haven't changed (prevents Image remount)
         if (
             next[0] === prevSlotUris.current[0] &&
             next[1] === prevSlotUris.current[1] &&
@@ -154,7 +148,7 @@ const ImageViewer = ({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentIndex, images]);
 
-    // Prefetch next 2 images for smooth swiping (deduplicated, only marked after success)
+    // Prefetch next 2 images for smooth swiping
     const prefetchedUris = useRef(new Set());
     const prefetchTargets = useMemo(
         () => [getUri(currentIndex + 1), getUri(currentIndex + 2)].filter(Boolean),
@@ -171,25 +165,16 @@ const ImageViewer = ({
             });
     }, [prefetchTargets]);
 
-    // Stable JS-thread callback for runOnJS — uses ref to avoid stale closure
+    // Stable JS-thread callback for runOnJS.
+    // Parent owns the clamp — no shared value reads on JS thread.
     const commitIndexChange = useCallback(
         newIndex => {
-            const len = countSV.value;
-            if (newIndex >= 0 && newIndex < len) {
-                onIndexChangeRef.current(newIndex);
-            }
+            if (__DEV__) console.log('[Viewer] swipe commit →', newIndex);
+            onIndexChangeRef.current?.(newIndex);
             isSwipeProcessing.value = false;
         },
-        [countSV, isSwipeProcessing]
+        [isSwipeProcessing]
     );
-
-    const notifyZoomReset = useCallback(() => {
-        onZoomChangeRef.current?.(false);
-    }, []);
-
-    const notifyToggleFocus = useCallback(() => {
-        onToggleFocusRef.current?.('tap');
-    }, []);
 
     // --- Gestures ---
 
@@ -227,13 +212,17 @@ const ImageViewer = ({
                 zoomY.value = withTiming(0, {duration: 200});
                 savedZoomX.value = 0;
                 savedZoomY.value = 0;
-                runOnJS(notifyZoomReset)();
             }
         });
 
     const panGesture = Gesture.Pan()
         .minPointers(1)
         .maxPointers(2)
+        // Require 15px of movement before activating. Without this, taps on
+        // overlay elements (suggestion chips, search results) pass through
+        // pointerEvents="box-none" to the native gesture layer and get
+        // interpreted as micro-swipes, triggering phantom index changes.
+        .minDistance(15)
         .onStart(() => {
             cancelAnimation(stripOffset);
             if (scale.value > ZOOM_THRESHOLD) {
@@ -271,7 +260,6 @@ const ImageViewer = ({
                 (hasDist || hasVel) &&
                 !isSwipeProcessing.value
             ) {
-                // Read current values from shared values (not stale JS closure)
                 const idx = indexSV.value;
                 const len = countSV.value;
                 const canGoNext = swipedLeft && idx < len - 1;
@@ -290,7 +278,6 @@ const ImageViewer = ({
                             if (finished) {
                                 runOnJS(commitIndexChange)(newIdx);
                             } else {
-                                // Animation cancelled — reset guard
                                 isSwipeProcessing.value = false;
                             }
                         }
@@ -313,7 +300,6 @@ const ImageViewer = ({
                 zoomY.value = withTiming(0, {duration: 200});
                 savedZoomX.value = 0;
                 savedZoomY.value = 0;
-                runOnJS(notifyZoomReset)();
             } else {
                 const targetScale = DOUBLE_TAP_SCALE;
                 const originX = e.x - SCREEN_WIDTH / 2;
@@ -330,17 +316,11 @@ const ImageViewer = ({
             }
         });
 
-    const singleTapGesture = Gesture.Tap()
-        .numberOfTaps(1)
-        .requireExternalGestureToFail(doubleTapGesture)
-        .onEnd(() => {
-            runOnJS(notifyToggleFocus)();
-        });
-
+    // No singleTapGesture — this screen is a tag editor, not an immersive viewer.
+    // Double-tap, pinch, and pan are the only gestures.
     const composed = Gesture.Race(
         doubleTapGesture,
-        Gesture.Simultaneous(pinchGesture, panGesture),
-        singleTapGesture
+        Gesture.Simultaneous(pinchGesture, panGesture)
     );
 
     // --- Animated styles ---
@@ -357,7 +337,7 @@ const ImageViewer = ({
         ]
     }));
 
-    // Reset on index or center image change — handles both swipe and in-place replacement
+    // Reset on index or center image change
     useEffect(() => {
         cancelAnimation(stripOffset);
         cancelAnimation(zoomX);

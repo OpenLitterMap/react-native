@@ -127,27 +127,31 @@ const TagDetailSheet = ({
     const showMaterialCreateOption =
         materialQuery.trim().length > 0 && materialResults.length === 0;
 
-    if (!tag || !visible) return null;
-
-    const qty = tag.quantity || 1;
+    // Always render the Modal shell — let `visible` prop control native presentation.
+    // Avoids full subtree mount/unmount churn that causes Fabric recycler crashes.
+    const qty = tag?.quantity || 1;
 
     return (
         <Modal
             animationType="slide"
             transparent
-            visible={visible}
-            onRequestClose={onClose}>
+            visible={visible && tag != null}
+            onRequestClose={() => { Keyboard.dismiss(); onClose(); }}>
             <View style={styles.overlay}>
                 <KeyboardAvoidingView
                     behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                     style={styles.keyboardView}>
-                    <Pressable style={styles.backdrop} onPress={onClose} />
+                    <Pressable style={styles.backdrop} onPress={() => { Keyboard.dismiss(); onClose(); }} />
                     <View style={styles.sheet}>
                         <ScrollView
                             showsVerticalScrollIndicator={false}
                             bounces={false}
                             keyboardShouldPersistTaps="handled">
                             <View style={styles.handle} />
+
+                            {/* Content guard: tag can be null during Modal close animation.
+                                Sheet/ScrollView/handle stay mounted; only content is gated. */}
+                            {!tag ? <View style={styles.bottomSpacer} /> : <>
 
                             {/* Header */}
                             <View style={styles.header}>
@@ -337,71 +341,67 @@ const TagDetailSheet = ({
                                         autoCapitalize="none"
                                         autoCorrect={false}
                                     />
-                                    {materialQuery.length > 0 && (
-                                        <Pressable
-                                            onPress={() =>
-                                                setMaterialQuery('')
-                                            }
-                                            hitSlop={4}>
-                                            <Icon
-                                                name="close-circle"
-                                                size={16}
-                                                color="#ccc"
-                                            />
-                                        </Pressable>
-                                    )}
-                                </View>
-
-                                {/* Material results */}
-                                {materialResults.length > 0 && (
-                                    <View style={styles.brandResults}>
-                                        {materialResults.map(m => (
-                                            <Pressable
-                                                key={m.id}
-                                                style={styles.brandRow}
-                                                onPress={() => {
-                                                    onToggleMaterial(m.id);
-                                                    setMaterialQuery('');
-                                                }}>
-                                                <Caption
-                                                    style={styles.brandName}>
-                                                    {m.name}
-                                                </Caption>
-                                                <Icon
-                                                    name="add-circle-outline"
-                                                    size={18}
-                                                    color={Colors.accent}
-                                                />
-                                            </Pressable>
-                                        ))}
-                                    </View>
-                                )}
-
-                                {/* Create custom tag from material search */}
-                                {showMaterialCreateOption && (
                                     <Pressable
-                                        style={styles.createCustomRow}
-                                        onPress={handleCreateMaterialAsCustomTag}>
-                                        <View style={styles.createCustomLeft}>
-                                            <Icon
-                                                name="pricetag-outline"
-                                                size={16}
-                                                color="#6366f1"
-                                            />
-                                            <Caption style={styles.createCustomText}>
-                                                {t('Create')}{' '}
-                                                <Caption style={styles.createCustomTag}>
-                                                    material:{materialQuery.trim()}
-                                                </Caption>
-                                            </Caption>
-                                        </View>
+                                        onPress={() => setMaterialQuery('')}
+                                        hitSlop={4}
+                                        style={{opacity: materialQuery.length > 0 ? 1 : 0}}
+                                        disabled={materialQuery.length === 0}>
                                         <Icon
-                                            name="add-circle-outline"
-                                            size={18}
-                                            color="#6366f1"
+                                            name="close-circle"
+                                            size={16}
+                                            color="#ccc"
                                         />
                                     </Pressable>
-                                )}
+                                </View>
+
+                                {/* Material results — container always mounted to avoid
+                                    Fabric churn while typing with active keyboard session */}
+                                <View style={materialResults.length > 0 ? styles.brandResults : undefined}>
+                                    {materialResults.map(m => (
+                                        <Pressable
+                                            key={m.id}
+                                            style={styles.brandRow}
+                                            onPress={() => {
+                                                onToggleMaterial(m.id);
+                                                setMaterialQuery('');
+                                            }}>
+                                            <Caption
+                                                style={styles.brandName}>
+                                                {m.name}
+                                            </Caption>
+                                            <Icon
+                                                name="add-circle-outline"
+                                                size={18}
+                                                color={Colors.accent}
+                                            />
+                                        </Pressable>
+                                    ))}
+                                </View>
+
+                                {/* Create custom tag from material search — always mounted */}
+                                <Pressable
+                                    style={[styles.createCustomRow, {display: showMaterialCreateOption ? 'flex' : 'none'}]}
+                                    onPress={handleCreateMaterialAsCustomTag}
+                                    disabled={!showMaterialCreateOption}>
+                                    <View style={styles.createCustomLeft}>
+                                        <Icon
+                                            name="pricetag-outline"
+                                            size={16}
+                                            color="#6366f1"
+                                        />
+                                        <Caption style={styles.createCustomText}>
+                                            {t('Create')}{' '}
+                                            <Caption style={styles.createCustomTag}>
+                                                material:{materialQuery.trim()}
+                                            </Caption>
+                                        </Caption>
+                                    </View>
+                                    <Icon
+                                        name="add-circle-outline"
+                                        size={18}
+                                        color="#6366f1"
+                                    />
+                                </Pressable>
                             </View>
 
                             {/* Brands */}
@@ -470,69 +470,67 @@ const TagDetailSheet = ({
                                         autoCapitalize="none"
                                         autoCorrect={false}
                                     />
-                                    {brandQuery.length > 0 && (
-                                        <Pressable
-                                            onPress={() => setBrandQuery('')}
-                                            hitSlop={4}>
-                                            <Icon
-                                                name="close-circle"
-                                                size={16}
-                                                color="#ccc"
-                                            />
-                                        </Pressable>
-                                    )}
+                                    <Pressable
+                                        onPress={() => setBrandQuery('')}
+                                        hitSlop={4}
+                                        style={{opacity: brandQuery.length > 0 ? 1 : 0}}
+                                        disabled={brandQuery.length === 0}>
+                                        <Icon
+                                            name="close-circle"
+                                            size={16}
+                                            color="#ccc"
+                                        />
+                                    </Pressable>
                                 </View>
 
                                 {/* Brand results */}
-                                {brandResults.length > 0 && (
-                                    <View style={styles.brandResults}>
-                                        {brandResults.map(b => (
-                                            <Pressable
-                                                key={b.id}
-                                                style={styles.brandRow}
-                                                onPress={() => {
-                                                    onAddBrand(b.id);
-                                                    setBrandQuery('');
-                                                }}>
-                                                <Caption
-                                                    style={styles.brandName}>
-                                                    {b.name}
-                                                </Caption>
-                                                <Icon
-                                                    name="add-circle-outline"
-                                                    size={18}
-                                                    color={Colors.accent}
-                                                />
-                                            </Pressable>
-                                        ))}
-                                    </View>
-                                )}
-
-                                {/* Create custom tag from brand search */}
-                                {showBrandCreateOption && (
-                                    <Pressable
-                                        style={styles.createCustomRow}
-                                        onPress={handleCreateBrandAsCustomTag}>
-                                        <View style={styles.createCustomLeft}>
-                                            <Icon
-                                                name="pricetag-outline"
-                                                size={16}
-                                                color="#6366f1"
-                                            />
-                                            <Caption style={styles.createCustomText}>
-                                                {t('Create')}{' '}
-                                                <Caption style={styles.createCustomTag}>
-                                                    brand:{brandQuery.trim()}
-                                                </Caption>
+                                {/* Brand results — container always mounted */}
+                                <View style={brandResults.length > 0 ? styles.brandResults : undefined}>
+                                    {brandResults.map(b => (
+                                        <Pressable
+                                            key={b.id}
+                                            style={styles.brandRow}
+                                            onPress={() => {
+                                                onAddBrand(b.id);
+                                                setBrandQuery('');
+                                            }}>
+                                            <Caption
+                                                style={styles.brandName}>
+                                                {b.name}
                                             </Caption>
-                                        </View>
+                                            <Icon
+                                                name="add-circle-outline"
+                                                size={18}
+                                                color={Colors.accent}
+                                            />
+                                        </Pressable>
+                                    ))}
+                                </View>
+
+                                {/* Create custom tag from brand search — always mounted */}
+                                <Pressable
+                                    style={[styles.createCustomRow, {display: showBrandCreateOption ? 'flex' : 'none'}]}
+                                    onPress={handleCreateBrandAsCustomTag}
+                                    disabled={!showBrandCreateOption}>
+                                    <View style={styles.createCustomLeft}>
                                         <Icon
-                                            name="add-circle-outline"
-                                            size={18}
+                                            name="pricetag-outline"
+                                            size={16}
                                             color="#6366f1"
                                         />
-                                    </Pressable>
-                                )}
+                                        <Caption style={styles.createCustomText}>
+                                            {t('Create')}{' '}
+                                            <Caption style={styles.createCustomTag}>
+                                                brand:{brandQuery.trim()}
+                                            </Caption>
+                                        </Caption>
+                                    </View>
+                                    <Icon
+                                        name="add-circle-outline"
+                                        size={18}
+                                        color="#6366f1"
+                                    />
+                                </Pressable>
                             </View>
 
                             {/* Custom Tags */}
@@ -595,18 +593,17 @@ const TagDetailSheet = ({
                                         returnKeyType="done"
                                         maxLength={100}
                                     />
-                                    {customTagText.length > 0 && (
-                                        <Pressable
-                                            onPress={handleAddCustomTag}
-                                            hitSlop={4}
-                                            style={styles.addBtn}>
-                                            <Icon
-                                                name="add"
-                                                size={18}
-                                                color={Colors.accent}
-                                            />
-                                        </Pressable>
-                                    )}
+                                    <Pressable
+                                        onPress={handleAddCustomTag}
+                                        hitSlop={4}
+                                        style={[styles.addBtn, {opacity: customTagText.length > 0 ? 1 : 0}]}
+                                        disabled={customTagText.length === 0}>
+                                        <Icon
+                                            name="add"
+                                            size={18}
+                                            color={Colors.accent}
+                                        />
+                                    </Pressable>
                                 </View>
                             </View>
 
@@ -636,6 +633,7 @@ const TagDetailSheet = ({
                             </Pressable>
 
                             <View style={styles.bottomSpacer} />
+                            </>}
                         </ScrollView>
                     </View>
                 </KeyboardAvoidingView>

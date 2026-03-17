@@ -1,7 +1,7 @@
 import React, {useCallback, useMemo, useState} from 'react';
 import {ScrollView, StyleSheet, View} from 'react-native';
 import {FlashList} from '@shopify/flash-list';
-import {Pressable} from 'react-native-gesture-handler';
+import {Pressable} from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {useTranslation} from 'react-i18next';
 import {Body, Caption, Colors} from '../../components';
@@ -77,6 +77,7 @@ const CategoryBrowser = ({
 
     const handleSelect = useCallback(
         (cloId, typeId) => {
+            if (__DEV__) console.log('[Browser] select cloId:', cloId, 'typeId:', typeId);
             onAddTag(cloId, typeId);
         },
         [onAddTag]

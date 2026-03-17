@@ -1,6 +1,6 @@
 import {createAsyncThunk, createSlice} from '@reduxjs/toolkit';
-import api from '../utils/apiClient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import api from '../utils/apiClient';
 import {updateUserObject, logout} from './auth_reducer';
 
 const initialState = {
@@ -52,6 +52,7 @@ export const deleteAccount = createAsyncThunk(
                 return rejectWithValue(msg);
             }
 
+            // Nuclear cleanup on account deletion — wipe all cached data
             await AsyncStorage.clear();
             dispatch(logout());
             return response.data;
@@ -84,7 +85,6 @@ export const saveSettings = createAsyncThunk(
                 const currentUser = getState().auth.user;
                 if (!currentUser) return rejectWithValue('No active session');
                 const user = {...currentUser, [dataKey]: dataValue};
-                await AsyncStorage.setItem('user', JSON.stringify(user));
                 dispatch(updateUserObject(user));
 
                 return {
@@ -118,7 +118,6 @@ export const saveSocialAccounts = createAsyncThunk(
                 const currentUser = getState().auth.user;
                 if (!currentUser) return rejectWithValue('No active session');
                 const user = {...currentUser, settings: values};
-                await AsyncStorage.setItem('user', JSON.stringify(user));
                 dispatch(updateUserObject(user));
 
                 return 'SUCCESS';
@@ -158,7 +157,6 @@ export const toggleSettingsSwitch = createAsyncThunk(
                 const currentUser = getState().auth.user;
                 if (!currentUser) return rejectWithValue('No active session');
                 const user = {...currentUser, [key]: value};
-                await AsyncStorage.setItem('user', JSON.stringify(user));
                 dispatch(updateUserObject(user));
 
                 return response.data;

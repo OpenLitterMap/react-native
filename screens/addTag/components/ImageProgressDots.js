@@ -1,6 +1,6 @@
 import React, {useCallback, useMemo, useRef, useEffect} from 'react';
 import {ScrollView, StyleSheet, View} from 'react-native';
-import {Pressable} from 'react-native-gesture-handler';
+import {Pressable} from 'react-native';
 import {Caption, Colors} from '../../components';
 import {isTagged} from '../../../utils/isTagged';
 

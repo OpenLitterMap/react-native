@@ -60,7 +60,8 @@ const GalleryPermissionScreen = ({navigation}) => {
             // Reset gallery and re-fetch so newly-permitted photos appear
             dispatch(resetGallery());
             dispatch(getPhotosFromCameraroll('REFRESH'));
-            navigation.navigate('APP', { screen: 'HOME' });
+            // goBack on parent navigator to dismiss the fullScreenModal
+            navigation.getParent()?.goBack();
         }
     };
 
@@ -70,7 +71,7 @@ const GalleryPermissionScreen = ({navigation}) => {
         if (result === 'granted' || result === 'limited') {
             dispatch(resetGallery());
             dispatch(getPhotosFromCameraroll('REFRESH'));
-            navigation.navigate('APP', { screen: 'HOME' });
+            navigation.getParent()?.goBack();
         } else {
             Platform.OS === 'ios'
                 ? await Linking.openURL('app-settings:')
@@ -122,7 +123,7 @@ const GalleryPermissionScreen = ({navigation}) => {
                 </Pressable>
 
                 <Pressable
-                    onPress={() => navigation.navigate('APP', { screen: 'HOME' })}
+                    onPress={() => navigation.getParent()?.goBack()}
                     style={styles.skipButton}>
                     <Caption
                         color="muted"

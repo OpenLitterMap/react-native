@@ -154,6 +154,7 @@ const uploadFlowSlice = createSlice({
         },
 
         showThankYouMessagesAfterUpload(state) {
+            state.uploadPhase = 'idle';
             state.showThankYouMessages = true;
         },
 

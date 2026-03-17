@@ -1,6 +1,6 @@
 import React, {useCallback, useMemo} from 'react';
 import {ScrollView, StyleSheet, View} from 'react-native';
-import {Pressable} from 'react-native-gesture-handler';
+import {Pressable} from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {Caption, Colors} from '../../components';
 import {makeTagKey, parseTagKey, resolveTagEntry} from './tagUtils';
@@ -20,11 +20,12 @@ const TagSuggestions = ({
         const frequency = {};
 
         for (let i = 0; i < images.length; i++) {
-            if (i === currentIndex) {
-                continue;
-            }
-            const tags = images[i].tags || [];
+            if (i === currentIndex) continue;
+            const image = images[i];
+            if (!image) continue;
+            const tags = image.tags || [];
             for (const tag of tags) {
+                if (!tag) continue;
                 const key = makeTagKey(tag.cloId, tag.typeId);
                 if (!currentKeys.has(key)) {
                     frequency[key] = (frequency[key] || 0) + 1;
@@ -50,6 +51,7 @@ const TagSuggestions = ({
 
     const handleAdd = useCallback(
         (cloId, typeId) => {
+            if (__DEV__) console.log('[Suggestions] chip pressed cloId:', cloId, 'typeId:', typeId);
             onAddTag(cloId, typeId);
         },
         [onAddTag]

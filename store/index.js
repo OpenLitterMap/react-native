@@ -12,7 +12,7 @@ const imagesTransform = createTransform(
     (inboundState) => ({
         imagesArray: inboundState.imagesArray
     }),
-    // On REHYDRATE: merge imagesArray into default state, strip server images
+    // On REHYDRATE: merge imagesArray into default state, filter out server images
     (outboundState) => ({
         imagesArray: (outboundState?.imagesArray || []).filter(
             img => !img.editing && !(img.uploaded && !img.uri)

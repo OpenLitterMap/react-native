@@ -306,7 +306,7 @@ const GalleryScreen = ({navigation}) => {
             headerTitle >= 1 &&
             headerTitle <= 12
         ) {
-            headerTitle = dayjs(headerTitle.toString(), 'MM').format('MMMM');
+            headerTitle = dayjs(String(headerTitle).padStart(2, '0'), 'MM').format('MMMM');
         }
 
         const titleMap = {

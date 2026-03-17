@@ -6,7 +6,7 @@ import {
     TextInput,
     View
 } from 'react-native';
-import {Pressable} from 'react-native-gesture-handler';
+import {Pressable} from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {useTranslation} from 'react-i18next';
 import {Body, Caption, Colors} from '../../components';
@@ -109,6 +109,7 @@ const TagSearchBar = React.forwardRef(({
 
     const handleSelect = useCallback(
         (cloId, typeId) => {
+            if (__DEV__) console.log('[Search] select cloId:', cloId, 'typeId:', typeId);
             onAddTag(cloId, typeId);
             setQuery('');
             Keyboard.dismiss();
@@ -136,6 +137,11 @@ const TagSearchBar = React.forwardRef(({
     }, []);
 
     const handleFocus = useCallback(() => {
+        if (__DEV__) console.log('[Search] input focused');
+        if (blurTimerRef.current) {
+            clearTimeout(blurTimerRef.current);
+            blurTimerRef.current = null;
+        }
         setIsFocused(true);
     }, []);
 

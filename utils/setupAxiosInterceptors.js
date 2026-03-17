@@ -1,20 +1,20 @@
 import axios from 'axios';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { logout } from '../reducers/auth_reducer';
-import { setUploadAbortReason } from '../reducers/upload_flow_reducer';
+import {logout} from '../reducers/auth_reducer';
+import {setUploadAbortReason} from '../reducers/upload_flow_reducer';
 
 /**
  * Register a global axios response interceptor.
- * - Sets a 30-second default timeout for all requests
  * - On 401 responses: signals the upload loop to stop, then logs out
+ *
+ * Auth cleanup is handled by redux-persist — dispatching logout() resets
+ * auth state to initialState, which is then persisted (clearing the token).
+ *
+ * Per-request timeouts are now set in apiClient.js (not here as a global default).
  */
-let isLoggingOut = false;
+let logoutPromise = null;
 let interceptorId = null;
 
 export default function setupAxiosInterceptors(store) {
-    // Global timeout — prevents uploads from hanging indefinitely
-    axios.defaults.timeout = 30000;
-
     // Eject previous interceptor if any (idempotent for hot reload)
     if (interceptorId !== null) {
         axios.interceptors.response.eject(interceptorId);
@@ -23,20 +23,25 @@ export default function setupAxiosInterceptors(store) {
     interceptorId = axios.interceptors.response.use(
         (response) => response,
         async (error) => {
-            if (error.response?.status === 401 && !isLoggingOut) {
-                isLoggingOut = true;
+            if (error.response?.status === 401 && !logoutPromise) {
+                // Use a Promise-based guard instead of setTimeout hack.
+                // All concurrent 401s wait on the same promise.
+                logoutPromise = (async () => {
+                    // If an upload is in progress, signal it to stop gracefully
+                    const state = store.getState();
+                    if (state.uploadFlow?.uploadPhase !== 'idle') {
+                        store.dispatch(setUploadAbortReason('token-expired'));
+                    }
 
-                // If an upload is in progress, signal it to stop gracefully
-                const state = store.getState();
-                if (state.uploadFlow?.uploadPhase !== 'idle') {
-                    store.dispatch(setUploadAbortReason('token-expired'));
+                    store.dispatch(logout());
+                })();
+
+                try {
+                    await logoutPromise;
+                } finally {
+                    // Reset after logout completes so future 401s (after re-login) work
+                    logoutPromise = null;
                 }
-
-                await AsyncStorage.removeItem('jwt').catch(() => {});
-                store.dispatch(logout());
-
-                // Reset after a tick so future 401s (after re-login) still work
-                setTimeout(() => { isLoggingOut = false; }, 0);
             }
             return Promise.reject(error);
         }
