@@ -239,3 +239,12 @@ Detailed documentation for each feature area lives in `readme/`:
 | `XP.md` | XP formula — backend awards correctly; mobile preview is incomplete (doesn't handle special object bonuses) |
 | `GPS_AUDIT.md` | GPS handling audit (thorough, accurate) |
 | `LocalDev.md` | Local development setup, tag data structure |
+
+## BOOP
+
+When the user says "BOOP", perform these steps:
+
+1. Bump the patch version in `package.json` (e.g. 7.1.0 → 7.1.1)
+2. Append a one-line entry to `readme/changelog/YYYY-MM-DD.md` for today's date (create the file if it doesn't exist)
+3. Update any readme docs (`readme/*.md`) affected by the changes
+4. Update any skills files affected by the changes

@@ -1,6 +1,7 @@
 import React, {useState, useEffect, useRef, useCallback} from 'react';
 import {
     ActivityIndicator,
+    Linking,
     StyleSheet,
     ToastAndroid,
     Platform,
@@ -465,23 +466,47 @@ const GalleryScreen = ({navigation}) => {
                                             style={styles.emptyStateTitle}
                                             dictionary="No geotagged photos found"
                                         />
-                                        <Caption
-                                            style={styles.emptyStateText}
-                                            dictionary="Photos need GPS data to be uploaded. Make sure Location Services are enabled when taking photos."
-                                        />
-                                        {nonGeotaggedCount > 0 && (
+                                        {nonGeotaggedCount > 0 ? (
+                                            <>
+                                                <Caption
+                                                    style={[
+                                                        styles.emptyStateText,
+                                                        styles.warnText
+                                                    ]}>
+                                                    {nonGeotaggedCount}{' '}
+                                                    {nonGeotaggedCount === 1
+                                                        ? t('photo')
+                                                        : t('photos')}{' '}
+                                                    {t('found without GPS data')}
+                                                </Caption>
+                                                {isLimited && (
+                                                    <Caption style={styles.emptyStateText}>
+                                                        {Platform.OS === 'android'
+                                                            ? t('OpenLitterMap needs the "Media location" permission to read GPS data from your photos.')
+                                                            : t('OpenLitterMap needs full photo access to read GPS data from your photos.')}
+                                                    </Caption>
+                                                )}
+                                            </>
+                                        ) : (
                                             <Caption
-                                                style={[
-                                                    styles.emptyStateText,
-                                                    styles.warnText
-                                                ]}>
-                                                {nonGeotaggedCount}{' '}
-                                                {nonGeotaggedCount === 1
-                                                    ? t('photo')
-                                                    : t('photos')}{' '}
-                                                {t('found without GPS data')}
-                                            </Caption>
+                                                style={styles.emptyStateText}
+                                                dictionary="Photos need GPS data to be uploaded. Make sure Location Services are enabled when taking photos."
+                                            />
                                         )}
+                                        <Pressable
+                                            style={styles.settingsButton}
+                                            onPress={() => Linking.openSettings()}>
+                                            <Icon
+                                                name="settings-outline"
+                                                size={16}
+                                                color={Colors.accent}
+                                            />
+                                            <Body
+                                                style={styles.settingsButtonText}
+                                                color="accent"
+                                                dictionary="Open App Settings"
+                                            />
+                                        </Pressable>
                                     </View>
                                 )
                             }
@@ -583,6 +608,20 @@ const styles = StyleSheet.create({
         marginTop: 8,
         textAlign: 'center',
         color: '#888'
+    },
+    settingsButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginTop: 20,
+        paddingVertical: 10,
+        paddingHorizontal: 20,
+        borderRadius: 8,
+        borderWidth: 1,
+        borderColor: Colors.accent
+    },
+    settingsButtonText: {
+        marginLeft: 6,
+        fontSize: 14
     },
     emptyContentContainer: {
         flex: 1
