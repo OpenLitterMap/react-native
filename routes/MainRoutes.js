@@ -26,7 +26,9 @@ const MainRoutes = () => {
     const [isValidating, setIsValidating] = useState(true);
     const token = useSelector(state => state.auth.token);
 
-    // Validate persisted token on mount (after redux-persist rehydration)
+    // Validate persisted token once on mount (after redux-persist rehydration).
+    // Does NOT depend on `token` — a fresh login already validates via fetchUser,
+    // so re-running checkValidToken when the token changes is redundant and slow.
     useEffect(() => {
         (async () => {
             if (token) {
@@ -34,7 +36,7 @@ const MainRoutes = () => {
             }
             setIsValidating(false);
         })();
-    }, [dispatch, token]);
+    }, [dispatch]); // eslint-disable-line react-hooks/exhaustive-deps
 
     if (isValidating) {
         return (

@@ -10,6 +10,50 @@ const initialState = {
 };
 
 /**
+ * Build flattened user object from profile response data.
+ * Shared by fetchUser.fulfilled, userLogin.fulfilled, and createAccount.fulfilled.
+ *
+ * Input shape (enriched login/register response):
+ *   { user, stats: { uploads, tags, xp, littercoin },
+ *     level: { level, title, xp, xp_into_level, xp_for_next, xp_remaining, progress_percent },
+ *     rank: { global_position, global_total, percentile },
+ *     team: { id, name } | null }
+ *
+ * Fields intentionally excluded from enriched response (not needed by mobile UI):
+ *   achievements, locations, global_stats, stats.streak
+ */
+const buildUserFromProfile = (data) => {
+    const profile = data.user || {};
+    const stats = data.stats || {};
+    const levelData = data.level || {};
+    const rankData = data.rank || {};
+
+    return {
+        ...profile,
+
+        // Stats
+        totalImages: stats.uploads || 0,
+        totalTags: stats.tags ?? stats.litter ?? 0,
+        totalLittercoin: stats.littercoin || 0,
+        xp: stats.xp || 0,
+
+        // Level
+        level: levelData.level || 0,
+        levelTitle: levelData.title || '',
+        levelProgress: levelData.progress_percent || 0,
+        xpToNextLevel: levelData.xp_remaining || 0,
+
+        // Rank (null = not ranked)
+        position: rankData.global_position ?? null,
+        percentile: rankData.percentile ?? null,
+
+        // Team
+        active_team: data.team?.id || null,
+        team: data.team || null
+    };
+};
+
+/**
  * API List
  *
  * 1. checkValidToken
@@ -61,29 +105,46 @@ export const createAccount = createAsyncThunk(
             });
 
             if (response.data?.token) {
-                const token = response.data.token;
+                const {token, ...profileData} = response.data;
 
-                if (response.data?.user) {
+                if (profileData.user) {
                     if (__DEV__) {
                         console.log(
                             '[Auth] Registered with auto-generated username:',
-                            response.data.user.username
+                            profileData.user.username
                         );
                     }
                 }
 
+                // Enriched response — no second request needed
+                if (profileData.stats) {
+                    Sentry.setUser({
+                        id: profileData.user?.id,
+                        email: profileData.user?.email
+                    });
+
+                    return {token, profile: profileData};
+                }
+
+                // Legacy response — fetch profile separately
                 const userResult = await dispatch(fetchUser(token));
                 if (userResult.meta?.requestStatus === 'rejected') {
                     dispatch(logout());
                     return rejectWithValue('Account created but session failed. Please log in.');
                 }
 
-                return token;
+                return {token, profile: null};
             }
 
             return rejectWithValue('Registration failed — no token received');
         } catch (error) {
             if (error.response) {
+                if (error.response.status === 429) {
+                    return rejectWithValue(
+                        'Too many attempts. Please wait a minute and try again.'
+                    );
+                }
+
                 const errorData = error.response.data.errors;
 
                 if (errorData) {
@@ -216,19 +277,39 @@ export const userLogin = createAsyncThunk(
             const response = await api.post('/api/auth/token', {data});
 
             if (response.status === 200) {
-                const token = response.data.token;
+                const {token, ...profileData} = response.data;
 
+                // Enriched response includes full profile — no second request needed.
+                // Fallback to fetchUser if backend hasn't been updated yet.
+                if (profileData.stats) {
+                    Sentry.setUser({
+                        id: profileData.user?.id,
+                        email: profileData.user?.email
+                    });
+
+                    return {token, profile: profileData};
+                }
+
+                // Legacy response: { token, user } — fetch profile separately
                 const userResult = await dispatch(fetchUser(token));
                 if (userResult.meta?.requestStatus === 'rejected') {
                     dispatch(logout());
                     return rejectWithValue('Login succeeded but session failed. Please try again.');
                 }
 
-                return token;
+                return {token, profile: null};
             } else {
                 return rejectWithValue('Login failed');
             }
         } catch (error) {
+            const status = error.response?.status;
+
+            if (status === 429) {
+                return rejectWithValue(
+                    'Too many login attempts. Please wait a minute and try again.'
+                );
+            }
+
             return rejectWithValue(
                 error.response?.data?.message ||
                     error.message ||
@@ -298,8 +379,10 @@ const authSlice = createSlice({
                 state.submitStatus = 'loading';
             })
             .addCase(createAccount.fulfilled, (state, action) => {
-                if (action.payload) {
-                    state.token = action.payload;
+                const {token, profile} = action.payload;
+                state.token = token;
+                if (profile) {
+                    state.user = buildUserFromProfile(profile);
                 }
                 state.submitStatus = 'idle';
             })
@@ -309,47 +392,9 @@ const authSlice = createSlice({
             })
 
             // Fetch User Profile (GET /api/user/profile/index)
-            // Response is nested: { user, stats, level, rank, global_stats, achievements, locations, team }
-            // We flatten into a single state object that screens expect.
+            // Used on app resume (via checkValidToken) and profile refresh.
             .addCase(fetchUser.fulfilled, (state, action) => {
-                const data = action.payload;
-
-                const profile = data.user || {};
-                const stats = data.stats || {};
-                const levelData = data.level || {};
-                const rankData = data.rank || {};
-
-                const user = {
-                    // Core user fields (includes settings like show_name, picked_up, etc.)
-                    ...profile,
-
-                    // Stats
-                    totalImages: stats.uploads || 0,
-                    totalTags: stats.tags ?? stats.litter ?? 0,
-                    totalLittercoin: stats.littercoin || 0,
-                    xp: stats.xp || 0,
-                    streak: stats.streak || 0,
-
-                    // Level
-                    level: levelData.level || 0,
-                    levelTitle: levelData.title || '',
-                    levelProgress: levelData.progress_percent || 0,
-                    xpToNextLevel: levelData.xp_remaining || 0,
-
-                    // Rank → flat field names (null = not ranked)
-                    position: rankData.global_position ?? null,
-                    percentile: rankData.percentile ?? null,
-
-                    // Team
-                    active_team: data.team?.id || null,
-                    team: data.team || null,
-
-                    // New data from profile/index
-                    achievements: data.achievements || null,
-                    locations: data.locations || null
-                };
-
-                state.user = user;
+                state.user = buildUserFromProfile(action.payload);
                 state.submitStatus = 'idle';
             })
             .addCase(fetchUser.rejected, (state, action) => {
@@ -387,7 +432,13 @@ const authSlice = createSlice({
                 state.submitStatus = 'loading';
             })
             .addCase(userLogin.fulfilled, (state, action) => {
-                state.token = action.payload;
+                const {token, profile} = action.payload;
+                state.token = token;
+                // Enriched response — build user inline (no fetchUser needed)
+                if (profile) {
+                    state.user = buildUserFromProfile(profile);
+                }
+                // Legacy response — user was set by fetchUser.fulfilled
                 state.submitStatus = 'idle';
             })
             .addCase(userLogin.rejected, (state, action) => {

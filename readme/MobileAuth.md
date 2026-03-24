@@ -1,5 +1,5 @@
 # Mobile Auth & Onboarding
-> OpenLitterMap React Native v7.0
+> OpenLitterMap React Native v7.1.1
 
 ## Overview
 Authentication is handled via Laravel Sanctum token-based auth. The user logs in with email or username + password, receives a Bearer token, and that token is stored in AsyncStorage and attached to all subsequent API requests.
@@ -86,28 +86,34 @@ Both permission screens share a consistent layout:
 ## API Endpoints
 | Thunk | Method | Endpoint | Payload | Notes |
 |-------|--------|----------|---------|-------|
-| `userLogin` | POST | `/api/auth/token` | `{identifier, password}` | `identifier` is email or username. Emails lowercased, usernames case-preserved. Returns `{token, user}` |
-| `createAccount` | POST | `/api/auth/register` | `{email, password}` | Backend auto-generates username. Returns `{token, user}` |
-| `fetchUser` | GET | `/api/user/profile/index` | — | Returns full user profile (nested: user, stats, level, rank, team) |
-| `checkValidToken` | POST | `/api/validate-token` | — | Token in header. Returns `{message: "valid"}` |
+| `userLogin` | POST | `/api/auth/token` | `{identifier, password}` | Enriched response: `{token, user, stats, level, rank, team}`. Single request — no separate fetchUser needed. 429 handled with user-friendly message. |
+| `createAccount` | POST | `/api/auth/register` | `{email, password}` | Same enriched response as login. Backend auto-generates username. |
+| `fetchUser` | GET | `/api/user/profile/index` | — | Used on app resume (via checkValidToken) and profile refresh. Not called after fresh login. |
+| `checkValidToken` | POST | `/api/validate-token` | — | Token in header. Returns `{message: "valid"}`. Only called on app resume, never after fresh login. |
 | `sendResetPasswordRequest` | POST | `/api/password/email` | `{email}` | |
 
 ## Login Flow
 1. User enters email or username in the login field
 2. `userLogin` thunk sends `{identifier, password}` — emails are lowercased, usernames are case-preserved
 3. Backend resolves `identifier` to the matching user
-4. On success: token saved to AsyncStorage + Redux, `fetchUser` dispatched
+4. On success: enriched response returns token + full profile in one request
+5. `buildUserFromProfile` flattens the response into the Redux user object
+6. No separate `fetchUser` or `checkValidToken` call needed
+
+Legacy fallback: if the backend returns the old `{token, user}` shape (no `stats` key), the thunk falls back to calling `fetchUser` separately.
 
 ### Error Handling
-Server error messages are matched against a regex pattern (`/credential|incorrect|invalid|unauthorized/i`) to show the translated `auth.invalid-credentials` message. Other errors (network, server) show the raw message. This replaces the old hardcoded English string comparison.
+- **429 (rate limit)**: Shows "Too many login attempts. Please wait a minute and try again." (backend throttle: 10/min)
+- **Credential errors**: Matched via regex (`/credential|incorrect|invalid|unauthorized/i`) to show translated message
+- **Network/server errors**: Show raw message or "Network error, please try again"
 
 ## Token Flow
-1. Login/register returns a token
-2. Token saved to `AsyncStorage` key `"jwt"` and to Redux `state.auth.token`
-3. `redux-persist` persists the auth slice automatically
-4. On app boot, `MainRoutes.js` reads the stored JWT and calls `checkValidToken`
-5. If valid, `fetchUser` is dispatched to load the user profile
-6. If invalid, `logout()` removes `jwt` and `user` from AsyncStorage and resets state
+1. Login/register returns token + full profile in one enriched response
+2. Token stored in Redux `state.auth.token`, persisted by redux-persist
+3. On app boot, `MainRoutes.js` reads the persisted token and calls `checkValidToken` once
+4. `checkValidToken` only runs on app resume — NOT after fresh login (useEffect has no `token` dependency)
+5. If valid, `fetchUser` is dispatched to refresh the user profile
+6. If invalid, `logout()` resets auth state (redux-persist clears the persisted token)
 
 ## Form Components
 All auth forms use Formik + Yup validation and the shared `CustomTextInput` component. Text normalization (trim, lowercase) happens at submit time, not per-keystroke, so users see exactly what they type.
@@ -119,12 +125,10 @@ All auth forms use Formik + Yup validation and the shared `CustomTextInput` comp
 ## Redux State (`state.auth`)
 ```
 {
-    appVersion: string,
-    isSubmitting: boolean,
+    submitStatus: 'idle' | 'loading',
     token: string | null,
-    user: object | null,
-    serverStatusText: string,
-    errors: object
+    user: object | null,        // flattened by buildUserFromProfile
+    serverStatusText: string
 }
 ```
 

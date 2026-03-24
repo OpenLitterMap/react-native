@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 OpenLitterMap is a React Native mobile app (iOS & Android) for crowdsourced litter mapping. Users photograph litter, tag it by category, and upload geotagged data to the OpenLitterMap Laravel backend API.
 
-**App Version:** 7.1.0 | **React Native:** 0.84.1 | **Branch:** `openlittermap/v7` (main: `main5`)
+**App Version:** 7.1.1 | **React Native:** 0.84.1 | **Branch:** `openlittermap/v7` (main: `main5`)
 
 ## Quick Start
 
@@ -242,9 +242,10 @@ Detailed documentation for each feature area lives in `readme/`:
 
 ## BOOP
 
-When the user says "BOOP", perform these steps:
+When the user says "BOOP", perform all of the following:
 
-1. Bump the patch version in `package.json` (e.g. 7.1.0 → 7.1.1)
-2. Append a one-line entry to `readme/changelog/YYYY-MM-DD.md` for today's date (create the file if it doesn't exist)
-3. Update any readme docs (`readme/*.md`) affected by the changes
-4. Update any skills files affected by the changes
+1. Determine if the change is a new feature (minor bump) or a fix/improvement (patch bump). Ask if unsure
+2. Bump the appropriate version in `package.json`
+3. Append a one-line entry to `readme/changelog/YYYY-MM-DD.md` (today's date)
+4. Update any readme docs (`readme/*.md`) affected by the changes
+5. Update any skills files affected by the changes
