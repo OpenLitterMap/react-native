@@ -1,14 +1,17 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import moment from 'moment';
+import { useTranslation } from 'react-i18next';
+import dayjs from '../../../utils/dayjs';
 import { Body, Caption, SubTitle } from '../../components';
 import RankingMedal from './RankingMedal';
 
 const MemberCard = ({ data, teamId, index }) => {
 
+    const {t} = useTranslation();
+
     const isActiveTeam = teamId === data?.team?.id;
     const lastActivity = data?.pivot?.updated_at
-        ? moment(data?.pivot?.updated_at).fromNow()
+        ? dayjs(data?.pivot?.updated_at).fromNow()
         : '-';
 
     return (
@@ -26,26 +29,26 @@ const MemberCard = ({ data, teamId, index }) => {
                                 {data.username && <Caption>{data.username}</Caption>}
                             </>
                         ) : (
-                            <SubTitle>{data?.username || 'Anonymous'}</SubTitle>
+                            <SubTitle>{data?.username || t('Anonymous')}</SubTitle>
                         )}
                     </View>
                 </View>
                 <Body color={isActiveTeam ? 'accent' : 'warn'}>
-                    {isActiveTeam ? 'Active' : 'Inactive'}
+                    {isActiveTeam ? t('Active') : t('Inactive')}
                 </Body>
             </View>
             <View style={{ marginTop: 16, flexDirection: 'row', justifyContent: 'space-between'}}>
                 <View style={{ justifyContent: 'center', alignItems: 'center' }}>
                     <Body>{data?.pivot?.total_photos}</Body>
-                    <Caption>PHOTOS</Caption>
+                    <Caption>{t('Photos')}</Caption>
                 </View>
                 <View style={{ justifyContent: 'center', alignItems: 'center'}}>
                     <Body>{data?.pivot?.total_litter}</Body>
-                    <Caption>LITTER</Caption>
+                    <Caption>{t('Litter')}</Caption>
                 </View>
                 <View style={{ justifyContent: 'center', alignItems: 'center' }}>
                     <Body>{lastActivity}</Body>
-                    <Caption>LAST ACTIVITY</Caption>
+                    <Caption>{t('Last Activity')}</Caption>
                 </View>
             </View>
         </View>

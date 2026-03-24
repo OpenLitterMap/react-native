@@ -1,19 +1,12 @@
+import {isValidGpsCoords} from './gps';
+
 /**
- * Check if image is geotagged
+ * Check if image is geotagged.
  *
- * WEB images dont have lat/long properties but they are geotagged because
- * web app only accepts geotagged images.
- *
- * @param img
- * @returns boolean
+ * Uploaded images are always geotagged (server rejects non-geotagged uploads).
+ * Local images must have valid numeric lat/lon that isn't 0,0 (Null Island).
  */
 export const isGeotagged = img => {
-    return (
-        img.lat !== undefined &&
-        img.lat !== null &&
-        typeof img.lat === 'number' &&
-        img.lon !== undefined &&
-        img.lon !== null &&
-        typeof img.lon === 'number'
-    ) || img.type === 'WEB';
+    if (img.uploaded) return true;
+    return isValidGpsCoords(img.lat, img.lon);
 };

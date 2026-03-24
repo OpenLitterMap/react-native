@@ -1,17 +1,56 @@
-import axios from "axios";
-import * as Sentry from "@sentry/react-native";
-import { XPLEVEL } from '../assets/data/xpLevel';
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import { CLIENT_ID, CLIENT_SECRET, URL } from  '../actions/types';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Sentry from '@sentry/react-native';
+import {createAsyncThunk, createSlice} from '@reduxjs/toolkit';
+import api from '../utils/apiClient';
 
 const initialState = {
-    appVersion: '',
-    isSubmitting: false,
+    submitStatus: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
     token: null,
     user: null,
-    serverStatusText: '',
-    errors: {}
+    serverStatusText: ''
+};
+
+/**
+ * Build flattened user object from profile response data.
+ * Shared by fetchUser.fulfilled, userLogin.fulfilled, and createAccount.fulfilled.
+ *
+ * Input shape (enriched login/register response):
+ *   { user, stats: { uploads, tags, xp, littercoin },
+ *     level: { level, title, xp, xp_into_level, xp_for_next, xp_remaining, progress_percent },
+ *     rank: { global_position, global_total, percentile },
+ *     team: { id, name } | null }
+ *
+ * Fields intentionally excluded from enriched response (not needed by mobile UI):
+ *   achievements, locations, global_stats, stats.streak
+ */
+const buildUserFromProfile = (data) => {
+    const profile = data.user || {};
+    const stats = data.stats || {};
+    const levelData = data.level || {};
+    const rankData = data.rank || {};
+
+    return {
+        ...profile,
+
+        // Stats
+        totalImages: stats.uploads || 0,
+        totalTags: stats.tags ?? stats.litter ?? 0,
+        totalLittercoin: stats.littercoin || 0,
+        xp: stats.xp || 0,
+
+        // Level
+        level: levelData.level || 0,
+        levelTitle: levelData.title || '',
+        levelProgress: levelData.progress_percent || 0,
+        xpToNextLevel: levelData.xp_remaining || 0,
+
+        // Rank (null = not ranked)
+        position: rankData.global_position ?? null,
+        percentile: rankData.percentile ?? null,
+
+        // Team
+        active_team: data.team?.id || null,
+        team: data.team || null
+    };
 };
 
 /**
@@ -32,319 +71,394 @@ const initialState = {
  */
 export const checkValidToken = createAsyncThunk(
     'auth/checkValidToken',
-    async (jwt, { rejectWithValue, dispatch }) => {
+    async (jwt, {rejectWithValue, dispatch}) => {
         try {
-            const response = await axios({
-                url: `${URL}/api/validate-token`,
-                method: 'POST',
-                headers: {
-                    Authorization: `Bearer ${jwt}`,
-                    Accept: 'application/json'
-                }
-            });
+            const response = await api.post('/api/validate-token', {token: jwt});
 
-            if (response.data.hasOwnProperty('message') && response.data.message === 'valid') {
-                dispatch(fetchUser(jwt));
+            if (
+                response.data.hasOwnProperty('message') &&
+                response.data.message === 'valid'
+            ) {
+                const userResult = await dispatch(fetchUser(jwt));
+                if (userResult.meta?.requestStatus === 'rejected') {
+                    dispatch(logout());
+                    return rejectWithValue('Session expired');
+                }
+                return jwt;
             } else {
                 dispatch(logout());
+                return rejectWithValue('Token invalid');
             }
-        }
-        catch (error) {
+        } catch (error) {
+            dispatch(logout());
             return rejectWithValue('Please login again.');
         }
     }
 );
 
-
 export const createAccount = createAsyncThunk(
     'auth/createAccount',
-    async ({ username, email, password }, { rejectWithValue, dispatch }) => {
-        try
-        {
-            const response = await axios.post(`${URL}/api/register`, {
-                client_id: CLIENT_ID,
-                client_secret: CLIENT_SECRET,
-                grant_type: 'password',
-                username: username,
-                email: email,
-                password: password
-            }, {
-                headers: {
-                    Accept: 'application/json',
-                    'Content-Type': 'application/json'
-                }
+    async ({email, password}, {rejectWithValue, dispatch}) => {
+        try {
+            const response = await api.post('/api/auth/register', {
+                data: {email, password}
             });
 
-            dispatch(userLogin({ email, password }));
+            if (response.data?.token) {
+                const {token, ...profileData} = response.data;
 
-            return response.data;
-        }
-        catch (error)
-        {
-            if (error.response)
-            {
+                if (profileData.user) {
+                    if (__DEV__) {
+                        console.log(
+                            '[Auth] Registered with auto-generated username:',
+                            profileData.user.username
+                        );
+                    }
+                }
+
+                // Enriched response — no second request needed
+                if (profileData.stats) {
+                    Sentry.setUser({
+                        id: profileData.user?.id,
+                        email: profileData.user?.email
+                    });
+
+                    return {token, profile: profileData};
+                }
+
+                // Legacy response — fetch profile separately
+                const userResult = await dispatch(fetchUser(token));
+                if (userResult.meta?.requestStatus === 'rejected') {
+                    dispatch(logout());
+                    return rejectWithValue('Account created but session failed. Please log in.');
+                }
+
+                return {token, profile: null};
+            }
+
+            return rejectWithValue('Registration failed — no token received');
+        } catch (error) {
+            if (error.response) {
+                if (error.response.status === 429) {
+                    return rejectWithValue(
+                        'Too many attempts. Please wait a minute and try again.'
+                    );
+                }
+
                 const errorData = error.response.data.errors;
 
                 if (errorData) {
-                    if (errorData.email) return rejectWithValue(errorData.email);
-                    if (errorData.username) return rejectWithValue(errorData.username);
-                    if (errorData.password) return rejectWithValue(errorData.password);
+                    if (errorData.email) {
+                        return rejectWithValue(errorData.email[0]);
+                    }
+                    if (errorData.password) {
+                        return rejectWithValue(errorData.password[0]);
+                    }
                 }
 
-                return rejectWithValue('Something went wrong, please try again');
-            }
-            else {
-                return rejectWithValue('Network error, please check your internet connection.');
+                return rejectWithValue(
+                    error.response.data?.message ||
+                        'Something went wrong, please try again'
+                );
+            } else {
+                return rejectWithValue(
+                    'Network error, please check your internet connection.'
+                );
             }
         }
     }
 );
 
-
+/**
+ * Fetch user profile with retry for transient failures.
+ * Retries up to 2 times with backoff for timeout/network/5xx errors.
+ * 401 errors are NOT retried — they indicate an invalid session.
+ */
 export const fetchUser = createAsyncThunk(
     'auth/fetchUser',
-    async (token, { rejectWithValue }) => {
-        try
-        {
-            const response = await axios({
-                url: `${URL}/api/user`,
-                method: 'GET',
-                headers: {
-                    Accept: 'application/json',
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`
-                }
-            });
+    async (tokenOverride, {getState, rejectWithValue}) => {
+        const token = tokenOverride || getState().auth.token;
+        const MAX_RETRIES = 2;
+        const BACKOFF_MS = [1000, 3000];
 
-            if (response.status === 200 && response.data) {
-                Sentry.setUser({
-                    id: response.data.id,
-                    email: response.data?.email,
-                });
-
-                return response.data;
-            } else {
-                return rejectWithValue('User fetch failed');
+        const isTransient = error => {
+            if (error.code === 'ECONNABORTED') {
+                return true; // timeout
             }
-        } catch (error) {
-            return rejectWithValue(error.response?.data || error.message || 'Network error, please try again');
+            if (!error.response) {
+                return true; // network error
+            }
+            return error.response.status >= 500; // server error
+        };
+
+        let lastError;
+        for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+            try {
+                const response = await api.get('/api/user/profile/index', {token});
+
+                if (response.status === 200 && response.data) {
+                    Sentry.setUser({
+                        id: response.data.user?.id,
+                        email: response.data.user?.email
+                    });
+
+                    return response.data;
+                } else {
+                    return rejectWithValue({
+                        message: 'User fetch failed',
+                        isAuthError: false
+                    });
+                }
+            } catch (error) {
+                lastError = error;
+                const status = error.response?.status;
+
+                // 401 = invalid session, don't retry
+                if (status === 401) {
+                    return rejectWithValue({
+                        message: 'Session expired',
+                        isAuthError: true
+                    });
+                }
+
+                // Transient error — retry with backoff
+                if (isTransient(error) && attempt < MAX_RETRIES) {
+                    await new Promise(r => setTimeout(r, BACKOFF_MS[attempt]));
+                    continue;
+                }
+
+                // Non-transient or retries exhausted
+                return rejectWithValue({
+                    message:
+                        error.response?.data?.message ||
+                        error.message ||
+                        'Network error, please try again',
+                    isAuthError: false
+                });
+            }
         }
+
+        return rejectWithValue({
+            message: lastError?.message || 'Failed to load profile',
+            isAuthError: false
+        });
     }
 );
-
 
 export const sendResetPasswordRequest = createAsyncThunk(
     'user/sendResetPasswordRequest',
-    async (email, { rejectWithValue }) => {
-        try
-        {
-            const response = await axios.post(`${URL}/api/password/email`, {
-                email
-            }, {
-                headers: {
-                    Accept: 'application/json',
-                    'Content-Type': 'application/json'
-                }
+    async (email, {rejectWithValue}) => {
+        try {
+            const response = await api.post('/api/password/email', {
+                data: {email}
             });
 
             return response.data;
-        }
-        catch (error)
-        {
+        } catch (error) {
             if (error.response) {
-                // Log the error and return a rejected value with an error message
-                // console.log('sendResetPasswordRequest', error.response.data);
                 return rejectWithValue('Error, please try again');
             } else {
-                // console.log('sendResetPasswordRequest', error);
                 return rejectWithValue('Network error, please try again');
             }
         }
     }
 );
 
-
 export const userLogin = createAsyncThunk(
     'auth/userLogin',
-    async ({ email, password }, { rejectWithValue, dispatch }) => {
-        try
-        {
-            const response = await axios({
-                url: `${URL}/oauth/token`,
-                method: 'POST',
-                headers: {
-                    Accept: 'application/json',
-                    'Content-Type': 'application/json'
-                },
-                data: {
-                    client_id: CLIENT_ID,
-                    client_secret: CLIENT_SECRET,
-                    grant_type: 'password',
-                    username: email,
-                    password: password
-                }
-            });
+    async ({login, password}, {rejectWithValue, dispatch}) => {
+        try {
+            const identifier = login.trim().includes('@')
+                ? login.trim().toLowerCase()
+                : login.trim();
 
-            if (response.status === 200)
-            {
-                const token = response.data.access_token;
+            const data = {identifier, password};
 
-                try
-                {
-                    await AsyncStorage.setItem('jwt', token);
-                }
-                catch (error)
-                {
-                    return rejectWithValue('Unable to save token to asyncstore');
+            const response = await api.post('/api/auth/token', {data});
+
+            if (response.status === 200) {
+                const {token, ...profileData} = response.data;
+
+                // Enriched response includes full profile — no second request needed.
+                // Fallback to fetchUser if backend hasn't been updated yet.
+                if (profileData.stats) {
+                    Sentry.setUser({
+                        id: profileData.user?.id,
+                        email: profileData.user?.email
+                    });
+
+                    return {token, profile: profileData};
                 }
 
-                dispatch(fetchUser(token));
+                // Legacy response: { token, user } — fetch profile separately
+                const userResult = await dispatch(fetchUser(token));
+                if (userResult.meta?.requestStatus === 'rejected') {
+                    dispatch(logout());
+                    return rejectWithValue('Login succeeded but session failed. Please try again.');
+                }
 
-                return token;
+                return {token, profile: null};
             } else {
                 return rejectWithValue('Login failed');
             }
         } catch (error) {
-            return rejectWithValue(error.response?.data || error.message || 'Network error, please try again');
+            const status = error.response?.status;
+
+            if (status === 429) {
+                return rejectWithValue(
+                    'Too many login attempts. Please wait a minute and try again.'
+                );
+            }
+
+            return rejectWithValue(
+                error.response?.data?.message ||
+                    error.message ||
+                    'Network error, please try again'
+            );
         }
     }
 );
 
 const authSlice = createSlice({
-
     name: 'auth',
 
     initialState,
 
     reducers: {
-
-        changeUsersActiveTeam (state, action) {
-            state.user.active_team = action.payload;
+        changeUsersActiveTeam(state, action) {
+            if (state.user) {
+                state.user.active_team = action.payload;
+            }
         },
 
-        clearStatusText (state) {
+        clearStatusText(state) {
             state.serverStatusText = '';
         },
 
         /**
-         * Logout user
-         * reset state to initial
+         * Logout user — reset state to initial.
+         * Pure reducer — no side effects. redux-persist handles storage cleanup
+         * when auth slice rehydrates as initialState.
          */
-        logout () {
-            AsyncStorage.clear();
-
+        logout() {
             return initialState;
         },
 
         /**
          * Resets the auth form and display messages
          */
-        loginOrSignupReset (state) {
-            state.isSubmitting = false;
+        loginOrSignupReset(state) {
+            state.submitStatus = 'idle';
             state.serverStatusText = '';
         },
 
         /**
          * Update user object after userdata changed from settings
          */
-        updateUserObject (state, action) {
+        updateUserObject(state, action) {
             state.user = action.payload;
         }
     },
 
-    extraReducers: (builder) => {
-
+    extraReducers: builder => {
         builder
 
-            // Create Account
-            .addCase(createAccount.pending, (state) => {
-                state.serverStatusText = "";
-                state.isSubmitting = true;
+            // Check Valid Token
+            .addCase(checkValidToken.fulfilled, (state, action) => {
+                if (action.payload) {
+                    state.token = action.payload;
+                }
             })
-            .addCase(createAccount.fulfilled, (state) => {
-                state.isSubmitting = false;
+            .addCase(checkValidToken.rejected, state => {
+                state.token = null;
+            })
+
+            // Create Account
+            .addCase(createAccount.pending, state => {
+                state.serverStatusText = '';
+                state.submitStatus = 'loading';
+            })
+            .addCase(createAccount.fulfilled, (state, action) => {
+                const {token, profile} = action.payload;
+                state.token = token;
+                if (profile) {
+                    state.user = buildUserFromProfile(profile);
+                }
+                state.submitStatus = 'idle';
             })
             .addCase(createAccount.rejected, (state, action) => {
-                state.isSubmitting = false;
+                state.submitStatus = 'idle';
                 state.serverStatusText = action.payload;
             })
 
-
-            // Fetch User
+            // Fetch User Profile (GET /api/user/profile/index)
+            // Used on app resume (via checkValidToken) and profile refresh.
             .addCase(fetchUser.fulfilled, (state, action) => {
-
-                let user = action.payload;
-
-                /**
-                 * If user logged in
-                 * process user data and calculate
-                 *   user level -- based on user xp breakdown from ../screens/pages/data/xpLevel
-                 *   targetPercentage -- percentage completed to reach next level from prev level xp
-                 *   totalTags added by user
-                 *   totalLittercoin of user -- littercoin_allowance + littercoin_owed
-                 */
-                const level = XPLEVEL.findIndex(xp => xp > user.xp_redis);
-                const xpRequired = XPLEVEL[level] - user.xp_redis;
-                const previousTarget = level > 0 ? XPLEVEL[level - 1] : 0;
-                const targetPercentage = ((user.xp_redis - previousTarget) / (XPLEVEL[level] - previousTarget)) * 100;
-
-                user = {
-                    ...user,
-                    level: level,
-                    xpRequired: xpRequired,
-                    targetPercentage: targetPercentage,
-                    totalTags: user.total_tags,
-                    totalLittercoin: (user.littercoin_allowance || 0) + (user.littercoin_owed || 0)
-                };
-
-                AsyncStorage.setItem('user', JSON.stringify(user));
-
-                state.user = user;
-                state.isSubmitting = false;
+                state.user = buildUserFromProfile(action.payload);
+                state.submitStatus = 'idle';
             })
             .addCase(fetchUser.rejected, (state, action) => {
-                state.serverStatusText = action.payload;
-                state.isSubmitting = false;
+                const payload = action.payload || {};
+                state.serverStatusText =
+                    payload.message || 'Failed to load profile';
+                state.submitStatus = 'idle';
+
+                // Only clear session on auth errors (401).
+                // Transient failures (timeout, network, 5xx) keep the token
+                // so the user isn't force-logged-out by a network blip.
+                if (payload.isAuthError) {
+                    state.token = null;
+                    state.user = null;
+                }
             })
 
             // Send Reset Password Request
-            .addCase(sendResetPasswordRequest.pending, (state) => {
-                state.isSubmitting = true;
+            .addCase(sendResetPasswordRequest.pending, state => {
+                state.submitStatus = 'loading';
             })
-            .addCase(sendResetPasswordRequest.fulfilled, (state) => {
-                state.isSubmitting = false;
-                state.serverStatusText = 'An email will be sent if the address exists.'
+            .addCase(sendResetPasswordRequest.fulfilled, state => {
+                state.submitStatus = 'idle';
+                state.serverStatusText =
+                    'An email will be sent if the address exists';
             })
-            .addCase(sendResetPasswordRequest.rejected, (state) => {
-                state.serverStatusText = 'An email will be sent if the address exists.'
-                state.isSubmitting = false;
+            .addCase(sendResetPasswordRequest.rejected, state => {
+                state.serverStatusText =
+                    'An email will be sent if the address exists';
+                state.submitStatus = 'idle';
             })
 
             // User Login
-            .addCase(userLogin.pending, (state) => {
-                state.isSubmitting = true;
+            .addCase(userLogin.pending, state => {
+                state.submitStatus = 'loading';
             })
             .addCase(userLogin.fulfilled, (state, action) => {
-                state.token = action.payload;
-                state.errors = {};
-                // state.isSubmitting = false;
+                const {token, profile} = action.payload;
+                state.token = token;
+                // Enriched response — build user inline (no fetchUser needed)
+                if (profile) {
+                    state.user = buildUserFromProfile(profile);
+                }
+                // Legacy response — user was set by fetchUser.fulfilled
+                state.submitStatus = 'idle';
             })
             .addCase(userLogin.rejected, (state, action) => {
-                state.serverStatusText = action.payload?.message || "Problem with login";
-                state.isSubmitting = false;
-            })
+                state.serverStatusText = action.payload || 'Problem with login';
+                state.submitStatus = 'idle';
+            });
     }
 });
 
 export const {
-    accountCreated,
     changeUsersActiveTeam,
     clearStatusText,
     logout,
     loginOrSignupReset,
-    tokenIsValid,
-    userFound,
     updateUserObject
 } = authSlice.actions;
+
+// Selectors
+export const selectIsSubmitting = state => state.auth.submitStatus === 'loading';
+export const selectUser = state => state.auth.user;
+export const selectToken = state => state.auth.token;
 
 export default authSlice.reducer;

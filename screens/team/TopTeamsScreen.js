@@ -1,20 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import { ScrollView, Pressable, StyleSheet, View, ActivityIndicator } from 'react-native';
+import React from 'react';
+import { Pressable, StyleSheet, View, ActivityIndicator } from 'react-native';
+import { FlashList } from '@shopify/flash-list';
 import { useSelector } from "react-redux";
 import Icon from 'react-native-vector-icons/Ionicons';
-import { Header, Title, Colors } from '../components';
-import { TopTeamsList } from './teamComponents';
+import { useTranslation } from 'react-i18next';
+import { Header, Title, Body, Colors } from '../components';
+import { TeamListCard } from './teamComponents';
 
 const TopTeamsScreen = ({ navigation }) => {
 
-    const [isLoading, setIsLoading] = useState(true);
+    const {t} = useTranslation();
     const topTeams = useSelector(state => state.teams.topTeams);
-
-    useEffect(() => {
-        setTimeout(() => {
-            setIsLoading(false);
-        }, 3000);
-    }, []);
+    const topTeamsStatus = useSelector(state => state.teams.topTeamsStatus);
+    const loading = topTeamsStatus === 'loading' || topTeamsStatus === 'idle';
 
     return (
         <>
@@ -28,28 +26,31 @@ const TopTeamsScreen = ({ navigation }) => {
                         />
                     </Pressable>
                 }
-                centerContent={<Title color="white">All Teams</Title>}
+                centerContent={<Title color="white">{t('All Teams')}</Title>}
                 centerContainerStyle={{ flex: 2 }}
             />
 
-            {
-                isLoading ? (
-                    <View style={styles.loadingContainer}>
-                        <ActivityIndicator color={Colors.accent} />
-                    </View>
-                ) : (
-                    <ScrollView
-                        style={styles.container}
-                        alwaysBounceVertical={false}
+            {loading ? (
+                <View style={styles.loadingContainer}>
+                    <ActivityIndicator color={Colors.accent} />
+                </View>
+            ) : !topTeams.length ? (
+                <View style={styles.emptyContainer}>
+                    <Body color="muted">{t('No teams found')}</Body>
+                </View>
+            ) : (
+                <View style={styles.container}>
+                    <FlashList
+                        data={topTeams}
+                        keyExtractor={(item, index) => `${item?.id || item?.name}${index}`}
+                        renderItem={({ item, index }) => (
+                            <TeamListCard team={item} index={index} />
+                        )}
+                        estimatedItemSize={120}
                         contentContainerStyle={{ paddingBottom: 20 }}
-                    >
-                        {/* list of top 5 teams */}
-                        <TopTeamsList
-                            topTeams={topTeams}
-                        />
-                    </ScrollView>
-                )
-            }
+                    />
+                </View>
+            )}
         </>
     );
 }
@@ -63,7 +64,14 @@ const styles = StyleSheet.create({
     loadingContainer: {
         flex: 1,
         justifyContent: 'center',
-        alignItems: 'center'
+        alignItems: 'center',
+        backgroundColor: 'white'
+    },
+    emptyContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'white'
     }
 });
 

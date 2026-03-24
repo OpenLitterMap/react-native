@@ -1,24 +1,12 @@
 import React from 'react';
 import {
     Platform,
-    SafeAreaView,
     StatusBar,
     StyleSheet,
     View
 } from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {Colors} from './theme';
-
-// const {height: SCREEN_HEIGHT} = Dimensions.get('window');
-
-// interface HeaderProps {
-//     leftContent?: ReactElement;
-//     rightContent?: ReactElement;
-//     centerContent?: ReactElement;
-//     containerStyle?: React.CSSProperties | React.CSSProperties[];
-//     leftContainerStyle?: React.CSSProperties | React.CSSProperties[];
-//     rightContainerStyle?: React.CSSProperties | React.CSSProperties[];
-//     centerContainerStyle?: React.CSSProperties | React.CSSProperties[];
-// }
 
 const Header = ({
     leftContent,
@@ -29,19 +17,24 @@ const Header = ({
     centerContainerStyle,
     rightContainerStyle
 }) => {
-    // @ts-ignore
-    // @ts-ignore
+    const insets = useSafeAreaInsets();
+
     return (
         <>
             <StatusBar
                 translucent
-                // hidden
                 barStyle="light-content"
                 backgroundColor={`${Colors.accent}`}
             />
-            <SafeAreaView
-                edges={['left', 'top', 'right']}
-                style={styles.headerSafeView}>
+            <View
+                style={[
+                    styles.headerSafeView,
+                    {
+                        paddingTop: insets.top,
+                        paddingLeft: insets.left,
+                        paddingRight: insets.right
+                    }
+                ]}>
                 <View style={[styles.headerContainer, containerStyle]}>
                     {/* left icon */}
                     {leftContent && (
@@ -62,19 +55,20 @@ const Header = ({
                     )}
 
                     {/* right content */}
-
-                    <View
-                        style={[
-                            {
-                                flex: 1,
-                                alignItems: 'flex-end'
-                            },
-                            rightContainerStyle
-                        ]}>
-                        {rightContent}
-                    </View>
+                    {rightContent && (
+                        <View
+                            style={[
+                                {
+                                    flex: 1,
+                                    alignItems: 'flex-end'
+                                },
+                                rightContainerStyle
+                            ]}>
+                            {rightContent}
+                        </View>
+                    )}
                 </View>
-            </SafeAreaView>
+            </View>
         </>
     );
 };
@@ -86,10 +80,9 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         paddingHorizontal: 20,
-        paddingTop: StatusBar.currentHeight,
         alignItems: 'center',
         backgroundColor: `${Colors.accent}`,
-        minHeight: Platform.OS === 'ios' ? 60 : 80
+        minHeight: 60
     },
     headerSafeView: {
         backgroundColor: `${Colors.accent}`

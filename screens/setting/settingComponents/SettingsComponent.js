@@ -1,113 +1,128 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import {
     ActivityIndicator,
-    Dimensions,
     Modal,
     Pressable,
     ScrollView,
     StyleSheet,
     Text,
     TextInput,
-    TouchableHighlight,
+    useWindowDimensions,
     View
 } from 'react-native';
-import { useDispatch, useSelector } from "react-redux";
-import { Formik } from 'formik';
+import {useDispatch, useSelector} from 'react-redux';
+import {Formik} from 'formik';
 import * as Yup from 'yup';
-import { useTranslation } from 'react-i18next';
-import { Body, Colors, CustomTextInput, Header, SubTitle } from '../../components';
+import {useTranslation} from 'react-i18next';
+import {
+    Body,
+    Colors,
+    CustomTextInput,
+    Header,
+    SubTitle
+} from '../../components';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {
-    closeSecondSettingModal,
+    closeSaveResultModal,
     deleteAccount,
     saveSettings,
     saveSocialAccounts,
     setDeleteAccountError,
-    settingsInit,
-    toggleSettingsModal,
-    updateSettingsProp
-} from "../../../reducers/settings_reducer";
-
-const SCREEN_WIDTH = Dimensions.get('window').width;
-const SCREEN_HEIGHT = Dimensions.get('window').height;
+    setEditValue,
+    toggleEditModal
+} from '../../../reducers/settings_reducer';
 
 const SettingsComponent = () => {
-
-    const { t } = useTranslation();
+    const {t} = useTranslation();
     const dispatch = useDispatch();
+    const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} = useWindowDimensions();
 
     const formikRef = useRef(null);
     const [password, setPassword] = useState('');
 
     useEffect(() => {
-        // This will initialize the settings.settingsEditProp
-        initSettingsEditProp();
+        // This will initialize the settings.editValue
+        initEditValue();
     }, []);
 
-    const settingsEditProp = useSelector(state => state.settings.settingsEditProp);
-    const dataToEdit = useSelector(state => state.settings.dataToEdit);
+    const editValue = useSelector(
+        state => state.settings.editValue
+    );
+    const editField = useSelector(state => state.settings.editField);
     const user = useSelector(state => state.auth.user);
-    const token = useSelector(state => state.auth.token);
 
-    const secondSettingsModalVisible = useSelector(state => state.settings.secondSettingsModalVisible);
-    const updateSettingsStatusMessage = useSelector(state => state.settings.updateSettingsStatusMessage);
-    const updatingSettings = useSelector(state => state.settings.updatingSettings);
-    const deleteAccountError = useSelector(state => state.settings.deleteAccountError);
+    const saveResultModalVisible = useSelector(
+        state => state.settings.saveResultModalVisible
+    );
+    const saveResultMessage = useSelector(
+        state => state.settings.saveResultMessage
+    );
+    const isSaving = useSelector(
+        state => state.settings.saveStatus === 'loading'
+    );
+    const deleteAccountError = useSelector(
+        state => state.settings.deleteAccountError
+    );
 
-    const getForm = (formDataToEdit) => {
+    const getForm = formField => {
+        if (!formField) return null;
 
         const key = ['name', 'username', 'email'];
 
         // get conditional validation schema
-        const validationSchema = Yup.object().shape(getSchema(formDataToEdit.key));
+        const validationSchema = Yup.object().shape(
+            getSchema(formField.key)
+        );
 
         // form for name, username, email
-        if (key.includes(formDataToEdit.key))
-        {
+        if (key.includes(formField.key)) {
             return (
-                {settingsEditProp} && (
+                editValue && (
                     <Formik
-                        initialValues={{ [formDataToEdit.key]: settingsEditProp }}
+                        initialValues={{[formField.key]: editValue}}
                         enableReinitialize={true}
                         innerRef={formikRef}
                         validationSchema={validationSchema}
                         onSubmit={values => {
-                            dispatch(saveSettings({
-                                dataKey: formDataToEdit.key,
-                                dataValue: values[formDataToEdit.key],
-                                token
-                            }));
-                        }}
-                    >
+                            dispatch(
+                                saveSettings({
+                                    dataKey: formField.key,
+                                    dataValue: values[formField.key]
+                                })
+                            );
+                        }}>
                         {({
-                              handleChange,
-                              handleBlur,
-                              setFieldValue,
-                              handleSubmit,
-                              values,
-                              errors,
-                              touched
+                            handleChange,
+                            handleBlur,
+                            setFieldValue,
+                            handleSubmit,
+                            values,
+                            errors,
+                            touched
                         }) => (
                             <View style={styles.container}>
-                                <Body dictionary={`${formDataToEdit.title}`}/>
+                                <Body dictionary={`${formField.title}`} />
 
                                 <CustomTextInput
                                     style={styles.content}
-                                    onChangeText={text => { setFieldValue(`${formDataToEdit.key}`, text); }}
-                                    value={values[`${formDataToEdit.key}`]}
-                                    name={`${formDataToEdit.key}`}
+                                    onChangeText={text => {
+                                        setFieldValue(
+                                            `${formField.key}`,
+                                            text
+                                        );
+                                    }}
+                                    value={values[`${formField.key}`]}
+                                    name={`${formField.key}`}
                                     autoCapitalize="none"
-                                    error={errors[`${formDataToEdit.key}`] && `auth.${errors[`${formDataToEdit.key}`]}`}
-                                    touched={touched[`${formDataToEdit.key}`]}
+                                    error={errors[`${formField.key}`]}
+                                    touched={touched[`${formField.key}`]}
                                 />
                             </View>
                         )}
                     </Formik>
                 )
             );
-        }
-        else if (formDataToEdit.key === 'social')
-        {
+        } else if (formField.key === 'social') {
             const formFields = [
                 'social_twitter',
                 'social_facebook',
@@ -127,42 +142,46 @@ const SettingsComponent = () => {
             return (
                 <Formik
                     initialValues={{
-                        social_twitter: settingsEditProp?.social_twitter,
-                        social_facebook: settingsEditProp?.social_facebook,
-                        social_instagram: settingsEditProp?.social_instagram,
-                        social_linkedin: settingsEditProp?.social_linkedin,
-                        social_reddit: settingsEditProp?.social_reddit,
-                        social_personal: settingsEditProp?.social_personal
+                        social_twitter: editValue?.social_twitter,
+                        social_facebook: editValue?.social_facebook,
+                        social_instagram: editValue?.social_instagram,
+                        social_linkedin: editValue?.social_linkedin,
+                        social_reddit: editValue?.social_reddit,
+                        social_personal: editValue?.social_personal
                     }}
                     enableReinitialize={true}
                     innerRef={formikRef}
                     validationSchema={validationSchema}
                     onSubmit={values => {
-                        dispatch(saveSocialAccounts({
-                            values,
-                            token
-                        }));
-                    }}
-                >
+                        dispatch(
+                            saveSocialAccounts({
+                                values
+                            })
+                        );
+                    }}>
                     {({setFieldValue, setFieldTouched, errors, touched}) => (
                         <ScrollView
                             alwaysBounceVertical={false}
                             showsVerticalScrollIndicator={false}
-                            style={styles.container}
-                        >
+                            style={styles.container}>
                             {formFields.map((field, index) => (
                                 <View key={field}>
                                     <Body>{field.toLocaleUpperCase()}</Body>
                                     <CustomTextInput
                                         style={styles.content}
-                                        onEndEditing={() => setFieldTouched(`${field}`, true)}
+                                        onEndEditing={() =>
+                                            setFieldTouched(`${field}`, true)
+                                        }
                                         onChangeText={text => {
                                             setFieldValue(`${field}`, text);
                                         }}
-                                        value={settingsEditProp && settingsEditProp[`${field}`]}
+                                        value={
+                                            editValue &&
+                                            editValue[`${field}`]
+                                        }
                                         name={`${field}`}
                                         autoCapitalize="none"
-                                        error={errors[`${field}`] && `settings.${errors[`${field}`]}`}
+                                        error={errors[`${field}`]}
                                         touched={touched[`${field}`]}
                                         placeholder={`${placeholders[index]}`}
                                     />
@@ -172,23 +191,21 @@ const SettingsComponent = () => {
                     )}
                 </Formik>
             );
-        }
-        else if (formDataToEdit.key === 'delete-account')
-        {
+        } else if (formField.key === 'delete-account') {
             return (
-                <View style={styles.deleteAccountContainer}>
-                    <Text style={styles.deleteAccountTitle}>
-                        Are you sure you want to delete your account?
+                <View style={[styles.deleteAccountContainer, {padding: SCREEN_WIDTH * 0.1}]}>
+                    <Text style={[styles.deleteAccountTitle, {fontSize: SCREEN_HEIGHT * 0.045, marginBottom: SCREEN_HEIGHT * 0.025}]}>
+                        {t('Are you sure you want to delete your account?')}
                     </Text>
-                    <Text style={styles.deleteAccountSubtitle}>
-                        All of your data will be deleted.
+                    <Text style={[styles.deleteAccountSubtitle, {fontSize: SCREEN_HEIGHT * 0.035, marginBottom: SCREEN_HEIGHT * 0.025}]}>
+                        {t('All of your data will be deleted.')}
                     </Text>
-                    <Text style={styles.deleteAccountSubtitle}>
-                        This cannot be undone.
+                    <Text style={[styles.deleteAccountSubtitle, {fontSize: SCREEN_HEIGHT * 0.035, marginBottom: SCREEN_HEIGHT * 0.025}]}>
+                        {t('This cannot be undone.')}
                     </Text>
 
                     <TextInput
-                        placeholder="Please enter your password"
+                        placeholder={t('Please enter your password')}
                         placeholderTextColor="grey"
                         style={{
                             height: 40,
@@ -202,20 +219,18 @@ const SettingsComponent = () => {
                     />
 
                     <Pressable
-                        style={styles.deleteAccountButton}
+                        style={[styles.deleteAccountButton, {height: SCREEN_HEIGHT * 0.05, width: SCREEN_WIDTH * 0.8}, isSaving && {opacity: 0.5}]}
                         onPress={submitDeleteAccount}
-                    >
-                        <Text style={styles.deleteButtonText}>
-                            Delete account
+                        disabled={isSaving}>
+                        <Text style={[styles.deleteButtonText, {fontSize: SCREEN_HEIGHT * 0.02}]}>
+                            {isSaving ? t('Deleting...') : t('Delete Account')}
                         </Text>
                     </Pressable>
 
                     {deleteAccountError !== '' ? (
                         <View>
-                            <Text
-                                style={styles.wrongPasswordText}
-                            >
-                                t(`${deleteAccountError}`)
+                            <Text style={styles.wrongPasswordText}>
+                                {t(deleteAccountError)}
                             </Text>
                         </View>
                     ) : (
@@ -226,7 +241,7 @@ const SettingsComponent = () => {
         }
     };
 
-    const changeTextHandler = (txt) => {
+    const changeTextHandler = txt => {
         setPassword(txt);
 
         if (deleteAccountError !== '') {
@@ -237,104 +252,90 @@ const SettingsComponent = () => {
     /**
      * Fn to return Validation schema
      */
-    const getSchema = (key) => {
+    const getSchema = key => {
         /**
          * Form field validation with keys for translation
          * using Yup for validation
          */
         const NameSchema = {
             name: Yup.string()
-                .min(3, 'name-min-max')
-                .max(20, 'name-min-max')
-                .required('enter-name')
+                .min(3, 'Name should be between 3-20 characters')
+                .max(20, 'Name should be between 3-20 characters')
+                .required('Please enter a name')
         };
 
         const UsernameSchema = {
             username: Yup.string()
-                .min(3, 'username-min-max')
-                .max(20, 'username-min-max')
-                .required('enter-username')
+                .min(3, 'Username should be between 3-20 characters')
+                .max(20, 'Username should be between 3-20 characters')
+                .required('Please enter a username')
         };
 
         const EmailSchema = {
-            email: Yup.string().email('email-not-valid').required('enter-email')
+            email: Yup.string()
+                .email('This is not a valid email address')
+                .required('Please enter an email address')
         };
 
         const SocialSchema = {
-            twitter: Yup.string().url('url-not-valid'),
-            facebook: Yup.string().url('url-not-valid'),
-            instagram: Yup.string().url('url-not-valid'),
-            linkedin: Yup.string().url('url-not-valid'),
-            reddit: Yup.string().url('url-not-valid'),
-            personal: Yup.string().url('url-not-valid')
+            social_twitter: Yup.string().url('Please enter a valid url'),
+            social_facebook: Yup.string().url('Please enter a valid url'),
+            social_instagram: Yup.string().url('Please enter a valid url'),
+            social_linkedin: Yup.string().url('Please enter a valid url'),
+            social_reddit: Yup.string().url('Please enter a valid url'),
+            social_personal: Yup.string().url('Please enter a valid url')
         };
 
         switch (key) {
-            case 'name':
-                return NameSchema;
-            case 'username':
-                return UsernameSchema;
-            case 'email':
-                return EmailSchema;
-            case 'social':
-                return SocialSchema;
+        case 'name':
+            return NameSchema;
+        case 'username':
+            return UsernameSchema;
+        case 'email':
+            return EmailSchema;
+        case 'social':
+            return SocialSchema;
         }
     };
 
     /**
-     * render modal messages based on vale of updateSettingsStatusMessage
+     * render modal messages based on vale of saveResultMessage
      * ERROR || SUCCESS
      */
-    const renderStatusMessage = (status) => {
+    const renderStatusMessage = status => {
         const success = status === 'SUCCESS';
         const error = status === 'ERROR';
 
-        const successTitle = t(`settings.success`);
-        const successMessage = t(`settings.value-updated`);
-        const errorTitle = t(`settings.error`);
-        const errorMessage = t(`settings.value-not-updated`);
+        const successTitle = t('Success!');
+        const successMessage = t('Value updated');
+        const errorTitle = t('Error!');
+        const errorMessage = t('Value not updated');
 
-        const goBackMessage = t(`settings.go-back`);
+        const goBackMessage = t('Go Back');
 
-        if (success || error)
-        {
+        if (success || error) {
             return (
-                <View style={styles.innerModalSuccess}>
-                    {/*<ElementIcon*/}
-                    {/*    reverse*/}
-                    {/*    name={success ? 'done' : 'close'}*/}
-                    {/*    color={success ? '#2ecc71' : '#E25B69'}*/}
-                    {/*    size={40}*/}
-                    {/*    containerStyle={styles.iconContainer}*/}
-                    {/*/>*/}
-
+                <View style={[styles.innerModalSuccess, {width: SCREEN_WIDTH * 0.8}]}>
                     <Text style={styles.innerModalHeader}>
-                        { success ? successTitle : errorTitle }
+                        {success ? successTitle : errorTitle}
                     </Text>
 
-                    <Text>
-                        { success ? successMessage : errorMessage }
-                    </Text>
+                    <Text>{success ? successMessage : errorMessage}</Text>
 
-                    <TouchableHighlight
-                        style={styles.successButton}
-                        activeOpacity={0.9}
-                        underlayColor="#00aced"
-                        onPress={goBack}
-                    >
-                        <Text style={styles.buttonText}>
-                            { goBackMessage }
-                        </Text>
-                    </TouchableHighlight>
+                    <Pressable
+                        style={[styles.successButton, {height: SCREEN_HEIGHT * 0.05}]}
+                        onPress={goBack}>
+                        <Text style={styles.buttonText}>{goBackMessage}</Text>
+                    </Pressable>
                 </View>
             );
         }
         return <></>;
-    }
+    };
 
     const closeModal = () => {
-        dispatch(toggleSettingsModal());
-    }
+        dispatch(toggleEditModal());
+    };
 
     /**
      * Header title
@@ -342,68 +343,67 @@ const SettingsComponent = () => {
      * eg Edit Name
      */
     const getHeaderName = () => {
-        const text = t(`${dataToEdit.title}`);
+        if (!editField) {
+            return '';
+        }
+        const text = t(`${editField.title}`);
 
-        if (dataToEdit.key === 'delete-account') {
-            return t(`settings.warning`);
+        if (editField.key === 'delete-account') {
+            return t('Warning');
         }
 
-        const edit = t(`settings.edit`);
+        const edit = t('Edit');
 
         return edit + ' ' + text;
-    }
+    };
 
     const handleSaveSettings = () => {
         if (formikRef.current) {
             formikRef.current.handleSubmit();
         }
-    }
+    };
 
     const goBack = () => {
-        dispatch(closeSecondSettingModal());
-
-        // Parent modal only closes with timeout
-        // setTimeout(() => {
-        //     dispatch(toggleSettingsModal());
-        // }, 500);
-    }
+        dispatch(closeSaveResultModal());
+    };
 
     /**
      * Initialize Settings Value to edit / update
      */
-    const initSettingsEditProp = () => {
-        const key = dataToEdit.key;
+    const initEditValue = () => {
+        const key = editField?.key;
+        if (!key || !user) {
+            return;
+        }
 
         switch (key) {
-            case 'name':
-                return dispatch(settingsInit(user.name));
-            case 'username':
-                return dispatch(settingsInit(user.username));
-            case 'email':
-                return dispatch(settingsInit(user.email));
-            case 'social':
-                return dispatch(settingsInit(user.settings));
+        case 'name':
+            return dispatch(setEditValue(user.name));
+        case 'username':
+            return dispatch(setEditValue(user.username));
+        case 'email':
+            return dispatch(setEditValue(user.email));
+        case 'social':
+            return dispatch(setEditValue(user.settings));
         }
-    }
+    };
 
     /**
      * Send a request to delete the account and all associated data
      */
     const submitDeleteAccount = async () => {
-        await dispatch(deleteAccount({ password, token }));
+        const result = await dispatch(deleteAccount({password}));
+        if (result.meta?.requestStatus === 'rejected') {
+            setPassword('');
+        }
     };
-
 
     return (
         <>
             <Header
                 leftContent={
                     <Pressable onPress={closeModal}>
-                        <Icon
-                            name="close-outline"
-                            size={32}
-                            color="white"
-                        />
+                        <Icon name="close-outline" size={32} color="white" />
                     </Pressable>
                 }
                 centerContent={
@@ -416,12 +416,9 @@ const SettingsComponent = () => {
                     </SubTitle>
                 }
                 rightContent={
-                    dataToEdit.key !== 'delete-account' ? (
+                    editField?.key !== 'delete-account' ? (
                         <Pressable onPress={handleSaveSettings}>
-                            <Body
-                                color="white"
-                                dictionary={`settings.save`}
-                            />
+                            <Body color="white" dictionary={'Save'} />
                         </Pressable>
                     ) : (
                         ''
@@ -429,23 +426,23 @@ const SettingsComponent = () => {
                 }
             />
 
-            {getForm(dataToEdit)}
+            {getForm(editField)}
 
             <Modal
                 animationType="slide"
                 transparent={true}
-                visible={secondSettingsModalVisible}
-            >
+                visible={saveResultModalVisible}
+                onRequestClose={goBack}>
                 <View style={styles.modalContainer}>
-                    {renderStatusMessage(updateSettingsStatusMessage)}
-                    {updatingSettings && updateSettingsStatusMessage === '' && (
+                    {renderStatusMessage(saveResultMessage)}
+                    {isSaving && saveResultMessage === '' && (
                         <ActivityIndicator />
                     )}
                 </View>
             </Modal>
         </>
     );
-}
+};
 
 const styles = StyleSheet.create({
     buttonText: {
@@ -467,8 +464,6 @@ const styles = StyleSheet.create({
         maxHeight: 48
     },
     deleteAccountButton: {
-        height: SCREEN_HEIGHT * 0.05,
-        width: SCREEN_WIDTH * 0.8,
         marginTop: 20,
         backgroundColor: 'red',
         paddingVertical: 10,
@@ -476,27 +471,11 @@ const styles = StyleSheet.create({
         borderRadius: 8
     },
     deleteButtonText: {
-        color: 'white',
-        fontSize: SCREEN_HEIGHT * 0.02
+        color: 'white'
     },
-    deleteAccountContainer: {
-        padding: SCREEN_WIDTH * 0.1
-    },
-    deleteAccountTitle: {
-        fontSize: SCREEN_HEIGHT * 0.045,
-        marginBottom: SCREEN_HEIGHT * 0.025
-    },
-    deleteAccountSubtitle: {
-        fontSize: SCREEN_HEIGHT * 0.035,
-        marginBottom: SCREEN_HEIGHT * 0.025
-    },
-    row: {
-        alignItems: 'center',
-        // flexDirection: 'row',
-        justifyContent: 'center',
-        backgroundColor: 'white',
-        height: SCREEN_HEIGHT * 0.06
-    },
+    deleteAccountContainer: {},
+    deleteAccountTitle: {},
+    deleteAccountSubtitle: {},
     modalContainer: {
         flex: 1,
         backgroundColor: 'rgba(0,0,0,0.6)',
@@ -504,35 +483,23 @@ const styles = StyleSheet.create({
         justifyContent: 'center'
     },
     innerModalSuccess: {
-        // height: SCREEN_HEIGHT * 0.2,
         paddingVertical: 20,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: 'white',
-        width: SCREEN_WIDTH * 0.8
+        backgroundColor: 'white'
     },
     innerModalHeader: {
         textAlign: 'center',
         fontSize: 28,
         marginBottom: 10
     },
-    iconContainer: {
-        marginTop: -70
-    },
     successButton: {
         alignItems: 'center',
         justifyContent: 'center',
         borderRadius: 6,
         backgroundColor: '#2189dc',
-        // backgroundColor: '#2ecc71',
-        height: SCREEN_HEIGHT * 0.05,
         marginTop: 20,
         width: '80%'
-    },
-    title: {
-        paddingLeft: 10,
-        fontSize: SCREEN_HEIGHT * 0.02,
-        width: SCREEN_WIDTH * 0.25
     },
     wrongPasswordText: {
         marginTop: 20,

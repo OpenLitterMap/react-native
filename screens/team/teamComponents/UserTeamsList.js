@@ -1,26 +1,23 @@
 import React, { useEffect } from 'react';
 import { StyleSheet, Pressable, View } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { useTranslation } from 'react-i18next';
 import { SubTitle, Body, Caption, Colors } from '../../components';
 import { useDispatch, useSelector } from "react-redux";
 import { getUserTeams, setSelectedTeam } from "../../../reducers/team_reducer";
 import TeamListCard from './TeamListCard';
 
-const UserTeamsList = ({ navigation }) => {
+const UserTeamsList = ({ navigation, onCreateTeam, onJoinTeam }) => {
 
     const dispatch = useDispatch();
-    const token = useSelector(state => state.auth.token);
+    const {t} = useTranslation();
     const userTeams = useSelector(state => state.teams.userTeams);
     const user = useSelector(state => state.auth.user);
 
     const activeTeamId = user?.active_team;
 
     useEffect(() => {
-        async function handleGetUserTeams(token) {
-            await dispatch(getUserTeams(token));
-        }
-
-        handleGetUserTeams(token);
+        dispatch(getUserTeams());
     }, []);
 
     const selectTeam = team => {
@@ -31,9 +28,30 @@ const UserTeamsList = ({ navigation }) => {
 
     return (
         <>
-            {/* Users Teams */}
             <View style={[styles.headingRow, { marginTop: 20 }]}>
-                <SubTitle>My Teams</SubTitle>
+                <SubTitle>{t('My Teams')}</SubTitle>
+                <View style={styles.actionRow}>
+                    <Pressable
+                        onPress={onCreateTeam}
+                        style={styles.actionButton}>
+                        <Icon
+                            name="add-circle-outline"
+                            size={16}
+                            color={Colors.accent}
+                        />
+                        <Caption color="accent">{t('Create')}</Caption>
+                    </Pressable>
+                    <Pressable
+                        onPress={onJoinTeam}
+                        style={styles.actionButton}>
+                        <Icon
+                            name="log-in-outline"
+                            size={16}
+                            color={Colors.accent}
+                        />
+                        <Caption color="accent">{t('Join')}</Caption>
+                    </Pressable>
+                </View>
             </View>
 
             {userTeams?.map((team, index) => (
@@ -70,10 +88,17 @@ const styles = StyleSheet.create({
     headingRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        alignItems: 'baseline'
+        alignItems: 'center'
     },
-    alignRight: {
-        textAlign: 'right'
+    actionRow: {
+        flexDirection: 'row',
+        gap: 12
+    },
+    actionButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+        padding: 4
     }
 });
 

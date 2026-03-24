@@ -35,8 +35,6 @@ const Body: React.FC<BodyProps> = ({
     );
 };
 
-Body.propTypes = {};
-
 const styles = StyleSheet.create({
     text: {
         fontSize: 16,

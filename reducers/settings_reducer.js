@@ -1,21 +1,29 @@
-import axios from "axios";
-import { URL } from '../actions/types';
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import {changeUsersPickedUp, updateUserObject} from './auth_reducer';
-import { clearUploadedWebImages } from './images_reducer';
+import {createAsyncThunk, createSlice} from '@reduxjs/toolkit';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import api from '../utils/apiClient';
+import {updateUserObject, logout} from './auth_reducer';
 
 const initialState = {
-    model: '',
-    settingsModalVisible: false,
-    secondSettingsModalVisible: false,
-    settingsEdit: false,
-    settingsEditProp: '',
-    wait: false,
-    dataToEdit: null,
+    deviceModel: '',
+    editModalVisible: false,
+    saveResultModalVisible: false,
+    editValue: '',
+    editField: null,
+    toggleStatus: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
     deleteAccountError: '',
-    updateSettingsStatusMessage: '',
-    updatingSettings: false
+    saveResultMessage: '',
+    saveStatus: 'idle' // 'idle' | 'loading' | 'succeeded' | 'failed'
+};
+
+/** Privacy toggle endpoint mapping — IDs match SettingsScreen section data */
+const PRIVACY_ENDPOINTS = {
+    4: 'maps/name',
+    5: 'maps/username',
+    6: 'leaderboard/name',
+    7: 'leaderboard/username',
+    8: 'createdby/name',
+    9: 'createdby/username',
+    10: 'toggle-previous-tags'
 };
 
 /**
@@ -28,95 +36,69 @@ const initialState = {
 
 export const deleteAccount = createAsyncThunk(
     'account/delete',
-    async ({ password, token }, { rejectWithValue }) => {
+    async ({password}, {getState, rejectWithValue, dispatch}) => {
         try {
-            const response = await axios.post(`${URL}/api/settings/delete-account/`, {
-                password,
-                token
-            }, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
+            const token = getState().auth.token;
+            const response = await api.post('/api/settings/delete-account/', {
+                token,
+                data: {password}
             });
 
-            if (!response.data.success && response.data.msg === 'password does not match') {
-                return rejectWithValue('settings.password-incorrect');
-            } else {
-                // Consider handling side effects like AsyncStorage outside of the redux flow or use middleware
-                await AsyncStorage.clear();
-
-                return response.data;
+            if (!response.data.success) {
+                const msg =
+                    response.data.msg === 'password does not match'
+                        ? 'Your password did not match'
+                        : 'Failed to delete account';
+                return rejectWithValue(msg);
             }
+
+            // Nuclear cleanup on account deletion — wipe all cached data
+            await AsyncStorage.clear();
+            dispatch(logout());
+            return response.data;
         } catch (error) {
-            console.error('ERROR DELETE_ACCOUNT', error);
-            return rejectWithValue(error.response.data);
+            if (__DEV__) {
+                console.error('ERROR DELETE_ACCOUNT', error);
+            }
+            return rejectWithValue(
+                error.response?.data?.message || 'Failed to delete account'
+            );
         }
     }
 );
 
 export const saveSettings = createAsyncThunk(
     'settings/save',
-    async ({ dataKey, dataValue, token }, { rejectWithValue, dispatch }) => {
+    async ({dataKey, dataValue}, {getState, rejectWithValue, dispatch}) => {
+        // Backend ALLOWED_SETTINGS keys are all lowercase.
+        // enable_admin_tagging is NOT in the backend whitelist — omit it.
+        const key = dataKey;
 
-        const keyMap = {
-            name: 'Name',
-            username: 'Username',
-            email: 'Email',
-            picked_up: 'picked_up',
-            global_flag: 'global_flag',
-            enable_admin_tagging: 'enable_admin_tagging'
-        };
-
-        const key = keyMap[dataKey] || dataKey; // Default to the original key if not mapped
-
-        try
-        {
-            const response = await axios({
-                url: `${URL}/api/settings/update/`,
-                method: 'POST',
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    'content-type': 'application/json'
-                },
-                data: {
-                    key,
-                    value: dataValue
-                }
+        try {
+            const token = getState().auth.token;
+            const response = await api.post('/api/settings/update/', {
+                token,
+                data: {key, value: dataValue}
             });
 
-            if (response.data.success) {
-                // Get user and parse json to Object
-                let user = await AsyncStorage.getItem('user');
-
-                user = JSON.parse(user);
-
-                user[key] = dataValue;
-
-                // save updated user data
-                await AsyncStorage.setItem('user', JSON.stringify(user));
-
+            if (response.data?.success) {
+                const currentUser = getState().auth.user;
+                if (!currentUser) return rejectWithValue('No active session');
+                const user = {...currentUser, [dataKey]: dataValue};
                 dispatch(updateUserObject(user));
-
-                if (key === 'enable_admin_tagging') {
-                    if (dataValue) {
-                        dispatch(clearUploadedWebImages());
-                    }
-                }
 
                 return {
                     key: dataKey,
                     value: dataValue,
-                    message: 'SUCCESS',
-                    clearUploadedImages: key === 'enable_admin_tagging' && dataValue
+                    message: 'SUCCESS'
                 };
             } else {
-                rejectWithValue('Failed to update settings');
+                return rejectWithValue('Failed to update settings');
             }
-        }
-        catch (error)
-        {
-            console.error('saveSettings', error);
+        } catch (error) {
+            if (__DEV__) {
+                console.error('saveSettings', error);
+            }
             return rejectWithValue('ERROR');
         }
     }
@@ -124,38 +106,25 @@ export const saveSettings = createAsyncThunk(
 
 export const saveSocialAccounts = createAsyncThunk(
     'settings/saveSocialAccounts',
-    async ({ values, token }, { rejectWithValue, dispatch }) => {
-        try
-        {
-            const response = await axios({
-                url: `${URL}/api/settings`,
-                method: 'PATCH',
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    'content-type': 'application/json'
-                },
-                data: {
-                    ...values
-                }
+    async ({values}, {getState, rejectWithValue, dispatch}) => {
+        try {
+            const token = getState().auth.token;
+            const response = await api.patch('/api/settings', {
+                token,
+                data: {...values}
             });
 
             if (response?.data?.message === 'success') {
-
-                let user = await AsyncStorage.getItem('user');
-                user = JSON.parse(user);
-                user.settings = values;
-                await AsyncStorage.setItem('user', JSON.stringify(user));
-
+                const currentUser = getState().auth.user;
+                if (!currentUser) return rejectWithValue('No active session');
+                const user = {...currentUser, settings: values};
                 dispatch(updateUserObject(user));
 
                 return 'SUCCESS';
             } else {
-                rejectWithValue('ERROR');
+                return rejectWithValue('ERROR');
             }
-        }
-        catch (error)
-        {
-            // console.log('saveSocialAccounts', error);
+        } catch (error) {
             return rejectWithValue('ERROR');
         }
     }
@@ -163,181 +132,140 @@ export const saveSocialAccounts = createAsyncThunk(
 
 export const toggleSettingsSwitch = createAsyncThunk(
     'settings/toggleSwitch',
-    async ({ id, token }, { rejectWithValue, dispatch }) => {
-        const endpointMap = {
-            4: 'maps/name',
-            5: 'maps/username',
-            6: 'leaderboard/name',
-            7: 'leaderboard/username',
-            8: 'createdby/name',
-            9: 'createdby/username',
-            10: 'toggle-previous-tags'
-        };
+    async ({id}, {getState, rejectWithValue, dispatch}) => {
+        const endUrl = PRIVACY_ENDPOINTS[id] || '';
 
-        const endUrl = endpointMap[id] || '';
-
-        try
-        {
-            const response = await axios.post(`${URL}/api/settings/privacy/${endUrl}`, {}, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    'content-type': 'application/json'
-                }
+        try {
+            const token = getState().auth.token;
+            const response = await api.post(`/api/settings/privacy/${endUrl}`, {
+                token
             });
 
             if (response.status === 200) {
-                const key = Object.keys(response.data)[0];
-                let value = Object.values(response.data)[0];
+                const keys = Object.keys(response.data);
+                if (keys.length === 0) {
+                    return rejectWithValue('Empty response from server');
+                }
+                const key = keys[0];
+                let value = response.data[key];
 
                 // Convert boolean values to 0 or 1 for certain keys
                 if (key !== 'show_name' && key !== 'show_username') {
                     value = value === false ? 0 : 1;
                 }
 
-                let user = await AsyncStorage.getItem('user');
-                user = JSON.parse(user);
-                user[key] = value;
-
-                await AsyncStorage.setItem('user', JSON.stringify(user));
-
+                const currentUser = getState().auth.user;
+                if (!currentUser) return rejectWithValue('No active session');
+                const user = {...currentUser, [key]: value};
                 dispatch(updateUserObject(user));
 
                 return response.data;
             } else {
-                rejectWithValue('Failed to update settings');
+                return rejectWithValue('Failed to update settings');
             }
         } catch (error) {
-            // console.log('Error: toggleSettingsSwitch', error);
             return rejectWithValue('Failed to toggle setting');
         }
     }
 );
 
 const settingsSlice = createSlice({
-
     name: 'settings',
 
     initialState,
 
     reducers: {
-
-        closeSecondSettingModal(state) {
-            state.updateSettingsStatusMessage = '';
-            state.updatingSettings = false;
-            state.secondSettingsModalVisible = false;
+        closeSaveResultModal(state) {
+            state.saveResultMessage = '';
+            state.saveStatus = 'idle';
+            state.saveResultModalVisible = false;
         },
 
-        /**
-         * The users delete-account attempt failed due to wrong password
-         */
         setDeleteAccountError(state, action) {
             state.deleteAccountError = action.payload;
         },
 
-        /**
-         * Sets current device modal
-         */
-        setModel (state, action) {
-            state.model = action.payload;
+        setDeviceModel(state, action) {
+            state.deviceModel = action.payload;
         },
 
-        /**
-         * Initialize the settings value for edit / update
-         *
-         * when user selects a field to edit current value of that field is set in settingsEditProp
-         * to be used as initial value in textfield in edit modal
-         */
-        settingsInit (state, action) {
-            state.settingsEditProp = action.payload;
+        setEditValue(state, action) {
+            state.editValue = action.payload;
         },
 
-        /**
-         * Change name / username / email component is inside a modal
-         */
-        toggleSettingsModal (state, action) {
-            state.settingsModalVisible = !state.settingsModalVisible;
-            state.settingsEdit = !state.settingsEdit;
-            state.dataToEdit = action.payload;
-        },
-
-        /**
-         * Toggle ActivityIndicator when changing Switch value
-         */
-        toggleSettingsWait(state) {
-            state.wait = !state.wait;
-            state.settingsModalVisible = !state.settingsModalVisible;
-        },
-
-        /**
-         * User wants to change text in SettingsComponent
-         */
-        updateSettingsProp (state, action) {
-            state.settingsEditProp = action.payload;
+        toggleEditModal(state, action) {
+            state.editModalVisible = !state.editModalVisible;
+            state.editField = action.payload;
         }
     },
 
-    extraReducers: (builder) => {
-
+    extraReducers: builder => {
         builder
 
             // Delete Account
-            .addCase(deleteAccount.pending, (state, action) => {
-                // loading => true
+            .addCase(deleteAccount.pending, (state) => {
+                state.deleteAccountError = '';
+                state.saveStatus = 'loading';
             })
-            .addCase(deleteAccount.fulfilled, (state, action) => {
-                // return true and logout
+            .addCase(deleteAccount.fulfilled, (state) => {
+                state.saveStatus = 'succeeded';
             })
             .addCase(deleteAccount.rejected, (state, action) => {
+                state.saveStatus = 'failed';
                 state.deleteAccountError = action.payload;
             })
 
             // Save Settings
-            .addCase(saveSettings.pending, (state) => {
-                state.secondSettingsModalVisible = true;
-                state.updatingSettings = true;
+            .addCase(saveSettings.pending, state => {
+                state.saveResultModalVisible = true;
+                state.saveStatus = 'loading';
             })
             .addCase(saveSettings.fulfilled, (state, action) => {
-                state.updateSettingsStatusMessage = action.payload.message;
+                state.saveStatus = 'idle';
+                state.saveResultMessage = action.payload.message;
             })
             .addCase(saveSettings.rejected, (state, action) => {
-                state.updateSettingsStatusMessage = action.payload;
+                state.saveStatus = 'idle';
+                state.saveResultMessage = action.payload;
             })
 
             // Save Social Accounts
-            .addCase(saveSocialAccounts.pending, (state) => {
-                state.secondSettingsModalVisible = true;
-                state.updatingSettings = true;
+            .addCase(saveSocialAccounts.pending, state => {
+                state.saveResultModalVisible = true;
+                state.saveStatus = 'loading';
             })
             .addCase(saveSocialAccounts.fulfilled, (state, action) => {
-                state.updateSettingsStatusMessage = action.payload;
+                state.saveStatus = 'idle';
+                state.saveResultMessage = action.payload;
             })
             .addCase(saveSocialAccounts.rejected, (state, action) => {
-                state.updateSettingsStatusMessage = action.payload;
+                state.saveStatus = 'idle';
+                state.saveResultMessage = action.payload;
             })
 
-            .addCase(toggleSettingsSwitch.pending, (state, action) => {
-                state.wait = true;
+            .addCase(toggleSettingsSwitch.pending, (state) => {
+                state.toggleStatus = 'loading';
             })
-            .addCase(toggleSettingsSwitch.fulfilled, (state, action) => {
-                state.wait = false;
+            .addCase(toggleSettingsSwitch.fulfilled, (state) => {
+                state.toggleStatus = 'idle';
             })
-            .addCase(toggleSettingsSwitch.rejected, (state, action) => {
-                state.wait = false;
-            });
-
+            .addCase(toggleSettingsSwitch.rejected, (state) => {
+                state.toggleStatus = 'failed';
+            })
+            .addCase(logout, () => initialState);
     }
 });
 
 export const {
-    closeSecondSettingModal,
+    closeSaveResultModal,
     setDeleteAccountError,
-    setModel,
-    settingsInit,
-    updateSettingsStatusMessage,
-    startUpdatingSettings,
-    toggleSettingsModal,
-    toggleSettingsWait,
-    updateSettingsProp
+    setDeviceModel,
+    setEditValue,
+    toggleEditModal
 } = settingsSlice.actions;
+
+// Selectors
+export const selectIsSaving = state => state.settings.saveStatus === 'loading';
+export const selectIsTogglingSwitch = state => state.settings.toggleStatus === 'loading';
 
 export default settingsSlice.reducer;

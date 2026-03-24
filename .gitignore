@@ -38,6 +38,9 @@ local.properties
 # Exclude Android Signing Keys
 /android/app/OpenLitterMap.bak.jks
 /android/app/OpenLitterMapNew.p12
+/android/app/upload-keystore.jks
+/android/app/upload-certificate.pem
+
 
 # node.js
 #

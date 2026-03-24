@@ -1,111 +1,130 @@
 import React from 'react';
-import { View, StyleSheet, Pressable, ActivityIndicator } from 'react-native';
-import { Formik } from 'formik';
+import {
+    View,
+    StyleSheet,
+    Pressable,
+    ActivityIndicator,
+    Text
+} from 'react-native';
+import {Formik} from 'formik';
 import * as Yup from 'yup';
-import { useDispatch, useSelector } from 'react-redux';
-import { useTranslation } from "react-i18next";
-import { Colors, SubTitle, CustomTextInput } from '../../components';
-import { StatusMessage } from '.';
-import { sendResetPasswordRequest} from "../../../reducers/auth_reducer";
+import {useDispatch, useSelector} from 'react-redux';
+import {useTranslation} from 'react-i18next';
+import Icon from 'react-native-vector-icons/Ionicons';
+import {Colors, Body, CustomTextInput} from '../../components';
+import {sendResetPasswordRequest} from '../../../reducers/auth_reducer';
 
-/**
- * Form field validation with keys for translation
- * using Yup for validation
- */
 const ForgotPasswordSchema = Yup.object().shape({
-    email: Yup.string()
-        .email('email-not-valid')
-        .required('enter-email')
+    email: Yup.string().email('This is not a valid email address').required('Please enter an email address')
 });
 
 const ForgotPasswordForm = () => {
-
     const dispatch = useDispatch();
 
-    const { serverStatusText, isSubmitting } = useSelector(state => state.auth);
+    const {serverStatusText, submitStatus} = useSelector(state => state.auth);
+    const isSubmitting = submitStatus === 'loading';
 
-    const { t } = useTranslation();
-    const emailTranslation = t('auth.email-address');
-    const emailErrorTranslation = t('auth.email-error');
+    const {t} = useTranslation();
+    const emailTranslation = t('Email Address');
 
     return (
         <Formik
-            initialValues={{ email: '' }}
+            initialValues={{email: ''}}
             validationSchema={ForgotPasswordSchema}
             onSubmit={values => {
-                dispatch(sendResetPasswordRequest(values.email));
+                dispatch(
+                    sendResetPasswordRequest(values.email.trim().toLowerCase())
+                );
             }}>
-            {({
-                handleSubmit,
-                setFieldValue,
-                values,
-                errors,
-                touched,
-            }) => (
-                <View style={{ flex: 1, justifyContent: 'center' }}>
-                    {/* email input */}
+            {({handleSubmit, setFieldValue, values, errors, touched}) => (
+                <View>
                     <CustomTextInput
-                        onChangeText={e =>
-                            setFieldValue(
-                                'email',
-                                e.trim().toLocaleLowerCase()
-                            )
-                        }
+                        onChangeText={e => setFieldValue('email', e.trim())}
                         value={values.email}
                         name="email"
-                        error={
-                            errors.email && emailErrorTranslation
+                        error={errors?.email}
+                        errorText={
+                            errors?.email
+                                ? t(errors.email)
+                                : undefined
                         }
-                        touched={touched.email}
+                        touched={touched?.email}
                         placeholder={emailTranslation}
-                        leftIconName="mail"
+                        leftIconName="mail-outline"
                         keyboardType="email-address"
                         returnKeyType="done"
-                        multiline
+                        variant="dark"
                     />
 
-                    <StatusMessage
-                        serverStatusText={serverStatusText}
-                    />
+                    {serverStatusText !== '' && (
+                        <View style={styles.serverMessage}>
+                            <Icon
+                                name="checkmark-circle-outline"
+                                size={16}
+                                color={Colors.accentLight}
+                            />
+                            <Text style={styles.serverMessageText}>
+                                {t(serverStatusText)}
+                            </Text>
+                        </View>
+                    )}
 
                     <Pressable
                         disabled={isSubmitting}
                         onPress={handleSubmit}
-                        style={[styles.buttonStyle]}>
+                        style={({pressed}) => [
+                            styles.buttonStyle,
+                            isSubmitting && styles.buttonDisabled,
+                            pressed && !isSubmitting && styles.buttonPressed
+                        ]}>
                         {isSubmitting ? (
-                            <ActivityIndicator color="white" />
+                            <ActivityIndicator color={Colors.accent} />
                         ) : (
-                            <SubTitle
-                                color="accentLight"
-                                dictionary={'auth.forgot-password'}
-                            >
-                                Create Account
-                            </SubTitle>
+                            <Body
+                                color="accent"
+                                family="semiBold"
+                                style={styles.buttonText}
+                                dictionary="Send Reset Link"
+                            />
                         )}
                     </Pressable>
                 </View>
             )}
         </Formik>
     );
-}
+};
 
 const styles = StyleSheet.create({
     buttonStyle: {
         alignItems: 'center',
-        backgroundColor: Colors.warn,
-        borderRadius: 6,
-        height: 60,
-        opacity: 1,
-        marginBottom: 10,
         justifyContent: 'center',
-        width: '100%',
+        backgroundColor: Colors.white,
+        borderRadius: 100,
+        height: 52,
         marginTop: 20
     },
-    textfieldIcon: {
-        padding: 10
+    buttonPressed: {
+        backgroundColor: '#f0f0f0'
     },
     buttonDisabled: {
-        opacity: 0.5
+        opacity: 0.7
+    },
+    buttonText: {
+        fontSize: 16,
+        letterSpacing: 0.3
+    },
+    serverMessage: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingLeft: 4,
+        marginTop: 12
+    },
+    serverMessageText: {
+        color: Colors.accentLight,
+        fontSize: 14,
+        fontFamily: 'Poppins-Medium',
+        marginLeft: 6,
+        letterSpacing: 0.3
     }
 });
 

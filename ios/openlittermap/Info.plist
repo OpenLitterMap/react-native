@@ -36,26 +36,27 @@
 			<dict>
 				<key>NSExceptionAllowsInsecureHTTPLoads</key>
 				<true/>
+				<key>NSTemporaryExceptionRequiresForwardSecrecy</key>
+				<false/>
 			</dict>
 		</dict>
 	</dict>
-	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>OpenLitterMap needs permission to your location information if you would like to collect geotagged photos using the app.</string>
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>OpenLitterMap needs permission to your location information if you would like to collect geotagged photos using the app.</string>
 	<key>NSAppleMusicUsageDescription</key>
 	<string>OpenLitterMap needs permission to your photos if you would like to upload geotagged photos taken outside of the app.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Giving permission to the camera and location services will enable you to take geotagged photos of litter with the app. Please take photos of litter only.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>OpenLitterMap needs permission to your location information if you would like to collect geotagged photos using the app.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
 	<string>OpenLitterMap needs permission to your local if you would like to collect geotagged photos using the app</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>OpenLitterMap needs permission to your location services to geotag the location of the photos you take with the app.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>OpenLitterMap needs permission to your photos if you would like to upload geotagged photos taken outside of the app.</string>
+	<key>RCTNewArchEnabled</key>
+	<true/>
 	<key>UIAppFonts</key>
 	<array>
-		<string>Avenir-Black.ttf</string>
 		<string>Poppins-Thin.ttf</string>
 		<string>Poppins-SemiBold.ttf</string>
 		<string>Poppins-Regular.ttf</string>
@@ -83,6 +84,8 @@
 		<string>UIInterfaceOrientationLandscapeRight</string>
 		<string>UIInterfaceOrientationPortrait</string>
 	</array>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
 </dict>

@@ -1,10 +1,11 @@
 /**
- * Check if image is tagged or not
- * img should have at least one tag or one custom tag
+ * Check if image has any tags (CLO tags or custom tags).
  *
  * @param {Object} img
  * @returns {boolean}
  */
 export const isTagged = img => {
-    return ((img?.customTags && img?.customTags?.length > 0) || (img?.tags && Object.keys(img?.tags)?.length > 0));
+    if (img?.tags && img.tags.length > 0) return true;
+    if (img?.customTags && img.customTags.length > 0) return true;
+    return false;
 };

@@ -1,41 +1,55 @@
-import i18n from "i18next";
-import { initReactI18next } from "react-i18next";
+import i18n from 'i18next';
+import {initReactI18next} from 'react-i18next';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import { en } from './assets/langs/en';
-import { ar } from './assets/langs/ar';
-import { de } from './assets/langs/de';
-import { es } from './assets/langs/es';
-import { fr } from './assets/langs/fr';
-import { ie } from './assets/langs/ie';
-import { nl } from './assets/langs/nl';
-import { pt } from './assets/langs/pt';
+import {en} from './assets/langs/en';
+import {ar} from './assets/langs/ar';
+import {de} from './assets/langs/de';
+import {es} from './assets/langs/es';
+import {fr} from './assets/langs/fr';
+import {ie} from './assets/langs/ie';
+import {nl} from './assets/langs/nl';
+import {pt} from './assets/langs/pt';
+
+const LANGUAGE_KEY = 'user_language';
 
 const resources = {
-    en: { translation: en },
-    ar: { translation: ar },
-    de: { translation: de },
-    es: { translation: es },
-    fr: { translation: fr },
-    ie: { translation: ie },
-    nl: { translation: nl },
-    pt: { translation: pt }
+    en: {translation: en},
+    ar: {translation: ar},
+    de: {translation: de},
+    es: {translation: es},
+    fr: {translation: fr},
+    ie: {translation: ie},
+    nl: {translation: nl},
+    pt: {translation: pt}
 };
 
-// Set default language
-import * as RNLocalize from 'react-native-localize';
-const defaultLang = RNLocalize.getLocales()[0].languageCode;
-const langs = ['en', 'ar', 'de', 'es', 'fr', 'ie', 'nl', 'pt'];
-const lng = langs.includes(defaultLang) ? defaultLang : 'en';
+// Custom language detector that persists to AsyncStorage
+const languageDetector = {
+    type: 'languageDetector',
+    async: true,
+    detect: async (callback) => {
+        try {
+            const saved = await AsyncStorage.getItem(LANGUAGE_KEY);
+            callback(saved || 'en');
+        } catch {
+            callback('en');
+        }
+    },
+    init: () => {},
+    cacheUserLanguage: async (lng) => {
+        try {
+            await AsyncStorage.setItem(LANGUAGE_KEY, lng);
+        } catch {}
+    }
+};
 
-i18n.use(initReactI18next).init({
-
+i18n.use(languageDetector).use(initReactI18next).init({
     compatibilityJSON: 'v3',
 
     resources,
 
-    lng,
-
-    fallbackLng: "en",
+    fallbackLng: 'en',
 
     interpolation: {
         escapeValue: false
@@ -44,7 +58,6 @@ i18n.use(initReactI18next).init({
     react: {
         useSuspense: false
     }
-
 });
 
 export default i18n;

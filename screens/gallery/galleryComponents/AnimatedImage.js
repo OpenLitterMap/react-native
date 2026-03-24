@@ -2,34 +2,27 @@ import {
     View,
     Pressable,
     Image,
-    Dimensions,
     StyleSheet,
-    Text
+    Text,
+    useWindowDimensions
 } from 'react-native';
 import React from 'react';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { Colors } from '../../components';
 
-const { width } = Dimensions.get('window');
-
 const AnimatedImage = ({ image, isImageGeotagged, selected, onPress }) => {
-    /**
-     * only press image if its geoTagged
-     *
-     * run animation and call fn this.props.onPress() which will mark the image as selected
-     */
-    const onImagePress = () => {
-        if (isImageGeotagged) {
-            onPress();
-        }
-    };
+    const { width } = useWindowDimensions();
+    const gridSize = width / 3 - 2;
 
     return (
-        <Pressable key={image.uri} onPress={onImagePress}>
-            <View style={styles.grid}>
+        <Pressable key={image.uri} onPress={onPress}>
+            <View style={[styles.grid, {width: gridSize, height: gridSize}]}>
                 <Image
                     source={{ uri: image.uri }}
-                    style={[styles.imageStyle]}
+                    style={[
+                        styles.imageStyle,
+                        !isImageGeotagged && { opacity: 0.4 }
+                    ]}
                 />
             </View>
 
@@ -40,6 +33,8 @@ const AnimatedImage = ({ image, isImageGeotagged, selected, onPress }) => {
                         style={[
                             styles.grid,
                             {
+                                width: gridSize,
+                                height: gridSize,
                                 position: 'absolute',
                                 backgroundColor: Colors.muted,
                                 opacity: 0.3
@@ -57,9 +52,18 @@ const AnimatedImage = ({ image, isImageGeotagged, selected, onPress }) => {
                 </>
             )}
 
-            {isImageGeotagged && (
+            {isImageGeotagged ? (
                 <View style={[styles.geotaggedIcon]}>
                     <Text>📍</Text>
+                </View>
+            ) : (
+                <View style={styles.noGpsIcon}>
+                    <Icon
+                        name="location-outline"
+                        size={16}
+                        color="#cc0000"
+                    />
+                    <View style={styles.strikethrough} />
                 </View>
             )}
         </Pressable>
@@ -68,8 +72,6 @@ const AnimatedImage = ({ image, isImageGeotagged, selected, onPress }) => {
 
 const styles = StyleSheet.create({
     grid: {
-        width: width / 3 - 2,
-        height: width / 3 - 2,
         margin: 1
     },
     geotaggedIcon: {
@@ -80,6 +82,22 @@ const styles = StyleSheet.create({
         bottom: 5,
         justifyContent: 'center',
         alignItems: 'center'
+    },
+    noGpsIcon: {
+        position: 'absolute',
+        width: 24,
+        height: 24,
+        right: 5,
+        bottom: 5,
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
+    strikethrough: {
+        position: 'absolute',
+        width: 20,
+        height: 2,
+        backgroundColor: '#cc0000',
+        transform: [{ rotate: '45deg' }]
     },
     selectedIcon: {
         position: 'absolute',

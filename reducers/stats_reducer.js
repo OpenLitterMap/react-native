@@ -1,101 +1,73 @@
-import axios from "axios";
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import { URL } from '../actions/types';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import {createAsyncThunk, createSelector, createSlice} from '@reduxjs/toolkit';
+import api from '../utils/apiClient';
+import {logout} from './auth_reducer';
 
 const initialState = {
-    statsErrorMessage: null,
-    totalLitter: 0,
-    totalPhotos: 0,
+    fetchStatus: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
+    error: null,
+    totalTags: 0,
+    totalImages: 0,
     totalUsers: 0,
-    totalLittercoin: 0,
-    targetPercentage: 0,
-    litterTarget: {
-        previousTarget: 0,
-        nextTarget: 0
-    }
+    newUsersToday: 0,
+    newUsersLast7Days: 0,
+    newUsersLast30Days: 0
 };
 
 export const getStats = createAsyncThunk(
     'stats/getStats',
-    async (_, { rejectWithValue }) => {
-        try
-        {
-            const response = await axios({
-                url: `${URL}/api/global/stats-data`,
-                method: 'GET',
-                headers: {
-                    Accept: 'application/json'
-                }
-            });
-
+    async (_, {rejectWithValue}) => {
+        try {
+            const response = await api.get('/api/global/stats-data');
             return response.data;
-        }
-        catch (error)
-        {
-            return (error.response)
+        } catch (error) {
+            return error.response
                 ? rejectWithValue('Something went wrong, please try again')
-                : rejectWithValue('Network Error, please try again');
+                : rejectWithValue('Network error, please try again');
         }
     }
 );
 
 const statsSlice = createSlice({
-
     name: 'stats',
-
     initialState,
-
     reducers: {},
-
-    extraReducers: (builder) => {
-
+    extraReducers: builder => {
         builder
-
-            .addCase(getStats.pending, (state) => {
-                state.statsErrorMessage = null;
+            .addCase(getStats.pending, state => {
+                state.fetchStatus = 'loading';
+                state.error = null;
             })
             .addCase(getStats.fulfilled, (state, action) => {
-
-                const totalLitter = action.payload?.total_litter || 1;
-                const totalPhotos = action.payload?.total_photos || 1;
-                const totalUsers = action.payload?.total_users || 1;
-                const totalLittercoin = parseInt(action.payload?.littercoin);
-                const litterTarget = {
-                    previousTarget: action.payload.previousXp,
-                    nextTarget: action.payload.nextXp
-                };
-                const targetPercentage =
-                    ((totalLitter - litterTarget.previousTarget) /
-                        (litterTarget.nextTarget -
-                            litterTarget.previousTarget)) *
-                    100;
-
-                AsyncStorage.setItem(
-                    'globalStats',
-                    JSON.stringify({
-                        totalLitter,
-                        totalPhotos,
-                        totalUsers,
-                        totalLittercoin,
-                        litterTarget,
-                        targetPercentage
-                    })
-                );
-
-                state.totalLitter = totalLitter;
-                state.totalPhotos = totalPhotos;
-                state.totalUsers = totalUsers;
-                state.totalLittercoin = totalLittercoin;
-                state.litterTarget = litterTarget;
-                state.targetPercentage = targetPercentage;
-                state.statsErrorMessage = null;
+                state.fetchStatus = 'succeeded';
+                state.totalTags = action.payload?.total_tags || 0;
+                state.totalImages = action.payload?.total_images || 0;
+                state.totalUsers = action.payload?.total_users || 0;
+                state.newUsersToday = action.payload?.new_users_today || 0;
+                state.newUsersLast7Days =
+                    action.payload?.new_users_last_7_days || 0;
+                state.newUsersLast30Days =
+                    action.payload?.new_users_last_30_days || 0;
+                state.error = null;
             })
             .addCase(getStats.rejected, (state, action) => {
-                state.statsErrorMessage = action.payload;
-            });
+                state.fetchStatus = 'failed';
+                state.error = action.payload;
+            })
+            .addCase(logout, () => initialState);
     }
 });
 
-export const {  } = statsSlice.actions;
+// Memoized selector — prevents re-renders when unrelated state changes
+export const selectStats = createSelector(
+    state => state.stats,
+    stats => ({
+        totalTags: stats.totalTags,
+        totalImages: stats.totalImages,
+        totalUsers: stats.totalUsers,
+        newUsersToday: stats.newUsersToday,
+        newUsersLast7Days: stats.newUsersLast7Days,
+        newUsersLast30Days: stats.newUsersLast30Days
+    })
+);
+
 export default statsSlice.reducer;

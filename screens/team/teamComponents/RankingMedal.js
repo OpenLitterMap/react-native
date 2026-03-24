@@ -1,8 +1,6 @@
 import React from 'react';
-import {Dimensions, Image, StyleSheet, View} from 'react-native';
+import {Image, StyleSheet, useWindowDimensions, View} from 'react-native';
 import { Body } from '../../components';
-const SCREEN_WIDTH = Dimensions.get('window').width;
-
 const medals = {
     gold: require('../../../assets/icons/gold-medal.png'),
     silver: require('../../../assets/icons/silver-medal.png'),
@@ -10,6 +8,7 @@ const medals = {
 };
 
 const RankingMedal = ({index}) => {
+    const {width: SCREEN_WIDTH} = useWindowDimensions();
     let medalSource;
 
     switch (index) {

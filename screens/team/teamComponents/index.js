@@ -6,3 +6,6 @@ export { default as CreateTeamForm } from './CreateTeamForm';
 export { default as MemberCard } from './MemberCard';
 export { default as TeamListCard } from './TeamListCard';
 export { default as TeamTitle } from './TeamTitle';
+export { default as LocationListCard } from './LocationListCard';
+export { default as LeaderboardsTab } from './LeaderboardsTab';
+export { default as LocationsTeamsWrapper } from './LocationsTeamsWrapper';

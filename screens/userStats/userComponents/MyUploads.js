@@ -1,221 +1,240 @@
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
-    View,
-    Text,
-    StyleSheet,
+    ActivityIndicator,
+    Alert,
     FlatList,
+    Linking,
     Pressable,
-    Modal,
-    TextInput,
-    TouchableOpacity,
-    KeyboardAvoidingView,
-    ScrollView,
-    Platform,
-    ActivityIndicator, Linking,
+    RefreshControl,
+    StyleSheet,
+    View
 } from 'react-native';
-import { Body, Header } from "../../components";
-import Icon from "react-native-vector-icons/Ionicons";
-import { useDispatch, useSelector } from "react-redux";
-import { clearUploads, fetchUploads } from "../../../reducers/my_uploads_reducer";
-import ActionButton from "../../home/homeComponents/ActionButton";
-import { Picker } from '@react-native-picker/picker';
-import DateTimePicker from '@react-native-community/datetimepicker';
-import { useTranslation } from "react-i18next";
-import { Swipeable } from 'react-native-gesture-handler';
+import { Body, Colors, Header } from '../../components';
+import Icon from 'react-native-vector-icons/Ionicons';
+import { useDispatch, useSelector } from 'react-redux';
+import { clearUploads, deleteUploadPhoto, fetchUploads } from '../../../reducers/uploads_reducer';
+import { loadPhotoForEditing } from '../../../reducers/photos_reducer';
+import ActionButton from '../../home/homeComponents/ActionButton';
+import { useTranslation } from 'react-i18next';
 import { URL } from '../../../actions/types';
 import Clipboard from '@react-native-clipboard/clipboard';
-import moment from 'moment';
+
+import UploadCard from './myUploadsComponents/UploadCard';
+import ActiveFilters from './myUploadsComponents/ActiveFilters';
+import EmptyUploads from './myUploadsComponents/EmptyUploads';
+import FilterSheet from './myUploadsComponents/FilterSheet';
+
+export const EMPTY_FILTERS = {
+    filterTag: '',
+    filterCustomTag: '',
+    filterDateFrom: '',
+    filterDateTo: '',
+    filterCountry: '',
+    filterState: '',
+    filterCity: '',
+    filterVerified: '',
+    filterPickedUp: ''
+};
 
 const MyUploads = ({ navigation }) => {
-
     const dispatch = useDispatch();
     const { t } = useTranslation();
-    const [uploads, setUploads] = useState([]);
+
     const [loading, setLoading] = useState(false);
+    const [refreshing, setRefreshing] = useState(false);
     const [loadingMore, setLoadingMore] = useState(false);
-    const [showModal, setShowModal] = useState(false);
-    const [filters, setFilters] = useState({
-        filterCountry: 'all',
-        filterDateFrom: '',
-        filterDateTo: '',
-        filterTag: '',
-        filterCustomTag: ''
-    });
-    const [paginationAmount, setPaginationAmount] = useState(25);
-    const token = useSelector(state => state.auth.token);
-    const myUploads = useSelector(state => state.my_uploads_reducer.uploads);
+    const loadingMoreRef = useRef(false);
+    const [showFilter, setShowFilter] = useState(false);
+    const [filters, setFilters] = useState({ ...EMPTY_FILTERS });
+
+    const user = useSelector(state => state.auth.user);
+    const uploads = useSelector(state => state.uploads.uploads);
+    const hasActiveFilters =
+        !!filters.filterTag ||
+        !!filters.filterCustomTag ||
+        !!filters.filterDateFrom ||
+        !!filters.filterDateTo ||
+        !!filters.filterCountry ||
+        !!filters.filterState ||
+        !!filters.filterCity ||
+        filters.filterVerified !== '' ||
+        filters.filterPickedUp !== '';
+
+    const isInitialMount = useRef(true);
 
     useEffect(() => {
-        async function fetchUploadsWrapper() {
-            setLoading(true);
+        loadData(false);
 
-            await dispatch(fetchUploads({ token: token }));
-
-            setLoading(false);
-        }
-
-        fetchUploadsWrapper();
-    }, []);
-
-    useEffect(() => {
-        setUploads(myUploads);
-    }, [myUploads]);
-
-    const loadFilterModal = () => setShowModal(true);
-    const closeFilterModal = () => setShowModal(false);
-
-    // Functions to handle date picking
-    const onChangeFromDate = (event, selectedDate) => {
-        if (selectedDate) {
-            setFilters({ ...filters, filterDateFrom: selectedDate });
-        }
-    };
-
-    const onChangeToDate = (event, selectedDate) => {
-        if (selectedDate) {
-            setFilters({ ...filters, filterDateTo: selectedDate });
-        }
-    };
-
-    const applyFilters = () => {
-
-        dispatch(clearUploads());
-
-        dispatch(fetchUploads({
-            token,
-            page: 1,
-            paginationAmount,
-            filterCountry: filters.filterCountry,
-            filterDateFrom: filters.filterDateFrom,
-            filterDateTo: filters.filterDateTo,
-            filterTag: filters.filterTag,
-            filterCustomTag: filters.filter,
-            append: false
-        }));
-
-        closeFilterModal();
-    };
-
-    const parseTags = (tagsString, customTags, isTrustedUser) => {
-        if (!tagsString && !customTags) {
-            return isTrustedUser
-                ? [<Text key="not-tagged">{t('litter.not-tagged-yet')}</Text>]
-                : [<Text key="not-verified">{t('litter.not-verified')}</Text>];
-        }
-
-        let tags = [];
-        let a = tagsString ? tagsString.split(',') : [];
-
-        a.pop();
-
-        a.forEach((i, index) => {
-            let b = i.split(' ');
-
-            if (b[0] === 'art.item') {
-                tags.push(
-                    <Text key={index} style={styles.tagText}>
-                        {t('litter.' + b[0])}
-                    </Text>
-                );
-            } else {
-                tags.push(
-                    <Text key={index} style={styles.tagText}>
-                        {t('litter.' + b[0])}: {b[1]}
-                    </Text>
-                );
+        // Refresh data when returning from edit screen
+        const unsubscribe = navigation.addListener('focus', () => {
+            if (isInitialMount.current) {
+                isInitialMount.current = false;
+                return;
             }
+            dispatch(clearUploads());
+            loadData(false, 1);
         });
 
-        return tags;
-    }
+        return unsubscribe;
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
-    const renderRightActions = (progress, dragX, item) => {
-        return (
-            <View style={styles.actionsContainer}>
-                <TouchableOpacity
-                    style={styles.actionButton}
-                    onPress={() => handleCopyLink(item)}
-                >
-                    <Icon name="link" size={16} color="#000000" />
+    const loadData = useCallback(
+        async (append = false, page = 1, overrideFilters) => {
+            const f = overrideFilters || filters;
 
-                    <Text style={styles.actionText}>Copy Link</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                    style={styles.actionButton}
-                    onPress={() => handleOpen(item)}
-                >
-                    <Icon name="map" size={16} color="#000000" />
+            if (!append) setLoading(true);
 
-                    <Text style={styles.actionText}>Show on Map</Text>
-                </TouchableOpacity>
-                {/*<TouchableOpacity*/}
-                {/*    style={styles.actionButton}*/}
-                {/*    onPress={() => handleEdit(item)}*/}
-                {/*>*/}
-                {/*    <Icon name="pencil" size={16} color="#000000" />*/}
+            await dispatch(fetchUploads({
+                page,
+                filters: f,
+                append
+            }));
 
-                {/*    <Text style={styles.actionText}>Edit</Text>*/}
-                {/*</TouchableOpacity>*/}
-            </View>
-        );
-    };
+            setLoading(false);
+            setRefreshing(false);
+        },
+        [dispatch, filters]
+    );
 
-    const generateLink = (item) => {
+    const onRefresh = useCallback(() => {
+        setRefreshing(true);
+        dispatch(clearUploads());
+        loadData(false, 1);
+    }, [dispatch, loadData]);
+
+    const onEndReached = useCallback(() => {
+        if (loadingMoreRef.current || !uploads.next_page_url) return;
+
+        loadingMoreRef.current = true;
+        setLoadingMore(true);
+        const nextPage = (uploads.current_page || 1) + 1;
+        loadData(true, nextPage).finally(() => {
+            loadingMoreRef.current = false;
+            setLoadingMore(false);
+        });
+    }, [uploads, loadData]);
+
+    const applyFilters = useCallback(
+        (newFilters) => {
+            setFilters(newFilters);
+            setShowFilter(false);
+            dispatch(clearUploads());
+            loadData(false, 1, newFilters);
+        },
+        [dispatch, loadData]
+    );
+
+    const removeFilter = useCallback(
+        (key) => {
+            const updated = { ...filters };
+            if (key === 'filterDate') {
+                updated.filterDateFrom = '';
+                updated.filterDateTo = '';
+            } else if (key === 'filterCountry') {
+                updated.filterCountry = '';
+                updated.filterState = '';
+                updated.filterCity = '';
+            } else if (key === 'filterState') {
+                updated.filterState = '';
+                updated.filterCity = '';
+            } else {
+                updated[key] = '';
+            }
+            applyFilters(updated);
+        },
+        [filters, applyFilters]
+    );
+
+    const clearAllFilters = useCallback(() => {
+        applyFilters({ ...EMPTY_FILTERS });
+    }, [applyFilters]);
+
+    const generateLink = useCallback(item => {
         const year = new Date(item.datetime).getFullYear();
-
         return `${URL}/global?year=${year}&lat=${item.lat}&lon=${item.lon}&zoom=14.59&photo=${item.id}`;
-    }
+    }, []);
 
-    const handleCopyLink = (item) => {
+    const handleCopyLink = useCallback((item) => {
+        Clipboard.setString(generateLink(item));
+        Alert.alert(t('Link Copied'), t('The link has been copied to your clipboard.'));
+    }, [generateLink, t]);
 
-        const link = generateLink(item);
+    const handleEditTags = useCallback(item => {
+        dispatch(loadPhotoForEditing({ photo: item }));
+        navigation.navigate('ADD_TAGS');
+    }, [dispatch, navigation]);
 
-        Clipboard.setString(link);
-    };
+    const handleOpenOnWeb = useCallback(item => {
+        Linking.openURL(generateLink(item));
+    }, [generateLink]);
 
-    const handleOpen = (item) => {
-
-        const link = generateLink(item);
-
-        Linking.openURL(link);
-    };
-
-    // const handleEdit = (item) => {
-    //     // Your logic to edit the item
-    //     console.log('Edit', item);
-    // };
-
-    // Render each upload item
-    const renderItem = ({ item }) => (
-        <Swipeable
-            renderRightActions={(progress, dragX) => renderRightActions(progress, dragX, item)}
-        >
-            <View style={styles.uploadItem}>
-                <View style={styles.details}>
-
-                    {parseTags(item.result_string).map((tag, index) => (
-                        <View key={index}>
-                            <Text>{tag}</Text>
-                        </View>
-                    ))}
-
+    const handleDelete = useCallback(
+        (item) => {
+            Alert.alert(
+                t('Delete Photo'),
+                t('Are you sure you want to delete this photo? This cannot be undone.'),
+                [
+                    { text: t('Cancel'), style: 'cancel' },
                     {
-                        item.custom_tags && item.custom_tags.length > 0 && (
-                            <View>
-                                {
-                                    item.custom_tags.map((customTag, index) => (
-                                        <Text key={index}>{customTag.tag}</Text>
-                                    ))
-                                }
-                            </View>
-                        )
+                        text: t('Delete'),
+                        style: 'destructive',
+                        onPress: () => {
+                            dispatch(deleteUploadPhoto({ photoId: item.id }));
+                        }
                     }
+                ]
+            );
+        },
+        [dispatch, t]
+    );
 
-                    <Text style={{ marginTop: 5 }}>Taken: {moment(item.datetime).format("h:mma Do MMM. YYYY")}</Text>
-                    <Text>Uploaded: {moment(item.created_at).format("h:mma Do MMM. YYYY")}</Text>
-                </View>
-            </View>
-        </Swipeable>
+    const renderItem = useCallback(({ item }) => (
+        <UploadCard
+            item={item}
+            onEditTags={handleEditTags}
+            onDelete={handleDelete}
+            onCopyLink={handleCopyLink}
+            onOpenMap={handleOpenOnWeb}
+        />
+    ), [handleEditTags, handleOpenOnWeb, handleDelete, handleCopyLink]);
+
+    const listHeader = useMemo(
+        () => (
+            <>
+                {hasActiveFilters && (
+                    <ActiveFilters
+                        filters={filters}
+                        onRemoveFilter={removeFilter}
+                        onClearAll={clearAllFilters}
+                    />
+                )}
+            </>
+        ),
+        [hasActiveFilters, filters, removeFilter, clearAllFilters]
+    );
+
+    const listEmpty = useMemo(
+        () =>
+            loading ? null : (
+                <EmptyUploads
+                    hasFilters={hasActiveFilters}
+                    onClearFilters={clearAllFilters}
+                />
+            ),
+        [loading, hasActiveFilters, clearAllFilters]
+    );
+
+    const listFooter = useMemo(
+        () =>
+            loadingMore ? (
+                <ActivityIndicator
+                    size="small"
+                    color={Colors.muted}
+                    style={styles.footer}
+                />
+            ) : null,
+        [loadingMore]
     );
 
     return (
@@ -223,167 +242,68 @@ const MyUploads = ({ navigation }) => {
             <Header
                 leftContent={
                     <Pressable
-                        style={{ flexDirection: 'row', alignItems: 'center' }}
+                        style={styles.headerBack}
                         onPress={() => navigation.goBack()}
                     >
-
-                        <Icon
-                            name="chevron-back"
-                            color="white"
-                            size={18}
-                            onPress={() => navigation.goBack()}
-                        />
-
-                        <Body color="white" style={{ marginLeft: 4 }}>Go Back</Body>
+                        <Icon name="chevron-back" color="white" size={18} />
+                        <Body color="white" style={{ marginLeft: 4 }}>
+                            {t('Go Back')}
+                        </Body>
                     </Pressable>
                 }
                 rightContent={
-                    <Body color="white" style={{ fontWeight: '600' }}>My Uploads</Body>
+                    <Body color="white" style={{ fontWeight: '600' }}>
+                        {t('My Uploads')}
+                    </Body>
                 }
             />
 
-            <Modal animationType="slide" transparent={true} visible={showModal}>
-                <View style={styles.modalContainer}>
-                    <KeyboardAvoidingView
-                        behavior={Platform.OS === "ios" ? "padding" : "height"}
-                        style={{ flex: 1 }}
-                    >
-                        <ScrollView contentContainerStyle={styles.modalScrollContent}>
-                            <View style={styles.modalContent}>
-                                <Text style={styles.modalTitle}>Filter Uploads</Text>
-
-                                {/*<Text style={styles.label}>Country</Text>*/}
-                                {/*<View style={styles.pickerContainer}>*/}
-                                {/*    <Picker*/}
-                                {/*        selectedValue={filters.filterCountry}*/}
-                                {/*        onValueChange={(itemValue) => setFilters({ ...filters, filterCountry: itemValue })}*/}
-                                {/*        style={styles.picker}*/}
-                                {/*        itemStyle={styles.pickerItem}*/}
-                                {/*        mode="dropdown"*/}
-                                {/*    >*/}
-                                {/*        <Picker.Item label="All Countries" value="all" />*/}
-                                {/*        <Picker.Item label="USA" value="usa" />*/}
-                                {/*        <Picker.Item label="Canada" value="canada" />*/}
-                                {/*    </Picker>*/}
-                                {/*</View>*/}
-
-                                <Text style={styles.label}>Tag</Text>
-                                <TextInput
-                                    style={styles.input}
-                                    placeholder="Enter tag"
-                                    placeholderTextColor={'#999'}
-                                    value={filters.filterTag}
-                                    onChangeText={(text) => setFilters({ ...filters, filterTag: text })}
-                                />
-
-                                <Text style={styles.label}>Custom Tag</Text>
-                                <TextInput
-                                    style={styles.input}
-                                    placeholder="Enter custom tag"
-                                    placeholderTextColor={'#999'}
-                                    value={filters.filterCustomTag}
-                                    onChangeText={(text) => setFilters({ ...filters, filterCustomTag: text })}
-                                />
-
-                                <View style={styles.datesContainer}>
-
-                                    <View>
-                                        <Text style={styles.label}>From Date</Text>
-                                        <DateTimePicker
-                                            value={filters.filterDateFrom || new Date()}
-                                            mode="date"
-                                            display="default"
-                                            onChange={onChangeFromDate}
-                                        />
-                                    </View>
-
-                                    <View>
-                                        <Text style={styles.label}>To Date</Text>
-                                        <DateTimePicker
-                                            value={filters.filterDateTo || new Date()}
-                                            mode="date"
-                                            display="default"
-                                            onChange={onChangeToDate}
-                                        />
-                                    </View>
-                                </View>
-
-                                <TouchableOpacity style={styles.button} onPress={applyFilters}>
-                                    <Text style={styles.buttonText}>Apply Filters</Text>
-                                </TouchableOpacity>
-                                <TouchableOpacity style={[styles.button, { backgroundColor: '#888' }]} onPress={closeFilterModal}>
-                                    <Text style={styles.buttonText}>Close</Text>
-                                </TouchableOpacity>
-                            </View>
-                        </ScrollView>
-                    </KeyboardAvoidingView>
-                </View>
-            </Modal>
-
             <View style={styles.container}>
-                {loading ? (
-                    <ActivityIndicator size="large" color="#0000ff" style={{ marginTop: 20 }} />
+                {loading && !refreshing ? (
+                    <ActivityIndicator
+                        size="large"
+                        color={Colors.accent}
+                        style={styles.loadingSpinner}
+                    />
                 ) : (
-
                     <>
-                        {/* Show what filters are selected */}
-                        <View>
-                            <View style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-                                <Text style={styles.title}>Filters</Text>
-
-                                <View>
-                                    <Text>Total uploads: {uploads.total}</Text>
-
-                                    {
-                                        uploads?.data?.length > 0 && (
-                                            <Text style={{ textAlign: 'right' }}>Showing: {uploads.data.length}</Text>
-                                        )
-                                    }
-                                </View>
-                            </View>
-                            <Text style={styles.date}>Tag: {filters.filterTag ? filters.filterTag : 'None selected'}</Text>
-                            <Text style={styles.date}>Custom Tag: {filters.filterCustomTag ? filters.filterCustomTag : 'None selected'}</Text>
-                            <Text style={styles.date}>From Date: {filters.filterDateFrom ? filters.filterDateFrom.toDateString() : 'None selected'}</Text>
-                            <Text style={styles.date}>To Date: {filters.filterDateTo ? filters.filterDateTo.toDateString() : 'None selected'}</Text>
-                        </View>
-
                         <FlatList
-                            data={uploads.data}
-                            keyExtractor={(item) => item.id.toString()}
+                            data={uploads?.data}
+                            keyExtractor={item => item.id.toString()}
                             renderItem={renderItem}
-                            ListEmptyComponent={<Text style={styles.emptyListText}>No uploads to display.</Text>}
-                            onEndReached={() => {
-                                if (!loadingMore && uploads.next_page_url) {
-                                    setLoadingMore(true);
-
-                                    const nextPage = uploads.current_page + 1;
-
-                                    dispatch(fetchUploads({
-                                        token,
-                                        page: nextPage,
-                                        paginationAmount,
-                                        filterCountry: filters.filterCountry,
-                                        filterDateFrom: filters.filterDateFrom,
-                                        filterDateTo: filters.filterDateTo,
-                                        filterTag: filters.filterTag,
-                                        filterCustomTag: filters.filterCustomTag,
-                                        append: true
-                                    })).then(() => {
-                                        setLoadingMore(false);
-                                    });
-                                }
-                            }}
-                            onEndReachedThreshold={0.5} // Trigger the event when 50% of the list is left
-                            ListFooterComponent={loadingMore && <ActivityIndicator size="small" color="#ccc" />}
+                            ListHeaderComponent={listHeader}
+                            ListEmptyComponent={listEmpty}
+                            ListFooterComponent={listFooter}
+                            onEndReached={onEndReached}
+                            onEndReachedThreshold={0.5}
+                            showsVerticalScrollIndicator={false}
+                            maxToRenderPerBatch={10}
+                            windowSize={5}
+                            removeClippedSubviews={false}
+                            refreshControl={
+                                <RefreshControl
+                                    refreshing={refreshing}
+                                    onRefresh={onRefresh}
+                                    tintColor={Colors.accent}
+                                    colors={[Colors.accent]}
+                                />
+                            }
                         />
 
                         <ActionButton
-                            onPress={loadFilterModal}
+                            onPress={() => setShowFilter(true)}
                             status="FILTER"
                         />
                     </>
                 )}
             </View>
+
+            <FilterSheet
+                visible={showFilter}
+                filters={filters}
+                onApply={applyFilters}
+                onClose={() => setShowFilter(false)}
+            />
         </>
     );
 };
@@ -391,136 +311,18 @@ const MyUploads = ({ navigation }) => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
-        padding: 10,
+        backgroundColor: '#ffffff'
     },
-    title: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        marginBottom: 5,
-        flex: 1
-    },
-    date: {
-        fontSize: 14,
-        color: '#666',
-        marginBottom: 5,
-    },
-    tags: {
-        fontSize: 16,
-        color: '#333',
-    },
-    modalContainer: {
-        flex: 1,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    },
-    modalScrollContent: {
-        flexGrow: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        padding: 20,
-    },
-    modalContent: {
-        backgroundColor: 'white',
-        padding: 20,
-        borderRadius: 10,
-        width: '100%',
-    },
-    modalTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        marginBottom: 10,
-        textAlign: 'center',
-    },
-    input: {
-        height: 40,
-        borderColor: '#ccc',
-        borderWidth: 1,
-        marginBottom: 10,
-        paddingHorizontal: 8,
-        borderRadius: 5,
-    },
-    label: {
-        fontSize: 16,
-        marginBottom: 5,
-    },
-    pickerContainer: {
-        borderWidth: 1,
-        borderColor: '#ccc',
-        borderRadius: 5,
-        marginBottom: 10,
-    },
-    picker: {
-        width: '100%',
-    },
-    pickerItem: {
-        backgroundColor: '#f0f0f0',
-        height: 50,
-        fontSize: 16
-    },
-    button: {
-        backgroundColor: '#2196F3',
-        padding: 10,
-        borderRadius: 5,
-        alignItems: 'center',
-        marginVertical: 5,
-    },
-    buttonText: {
-        color: 'white',
-        fontSize: 16,
-    },
-    uploadItem: {
-        backgroundColor: '#f0f0f0',
-        marginBottom: 15,
-        borderRadius: 10,
-        overflow: 'hidden',
-        padding: 10,
-    },
-    details: {
-        padding: 10,
-    },
-    emptyListText: {
-        textAlign: 'center',
-        marginTop: 20,
-        fontSize: 16,
-        color: '#999',
-    },
-    datesContainer: {
-        flex: 1,
+    headerBack: {
         flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-around',
-        marginBottom: 10
+        alignItems: 'center'
     },
-    dateInput: {
-        height: 40,
-        borderColor: '#ccc',
-        borderWidth: 1,
-        paddingHorizontal: 8,
-        borderRadius: 5,
-        justifyContent: 'center',
-        marginBottom: 10,
+    loadingSpinner: {
+        marginTop: 40
     },
-    dateText: {
-        fontSize: 16,
-        color: '#333',
-    },
-    actionsContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    actionButton: {
-        justifyContent: 'center',
-        alignItems: 'center',
-        width: 'auto',
-        height: 'auto',
-        paddingLeft: 20,
-        paddingRight: 20
-    },
-    actionText: {
-        color: '#000000',
-        fontSize: 16,
-        textAlign: 'center',
-    },
+    footer: {
+        paddingVertical: 16
+    }
 });
 
 export default MyUploads;

@@ -1,13 +1,12 @@
-import axios from "axios";
-import { URL } from "../actions/types";
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import {changeUsersActiveTeam} from "./auth_reducer";
+import api from '../utils/apiClient';
+import {createAsyncThunk, createSlice} from '@reduxjs/toolkit';
+import {changeUsersActiveTeam, logout} from './auth_reducer';
 
 const initialState = {
     topTeams: [],
+    topTeamsStatus: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
     userTeams: [],
     teamMembers: [],
-    teamsRequestStatus: '',
     selectedTeam: {},
     teamsFormError: '',
     teamFormStatus: null, // SUCCESS || ERROR
@@ -30,34 +29,24 @@ const initialState = {
 
 export const changeActiveTeam = createAsyncThunk(
     'teams/changeActiveTeam',
-    async ({ token, teamId }, { rejectWithValue, dispatch }) => {
+    async ({teamId}, {getState, rejectWithValue, dispatch}) => {
         try {
-            const response = await axios({
-                url: `${URL}/api/teams/active`,
-                method: 'POST',
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    Accept: 'application/json'
-                },
-                data: {
-                    team_id: teamId
-                }
+            const token = getState().auth.token;
+            const response = await api.post('/api/teams/active', {
+                token,
+                data: {team_id: teamId}
             });
 
-            // check this
             if (!response.data?.success) {
                 return rejectWithValue('Max teams reached');
             }
 
-            if (response.data?.team?.id)
-            {
+            if (response.data?.team?.id) {
                 dispatch(changeUsersActiveTeam(response.data.team.id));
-
-                // dispatch TeamsFormSuccess
-
                 return response.data.team.id;
             }
 
+            return rejectWithValue('Failed to change active team');
         } catch (error) {
             return rejectWithValue(error.message);
         }
@@ -66,21 +55,12 @@ export const changeActiveTeam = createAsyncThunk(
 
 export const createTeam = createAsyncThunk(
     'teams/createTeam',
-    async ({ name, identifier, token }, { rejectWithValue }) => {
+    async ({name, identifier}, {getState, rejectWithValue}) => {
         try {
-            const response = await axios({
-                url: `${URL}/api/teams/create`,
-                method: 'POST',
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    Accept: 'application/json',
-                    'Content-Type': 'application/json'
-                },
-                data: {
-                    name,
-                    identifier,
-                    team_type: 1
-                }
+            const token = getState().auth.token;
+            const response = await api.post('/api/teams/create', {
+                token,
+                data: {name, identifier, team_type: 1}
             });
 
             if (!response.data.success) {
@@ -91,13 +71,15 @@ export const createTeam = createAsyncThunk(
                 team: response.data.team,
                 type: 'CREATE'
             };
-        }
-        catch (error)
-        {
+        } catch (error) {
             if (error.response && error.response.status === 422) {
                 const errorData = error.response.data.errors;
 
-                return rejectWithValue(errorData.name || errorData.identifier);
+                const msg =
+                    errorData.name?.[0] ||
+                    errorData.identifier?.[0] ||
+                    'Validation error';
+                return rejectWithValue(msg);
             }
 
             return rejectWithValue('Network Error, please try again');
@@ -107,16 +89,11 @@ export const createTeam = createAsyncThunk(
 
 export const inactivateTeam = createAsyncThunk(
     'teams/inactivateTeam',
-    async (token, { rejectWithValue, dispatch }) => {
+    async (_, {getState, rejectWithValue, dispatch}) => {
         try {
-            const response = await axios({
-                url: `${URL}/api/teams/inactivate`,
-                method: 'POST',
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    Accept: 'application/json',
-                    'Content-Type': 'application/json'
-                }
+            const token = getState().auth.token;
+            const response = await api.post('/api/teams/inactivate', {
+                token
             });
 
             if (!response.data.success) {
@@ -125,11 +102,11 @@ export const inactivateTeam = createAsyncThunk(
 
             dispatch(changeUsersActiveTeam(null));
 
-            // dispatch TeamsFormSuccess
-
             return true;
         } catch (error) {
-            console.error(error);
+            if (__DEV__) {
+                console.error(error);
+            }
             return rejectWithValue(error.message);
         }
     }
@@ -137,35 +114,40 @@ export const inactivateTeam = createAsyncThunk(
 
 export const leaveTeam = createAsyncThunk(
     'teams/leaveTeam',
-    async ({ token, teamId }, { rejectWithValue }) => {
-        try
-        {
-            const response = await axios({
-                url: `${URL}/api/teams/leave`,
-                method: 'POST',
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    Accept: 'application/json',
-                    'Content-Type': 'application/json'
-                },
-                data: {
-                    team_id: teamId
-                }
+    async ({teamId}, {getState, rejectWithValue, dispatch}) => {
+        try {
+            const token = getState().auth.token;
+            const response = await api.post('/api/teams/leave', {
+                token,
+                data: {team_id: teamId}
             });
 
             if (!response.data) {
                 return rejectWithValue('Failed to leave the team');
             }
 
-            // Returning the entire response data or just necessary parts for reducer logic
+            // Backend auto-assigns a new active team (or null if no
+            // other teams). Always sync — don't skip when null.
+            dispatch(
+                changeUsersActiveTeam(
+                    response.data.activeTeam?.id ?? null
+                )
+            );
+
             return {
-                activeTeamID: response.data.activeTeam ? response.data.activeTeam.id : null,
+                activeTeamId: response.data.activeTeam?.id ?? null,
                 team: response.data.team
             };
-        }
-        catch (error)
-        {
-            // console.error(error.response || error);
+        } catch (error) {
+            const msg = error.response?.data?.message;
+            if (msg === 'you-are-last-member') {
+                return rejectWithValue(
+                    'You are the last member. Delete the team instead.'
+                );
+            }
+            if (msg === 'not-a-member') {
+                return rejectWithValue('You are not a member of this team.');
+            }
             return rejectWithValue('Error while trying to leave the team');
         }
     }
@@ -173,20 +155,12 @@ export const leaveTeam = createAsyncThunk(
 
 export const getTeamMembers = createAsyncThunk(
     'teams/getTeamMembers',
-    async ({ token, teamId, page = 1 }, { rejectWithValue }) => {
+    async ({teamId, page = 1}, {getState, rejectWithValue}) => {
         try {
-            const response = await axios({
-                url: `${URL}/api/teams/members`,
-                method: 'GET',
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    Accept: 'application/json',
-                    'Content-Type': 'application/json'
-                },
-                params: {
-                    team_id: teamId,
-                    page
-                }
+            const token = getState().auth.token;
+            const response = await api.get('/api/teams/members', {
+                token,
+                params: {team_id: teamId, page}
             });
 
             if (!response.data) {
@@ -195,7 +169,6 @@ export const getTeamMembers = createAsyncThunk(
 
             return response.data.result;
         } catch (error) {
-            // console.error(error);
             return rejectWithValue('Error fetching team members');
         }
     }
@@ -203,16 +176,11 @@ export const getTeamMembers = createAsyncThunk(
 
 export const getTopTeams = createAsyncThunk(
     'teams/getTopTeams',
-    async (token, { rejectWithValue }) => {
+    async (_, {getState, rejectWithValue}) => {
         try {
-            const response = await axios({
-                url: `${URL}/api/teams/leaderboard`,
-                method: 'GET',
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    Accept: 'application/json',
-                    'Content-Type': 'application/json'
-                }
+            const token = getState().auth.token;
+            const response = await api.get('/api/teams/leaderboard', {
+                token
             });
 
             if (!response.data) {
@@ -222,7 +190,9 @@ export const getTopTeams = createAsyncThunk(
             return response.data;
         } catch (error) {
             if (error.response) {
-                return rejectWithValue('Something went wrong, please try again');
+                return rejectWithValue(
+                    'Something went wrong, please try again'
+                );
             } else {
                 return rejectWithValue('Network Error, please try again');
             }
@@ -232,25 +202,24 @@ export const getTopTeams = createAsyncThunk(
 
 export const getUserTeams = createAsyncThunk(
     'teams/getUserTeams',
-    async (token, { rejectWithValue }) => {
+    async (_, {getState, rejectWithValue}) => {
         try {
-            const response = await axios({
-                url: URL + '/api/teams/list',
-                method: 'GET',
-                headers: {
-                    Authorization: 'Bearer ' + token,
-                    Accept: 'application/json',
-                    'Content-Type': 'application/json'
-                }
+            const token = getState().auth.token;
+            const response = await api.get('/api/teams/list', {
+                token
             });
             if (response.data && response.data.success) {
                 return response.data.teams;
             } else {
-                return rejectWithValue('Something went wrong, please try again');
+                return rejectWithValue(
+                    'Something went wrong, please try again'
+                );
             }
         } catch (error) {
             if (error.response) {
-                return rejectWithValue('Something went wrong, please try again');
+                return rejectWithValue(
+                    'Something went wrong, please try again'
+                );
             } else {
                 return rejectWithValue('Network Error, please try again');
             }
@@ -260,37 +229,33 @@ export const getUserTeams = createAsyncThunk(
 
 export const joinTeam = createAsyncThunk(
     'teams/joinTeam',
-    async ({ token, identifier }, { rejectWithValue }) => {
+    async ({identifier}, {getState, rejectWithValue, dispatch}) => {
         try {
-            const response = await axios({
-                url: URL + '/api/teams/join',
-                method: 'POST',
-                headers: {
-                    Authorization: 'Bearer ' + token,
-                    Accept: 'application/json',
-                    'content-type': 'application/json'
-                },
-                data: {
-                    identifier
-                }
+            const token = getState().auth.token;
+            const response = await api.post('/api/teams/join', {
+                token,
+                data: {identifier}
             });
-            if (response.data) {
-                if (!response.data.success) {
-                    return rejectWithValue('You have already joined this team.');
-                } else {
-                    return {
-                        activeTeamId: response.data?.activeTeam?.id,
-                        team: response.data?.team,
-                        type: 'JOIN'
-                    };
-                }
+            if (!response.data?.success) {
+                return rejectWithValue(
+                    'You have already joined this team.'
+                );
             }
+
+            const activeTeamId = response.data?.activeTeam?.id ?? null;
+            dispatch(changeUsersActiveTeam(activeTeamId));
+
+            return {
+                activeTeamId,
+                team: response.data?.team,
+                type: 'JOIN'
+            };
         } catch (error) {
             if (error.response) {
                 let payload = 'Something went wrong, please try again';
                 if (error.response?.status === 422) {
                     const errorData = error.response?.data?.errors;
-                    payload = errorData?.identifier;
+                    payload = errorData?.identifier?.[0] || 'Validation error';
                 }
                 return rejectWithValue(payload);
             } else {
@@ -300,210 +265,165 @@ export const joinTeam = createAsyncThunk(
     }
 );
 
-const teamSlice = createSlice({
+/**
+ * Normalize a raw Team model from the backend to match the
+ * shape returned by /api/teams/list (which renames DB columns).
+ * join/create/leave endpoints return raw Eloquent models with
+ * DB column names (total_litter, members) instead of the renamed
+ * fields (total_tags, total_members) that list() provides.
+ */
+const normalizeTeam = team => {
+    if (!team) {
+        return team;
+    }
+    return {
+        ...team,
+        total_images: team.total_images ?? team.photos ?? 0,
+        total_tags: team.total_tags ?? team.total_litter ?? 0,
+        total_members: team.total_members ?? team.members ?? 0
+    };
+};
 
+const teamSlice = createSlice({
     name: 'team',
 
     initialState,
 
     reducers: {
-
-        clearTeamsForm (state) {
+        clearTeamsForm(state) {
             state.teamsFormError = '';
             state.successMessage = '';
             state.teamFormStatus = null;
         },
 
-        // /**
-        //  * find team by index and remove from userTeams array
-        //  */
-        // leaveTeamReducer (state, action) {
-        //     const index = state.userTeams.findIndex(team => team.id === action.payload?.id);
-        //
-        //     if (index !== -1) {
-        //         state.userTeams.splice(index, 1);
-        //     }
-        // },
-
-        // /**
-        //  * add error messages of team forms --> JOIN/CREATE
-        //  */
-        // teamsFormError (state, action) {
-        //     state.teamsFormError = action.payload;
-        // },
-
-        // /**
-        //  * error message for user & top team request
-        //  */
-        // teamsRequestError (state, action) {
-        //     state.teamsRequestStatus = action.payload;
-        //     state.teamFormStatus = 'ERROR';
-        // },
-
-        /**
-         * add top teams to topTeams array
-         */
-        topTeamsRequestSuccess (state, action) {
-            state.topTeams = action.payload;
-        },
-
-        /**
-         * add users teams to userTeams array
-         */
-        userTeamsRequestSuccess (state, action) {
-            state.userTeams = action.payload;
-        },
-
         /**
          * Set selected team for showing in team details screen
          */
-        setSelectedTeam (state, action) {
+        setSelectedTeam(state, action) {
             state.selectedTeam = action.payload;
             state.teamMembers = [];
             state.memberNextPage = 1;
         }
     },
 
-    extraReducers: (builder) => {
-
+    extraReducers: builder => {
         builder
 
-            .addCase(changeActiveTeam.pending, (state) => {
-
-            })
             .addCase(changeActiveTeam.fulfilled, (state, action) => {
-                state.userTeams.push(action.payload.team);
-
-                // This was commented out on teams_actions
                 state.teamFormStatus = 'SUCCESS';
-
-                action.payload.type === 'JOIN'
-                    ? (state.successMessage = 'Congrats! you have joined a new team')
-                    : (state.successMessage = 'Congrats! you created a new team');
+                state.successMessage = 'Active team updated';
             })
             .addCase(changeActiveTeam.rejected, (state, action) => {
                 state.teamsFormError = action.payload;
             })
 
-            .addCase(createTeam.pending, (state) => {
+            .addCase(createTeam.pending, state => {
                 state.teamsFormError = '';
-                state.teamFormStatus = '';
+                state.teamFormStatus = null;
                 state.successMessage = '';
             })
             .addCase(createTeam.fulfilled, (state, action) => {
-
-                // dispatch changeActiveTeam on auth_reducer.js
-                state.userTeams.push(action.payload.team);
-
-                // This was commented out on teams_actions
+                if (action.payload?.team &&
+                    !state.userTeams.some(t => t.id === action.payload.team.id)) {
+                    state.userTeams.push(normalizeTeam(action.payload.team));
+                }
                 state.teamFormStatus = 'SUCCESS';
-
-                action.payload.type === 'JOIN'
-                    ? (state.successMessage = 'Congrats! you have joined a new team')
-                    : (state.successMessage = 'Congrats! you created a new team');
+                state.successMessage = 'Congrats! you created a new team';
             })
             .addCase(createTeam.rejected, (state, action) => {
                 state.teamsFormError = action.payload;
             })
 
-            .addCase(inactivateTeam.pending, (state) => {
-                // no action yet
-            })
-            .addCase(inactivateTeam.fulfilled, (state) => {
-                // other code was commented out
-            })
             .addCase(inactivateTeam.rejected, (state, action) => {
                 state.teamsFormError = action.payload;
             })
 
-            .addCase(leaveTeam.pending, (state) => {
-                // no action yet
-            })
             .addCase(leaveTeam.fulfilled, (state, action) => {
-                // if (response.data?.activeTeam) {
-                //     dispatch({
-                //         type: CHANGE_ACTIVE_TEAM,
-                //         payload: response.data?.activeTeam?.id
-                //     });
-                // }
-                //
-                // dispatch({
-                //     type: LEAVE_TEAM,
-                //     payload: response.data.team
-                // });
+                const leftTeamId = action.payload.team?.id;
+
+                const index = state.userTeams.findIndex(
+                    team => team.id === leftTeamId
+                );
+
+                if (index !== -1) {
+                    state.userTeams.splice(index, 1);
+                }
+
+                // If the left team was the currently viewed team, clear it
+                if (state.selectedTeam?.id === leftTeamId) {
+                    state.selectedTeam = {};
+                    state.teamMembers = [];
+                    state.memberNextPage = 1;
+                }
             })
             .addCase(leaveTeam.rejected, (state, action) => {
                 state.teamsFormError = action.payload;
             })
 
-
-            .addCase(getTeamMembers.pending, (state) => {
-                // no action yet
-            })
             .addCase(getTeamMembers.fulfilled, (state, action) => {
-                state.teamMembers.push(...action.payload.data);
+                if (action.payload?.data) {
+                    const existingIds = new Set(
+                        state.teamMembers.map(m => m.id)
+                    );
+                    const newMembers = action.payload.data.filter(
+                        m => !existingIds.has(m.id)
+                    );
+                    state.teamMembers.push(...newMembers);
+                }
 
-                const nextPage = action.payload.next_page_url;
-
-                state.memberNextPage = nextPage !== null ? nextPage.split('=')[1] : null;
+                const nextPage = action.payload?.next_page_url;
+                if (nextPage) {
+                    try {
+                        const url = new URL(nextPage);
+                        state.memberNextPage = Number(url.searchParams.get('page'));
+                    } catch {
+                        state.memberNextPage = null;
+                    }
+                } else {
+                    state.memberNextPage = null;
+                }
             })
             .addCase(getTeamMembers.rejected, (state, action) => {
-                // no action yet
+                state.teamsFormError = action.payload || 'Failed to load members';
             })
 
-            .addCase(getTopTeams.pending, (state) => {
-                // no action yet
+            .addCase(getTopTeams.pending, state => {
+                state.topTeamsStatus = 'loading';
             })
             .addCase(getTopTeams.fulfilled, (state, action) => {
-                state.topTeams = action.payload;
+                const raw = action.payload?.data ?? action.payload;
+                state.topTeams = Array.isArray(raw) ? raw.map(normalizeTeam) : [];
+                state.topTeamsStatus = 'succeeded';
             })
             .addCase(getTopTeams.rejected, (state, action) => {
-                state.teamsRequestStatus = action.payload;
-                state.teamFormStatus = 'ERROR';
+                state.topTeamsStatus = 'failed';
+                state.teamsFormError = action.payload || 'Failed to load teams';
             })
 
-            .addCase(getUserTeams.pending, (state) => {
-                // no action yet
-            })
             .addCase(getUserTeams.fulfilled, (state, action) => {
                 state.userTeams = action.payload;
             })
-            .addCase(getUserTeams.rejected, (state, action) => {
-                state.teamsRequestStatus = action.payload;
-                state.teamFormStatus = 'ERROR';
-            })
 
-            .addCase(joinTeam.pending, (state) => {
-                // no action yet
-            })
             .addCase(joinTeam.fulfilled, (state, action) => {
-                // dispatch changeActiveTeam on auth_reducer.js
-
-                state.userTeams.push(action.payload.team);
-
-                // This was commented out on teams_actions
-                // state.teamFormStatus = 'SUCCESS';
-                //
-                // action.payload.type === 'JOIN'
-                //     ? (state.successMessage = 'Congrats! you have joined a new team')
-                //     : (state.successMessage = 'Congrats! you created a new team');
+                if (action.payload?.team &&
+                    !state.userTeams.some(t => t.id === action.payload.team.id)) {
+                    state.userTeams.push(normalizeTeam(action.payload.team));
+                }
+                state.teamFormStatus = 'SUCCESS';
+                state.successMessage = action.payload?.message || 'Team joined successfully';
             })
             .addCase(joinTeam.rejected, (state, action) => {
                 state.teamsFormError = action.payload;
-            });
+            })
+            .addCase(logout, () => initialState);
     }
 });
 
-export const {
-    clearTeamsForm,
-    // leaveTeam,
-    // loadTeamMembersSuccess,
-    teamsFormError,
-    teamsRequestError,
-    teamsFormSuccess,
-    topTeamsRequestSuccess,
-    userTeamsRequestSuccess,
-    setSelectedTeam
-} = teamSlice.actions;
+export const {clearTeamsForm, setSelectedTeam} = teamSlice.actions;
+
+// Selectors
+export const selectTopTeamsLoading = state => state.teams.topTeamsStatus === 'loading';
+export const selectUserTeams = state => state.teams.userTeams;
+export const selectSelectedTeam = state => state.teams.selectedTeam;
 
 export default teamSlice.reducer;

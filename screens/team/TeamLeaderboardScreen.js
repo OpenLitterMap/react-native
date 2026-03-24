@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Pressable, StyleSheet, View, FlatList, ActivityIndicator} from 'react-native';
+import { Pressable, StyleSheet, View, ActivityIndicator} from 'react-native';
+import { FlashList } from '@shopify/flash-list';
+import { useTranslation } from 'react-i18next';
 import { Header, Colors, Body, SubTitle } from '../components';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { MemberCard, TeamTitle } from './teamComponents';
@@ -9,6 +11,7 @@ import { useDispatch, useSelector } from "react-redux";
 const TeamLeaderboardScreen = ({ navigation }) => {
 
     const dispatch = useDispatch();
+    const {t} = useTranslation();
 
     const [isLoading, setIsLoading] = useState(false);
 
@@ -16,19 +19,26 @@ const TeamLeaderboardScreen = ({ navigation }) => {
     const selectedTeam = useSelector(state => state.teams.selectedTeam);
     const teamMembers = useSelector(state => state.teams.teamMembers);
     const memberNextPage = useSelector(state => state.teams.memberNextPage);
-    const token = useSelector(state => state.auth.token);
 
     useEffect(() => {
+        if (!selectedTeam?.id) {
+            navigation.goBack();
+            return;
+        }
         if (memberNextPage === 1) {
             loadTeamMembers();
         }
     }, []);
 
+    if (!selectedTeam || !selectedTeam.id) {
+        return null;
+    }
+
     const renderItem = ({ item, index }) => {
         return (
             <MemberCard
                 data={item}
-                teamId={selectedTeam.id}
+                teamId={selectedTeam?.id}
                 index={index}
             />
         );
@@ -37,13 +47,14 @@ const TeamLeaderboardScreen = ({ navigation }) => {
     const loadTeamMembers = async () => {
         setIsLoading(true);
 
-        dispatch(getTeamMembers({
-            token,
-            teamId: selectedTeam.id,
-            page: memberNextPage
-        }));
-
-        setIsLoading(false);
+        try {
+            await dispatch(getTeamMembers({
+                teamId: selectedTeam?.id,
+                page: memberNextPage
+            }));
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -60,7 +71,7 @@ const TeamLeaderboardScreen = ({ navigation }) => {
                     </Pressable>
                 }
                 centerContent={
-                    <SubTitle color="white">Leaderboard</SubTitle>
+                    <SubTitle color="white">{t('Leaderboard')}</SubTitle>
                 }
                 centerContainerStyle={{ flex: 2 }}
             />
@@ -69,13 +80,13 @@ const TeamLeaderboardScreen = ({ navigation }) => {
                     teamName={selectedTeam?.name}
                     identifier={selectedTeam.identifier}
                 />
-                <FlatList
+                <FlashList
                     contentContainerStyle={styles.flatListStyle}
-                    alwaysBounceVertical={false}
                     data={teamMembers}
                     showsVerticalScrollIndicator={false}
                     renderItem={ ({ item, index }) => renderItem({ item, index }) }
                     keyExtractor={item => `team-${item.id}`}
+                    estimatedItemSize={80}
                     ListFooterComponent={
                         <>
                             {memberNextPage && (
@@ -90,7 +101,7 @@ const TeamLeaderboardScreen = ({ navigation }) => {
                                             />
                                         ) : (
                                             <Body color="accent">
-                                                Load More
+                                                {t('Load More')}
                                             </Body>
                                         )}
                                     </Pressable>

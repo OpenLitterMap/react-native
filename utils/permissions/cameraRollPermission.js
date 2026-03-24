@@ -1,5 +1,5 @@
-import { Platform } from 'react-native';
-import { check, PERMISSIONS, request } from 'react-native-permissions';
+import {Platform} from 'react-native';
+import {check, openPhotoPicker, PERMISSIONS, request} from 'react-native-permissions';
 
 export const requestCameraRollPermission = async () => {
     let result;
@@ -7,25 +7,43 @@ export const requestCameraRollPermission = async () => {
         if (Platform.OS === 'ios') {
             result = await request(PERMISSIONS.IOS.PHOTO_LIBRARY);
         } else if (Platform.OS === 'android') {
-            // Android 13 and above
-            // needs to request READ_MEDIA_IMAGES and ACCESS_MEDIA_LOCATION
             if (Platform.Version >= 33) {
                 result = await request(PERMISSIONS.ANDROID.READ_MEDIA_IMAGES);
 
-                const mediaLocation = await request(PERMISSIONS.ANDROID.ACCESS_MEDIA_LOCATION);
-
-                if (result === 'granted' && mediaLocation === 'granted') {
-                    return 'granted';
-                } else {
+                if (result !== 'granted') {
                     return 'denied';
                 }
+
+                const mediaLocation = await request(
+                    PERMISSIONS.ANDROID.ACCESS_MEDIA_LOCATION
+                );
+
+                // Photos accessible; GPS may or may not be available
+                return mediaLocation === 'granted' ? 'granted' : 'limited';
+            } else if (Platform.Version >= 29) {
+                // Android 29-32: scoped storage requires ACCESS_MEDIA_LOCATION for EXIF GPS
+                result = await request(
+                    PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE
+                );
+
+                if (result !== 'granted') {
+                    return 'denied';
+                }
+
+                const mediaLocation = await request(
+                    PERMISSIONS.ANDROID.ACCESS_MEDIA_LOCATION
+                );
+
+                return mediaLocation === 'granted' ? 'granted' : 'limited';
             } else {
-                // Android 12 and below needs to request READ_EXTERNAL_STORAGE
-                result = await request(PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE);
+                result = await request(
+                    PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE
+                );
             }
         }
     } catch (error) {
-        console.error('Error requesting camera roll permission:', error);
+        if (__DEV__)
+            console.error('Error requesting camera roll permission:', error);
         result = 'denied';
     }
 
@@ -33,40 +51,61 @@ export const requestCameraRollPermission = async () => {
 };
 
 /**
- * @returns {Promise<"limited"|"denied"|"blocked"|"unavailable"|"granted">}
+ * Opens the iOS limited photo picker so the user can add/remove photos.
+ * No-op on Android or if full access is already granted.
  */
-export const checkCameraRollPermission = async () => {
+export const openLimitedPhotoPicker = async () => {
     if (Platform.OS === 'ios') {
-        return await check('ios.permission.PHOTO_LIBRARY');
-    }
-    if (Platform.OS === 'android') {
-        if (Platform.Version >= 33) {
-            const readMediaImages = await check(PERMISSIONS.ANDROID.READ_MEDIA_IMAGES);
-
-            if (readMediaImages === 'granted') {
-                return 'granted';
-            } else {
-                return 'denied';
-            }
-        } else {
-            return await check(PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE);
+        const status = await check(PERMISSIONS.IOS.PHOTO_LIBRARY);
+        if (status === 'limited') {
+            await openPhotoPicker();
         }
     }
 };
 
 /**
- * Android 13+ only
+ * @returns {Promise<"limited"|"denied"|"blocked"|"unavailable"|"granted">}
  */
-export const checkAccessMediaLocation = async () => {
-    const result = await check('android.permission.ACCESS_MEDIA_LOCATION');
+export const checkCameraRollPermission = async () => {
+    if (Platform.OS === 'ios') {
+        return await check(PERMISSIONS.IOS.PHOTO_LIBRARY);
+    }
+    if (Platform.OS === 'android') {
+        if (Platform.Version >= 33) {
+            const readMediaImages = await check(
+                PERMISSIONS.ANDROID.READ_MEDIA_IMAGES
+            );
 
-    if (result !== 'granted') {
-        const requestResult = await request(PERMISSIONS.ANDROID.ACCESS_MEDIA_LOCATION);
+            if (readMediaImages !== 'granted') {
+                return 'denied';
+            }
 
-        if (requestResult === 'granted') {
-            return 'granted';
+            // READ_MEDIA_IMAGES is granted — check ACCESS_MEDIA_LOCATION.
+            // Only check here, never re-request. The initial request happens
+            // in requestCameraRollPermission(). Re-requesting on every check
+            // is poor UX and fires on every HomeScreen mount.
+            const mediaLocation = await check(
+                PERMISSIONS.ANDROID.ACCESS_MEDIA_LOCATION
+            );
+
+            // Photos accessible; GPS depends on media location permission
+            return mediaLocation === 'granted' ? 'granted' : 'limited';
+        } else if (Platform.Version >= 29) {
+            const readStorage = await check(
+                PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE
+            );
+
+            if (readStorage !== 'granted') {
+                return 'denied';
+            }
+
+            const mediaLocation = await check(
+                PERMISSIONS.ANDROID.ACCESS_MEDIA_LOCATION
+            );
+
+            return mediaLocation === 'granted' ? 'granted' : 'limited';
         } else {
-            return 'denied';
+            return await check(PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE);
         }
     }
 };
