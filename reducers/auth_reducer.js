@@ -32,23 +32,23 @@ const buildUserFromProfile = (data) => {
         ...profile,
 
         // Stats
-        totalImages: stats.uploads || 0,
+        totalImages: stats.uploads ?? 0,
         totalTags: stats.tags ?? stats.litter ?? 0,
-        totalLittercoin: stats.littercoin || 0,
-        xp: stats.xp || 0,
+        totalLittercoin: stats.littercoin ?? 0,
+        xp: stats.xp ?? 0,
 
         // Level
-        level: levelData.level || 0,
-        levelTitle: levelData.title || '',
-        levelProgress: levelData.progress_percent || 0,
-        xpToNextLevel: levelData.xp_remaining || 0,
+        level: levelData.level ?? 0,
+        levelTitle: levelData.title ?? '',
+        levelProgress: levelData.progress_percent ?? 0,
+        xpToNextLevel: levelData.xp_remaining ?? 0,
 
         // Rank (null = not ranked)
         position: rankData.global_position ?? null,
         percentile: rankData.percentile ?? null,
 
         // Team
-        active_team: data.team?.id || null,
+        active_team: data.team?.id ?? null,
         team: data.team || null
     };
 };

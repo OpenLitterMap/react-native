@@ -7,7 +7,6 @@ import {
     StyleSheet,
     Text,
     TextInput,
-    useWindowDimensions,
     View
 } from 'react-native';
 import {useDispatch, useSelector} from 'react-redux';
@@ -35,15 +34,13 @@ import {
 const SettingsComponent = () => {
     const {t} = useTranslation();
     const dispatch = useDispatch();
-    const {width: SCREEN_WIDTH, height: SCREEN_HEIGHT} = useWindowDimensions();
 
     const formikRef = useRef(null);
     const [password, setPassword] = useState('');
 
     useEffect(() => {
-        // This will initialize the settings.editValue
         initEditValue();
-    }, []);
+    }, [editField]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const editValue = useSelector(
         state => state.settings.editValue
@@ -193,14 +190,14 @@ const SettingsComponent = () => {
             );
         } else if (formField.key === 'delete-account') {
             return (
-                <View style={[styles.deleteAccountContainer, {padding: SCREEN_WIDTH * 0.1}]}>
-                    <Text style={[styles.deleteAccountTitle, {fontSize: SCREEN_HEIGHT * 0.045, marginBottom: SCREEN_HEIGHT * 0.025}]}>
+                <View style={[styles.deleteAccountContainer, {padding: 24}]}>
+                    <Text style={[styles.deleteAccountTitle, {fontSize: 24, marginBottom: 16}]}>
                         {t('Are you sure you want to delete your account?')}
                     </Text>
-                    <Text style={[styles.deleteAccountSubtitle, {fontSize: SCREEN_HEIGHT * 0.035, marginBottom: SCREEN_HEIGHT * 0.025}]}>
+                    <Text style={[styles.deleteAccountSubtitle, {fontSize: 18, marginBottom: 16}]}>
                         {t('All of your data will be deleted.')}
                     </Text>
-                    <Text style={[styles.deleteAccountSubtitle, {fontSize: SCREEN_HEIGHT * 0.035, marginBottom: SCREEN_HEIGHT * 0.025}]}>
+                    <Text style={[styles.deleteAccountSubtitle, {fontSize: 18, marginBottom: 16}]}>
                         {t('This cannot be undone.')}
                     </Text>
 
@@ -219,10 +216,10 @@ const SettingsComponent = () => {
                     />
 
                     <Pressable
-                        style={[styles.deleteAccountButton, {height: SCREEN_HEIGHT * 0.05, width: SCREEN_WIDTH * 0.8}, isSaving && {opacity: 0.5}]}
+                        style={[styles.deleteAccountButton, {height: 48, maxWidth: 400, alignSelf: 'center', width: '100%'}, isSaving && {opacity: 0.5}]}
                         onPress={submitDeleteAccount}
                         disabled={isSaving}>
-                        <Text style={[styles.deleteButtonText, {fontSize: SCREEN_HEIGHT * 0.02}]}>
+                        <Text style={[styles.deleteButtonText, {fontSize: 16}]}>
                             {isSaving ? t('Deleting...') : t('Delete Account')}
                         </Text>
                     </Pressable>
@@ -315,7 +312,7 @@ const SettingsComponent = () => {
 
         if (success || error) {
             return (
-                <View style={[styles.innerModalSuccess, {width: SCREEN_WIDTH * 0.8}]}>
+                <View style={[styles.innerModalSuccess, {maxWidth: 400, width: '90%'}]}>
                     <Text style={styles.innerModalHeader}>
                         {success ? successTitle : errorTitle}
                     </Text>
@@ -323,7 +320,7 @@ const SettingsComponent = () => {
                     <Text>{success ? successMessage : errorMessage}</Text>
 
                     <Pressable
-                        style={[styles.successButton, {height: SCREEN_HEIGHT * 0.05}]}
+                        style={[styles.successButton, {height: 48}]}
                         onPress={goBack}>
                         <Text style={styles.buttonText}>{goBackMessage}</Text>
                     </Pressable>

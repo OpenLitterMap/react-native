@@ -33,6 +33,7 @@ const getTargetImage = (state, imageIndex) => {
 const initialState = {
     imagesArray: [],
     editingPhotos: [], // Photos loaded from server for tag editing (My Uploads / untagged queue)
+    taggedThisSession: [], // IDs of photos tagged/removed during this editing session (prevents re-fetch dupes)
     swiperIndex: 0,
 
     // Custom tag validation feedback (null = no error)
@@ -420,11 +421,12 @@ const photosSlice = createSlice({
                 };
             });
 
-            // Deduplicate by ID against existing editing photos
+            // Deduplicate by ID against existing editing photos and photos tagged this session
             if (!state.editingPhotos) state.editingPhotos = [];
             const existingIds = new Set(state.editingPhotos.map(p => p.id));
+            const taggedIds = new Set(state.taggedThisSession ?? []);
             for (const photo of converted) {
-                if (!existingIds.has(photo.id)) {
+                if (!existingIds.has(photo.id) && !taggedIds.has(photo.id)) {
                     state.editingPhotos.push(photo);
                 }
             }
@@ -437,6 +439,9 @@ const photosSlice = createSlice({
             const photoId = action.payload;
             const removedIndex = (state.editingPhotos || []).findIndex(p => p.id === photoId);
             state.editingPhotos = (state.editingPhotos || []).filter(p => p.id !== photoId);
+            // Track removed ID to prevent re-fetch duplicates
+            if (!state.taggedThisSession) state.taggedThisSession = [];
+            if (photoId != null) state.taggedThisSession.push(photoId);
             // Keep swiperIndex in bounds after removal
             if (removedIndex !== -1 && state.swiperIndex >= state.editingPhotos.length) {
                 state.swiperIndex = Math.max(0, state.editingPhotos.length - 1);
@@ -445,32 +450,17 @@ const photosSlice = createSlice({
 
         clearEditingPhoto(state) {
             state.editingPhotos = [];
+            state.taggedThisSession = [];
         },
 
         /**
-         * Trim editing photos behind the current index to prevent unbounded growth.
-         * Keeps WINDOW_BEHIND photos behind current for back-swipe.
-         * Also adjusts swiperIndex to account for removed items.
-         * payload = currentIndex
-         */
-        trimEditingPhotos(state, action) {
-            const WINDOW_BEHIND = 3;
-            const currentIndex = action.payload;
-            const trimCount = currentIndex - WINDOW_BEHIND;
-            if (trimCount > 0 && state.editingPhotos.length > WINDOW_BEHIND + 5) {
-                state.editingPhotos.splice(0, trimCount);
-                state.swiperIndex = Math.max(0, state.swiperIndex - trimCount);
-            }
-        },
-
-        /**
-         * Commit a local draft's tags/customTags back to a photo in imagesArray.
+         * Commit a local draft's tags/customTags back to the active photo queue.
          * Used by the tagging screen to persist draft edits before advancing.
          * payload = { imageIndex, tags, customTags }
          */
         commitDraftToPhoto(state, action) {
             const {imageIndex, tags, customTags} = action.payload;
-            const image = state.imagesArray[imageIndex];
+            const image = getTargetImage(state, imageIndex);
             if (!image) return;
             image.tags = tags;
             image.customTags = customTags;
@@ -599,7 +589,6 @@ export const {
     clearEditingPhoto,
     clearUploadedImages,
     commitDraftToPhoto,
-    trimEditingPhotos,
     deleteImage,
     deleteSelectedImages,
     deselectAllImages,

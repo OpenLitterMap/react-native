@@ -10,9 +10,9 @@ import React from 'react';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { Colors } from '../../components';
 
-const AnimatedImage = ({ image, isImageGeotagged, selected, onPress }) => {
+const AnimatedImage = ({ image, isImageGeotagged, selected, onPress, columns = 3 }) => {
     const { width } = useWindowDimensions();
-    const gridSize = width / 3 - 2;
+    const gridSize = width / columns - 2;
 
     return (
         <Pressable key={image.uri} onPress={onPress}>

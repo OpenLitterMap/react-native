@@ -51,6 +51,17 @@ export function getTagsFromBackend(newTags) {
         // custom-tag-only entry. Promote custom tags to
         // image-level and skip the CLO pill.
         if (!catKey && !objKey && !apiTag.category_litter_object_id) {
+            if (apiTag.brand_only && apiTag.brand?.id != null) {
+                tagMap.set(`brand-${apiTag.brand.id}`, {
+                    brandOnly: true,
+                    brandId: apiTag.brand.id,
+                    brandKey: apiTag.brand.key,
+                    quantity: apiTag.quantity ?? 1,
+                    picked_up: apiTag.picked_up ?? null,
+                    fallbackDisplayName: formatKey(apiTag.brand.key)
+                });
+                continue;
+            }
             for (const ct of tagCustomTags) {
                 imageCustomTagSet.add(ct);
             }
@@ -100,6 +111,21 @@ export function getTagsFromBackend(newTags) {
     // Convert Sets/Maps to arrays for Redux compatibility
     const tags = [];
     for (const entry of tagMap.values()) {
+        if (entry.brandOnly) {
+            tags.push({
+                brandOnly: true,
+                brandId: entry.brandId,
+                brandKey: entry.brandKey,
+                quantity: entry.quantity,
+                picked_up: entry.picked_up,
+                fallbackDisplayName: entry.fallbackDisplayName,
+                materials: [],
+                brands: [],
+                customTags: []
+            });
+            continue;
+        }
+
         const tag = {
             cloId: entry.cloId,
             quantity: entry.quantity,

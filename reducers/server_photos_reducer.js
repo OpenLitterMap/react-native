@@ -94,6 +94,62 @@ export const fetchAndLoadUntagged = createAsyncThunk(
 );
 
 /**
+ * Fetch ALL untagged photo metadata across all pages.
+ * Photo metadata is lightweight (~300 bytes each) so loading everything
+ * upfront enables smooth swiping through the full queue.
+ * Uses per_page=50 and paginates through all pages via Promise.all.
+ */
+export const fetchAllUntaggedPhotos = createAsyncThunk(
+    'serverPhotos/fetchAllUntaggedPhotos',
+    async (_, {getState, dispatch, rejectWithValue}) => {
+        try {
+            const token = getState().auth.token;
+
+            // Fetch first page to get pagination info
+            const firstPage = await api.get('/api/v3/user/photos', {
+                token,
+                params: {tagged: false, per_page: 50, page: 1}
+            });
+
+            const firstPhotos = firstPage.data?.photos ?? [];
+            const pagination = firstPage.data?.pagination;
+
+            if (firstPhotos.length === 0) {
+                return rejectWithValue('No untagged photos found');
+            }
+
+            let allPhotos = [...firstPhotos];
+
+            // Fetch remaining pages in parallel
+            if (pagination?.last_page > 1) {
+                const pagePromises = [];
+                for (let page = 2; page <= pagination.last_page; page++) {
+                    pagePromises.push(
+                        api.get('/api/v3/user/photos', {
+                            token,
+                            params: {tagged: false, per_page: 50, page}
+                        }).then(res => res.data?.photos ?? [])
+                            .catch(() => [])
+                    );
+                }
+                const pageResults = await Promise.all(pagePromises);
+                for (const photos of pageResults) {
+                    allPhotos = allPhotos.concat(photos);
+                }
+            }
+
+            // Load all into the editing queue
+            dispatch(loadPhotoForEditing({photos: allPhotos}));
+            return {total: allPhotos.length};
+        } catch (error) {
+            return rejectWithValue(
+                error.response?.data?.message || 'Network Error'
+            );
+        }
+    }
+);
+
+/**
  * Replace ALL tags on a photo using PUT /api/v3/tags (full replace, not merge).
  * The backend deletes existing tags, resets XP, then adds the new set atomically.
  * Send the COMPLETE set of tags — not just changes.

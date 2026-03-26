@@ -241,7 +241,16 @@ const SettingsScreen = ({navigation}) => {
                 centerContent={<Title color="white" dictionary={'Settings'} />}
                 centerContainerStyle={{flex: 2}}
                 rightContent={
-                    <Pressable onPress={() => dispatch(logout())}>
+                    <Pressable onPress={() => {
+                        Alert.alert(
+                            t('Logout'),
+                            t('Are you sure you want to log out?'),
+                            [
+                                {text: t('Cancel'), style: 'cancel'},
+                                {text: t('Logout'), style: 'destructive', onPress: () => dispatch(logout())}
+                            ]
+                        );
+                    }}>
                         <Body color="white" dictionary={'Logout'} />
                     </Pressable>
                 }

@@ -9,22 +9,108 @@ import {
 } from '../../../reducers/photos_reducer';
 import resolveUri from '../../../utils/resolveUri';
 
+const UploadGridTile = React.memo(({
+    item,
+    index,
+    isSelecting,
+    onTagUntagged,
+    fetchingUntagged,
+    untaggedCount,
+    untaggedPreview,
+    tileSize,
+    onImagePress
+}) => {
+    // Special tile for untagged server photos
+    if (item._untaggedPreview) {
+        return (
+            <Pressable onPress={isSelecting ? undefined : onTagUntagged} disabled={isSelecting || fetchingUntagged}>
+                <View style={{width: tileSize, height: tileSize, marginHorizontal: 0.5, marginTop: 1, opacity: isSelecting ? 0.3 : 1}}>
+                    <Image
+                        style={{width: tileSize, height: tileSize}}
+                        source={{uri: resolveUri(item.filename)}}
+                        resizeMode="cover"
+                    />
+                    <View style={{position: 'absolute', top: 5, left: 5}}>
+                        <Text>☁</Text>
+                    </View>
+                    <View style={styles.untaggedCountBadge}>
+                        <Text style={styles.untaggedCountText}>
+                            {untaggedCount}
+                        </Text>
+                    </View>
+                </View>
+            </Pressable>
+        );
+    }
+
+    const imageHasTags = isTagged(item);
+    const realIndex = untaggedPreview ? index - 1 : index;
+
+    return (
+        <Pressable onPress={() => onImagePress(realIndex)}>
+            <View style={{width: tileSize, height: tileSize, marginHorizontal: 0.5, marginTop: 1}}>
+                <Image
+                    style={{width: tileSize, height: tileSize}}
+                    source={{uri: resolveUri(item.uri ?? item.filename)}}
+                    resizeMode="cover"
+                />
+                {item.uploaded && (
+                    <View style={{position: 'absolute', top: 5, left: 5}}>
+                        <Text>☁</Text>
+                    </View>
+                )}
+                {item.selected && (
+                    <View style={styles.checkCircleContainer}>
+                        <Text>🚮</Text>
+                    </View>
+                )}
+                {imageHasTags && (
+                    <View
+                        style={{
+                            position: 'absolute',
+                            right: 30,
+                            top: 6
+                        }}>
+                        <Text>🏷</Text>
+                    </View>
+                )}
+                {item.picked_up && (
+                    <View
+                        style={{
+                            position: 'absolute',
+                            top: 5,
+                            right: 5
+                        }}>
+                        <Text>⬆️</Text>
+                    </View>
+                )}
+            </View>
+        </Pressable>
+    );
+}, (prev, next) => (
+    prev.item === next.item &&
+    prev.index === next.index &&
+    prev.isSelecting === next.isSelecting &&
+    prev.fetchingUntagged === next.fetchingUntagged &&
+    prev.untaggedCount === next.untaggedCount &&
+    prev.untaggedPreview?.id === next.untaggedPreview?.id &&
+    prev.tileSize === next.tileSize &&
+    prev.onTagUntagged === next.onTagUntagged &&
+    prev.onImagePress === next.onImagePress
+));
+
 const UploadImagesGrid = ({images, isSelecting, navigation, untaggedCount, onTagUntagged, fetchingUntagged, untaggedPreview}) => {
     const {width: SCREEN_WIDTH} = useWindowDimensions();
     const dispatch = useDispatch();
 
-    const imagePressed = index => {
+    const imagePressed = useCallback(index => {
         if (isSelecting) {
             dispatch(toggleSelectedImages(index));
         } else {
-            // shared_reducer - Open LitterPicker modal
-
-            // litter.js
             dispatch(changeSwiperIndex(index));
-
             navigation.navigate('ADD_TAGS');
         }
-    };
+    }, [dispatch, isSelecting, navigation]);
 
     /**
      * Render images for uploading & tagging
@@ -41,74 +127,20 @@ const UploadImagesGrid = ({images, isSelecting, navigation, untaggedCount, onTag
     const tileSize = SCREEN_WIDTH / 3 - 2;
 
     const renderImage = useCallback(({item, index}) => {
-        // Special tile for untagged server photos
-        if (item._untaggedPreview) {
-            return (
-                <Pressable onPress={isSelecting ? undefined : onTagUntagged} disabled={isSelecting || fetchingUntagged}>
-                    <View style={{width: tileSize, height: tileSize, marginHorizontal: 0.5, marginTop: 1, opacity: isSelecting ? 0.3 : 1}}>
-                        <Image
-                            style={{width: tileSize, height: tileSize}}
-                            source={{uri: resolveUri(item.filename)}}
-                            resizeMode="cover"
-                        />
-                        <View style={{position: 'absolute', top: 5, left: 5}}>
-                            <Text>☁</Text>
-                        </View>
-                        <View style={styles.untaggedCountBadge}>
-                            <Text style={styles.untaggedCountText}>
-                                {untaggedCount}
-                            </Text>
-                        </View>
-                    </View>
-                </Pressable>
-            );
-        }
-
-        const imageHasTags = isTagged(item);
-        // Adjust index to account for prepended preview tile
-        const realIndex = untaggedPreview ? index - 1 : index;
         return (
-            <Pressable onPress={() => imagePressed(realIndex)}>
-                <View style={{width: tileSize, height: tileSize, marginHorizontal: 0.5, marginTop: 1}}>
-                    <Image
-                        style={{width: tileSize, height: tileSize}}
-                        source={{uri: item.uri ?? item.filename}}
-                        resizeMode="cover"
-                    />
-                    {item.uploaded && (
-                        <View style={{position: 'absolute', top: 5, left: 5}}>
-                            <Text>☁</Text>
-                        </View>
-                    )}
-                    {item.selected && (
-                        <View style={styles.checkCircleContainer}>
-                            <Text>🚮</Text>
-                        </View>
-                    )}
-                    {imageHasTags && (
-                        <View
-                            style={{
-                                position: 'absolute',
-                                right: 30,
-                                top: 6
-                            }}>
-                            <Text>🏷</Text>
-                        </View>
-                    )}
-                    {item.picked_up && (
-                        <View
-                            style={{
-                                position: 'absolute',
-                                top: 5,
-                                right: 5
-                            }}>
-                            <Text>⬆️</Text>
-                        </View>
-                    )}
-                </View>
-            </Pressable>
+            <UploadGridTile
+                item={item}
+                index={index}
+                isSelecting={isSelecting}
+                onTagUntagged={onTagUntagged}
+                fetchingUntagged={fetchingUntagged}
+                untaggedCount={untaggedCount}
+                untaggedPreview={untaggedPreview}
+                tileSize={tileSize}
+                onImagePress={imagePressed}
+            />
         );
-    }, [tileSize, isSelecting, onTagUntagged, fetchingUntagged, untaggedCount, untaggedPreview, dispatch, navigation]);
+    }, [fetchingUntagged, imagePressed, isSelecting, onTagUntagged, tileSize, untaggedCount, untaggedPreview]);
 
     // Build data: prepend untagged preview tile if available
     const gridData = useMemo(() => {
@@ -120,6 +152,16 @@ const UploadImagesGrid = ({images, isSelecting, navigation, untaggedCount, onTag
             : (images || []);
         return [...previewTile, ...localImages];
     }, [images, untaggedPreview, untaggedCount]);
+
+    const getItemLayout = useCallback((_, index) => {
+        const row = Math.floor(index / 3);
+        const length = tileSize + 1;
+        return {
+            length,
+            offset: row * length,
+            index
+        };
+    }, [tileSize]);
 
     // Show empty state only if no local images AND no untagged preview
     if (gridData.length === 0) {
@@ -151,15 +193,19 @@ const UploadImagesGrid = ({images, isSelecting, navigation, untaggedCount, onTag
             <FlatList
                 contentContainerStyle={{paddingBottom: 100}}
                 data={gridData}
-                extraData={[images, untaggedCount]}
                 keyExtractor={(img, index) =>
                     img._untaggedPreview
                         ? 'untagged-preview'
                         : (img.uri || img.id || index).toString()
                 }
+                getItemLayout={getItemLayout}
+                initialNumToRender={15}
                 numColumns={3}
                 renderItem={renderImage}
                 keyboardShouldPersistTaps="handled"
+                maxToRenderPerBatch={12}
+                removeClippedSubviews
+                windowSize={7}
             />
         </View>
     );

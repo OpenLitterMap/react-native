@@ -2,13 +2,13 @@
 > OpenLitterMap React Native v7.0
 
 ## Overview
-The v5 tagging system uses a full-screen image viewer with overlay controls. Tag data (including types, materials, and brands) is fetched from the backend API and cached locally. Users can search for tags, browse by category, or quick-add suggestions from other images in the session. Per-image tags are stored as `[{ cloId, quantity, materials, brands, customTags }]` arrays. Display names are resolved at render time from the cached tag index. Users can attach materials, brands, and custom tags to individual tags via the TagDetailSheet.
+The v5 tagging system uses a full-screen image viewer with overlay controls. Tag data (including types, materials, and brands) is fetched from the backend API and cached locally. Users can search for tags, browse by category, or quick-add suggestions from other images in the session. Per-image tags are stored as `[{ cloId, quantity, materials, brands, customTags }]` arrays, with a temporary `brandOnly` tag shape supported for brand-first search flows until the user selects a normal object. Display names are resolved at render time from the cached tag index. Users can attach materials, brands, and custom tags to individual tags via the TagDetailSheet.
 
 ## Files
 - `screens/addTag/AddTagScreen.js` — Main tagging screen (gradient overlays, image viewer, all sub-components)
-- `screens/addTag/components/ImageViewer.js` — Gesture-based image viewer (pinch zoom, pan, swipe, double-tap, focus mode)
+- `screens/addTag/components/ImageViewer.js` — Gesture-based image viewer (pinch zoom, pan, spring swipe, double-tap, keyboard-dismiss tap)
 - `screens/addTag/components/TagPills.js` — Tag chip display with tap-to-expand quantity stepper, category color bars, custom tag pills
-- `screens/addTag/components/TagSearchBar.js` — Search input with category-grouped results (SectionList), browse button, custom tag creation
+- `screens/addTag/components/TagSearchBar.js` — Search input with category-grouped results (SectionList), browse button, custom tag creation, and brand-first results
 - `screens/addTag/components/TagDetailSheet.js` — Bottom sheet modal for per-tag materials, brands, and custom tags
 - `screens/addTag/components/CategoryBrowser.js` — Category chip browser with filtered FlatList for tag discovery
 - `screens/addTag/components/TagSuggestions.js` — Smart quick-add suggestions derived from other images in session
@@ -108,16 +108,19 @@ Type entries have `isType: true` and store both their type name and parent objec
 }
 ```
 
-Cached in AsyncStorage under `tags_cache_v5` key with 7-day TTL. Force refresh available via Settings > Refresh Tags.
+Cached in AsyncStorage under `tags_cache_v7` key with 7-day TTL. Force refresh available via Settings > Refresh Tags.
 
 ## Search Behavior
 
-Search matches all space-separated terms against `searchText` (which includes type name, object name, and category name). Examples:
+Search matches all space-separated terms against `searchText` (which includes translated display values for type, object, and category names). Brand names are also searched directly from the brand index and shown inline with normal tag results. Examples:
 - `"bottle"` → matches Bottle in Alcohol, Bottle in Beverages, Beer Bottle, Wine Bottle, Water Bottle, etc.
 - `"beer bottle"` → matches Beer Bottle (type entry for Bottle + Alcohol)
 - `"can food"` → matches Can in Food
+- `"coca"` → matches the `Coca-Cola` brand before the drawer opens
 
-Results are grouped by category in the dropdown using SectionList with colored section headers. Each result shows a left color bar matching the category, and type entries show a small "TYPE" badge. Max 100 results.
+Results are grouped by category in the dropdown using SectionList with colored section headers. Each result shows a left color bar matching the category, type entries show a small "TYPE" badge, and standalone brand results show a "BRAND" badge. Max 100 results.
+
+If the user adds a standalone brand first, that tag acts as a temporary seed. The next normal object tag absorbs that brand into its `brands` list so materials, brands, quantity, and the detail sheet all continue through the standard object-tag flow.
 
 ### Custom Tags from Search Bar
 When search text doesn't match any existing tags:
@@ -270,9 +273,10 @@ Used in tag pill left borders, search result color bars, category browser chips,
 ## Image Viewer
 AddTagScreen uses a gesture-based full-screen image viewer (`ImageViewer.js`) built with `react-native-gesture-handler` v2 and `react-native-reanimated` v3:
 - **Pinch zoom**: 1x–4x with focal point tracking
-- **Pan**: Pans zoomed image, swipes between images at 1x
+- **Pan**: Pans zoomed image, swipes between images at 1x with spring settling
 - **Double tap**: Toggle between 1x and 2x zoom centered on tap point
-- **Single tap**: Toggle focus mode (show/hide UI overlays)
+- **Single tap**: Dismisses the keyboard when the main search input is focused
+- **Swipe persistence**: Draft tags are committed before the index changes so tags remain when moving between images
 
 ## Navigation
 - HomeScreen → `ADD_TAGS` route → AddTagScreen (modal)

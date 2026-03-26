@@ -1,4 +1,4 @@
-import React, {useCallback, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {
     Pressable,
     StyleSheet,
@@ -7,7 +7,7 @@ import {
 import Icon from 'react-native-vector-icons/Ionicons';
 import {Caption, Colors} from '../../components';
 import {getCategoryColor} from './categoryColors';
-import {makeTagKey, resolveTagEntry, MAX_QUANTITY} from './tagUtils';
+import {makePrimaryTagKey, resolveTagEntry, MAX_QUANTITY} from './tagUtils';
 
 const TagPills = ({
     tags,
@@ -20,6 +20,21 @@ const TagPills = ({
     onOpenDetail
 }) => {
     const [expandedKey, setExpandedKey] = useState(null);
+
+    useEffect(() => {
+        if (!expandedKey) {
+            return;
+        }
+
+        const stillExists = (tags || []).some(tag =>
+            makePrimaryTagKey(tag) === expandedKey
+        );
+
+        if (!stillExists) {
+            setExpandedKey(null);
+        }
+    }, [tags, expandedKey]);
+
     const safeTags = Array.isArray(tags) ? tags : [];
     const hasCustom = Array.isArray(customTags) && customTags.length > 0;
 
@@ -28,29 +43,29 @@ const TagPills = ({
     }, []);
 
     const handleRemove = useCallback(
-        (cloId, typeId) => {
+        (cloId, typeId, brandId) => {
             setExpandedKey(null);
-            onRemove(cloId, typeId);
+            onRemove(cloId, typeId, brandId);
         },
         [onRemove]
     );
 
     const handleIncrement = useCallback(
-        (cloId, typeId, currentQty) => {
+        (cloId, typeId, currentQty, brandId) => {
             if (currentQty < MAX_QUANTITY) {
-                onUpdateQuantity(cloId, typeId, currentQty + 1);
+                onUpdateQuantity(cloId, typeId, currentQty + 1, brandId);
             }
         },
         [onUpdateQuantity]
     );
 
     const handleDecrement = useCallback(
-        (cloId, typeId, currentQty) => {
+        (cloId, typeId, currentQty, brandId) => {
             if (currentQty <= 1) {
                 setExpandedKey(null);
-                onRemove(cloId, typeId);
+                onRemove(cloId, typeId, brandId);
             } else {
-                onUpdateQuantity(cloId, typeId, currentQty - 1);
+                onUpdateQuantity(cloId, typeId, currentQty - 1, brandId);
             }
         },
         [onRemove, onUpdateQuantity]
@@ -64,21 +79,25 @@ const TagPills = ({
         <View style={styles.container}>
             <View style={styles.pillsWrap}>
                 {safeTags.map(tag => {
-                    const tagKey = makeTagKey(tag.cloId, tag.typeId);
-                    const entry = resolveTagEntry(
-                        tag.cloId,
-                        tag.typeId,
-                        entriesByCloId,
-                        typeEntriesByKey
-                    );
-                    const name = entry?.displayName || tag.fallbackDisplayName || `#${tag.cloId}`;
+                    const tagKey = makePrimaryTagKey(tag);
+                    const entry = tag.brandOnly
+                        ? null
+                        : resolveTagEntry(
+                            tag.cloId,
+                            tag.typeId,
+                            entriesByCloId,
+                            typeEntriesByKey
+                        );
+                    const name = entry?.displayName || tag.fallbackDisplayName || (tag.brandOnly ? `#${tag.brandId}` : `#${tag.cloId}`);
                     const category = entry?.isMultiCategory
                         ? entry.categoryDisplayName
                         : null;
                     const label = category ? `${name} · ${category}` : name;
                     const qty = Math.max(1, Number(tag.quantity) || 1);
                     const isExpanded = expandedKey === tagKey;
-                    const categoryColor = getCategoryColor(entry?.categoryKey || tag.fallbackCategoryKey);
+                    const categoryColor = tag.brandOnly
+                        ? '#dc2626'
+                        : getCategoryColor(entry?.categoryKey || tag.fallbackCategoryKey);
 
                     return (
                         <View key={tagKey} style={styles.pillWrapper}>
@@ -94,7 +113,7 @@ const TagPills = ({
                                     <Pressable
                                         style={styles.inlineBtn}
                                         onPress={() =>
-                                            handleDecrement(tag.cloId, tag.typeId, qty)
+                                            handleDecrement(tag.cloId, tag.typeId, qty, tag.brandId)
                                         }
                                         hitSlop={4}>
                                         <Icon
@@ -128,7 +147,7 @@ const TagPills = ({
                                             qty >= MAX_QUANTITY && styles.inlineBtnDisabled
                                         ]}
                                         onPress={() =>
-                                            handleIncrement(tag.cloId, tag.typeId, qty)
+                                            handleIncrement(tag.cloId, tag.typeId, qty, tag.brandId)
                                         }
                                         disabled={qty >= MAX_QUANTITY}
                                         hitSlop={4}>
@@ -139,7 +158,7 @@ const TagPills = ({
                                         />
                                     </Pressable>
                                 )}
-                                {isExpanded && (
+                                {isExpanded && !tag.brandOnly && (
                                     <Pressable
                                         style={styles.inlineBtn}
                                         onPress={() => onOpenDetail && onOpenDetail(tag)}
@@ -155,7 +174,7 @@ const TagPills = ({
                                     <Pressable
                                         style={styles.inlineBtnDanger}
                                         onPress={() =>
-                                            handleRemove(tag.cloId, tag.typeId)
+                                            handleRemove(tag.cloId, tag.typeId, tag.brandId)
                                         }
                                         hitSlop={4}>
                                         <Icon

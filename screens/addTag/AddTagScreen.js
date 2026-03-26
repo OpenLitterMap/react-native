@@ -66,6 +66,7 @@ const AddTagScreen = ({navigation}) => {
     // --- UI state ---
     const [showBrowser, setShowBrowser] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+    const [showDeferredPanels, setShowDeferredPanels] = useState(false);
 
     // --- Tags catalogue ---
     const {
@@ -85,6 +86,14 @@ const AddTagScreen = ({navigation}) => {
     useFocusEffect(
         useCallback(() => {
             StatusBar.setBarStyle('light-content');
+            setShowDeferredPanels(false);
+            const task = InteractionManager.runAfterInteractions(() => {
+                setShowDeferredPanels(true);
+            });
+
+            return () => {
+                task.cancel();
+            };
         }, [])
     );
 
@@ -125,13 +134,20 @@ const AddTagScreen = ({navigation}) => {
         [draft.addTag, activeIndex]
     );
 
+    const handleAddBrandOnly = useCallback(
+        (brandId, brandName, brandKey) => {
+            draft.addBrandOnly(brandId, brandName, brandKey);
+        },
+        [draft.addBrandOnly]
+    );
+
     const handleRemoveTag = useCallback(
-        (cloId, typeId) => draft.removeTag(cloId, typeId),
+        (cloId, typeId, brandId) => draft.removeTag(cloId, typeId, brandId),
         [draft.removeTag]
     );
 
     const handleUpdateQuantity = useCallback(
-        (cloId, typeId, newQuantity) => draft.updateQuantity(cloId, typeId, newQuantity),
+        (cloId, typeId, newQuantity, brandId) => draft.updateQuantity(cloId, typeId, newQuantity, brandId),
         [draft.updateQuantity]
     );
 
@@ -233,16 +249,14 @@ const AddTagScreen = ({navigation}) => {
     );
 
     // --- Done / Save ---
-    // Commit draft before advancing in gallery mode (swipe via arrows)
+    // Commit draft before advancing so edits persist across swipes in both modes.
     const handleIndexChangeWithCommit = useCallback(
         newIndex => {
-            if (!isEditMode) {
-                if (__DEV__) console.log('[Tag] commitDraft before index change →', newIndex);
-                commitDraft(getDraft);
-            }
+            if (__DEV__) console.log('[Tag] commitDraft before index change →', newIndex);
+            commitDraft(getDraft);
             goToIndex(newIndex);
         },
-        [isEditMode, commitDraft, getDraft, goToIndex]
+        [commitDraft, getDraft, goToIndex]
     );
 
     const handleDone = useCallback(() => {
@@ -263,6 +277,11 @@ const AddTagScreen = ({navigation}) => {
         setShowBrowser(false);
     }, []);
 
+    const handleImageTap = useCallback(() => {
+        Keyboard.dismiss();
+        searchBarRef.current?.blurInput?.();
+    }, []);
+
     if (!activePhoto) {
         return null;
     }
@@ -274,6 +293,7 @@ const AddTagScreen = ({navigation}) => {
                 images={photos}
                 currentIndex={activeIndex}
                 onIndexChange={handleIndexChangeWithCommit}
+                onSingleTap={handleImageTap}
             />
 
             {/* Layer 2: Top bar — absolute, floats over image */}
@@ -340,14 +360,16 @@ const AddTagScreen = ({navigation}) => {
                     onOpenDetail={handleOpenDetail}
                 />
 
-                <TagSuggestions
-                    images={photos}
-                    currentIndex={activeIndex}
-                    currentTags={currentTags}
-                    entriesByCloId={entriesByCloId}
-                    typeEntriesByKey={typeEntriesByKey}
-                    onAddTag={handleAddTag}
-                />
+                {showDeferredPanels && (
+                    <TagSuggestions
+                        images={photos}
+                        currentIndex={activeIndex}
+                        currentTags={currentTags}
+                        entriesByCloId={entriesByCloId}
+                        typeEntriesByKey={typeEntriesByKey}
+                        onAddTag={handleAddTag}
+                    />
+                )}
 
                 <TagSearchBar
                     ref={searchBarRef}
@@ -355,7 +377,9 @@ const AddTagScreen = ({navigation}) => {
                     entriesByCloId={entriesByCloId}
                     currentTags={currentTags}
                     customTags={currentCustomTags}
+                    brands={brandsArray}
                     onAddTag={handleAddTag}
+                    onAddBrandOnly={handleAddBrandOnly}
                     onAddCustomTag={handleAddImageCustomTag}
                     onPendingCustomTag={setPendingCustomTag}
                     onBrowsePress={handleBrowsePress}

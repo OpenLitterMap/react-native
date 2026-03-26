@@ -1,5 +1,5 @@
 # Mobile Auth & Onboarding
-> OpenLitterMap React Native v7.1.1
+> OpenLitterMap React Native v7.1.2
 
 ## Overview
 Authentication is handled via Laravel Sanctum token-based auth. The user logs in with email or username + password, receives a Bearer token, and that token is stored in AsyncStorage and attached to all subsequent API requests.

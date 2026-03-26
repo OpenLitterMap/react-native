@@ -1,5 +1,5 @@
-import React, {useCallback, useMemo} from 'react';
-import {ScrollView, StyleSheet, View} from 'react-native';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import {InteractionManager, ScrollView, StyleSheet, View} from 'react-native';
 import {Pressable} from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {Caption, Colors} from '../../components';
@@ -13,30 +13,49 @@ const TagSuggestions = ({
     typeEntriesByKey,
     onAddTag
 }) => {
+    const [rankedKeys, setRankedKeys] = useState([]);
+
+    useEffect(() => {
+        let cancelled = false;
+        const task = InteractionManager.runAfterInteractions(() => {
+            const frequency = {};
+
+            for (let i = 0; i < images.length; i++) {
+                if (i === currentIndex) continue;
+                const image = images[i];
+                if (!image) continue;
+                const tags = image.tags || [];
+                for (const tag of tags) {
+                    if (!tag) continue;
+                    const key = makeTagKey(tag.cloId, tag.typeId);
+                    frequency[key] = (frequency[key] || 0) + 1;
+                }
+            }
+
+            const nextRankedKeys = Object.entries(frequency)
+                .sort((a, b) => b[1] - a[1])
+                .map(([key]) => key);
+
+            if (!cancelled) {
+                setRankedKeys(nextRankedKeys);
+            }
+        });
+
+        return () => {
+            cancelled = true;
+            task.cancel();
+        };
+    }, [images, currentIndex]);
+
     const suggestions = useMemo(() => {
         const currentKeys = new Set(
             (currentTags || []).map(t => makeTagKey(t.cloId, t.typeId))
         );
-        const frequency = {};
 
-        for (let i = 0; i < images.length; i++) {
-            if (i === currentIndex) continue;
-            const image = images[i];
-            if (!image) continue;
-            const tags = image.tags || [];
-            for (const tag of tags) {
-                if (!tag) continue;
-                const key = makeTagKey(tag.cloId, tag.typeId);
-                if (!currentKeys.has(key)) {
-                    frequency[key] = (frequency[key] || 0) + 1;
-                }
-            }
-        }
-
-        return Object.entries(frequency)
-            .sort((a, b) => b[1] - a[1])
+        return rankedKeys
+            .filter(key => !currentKeys.has(key))
             .slice(0, 10)
-            .map(([key]) => {
+            .map(key => {
                 const [cloId, typeId] = parseTagKey(key);
                 const entry = resolveTagEntry(
                     cloId,
@@ -47,7 +66,7 @@ const TagSuggestions = ({
                 return {cloId, typeId, entry};
             })
             .filter(s => s.entry);
-    }, [images, currentIndex, currentTags, entriesByCloId, typeEntriesByKey]);
+    }, [currentTags, entriesByCloId, rankedKeys, typeEntriesByKey]);
 
     const handleAdd = useCallback(
         (cloId, typeId) => {

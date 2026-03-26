@@ -1,5 +1,6 @@
-import React, {useEffect, useMemo, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {
+    InteractionManager,
     Keyboard,
     KeyboardAvoidingView,
     Modal,
@@ -37,6 +38,11 @@ const TagDetailSheet = ({
     const [materialQuery, setMaterialQuery] = useState('');
     const [brandQuery, setBrandQuery] = useState('');
     const [customTagText, setCustomTagText] = useState('');
+    const scrollRef = useRef(null);
+    const materialsSectionYRef = useRef(0);
+    const brandsSectionYRef = useRef(0);
+    const [isMaterialFocused, setIsMaterialFocused] = useState(false);
+    const [isBrandFocused, setIsBrandFocused] = useState(false);
 
     // Reset search inputs when the sheet opens
     useEffect(() => {
@@ -122,6 +128,43 @@ const TagDetailSheet = ({
         }
     };
 
+    const scrollToSection = useCallback(y => {
+        InteractionManager.runAfterInteractions(() => {
+            scrollRef.current?.scrollTo({
+                y: Math.max(0, y - 8),
+                animated: true
+            });
+        });
+    }, []);
+
+    const scrollMaterialsIntoView = useCallback(() => {
+        scrollToSection(materialsSectionYRef.current);
+    }, [scrollToSection]);
+
+    const handleMaterialFocus = useCallback(() => {
+        setIsMaterialFocused(true);
+        scrollMaterialsIntoView();
+        setTimeout(scrollMaterialsIntoView, 120);
+    }, [scrollMaterialsIntoView]);
+
+    const handleMaterialBlur = useCallback(() => {
+        setIsMaterialFocused(false);
+    }, []);
+
+    const scrollBrandsIntoView = useCallback(() => {
+        scrollToSection(brandsSectionYRef.current);
+    }, [scrollToSection]);
+
+    const handleBrandFocus = useCallback(() => {
+        setIsBrandFocused(true);
+        scrollBrandsIntoView();
+        setTimeout(scrollBrandsIntoView, 120);
+    }, [scrollBrandsIntoView]);
+
+    const handleBrandBlur = useCallback(() => {
+        setIsBrandFocused(false);
+    }, []);
+
     const showBrandCreateOption =
         brandQuery.trim().length > 0 && brandResults.length === 0;
     const showMaterialCreateOption =
@@ -144,9 +187,18 @@ const TagDetailSheet = ({
                     <Pressable style={styles.backdrop} onPress={() => { Keyboard.dismiss(); onClose(); }} />
                     <View style={styles.sheet}>
                         <ScrollView
+                            ref={scrollRef}
                             showsVerticalScrollIndicator={false}
                             bounces={false}
-                            keyboardShouldPersistTaps="handled">
+                            keyboardShouldPersistTaps="handled"
+                            onContentSizeChange={() => {
+                                if (isMaterialFocused) {
+                                    scrollMaterialsIntoView();
+                                }
+                                if (isBrandFocused) {
+                                    scrollBrandsIntoView();
+                                }
+                            }}>
                             <View style={styles.handle} />
 
                             {/* Content guard: tag can be null during Modal close animation.
@@ -172,7 +224,11 @@ const TagDetailSheet = ({
                             </View>
 
                             {/* Quantity */}
-                            <View style={styles.section}>
+                            <View
+                                style={styles.section}
+                                onLayout={event => {
+                                    materialsSectionYRef.current = event.nativeEvent.layout.y;
+                                }}>
                                 <Caption style={styles.sectionLabel}>
                                     {t('Quantity')}
                                 </Caption>
@@ -234,7 +290,11 @@ const TagDetailSheet = ({
                             </View>
 
                             {/* Picked Up */}
-                            <View style={styles.section}>
+                            <View
+                                style={styles.section}
+                                onLayout={event => {
+                                    brandsSectionYRef.current = event.nativeEvent.layout.y;
+                                }}>
                                 <View style={styles.sectionHeader}>
                                     <Caption style={styles.sectionLabel}>
                                         {t('Picked Up')}
@@ -338,6 +398,8 @@ const TagDetailSheet = ({
                                         placeholderTextColor="#aaa"
                                         value={materialQuery}
                                         onChangeText={setMaterialQuery}
+                                        onFocus={handleMaterialFocus}
+                                        onBlur={handleMaterialBlur}
                                         autoCapitalize="none"
                                         autoCorrect={false}
                                     />
@@ -467,6 +529,8 @@ const TagDetailSheet = ({
                                         placeholderTextColor="#aaa"
                                         value={brandQuery}
                                         onChangeText={setBrandQuery}
+                                        onFocus={handleBrandFocus}
+                                        onBlur={handleBrandBlur}
                                         autoCapitalize="none"
                                         autoCorrect={false}
                                     />

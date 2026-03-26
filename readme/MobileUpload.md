@@ -42,6 +42,9 @@ The upload flow lets users select photos from their gallery, tag them with the v
 11. On completion, result modal shows upload summary (success/failure counts)
 12. User can cancel mid-upload via cancel button (AbortController aborts in-flight request)
 
+### Untagged Preview Shortcut
+The top-left untagged preview tile on HomeScreen opens `AddTagScreen` immediately with the exact preview photo already shown. The full untagged queue is then fetched in the background after navigation so the tap feels instant.
+
 ## Tag Payload Resolution
 At upload time, `buildTagsPayload(img)` (from `utils/buildTagsPayload.js`) converts each tag into the POST format:
 

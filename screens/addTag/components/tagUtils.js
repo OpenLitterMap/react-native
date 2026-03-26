@@ -11,6 +11,13 @@ export const MAX_QUANTITY = 10;
  */
 export const makeTagKey = (cloId, typeId) => `${cloId}-${typeId ?? ''}`;
 
+export const makePrimaryTagKey = tag => {
+    if (tag?.brandOnly && tag?.brandId != null) {
+        return `brand-${tag.brandId}`;
+    }
+    return makeTagKey(tag?.cloId, tag?.typeId);
+};
+
 /**
  * Parse a tag key back into (cloId, typeId).
  * Companion to makeTagKey — keeps the format in one place.

@@ -11,16 +11,38 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import {useTranslation} from 'react-i18next';
 import {Body, Caption, Colors} from '../../components';
 import {getCategoryColor} from './categoryColors';
-import {makeTagKey} from './tagUtils';
+import {makePrimaryTagKey, makeTagKey} from './tagUtils';
 
 const MAX_RESULTS = 100;
+
+const brandResultComparator = (a, b) => {
+    const aName = a.displayName.toLowerCase();
+    const bName = b.displayName.toLowerCase();
+    return aName.localeCompare(bName);
+};
+
+const getMatchScore = (entry, query) => {
+    const text = (entry.displayName || '').toLowerCase();
+    if (text === query) {
+        return 0;
+    }
+    if (text.startsWith(query)) {
+        return 1;
+    }
+    if (text.includes(query)) {
+        return 2;
+    }
+    return 3;
+};
 
 const TagSearchBar = React.forwardRef(({
     objectEntries,
     entriesByCloId,
     currentTags,
     customTags,
+    brands,
     onAddTag,
+    onAddBrandOnly,
     onAddCustomTag,
     onPendingCustomTag,
     onBrowsePress,
@@ -30,6 +52,7 @@ const TagSearchBar = React.forwardRef(({
     const [query, setQuery] = useState('');
     const [isFocused, setIsFocused] = useState(false);
     const blurTimerRef = useRef(null);
+    const inputRef = useRef(null);
 
     useEffect(() => {
         return () => {
@@ -42,8 +65,8 @@ const TagSearchBar = React.forwardRef(({
     const taggedKeys = useMemo(() => {
         const set = new Set();
         if (currentTags) {
-            for (const t of currentTags) {
-                set.add(makeTagKey(t.cloId, t.typeId));
+            for (const tag of currentTags) {
+                set.add(makePrimaryTagKey(tag));
             }
         }
         return set;
@@ -55,18 +78,44 @@ const TagSearchBar = React.forwardRef(({
         }
         const q = query.trim().toLowerCase();
         const terms = q.split(/\s+/);
-        const matches = [];
+        const objectMatches = [];
         for (const entry of objectEntries) {
             const hit = terms.every(term => entry.searchText.includes(term));
             if (hit) {
-                matches.push(entry);
-                if (matches.length >= MAX_RESULTS) {
-                    break;
-                }
+                objectMatches.push(entry);
             }
         }
-        return matches;
-    }, [query, objectEntries]);
+        const brandMatches = [];
+        for (const brand of brands || []) {
+            const brandText = brand.name.toLowerCase();
+            const hit = terms.every(term => brandText.includes(term));
+            if (hit) {
+                brandMatches.push({
+                    isBrandOnly: true,
+                    brandId: brand.id,
+                    brandKey: brand.key,
+                    displayName: brand.name,
+                    categoryId: 'brand-only',
+                    categoryKey: 'brand-only',
+                    categoryDisplayName: t('Brands'),
+                    searchText: brandText
+                });
+            }
+        }
+        brandMatches.sort(brandResultComparator);
+        const combined = [...brandMatches, ...objectMatches];
+        combined.sort((a, b) => {
+            const scoreDiff = getMatchScore(a, q) - getMatchScore(b, q);
+            if (scoreDiff !== 0) {
+                return scoreDiff;
+            }
+            if (!!a.isBrandOnly !== !!b.isBrandOnly) {
+                return a.isBrandOnly ? -1 : 1;
+            }
+            return (a.displayName || '').localeCompare(b.displayName || '');
+        });
+        return combined.slice(0, MAX_RESULTS);
+    }, [brands, objectEntries, query, t]);
 
     // Group results by category for section display
     const sections = useMemo(() => {
@@ -92,7 +141,15 @@ const TagSearchBar = React.forwardRef(({
     }, [results]);
 
     useImperativeHandle(ref, () => ({
-        clearQuery: () => setQuery('')
+        clearQuery: () => setQuery(''),
+        blurInput: () => {
+            if (blurTimerRef.current) {
+                clearTimeout(blurTimerRef.current);
+                blurTimerRef.current = null;
+            }
+            inputRef.current?.blur();
+            setIsFocused(false);
+        }
     }), []);
 
     const hasQuery = query.trim().length > 0;
@@ -108,13 +165,16 @@ const TagSearchBar = React.forwardRef(({
     }, [showNoResults, query, onPendingCustomTag]);
 
     const handleSelect = useCallback(
-        (cloId, typeId) => {
-            if (__DEV__) console.log('[Search] select cloId:', cloId, 'typeId:', typeId);
-            onAddTag(cloId, typeId);
+        item => {
+            if (item.isBrandOnly) {
+                onAddBrandOnly?.(item.brandId, item.displayName, item.brandKey);
+            } else {
+                onAddTag(item.cloId, item.typeId);
+            }
             setQuery('');
             Keyboard.dismiss();
         },
-        [onAddTag]
+        [onAddBrandOnly, onAddTag]
     );
 
     const handleCreateCustomTag = useCallback(() => {
@@ -180,8 +240,12 @@ const TagSearchBar = React.forwardRef(({
 
     const renderItem = useCallback(
         ({item}) => {
-            const isAdded = taggedKeys.has(makeTagKey(item.cloId, item.typeId));
-            const categoryColor = getCategoryColor(item.categoryKey);
+            const isAdded = item.isBrandOnly
+                ? taggedKeys.has(`brand-${item.brandId}`)
+                : taggedKeys.has(makeTagKey(item.cloId, item.typeId));
+            const categoryColor = item.isBrandOnly
+                ? '#dc2626'
+                : getCategoryColor(item.categoryKey);
 
             return (
                 <Pressable
@@ -190,7 +254,7 @@ const TagSearchBar = React.forwardRef(({
                         isAdded && styles.resultRowAdded,
                         pressed && styles.resultRowPressed
                     ]}
-                    onPress={() => handleSelect(item.cloId, item.typeId)}>
+                    onPress={() => handleSelect(item)}>
                     <View
                         style={[
                             styles.colorBar,
@@ -211,6 +275,15 @@ const TagSearchBar = React.forwardRef(({
                                         color="muted"
                                         style={styles.typeBadgeText}>
                                         type
+                                    </Caption>
+                                </View>
+                            )}
+                            {item.isBrandOnly && (
+                                <View style={styles.typeBadge}>
+                                    <Caption
+                                        color="muted"
+                                        style={styles.typeBadgeText}>
+                                        brand
                                     </Caption>
                                 </View>
                             )}
@@ -238,7 +311,9 @@ const TagSearchBar = React.forwardRef(({
     const keyExtractor = useCallback((item) => {
         return item.isType
             ? `type-${item.cloId}-${item.typeId}`
-            : `obj-${item.cloId}`;
+            : item.isBrandOnly
+                ? `brand-${item.brandId}`
+                : `obj-${item.cloId}`;
     }, []);
 
     return (
@@ -266,6 +341,7 @@ const TagSearchBar = React.forwardRef(({
                     style={styles.searchIcon}
                 />
                 <TextInput
+                    ref={inputRef}
                     style={styles.input}
                     placeholder={t('Search tags...')}
                     placeholderTextColor={Colors.muted}

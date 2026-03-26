@@ -5,8 +5,17 @@ import {formatKey} from '../utils/formatKey';
 import {logout} from './auth_reducer';
 import i18n from '../i18n';
 
-const CACHE_KEY = 'tags_cache_v5';
+const CACHE_KEY = 'tags_cache_v7';
 const CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+
+const searchableText = (...parts) => parts
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase();
+
+const BRAND_NAME_OVERRIDES = {
+    coke: 'Coca-Cola'
+};
 
 const initialState = {
     objectEntries: [], // One entry per (object, category) pair + type entries
@@ -89,9 +98,6 @@ export const fetchAllTags = createAsyncThunk(
                     ? i18n.t(catLitterKey)
                     : formatKey(cat.key);
                 const isMultiCategory = objectCategoryCount[obj.id] > 1;
-                const objectText = obj.key.replace(/_/g, ' ').toLowerCase();
-                const categoryText = cat.key.replace(/_/g, ' ').toLowerCase();
-
                 objectEntries.push({
                     cloId: co.id,
                     objectId: obj.id,
@@ -101,7 +107,7 @@ export const fetchAllTags = createAsyncThunk(
                     displayName: objectName,
                     categoryDisplayName: categoryName,
                     isMultiCategory,
-                    searchText: `${objectText} ${categoryText}`
+                    searchText: searchableText(objectName, categoryName)
                 });
             }
 
@@ -134,16 +140,6 @@ export const fetchAllTags = createAsyncThunk(
                     const typeName = i18n.exists(typeKey)
                         ? i18n.t(typeKey)
                         : (type.name || formatKey(type.key));
-                    const typeText = (type.name || type.key)
-                        .replace(/_/g, ' ')
-                        .toLowerCase();
-                    const objectText = parentEntry.objectKey
-                        .replace(/_/g, ' ')
-                        .toLowerCase();
-                    const categoryText = parentEntry.categoryKey
-                        .replace(/_/g, ' ')
-                        .toLowerCase();
-
                     const typeEntry = {
                         cloId: parentEntry.cloId,
                         objectId: parentEntry.objectId,
@@ -157,7 +153,11 @@ export const fetchAllTags = createAsyncThunk(
                         typeId: type.id,
                         typeName,
                         parentDisplayName: parentEntry.displayName,
-                        searchText: `${typeText} ${objectText} ${categoryText}`
+                        searchText: searchableText(
+                            typeName,
+                            parentEntry.displayName,
+                            parentEntry.categoryDisplayName
+                        )
                     };
 
                     objectEntries.push(typeEntry);
@@ -201,7 +201,7 @@ export const fetchAllTags = createAsyncThunk(
                     brandsById[b.id] = {
                         id: b.id,
                         key: b.key,
-                        name: formatKey(b.key)
+                        name: BRAND_NAME_OVERRIDES[b.key] || formatKey(b.key)
                     };
                 }
             }

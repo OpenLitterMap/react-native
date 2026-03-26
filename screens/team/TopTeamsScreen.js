@@ -12,7 +12,7 @@ const TopTeamsScreen = ({ navigation }) => {
     const {t} = useTranslation();
     const topTeams = useSelector(state => state.teams.topTeams);
     const topTeamsStatus = useSelector(state => state.teams.topTeamsStatus);
-    const loading = topTeamsStatus === 'loading' || topTeamsStatus === 'idle';
+    const loading = topTeamsStatus === 'loading';
 
     return (
         <>

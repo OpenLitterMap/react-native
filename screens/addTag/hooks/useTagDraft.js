@@ -17,148 +17,232 @@ function findTag(tags, cloId, typeId) {
     );
 }
 
+function findBrandOnlyTag(tags, brandId) {
+    return tags.findIndex(
+        t => t.brandOnly && t.brandId === brandId
+    );
+}
+
+function getSingleBrandOnlySeed(tags) {
+    const brandOnlyTags = tags.filter(tag => tag.brandOnly && tag.brandId != null);
+    return brandOnlyTags.length === 1 ? brandOnlyTags[0] : null;
+}
+
 function draftReducer(state, action) {
     switch (action.type) {
-        case 'RESET': {
-            return {
-                tags: action.tags || [],
-                customTags: action.customTags || [],
-                photoId: action.photoId
-            };
-        }
-        case 'ADD_TAG': {
-            const {cloId, typeId, defaultPickedUp} = action;
-            const idx = findTag(state.tags, cloId, typeId);
-            if (idx !== -1) {
-                // Increment quantity
-                const tags = [...state.tags];
-                const existing = {...tags[idx]};
-                if (existing.quantity < MAX_QUANTITY) {
-                    existing.quantity += 1;
+    case 'RESET': {
+        return {
+            tags: action.tags || [],
+            customTags: action.customTags || [],
+            photoId: action.photoId
+        };
+    }
+    case 'ADD_TAG': {
+        const {cloId, typeId, defaultPickedUp} = action;
+        const brandSeed = getSingleBrandOnlySeed(state.tags);
+        const idx = findTag(state.tags, cloId, typeId);
+        if (idx !== -1) {
+            const tags = [...state.tags];
+            const existing = {...tags[idx]};
+
+            if (brandSeed) {
+                const brands = [...(existing.brands || [])];
+                if (!brands.some(brand => brand.id === brandSeed.brandId)) {
+                    brands.push({
+                        id: brandSeed.brandId,
+                        quantity: Math.min(brandSeed.quantity || 1, MAX_QUANTITY)
+                    });
+                }
+                existing.brands = brands;
+                if (existing.picked_up == null && brandSeed.picked_up != null) {
+                    existing.picked_up = brandSeed.picked_up;
                 }
                 tags[idx] = existing;
-                return {...state, tags};
+                return {
+                    ...state,
+                    tags: tags.filter(tag => !(tag.brandOnly && tag.brandId === brandSeed.brandId))
+                };
             }
-            const tag = {
-                cloId,
-                quantity: 1,
-                picked_up: defaultPickedUp ?? null,
-                materials: [],
-                brands: [],
-                customTags: []
-            };
-            if (typeId != null) tag.typeId = typeId;
-            return {...state, tags: [...state.tags, tag]};
-        }
-        case 'REMOVE_TAG': {
-            const {cloId, typeId} = action;
-            return {
-                ...state,
-                tags: state.tags.filter(
-                    t => !(t.cloId === cloId && (t.typeId ?? null) === (typeId ?? null))
-                )
-            };
-        }
-        case 'UPDATE_QUANTITY': {
-            const {cloId, typeId, quantity} = action;
-            if (quantity <= 0) {
-                return draftReducer(state, {type: 'REMOVE_TAG', cloId, typeId});
+
+            if (existing.quantity < MAX_QUANTITY) {
+                existing.quantity += 1;
             }
-            const idx = findTag(state.tags, cloId, typeId);
-            if (idx === -1) return state;
-            const tags = [...state.tags];
-            tags[idx] = {...tags[idx], quantity: Math.min(quantity, MAX_QUANTITY)};
+            tags[idx] = existing;
             return {...state, tags};
         }
-        case 'SET_PICKED_UP': {
-            const {cloId, typeId, value} = action;
-            const idx = findTag(state.tags, cloId, typeId);
-            if (idx === -1) return state;
-            const tags = [...state.tags];
-            tags[idx] = {...tags[idx], picked_up: value};
-            return {...state, tags};
-        }
-        case 'TOGGLE_MATERIAL': {
-            const {cloId, typeId, materialId} = action;
-            const idx = findTag(state.tags, cloId, typeId);
-            if (idx === -1) return state;
-            const tags = [...state.tags];
-            const tag = {...tags[idx]};
-            const materials = [...(tag.materials || [])];
-            const matIdx = materials.indexOf(materialId);
-            if (matIdx === -1) {
-                materials.push(materialId);
-            } else {
-                materials.splice(matIdx, 1);
+        const tag = {
+            cloId,
+            quantity: 1,
+            picked_up: defaultPickedUp ?? null,
+            materials: [],
+            brands: [],
+            customTags: []
+        };
+        if (brandSeed) {
+            tag.brands.push({
+                id: brandSeed.brandId,
+                quantity: Math.min(brandSeed.quantity || 1, MAX_QUANTITY)
+            });
+            if (brandSeed.picked_up != null) {
+                tag.picked_up = brandSeed.picked_up;
             }
-            tag.materials = materials;
-            tags[idx] = tag;
-            return {...state, tags};
         }
-        case 'ADD_BRAND': {
-            const {cloId, typeId, brandId} = action;
-            const idx = findTag(state.tags, cloId, typeId);
-            if (idx === -1) return state;
+        if (typeId != null) tag.typeId = typeId;
+        return {
+            ...state,
+            tags: [
+                ...state.tags.filter(
+                    existingTag => !(brandSeed && existingTag.brandOnly && existingTag.brandId === brandSeed.brandId)
+                ),
+                tag
+            ]
+        };
+    }
+    case 'ADD_BRAND_ONLY': {
+        const {brandId, brandName, brandKey, defaultPickedUp} = action;
+        const idx = findBrandOnlyTag(state.tags, brandId);
+        if (idx !== -1) {
             const tags = [...state.tags];
-            const tag = {...tags[idx]};
-            const brands = [...(tag.brands || [])];
-            if (!brands.some(b => b.id === brandId)) {
-                brands.push({id: brandId, quantity: 1});
+            const existing = {...tags[idx]};
+            if (existing.quantity < MAX_QUANTITY) {
+                existing.quantity += 1;
             }
-            tag.brands = brands;
-            tags[idx] = tag;
+            tags[idx] = existing;
             return {...state, tags};
         }
-        case 'REMOVE_BRAND': {
-            const {cloId, typeId, brandId} = action;
-            const idx = findTag(state.tags, cloId, typeId);
-            if (idx === -1) return state;
-            const tags = [...state.tags];
-            const tag = {...tags[idx]};
-            tag.brands = (tag.brands || []).filter(b => b.id !== brandId);
-            tags[idx] = tag;
-            return {...state, tags};
+        return {
+            ...state,
+            tags: [
+                ...state.tags,
+                {
+                    brandOnly: true,
+                    brandId,
+                    brandKey,
+                    quantity: 1,
+                    picked_up: defaultPickedUp ?? null,
+                    fallbackDisplayName: brandName,
+                    materials: [],
+                    brands: [],
+                    customTags: []
+                }
+            ]
+        };
+    }
+    case 'REMOVE_TAG': {
+        const {cloId, typeId, brandId} = action;
+        return {
+            ...state,
+            tags: state.tags.filter(
+                t => brandId != null
+                    ? !(t.brandOnly && t.brandId === brandId)
+                    : !(t.cloId === cloId && (t.typeId ?? null) === (typeId ?? null))
+            )
+        };
+    }
+    case 'UPDATE_QUANTITY': {
+        const {cloId, typeId, quantity, brandId} = action;
+        if (quantity <= 0) {
+            return draftReducer(state, {type: 'REMOVE_TAG', cloId, typeId, brandId});
         }
-        case 'ADD_CUSTOM_TAG': {
-            const {cloId, typeId, text} = action;
-            const trimmed = text?.trim()?.slice(0, 100);
-            if (!trimmed || trimmed.length < 3) return state;
-            const idx = findTag(state.tags, cloId, typeId);
-            if (idx === -1) return state;
-            const tags = [...state.tags];
-            const tag = {...tags[idx]};
-            const customs = [...(tag.customTags || [])];
-            if (!customs.includes(trimmed)) {
-                customs.push(trimmed);
-            }
-            tag.customTags = customs;
-            tags[idx] = tag;
-            return {...state, tags};
+        const idx = brandId != null
+            ? findBrandOnlyTag(state.tags, brandId)
+            : findTag(state.tags, cloId, typeId);
+        if (idx === -1) return state;
+        const tags = [...state.tags];
+        tags[idx] = {...tags[idx], quantity: Math.min(quantity, MAX_QUANTITY)};
+        return {...state, tags};
+    }
+    case 'SET_PICKED_UP': {
+        const {cloId, typeId, value, brandId} = action;
+        const idx = brandId != null
+            ? findBrandOnlyTag(state.tags, brandId)
+            : findTag(state.tags, cloId, typeId);
+        if (idx === -1) return state;
+        const tags = [...state.tags];
+        tags[idx] = {...tags[idx], picked_up: value};
+        return {...state, tags};
+    }
+    case 'TOGGLE_MATERIAL': {
+        const {cloId, typeId, materialId} = action;
+        const idx = findTag(state.tags, cloId, typeId);
+        if (idx === -1) return state;
+        const tags = [...state.tags];
+        const tag = {...tags[idx]};
+        const materials = [...(tag.materials || [])];
+        const matIdx = materials.indexOf(materialId);
+        if (matIdx === -1) {
+            materials.push(materialId);
+        } else {
+            materials.splice(matIdx, 1);
         }
-        case 'REMOVE_CUSTOM_TAG': {
-            const {cloId, typeId, text} = action;
-            const idx = findTag(state.tags, cloId, typeId);
-            if (idx === -1) return state;
-            const tags = [...state.tags];
-            const tag = {...tags[idx]};
-            tag.customTags = (tag.customTags || []).filter(ct => ct !== text);
-            tags[idx] = tag;
-            return {...state, tags};
+        tag.materials = materials;
+        tags[idx] = tag;
+        return {...state, tags};
+    }
+    case 'ADD_BRAND': {
+        const {cloId, typeId, brandId} = action;
+        const idx = findTag(state.tags, cloId, typeId);
+        if (idx === -1) return state;
+        const tags = [...state.tags];
+        const tag = {...tags[idx]};
+        const brands = [...(tag.brands || [])];
+        if (!brands.some(b => b.id === brandId)) {
+            brands.push({id: brandId, quantity: 1});
         }
-        case 'ADD_IMAGE_CUSTOM_TAG': {
-            const trimmed = action.text?.trim()?.slice(0, 100);
-            if (!trimmed || trimmed.length < 3) return state;
-            if (state.customTags.includes(trimmed)) return state;
-            return {...state, customTags: [...state.customTags, trimmed]};
+        tag.brands = brands;
+        tags[idx] = tag;
+        return {...state, tags};
+    }
+    case 'REMOVE_BRAND': {
+        const {cloId, typeId, brandId} = action;
+        const idx = findTag(state.tags, cloId, typeId);
+        if (idx === -1) return state;
+        const tags = [...state.tags];
+        const tag = {...tags[idx]};
+        tag.brands = (tag.brands || []).filter(b => b.id !== brandId);
+        tags[idx] = tag;
+        return {...state, tags};
+    }
+    case 'ADD_CUSTOM_TAG': {
+        const {cloId, typeId, text} = action;
+        const trimmed = text?.trim()?.slice(0, 100);
+        if (!trimmed || trimmed.length < 3) return state;
+        const idx = findTag(state.tags, cloId, typeId);
+        if (idx === -1) return state;
+        const tags = [...state.tags];
+        const tag = {...tags[idx]};
+        const customs = [...(tag.customTags || [])];
+        if (!customs.includes(trimmed)) {
+            customs.push(trimmed);
         }
-        case 'REMOVE_IMAGE_CUSTOM_TAG': {
-            return {
-                ...state,
-                customTags: state.customTags.filter(ct => ct !== action.text)
-            };
-        }
-        default:
-            return state;
+        tag.customTags = customs;
+        tags[idx] = tag;
+        return {...state, tags};
+    }
+    case 'REMOVE_CUSTOM_TAG': {
+        const {cloId, typeId, text} = action;
+        const idx = findTag(state.tags, cloId, typeId);
+        if (idx === -1) return state;
+        const tags = [...state.tags];
+        const tag = {...tags[idx]};
+        tag.customTags = (tag.customTags || []).filter(ct => ct !== text);
+        tags[idx] = tag;
+        return {...state, tags};
+    }
+    case 'ADD_IMAGE_CUSTOM_TAG': {
+        const trimmed = action.text?.trim()?.slice(0, 100);
+        if (!trimmed || trimmed.length < 3) return state;
+        if (state.customTags.includes(trimmed)) return state;
+        return {...state, customTags: [...state.customTags, trimmed]};
+    }
+    case 'REMOVE_IMAGE_CUSTOM_TAG': {
+        return {
+            ...state,
+            customTags: state.customTags.filter(ct => ct !== action.text)
+        };
+    }
+    default:
+        return state;
     }
 }
 
@@ -198,16 +282,26 @@ export default function useTagDraft(activePhoto, defaultPickedUp) {
         dispatchDraft({type: 'ADD_TAG', cloId, typeId, defaultPickedUp});
     }, [defaultPickedUp]);
 
-    const removeTag = useCallback((cloId, typeId) => {
-        dispatchDraft({type: 'REMOVE_TAG', cloId, typeId});
+    const addBrandOnly = useCallback((brandId, brandName, brandKey) => {
+        dispatchDraft({
+            type: 'ADD_BRAND_ONLY',
+            brandId,
+            brandName,
+            brandKey,
+            defaultPickedUp
+        });
+    }, [defaultPickedUp]);
+
+    const removeTag = useCallback((cloId, typeId, brandId) => {
+        dispatchDraft({type: 'REMOVE_TAG', cloId, typeId, brandId});
     }, []);
 
-    const updateQuantity = useCallback((cloId, typeId, quantity) => {
-        dispatchDraft({type: 'UPDATE_QUANTITY', cloId, typeId, quantity});
+    const updateQuantity = useCallback((cloId, typeId, quantity, brandId) => {
+        dispatchDraft({type: 'UPDATE_QUANTITY', cloId, typeId, quantity, brandId});
     }, []);
 
-    const setPickedUp = useCallback((cloId, typeId, value) => {
-        dispatchDraft({type: 'SET_PICKED_UP', cloId, typeId, value});
+    const setPickedUp = useCallback((cloId, typeId, value, brandId) => {
+        dispatchDraft({type: 'SET_PICKED_UP', cloId, typeId, value, brandId});
     }, []);
 
     const toggleMaterial = useCallback((cloId, typeId, materialId) => {
@@ -267,6 +361,7 @@ export default function useTagDraft(activePhoto, defaultPickedUp) {
         xpEstimate,
         isDirty,
         addTag,
+        addBrandOnly,
         removeTag,
         updateQuantity,
         setPickedUp,

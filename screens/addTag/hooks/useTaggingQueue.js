@@ -6,8 +6,7 @@ import {
     changeSwiperIndex,
     clearEditingPhoto,
     commitDraftToPhoto,
-    removeEditingPhoto,
-    trimEditingPhotos
+    removeEditingPhoto
 } from '../../../reducers/photos_reducer';
 import {editTagsOnPhoto, fetchAndLoadUntagged} from '../../../reducers/server_photos_reducer';
 import {deleteUploadPhoto} from '../../../reducers/uploads_reducer';
@@ -57,18 +56,21 @@ export default function useTaggingQueue(navigation) {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    // Queue side effects — run AFTER index settles, not during swipe commit.
+    // Safety-net: if we're near the end and the initial fetch missed pages,
+    // fetch more. All metadata is loaded upfront by fetchAllUntaggedPhotos,
+    // so this should rarely fire.
     const prefetchingRef = useRef(false);
     useEffect(() => {
         if (!isEditMode) return;
 
-        if (activeIndex > 5) {
-            dispatch(trimEditingPhotos(activeIndex));
-        }
-
-        if (activeIndex >= editingPhotos.length - 3 && !prefetchingRef.current) {
+        if (
+            activeIndex >= editingPhotos.length - 5 &&
+            untaggedCount != null &&
+            editingPhotos.length < untaggedCount &&
+            !prefetchingRef.current
+        ) {
             prefetchingRef.current = true;
-            dispatch(fetchAndLoadUntagged({perPage: 5})).finally(() => {
+            dispatch(fetchAndLoadUntagged({perPage: 20})).finally(() => {
                 prefetchingRef.current = false;
             });
         }
@@ -136,13 +138,21 @@ export default function useTaggingQueue(navigation) {
     }, [dispatch, editingPhotos.length, activePhoto?.id, safeGoBack]);
 
     /**
-     * Commit the current draft to the gallery photo in Redux before navigating.
+     * Commit the current draft to the active photo in Redux before navigating.
      * getDraft returns { currentTags, currentCustomTags } from useTagDraft.
      */
     const commitDraft = useCallback((getDraft) => {
-        if (isEditMode) return;
         const {currentTags, currentCustomTags} = getDraft();
-        if (__DEV__) console.log('[Queue] commitDraft index:', activeIndex, 'tags:', currentTags?.length, 'custom:', currentCustomTags?.length);
+        if (__DEV__) console.log(
+            '[Queue] commitDraft mode:',
+            isEditMode ? 'edit' : 'gallery',
+            'index:',
+            activeIndex,
+            'tags:',
+            currentTags?.length,
+            'custom:',
+            currentCustomTags?.length
+        );
         dispatch(commitDraftToPhoto({
             imageIndex: activeIndex,
             tags: currentTags,

@@ -1,5 +1,6 @@
 import React, {useEffect, useState, useRef} from 'react';
 import {
+    Alert,
     StyleSheet,
     ScrollView,
     View,
@@ -45,9 +46,13 @@ const TeamDetailsScreen = ({navigation}) => {
         setIsLoading(true);
 
         try {
-            isActiveTeam
+            const result = isActiveTeam
                 ? await dispatch(inactivateTeam())
                 : await dispatch(changeActiveTeam({teamId}));
+
+            if (result.meta?.requestStatus === 'rejected') {
+                Alert.alert(t('Error'), t('Something went wrong, please try again'));
+            }
         } finally {
             setIsLoading(false);
         }
@@ -56,10 +61,14 @@ const TeamDetailsScreen = ({navigation}) => {
      * fn to leave a team and navigate back to Teams Home screen
      */
     const leave = async () => {
-        await dispatch(leaveTeam({teamId: selectedTeam.id}));
+        const result = await dispatch(leaveTeam({teamId: selectedTeam.id}));
+
+        if (result.meta?.requestStatus === 'rejected') {
+            Alert.alert(t('Error'), t('Something went wrong, please try again'));
+            return;
+        }
 
         actionSheetRef.current?.hide();
-
         navigation.navigate('TEAM_HOME');
     };
 

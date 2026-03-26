@@ -5,7 +5,7 @@ import { Colors, SubTitle } from '../../components';
 const UploadButton = ({ onPress }) => {
     const { width } = useWindowDimensions();
     return (
-        <Pressable onPress={() => onPress()} style={[styles.buttonStyle, {width: width - 150}]}>
+        <Pressable onPress={() => onPress()} style={[styles.buttonStyle, {width: Math.min(width - 150, 400)}]}>
             <Icon
                 name="cloud-upload-outline"
                 color="white"

@@ -2,6 +2,8 @@ import React, {useCallback, useMemo, useState} from 'react';
 import {ScrollView, StyleSheet, View} from 'react-native';
 import {FlashList} from '@shopify/flash-list';
 import {Pressable} from 'react-native';
+import {Gesture, GestureDetector} from 'react-native-gesture-handler';
+import {runOnJS} from 'react-native-reanimated';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {useTranslation} from 'react-i18next';
 import {Body, Caption, Colors} from '../../components';
@@ -165,71 +167,89 @@ const CategoryBrowser = ({
             : `obj-${item.cloId}`;
     }, []);
 
+    const swipeDownGesture = Gesture.Pan()
+        .activeOffsetY(12)
+        .failOffsetX([-24, 24])
+        .onEnd(e => {
+            const isMostlyVertical =
+                Math.abs(e.translationY) > Math.abs(e.translationX) * 1.2;
+            const shouldClose =
+                isMostlyVertical &&
+                e.translationY > 60 &&
+                e.velocityY > 250;
+
+            if (shouldClose) {
+                runOnJS(onClose)();
+            }
+        });
+
     return (
-        <View style={styles.container}>
-            {/* Header */}
-            <View style={styles.header}>
-                <Caption
-                    color="text"
-                    family="semiBold"
-                    style={styles.headerTitle}>
-                    {t('Browse Categories')}
-                </Caption>
-                <Pressable onPress={onClose} hitSlop={8}>
-                    <Icon name="close" size={18} color={Colors.muted} />
-                </Pressable>
-            </View>
-
-            {/* Category chips */}
-            <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.chipsRow}>
-                <Pressable
-                    style={[
-                        styles.chip,
-                        !selectedCategoryId && styles.chipActive
-                    ]}
-                    onPress={() => setSelectedCategoryId(null)}>
+        <GestureDetector gesture={swipeDownGesture}>
+            <View style={styles.container}>
+                {/* Header */}
+                <View style={styles.header}>
                     <Caption
-                        color={!selectedCategoryId ? 'white' : 'text'}
-                        family="medium"
-                        style={styles.chipText}>
-                        All ({objectEntries.length})
+                        color="text"
+                        family="semiBold"
+                        style={styles.headerTitle}>
+                        {t('Browse Categories')}
                     </Caption>
-                </Pressable>
-                {categoriesList.map(cat => {
-                    const isSelected = selectedCategoryId === cat.id;
-                    const catColor = getCategoryColor(cat.key);
-                    return (
-                        <Pressable
-                            key={cat.id}
-                            style={[
-                                styles.chip,
-                                isSelected && {backgroundColor: catColor}
-                            ]}
-                            onPress={() => handleCategoryPress(cat.id)}>
-                            <Caption
-                                color={isSelected ? 'white' : 'text'}
-                                family="medium"
-                                style={styles.chipText}>
-                                {cat.displayName} ({cat.count})
-                            </Caption>
-                        </Pressable>
-                    );
-                })}
-            </ScrollView>
+                    <Pressable onPress={onClose} hitSlop={8}>
+                        <Icon name="close" size={18} color={Colors.muted} />
+                    </Pressable>
+                </View>
 
-            {/* Results list */}
-            <FlashList
-                data={deduped}
-                renderItem={renderItem}
-                keyExtractor={keyExtractor}
-                estimatedItemSize={50}
-                keyboardShouldPersistTaps="handled"
-                contentContainerStyle={styles.listContent}
-            />
-        </View>
+                {/* Category chips */}
+                <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={styles.chipsRow}>
+                    <Pressable
+                        style={[
+                            styles.chip,
+                            !selectedCategoryId && styles.chipActive
+                        ]}
+                        onPress={() => setSelectedCategoryId(null)}>
+                        <Caption
+                            color={!selectedCategoryId ? 'white' : 'text'}
+                            family="medium"
+                            style={styles.chipText}>
+                            All ({objectEntries.length})
+                        </Caption>
+                    </Pressable>
+                    {categoriesList.map(cat => {
+                        const isSelected = selectedCategoryId === cat.id;
+                        const catColor = getCategoryColor(cat.key);
+                        return (
+                            <Pressable
+                                key={cat.id}
+                                style={[
+                                    styles.chip,
+                                    isSelected && {backgroundColor: catColor}
+                                ]}
+                                onPress={() => handleCategoryPress(cat.id)}>
+                                <Caption
+                                    color={isSelected ? 'white' : 'text'}
+                                    family="medium"
+                                    style={styles.chipText}>
+                                    {cat.displayName} ({cat.count})
+                                </Caption>
+                            </Pressable>
+                        );
+                    })}
+                </ScrollView>
+
+                {/* Results list */}
+                <FlashList
+                    data={deduped}
+                    renderItem={renderItem}
+                    keyExtractor={keyExtractor}
+                    estimatedItemSize={50}
+                    keyboardShouldPersistTaps="handled"
+                    contentContainerStyle={styles.listContent}
+                />
+            </View>
+        </GestureDetector>
     );
 };
 

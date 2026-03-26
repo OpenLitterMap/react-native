@@ -12,9 +12,10 @@ import {
     clearEditingPhoto,
     deleteImage,
     deselectAllImages,
+    loadPhotoForEditing,
     selectSelectedCount
 } from '../../reducers/photos_reducer';
-import {fetchAndLoadUntagged} from '../../reducers/server_photos_reducer';
+import {fetchAllUntaggedPhotos} from '../../reducers/server_photos_reducer';
 import {closeThankYouMessages, setUploadAbortReason} from '../../reducers/upload_flow_reducer';
 import {deleteUploadPhoto} from '../../reducers/uploads_reducer';
 
@@ -98,10 +99,29 @@ const HomeScreen = ({navigation}) => {
     // --- Handlers ---
 
     const handleTagNextUntagged = async () => {
-        setFetchingUntagged(true);
         dispatch(clearEditingPhoto());
         dispatch(changeSwiperIndex(0));
-        const result = await dispatch(fetchAndLoadUntagged({perPage: 5}));
+
+        if (untaggedPreview) {
+            dispatch(loadPhotoForEditing({photo: untaggedPreview}));
+            navigation.navigate('ADD_TAGS');
+
+            setFetchingUntagged(true);
+            dispatch(fetchAllUntaggedPhotos())
+                .unwrap()
+                .catch(error => {
+                    if (__DEV__) {
+                        console.warn('[HomeScreen] background fetchAllUntaggedPhotos failed:', error);
+                    }
+                })
+                .finally(() => {
+                    setFetchingUntagged(false);
+                });
+            return;
+        }
+
+        setFetchingUntagged(true);
+        const result = await dispatch(fetchAllUntaggedPhotos());
         setFetchingUntagged(false);
 
         if (result.meta?.requestStatus === 'fulfilled') {

@@ -65,8 +65,8 @@ const GalleryScreen = ({navigation}) => {
     const {t} = useTranslation();
 
     // For selecting images with swipe gesture
-    const IMAGE_PER_ROW = 3;
     const {width} = useWindowDimensions();
+    const IMAGE_PER_ROW = width >= 768 ? (width >= 1024 ? 5 : 4) : 3;
     const IMAGE_SIZE = width / IMAGE_PER_ROW - 2;
     const IMAGE_MARGIN = 1;
     const ROW_HEIGHT = IMAGE_SIZE + IMAGE_MARGIN * 2;
@@ -97,6 +97,10 @@ const GalleryScreen = ({navigation}) => {
     }, [galleryImages]);
 
     const processedImages = useRef(new Set());
+
+    useEffect(() => {
+        processedImages.current.clear();
+    }, [galleryImages]);
 
     useEffect(() => {
         const ref = processedImages.current;
@@ -335,13 +339,14 @@ const GalleryScreen = ({navigation}) => {
                                 image={image}
                                 isImageGeotagged={imageHasGps}
                                 selected={selected}
+                                columns={IMAGE_PER_ROW}
                             />
                         );
                     })}
                 </View>
             </View>
         );
-    }, [selectedImages, selectImage, t]);
+    }, [selectedImages, selectImage, t, IMAGE_PER_ROW]);
 
     return (
         <View style={{flex: 1}}>
