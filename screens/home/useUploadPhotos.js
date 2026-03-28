@@ -13,7 +13,6 @@ import {
     resetUploadState,
     setCurrentUploadIndex,
     setTotalToUpload,
-    setUploadAbortReason,
     setUploadPhase,
     showThankYouMessagesAfterUpload,
     startUploading,
@@ -51,7 +50,7 @@ export default function useUploadPhotos() {
             imageData.append('lon', img.lon);
             const timestamp = Number(img.date);
             if (Number.isFinite(timestamp)) {
-                imageData.append('date', String(Math.round(timestamp)));
+                imageData.append('date', String(timestamp));
             }
             imageData.append('model', deviceModel);
             return [imageData, photoHasTags, isGeoTagged];
@@ -64,17 +63,22 @@ export default function useUploadPhotos() {
 
     /**
      * Upload photos sequentially.
-     * Two-step for v5 tags: upload photo binary, then POST tags.
+     * Only processes photos that have tags — untagged photos are skipped.
+     * Two-step for new photos: upload photo binary, then POST tags.
+     * Already-uploaded photos with tags: POST tags only (retry path).
      */
     const uploadPhotos = useCallback(async () => {
-        const geotaggedImages = images.filter(isGeotagged);
-        const skippedCount = images.length - geotaggedImages.length;
+        // Only upload photos that are geotagged AND have been tagged by the user
+        const uploadable = images.filter(img => isGeotagged(img) && isTagged(img));
 
-        if (skippedCount > 0) {
+        if (uploadable.length === 0) return;
+
+        const skippedNoGps = images.filter(img => !isGeotagged(img) && isTagged(img)).length;
+        if (skippedNoGps > 0) {
             const confirmed = await new Promise(resolve => {
                 Alert.alert(
                     t('Missing GPS Data'),
-                    `${geotaggedImages.length} ${t('of')} ${images.length} ${t('photos will be uploaded.')} ${skippedCount} ${skippedCount === 1 ? t('photo') : t('photos')} ${t('skipped (no GPS data).')}`,
+                    `${skippedNoGps} ${skippedNoGps === 1 ? t('photo') : t('photos')} ${t('skipped (no GPS data).')}`,
                     [
                         {text: t('Cancel'), onPress: () => resolve(false), style: 'cancel'},
                         {text: t('Continue'), onPress: () => resolve(true)}
@@ -83,6 +87,8 @@ export default function useUploadPhotos() {
             });
             if (!confirmed) return;
         }
+
+        const geotaggedImages = uploadable;
 
         dispatch(resetUploadState());
         dispatch(resetThankYouMessages());
@@ -171,7 +177,7 @@ export default function useUploadPhotos() {
         } else {
             dispatch(setUploadPhase('idle'));
         }
-    }, [dispatch, images, user?.enable_admin_tagging, deviceModel, getImageDataForUpload, t]);
+    }, [dispatch, images, user?.enable_admin_tagging, getImageDataForUpload, t]);
 
     const cancelUploadFlow = useCallback(() => {
         isUploadCancelled.current = true;

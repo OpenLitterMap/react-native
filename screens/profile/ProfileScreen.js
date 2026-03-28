@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
-    AccessibilityInfo,
+    Alert,
     Pressable,
     RefreshControl,
     ScrollView,
@@ -12,20 +12,15 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useFocusEffect } from '@react-navigation/native';
 import { useDispatch, useSelector } from 'react-redux';
-import { useCountUp } from 'use-count-up';
-
 import { useTranslation } from 'react-i18next';
 import { Header } from '../components';
-import { fetchUser } from '../../reducers/auth_reducer';
+import { fetchUser, logout } from '../../reducers/auth_reducer';
 import { getStats } from '../../reducers/stats_reducer';
-import { fetchXpLevels } from './helpers/xpLevels';
-
-import LevelHero from './components/LevelHero';
 import StatsGrid from './components/StatsGrid';
 import DeltaBlock from './components/DeltaBlock';
+import UploadsPreview from './components/UploadsPreview';
 
 const CACHE_KEY = 'profile_stats_cache';
-const GLOBAL_CACHE_KEY = 'profile_global_stats_cache';
 const BRAND = '#27ae60';
 const TEXT_SECONDARY = '#888888';
 
@@ -36,49 +31,25 @@ const ProfileScreen = ({ navigation }) => {
     const token = useSelector(state => state.auth.token);
     const user = useSelector(state => state.auth.user);
     const totalUsers = useSelector(state => state.stats.totalUsers);
-    const totalTags = useSelector(state => state.stats.totalTags);
-    const totalImages = useSelector(state => state.stats.totalImages);
-    const newUsersToday = useSelector(state => state.stats.newUsersToday);
-    const newUsersLast7Days = useSelector(state => state.stats.newUsersLast7Days);
-    const newUsersLast30Days = useSelector(state => state.stats.newUsersLast30Days);
-
     const [prev, setPrev] = useState(null);
-    const [prevGlobal, setPrevGlobal] = useState(null);
-    const [xpLevels, setXpLevels] = useState(null);
     const [initialLoad, setInitialLoad] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [fetchError, setFetchError] = useState(false);
-    const [reduceMotion, setReduceMotion] = useState(false);
 
     const prevLoadedRef = useRef(false);
-
-    // Check reduce-motion preference
-    useEffect(() => {
-        AccessibilityInfo.isReduceMotionEnabled().then(setReduceMotion);
-    }, []);
 
     // Load cached data + fetch fresh data on tab focus
     useFocusEffect(
         useCallback(() => {
             const load = async () => {
-                const [cached, cachedGlobal] = await Promise.all([
-                    AsyncStorage.getItem(CACHE_KEY),
-                    AsyncStorage.getItem(GLOBAL_CACHE_KEY)
-                ]);
+                const cached = await AsyncStorage.getItem(CACHE_KEY);
                 try {
                     if (cached) setPrev(JSON.parse(cached));
-                    if (cachedGlobal) setPrevGlobal(JSON.parse(cachedGlobal));
                 } catch (e) {
                     // Corrupted cache — ignore
                 }
                 prevLoadedRef.current = true;
                 setInitialLoad(false);
-
-                fetchXpLevels(token)
-                    .then(setXpLevels)
-                    .catch(e => {
-                        if (__DEV__) console.warn('[Profile] fetchXpLevels failed:', e);
-                    });
 
                 setFetchError(false);
                 const [userResult, statsResult] = await Promise.all([
@@ -92,7 +63,7 @@ const ProfileScreen = ({ navigation }) => {
             };
 
             load();
-        }, [token])
+        }, [token, dispatch])
     );
 
     // Save current user stats for next visit
@@ -111,20 +82,6 @@ const ProfileScreen = ({ navigation }) => {
         );
     }, [user]);
 
-    // Save current global stats for next visit
-    useEffect(() => {
-        if (!totalTags || !prevLoadedRef.current) return;
-
-        AsyncStorage.setItem(
-            GLOBAL_CACHE_KEY,
-            JSON.stringify({
-                totalTags,
-                totalImages,
-                totalUsers
-            })
-        );
-    }, [totalTags, totalImages, totalUsers]);
-
     const onRefresh = useCallback(async () => {
         setRefreshing(true);
         setFetchError(false);
@@ -139,7 +96,7 @@ const ProfileScreen = ({ navigation }) => {
         }
 
         setRefreshing(false);
-    }, [token]);
+    }, [token, dispatch]);
 
     // Compute deltas
     const isFirstVisit = prev === null;
@@ -151,18 +108,26 @@ const ProfileScreen = ({ navigation }) => {
                     label: 'more tags'
                 },
                 {
-                    value:
-                        (user.totalImages || 0) - (prev.totalImages || 0),
+                    value: (user.totalImages || 0) - (prev.totalImages || 0),
                     label: 'more photos'
                 }
             ]
             : [];
 
-    // Resolve display values: prefer live, fall back to cached
-    const xp = user?.xp ?? prev?.xp ?? 0;
-    const level = user?.level ?? 0;
+    // Resolve display values
     const rank = user?.position ?? prev?.position ?? null;
     const tags = user?.totalTags ?? prev?.totalTags ?? 0;
+    const handleLogout = useCallback(() => {
+        Alert.alert(
+            t('Logout'),
+            t('Are you sure you want to log out?'),
+            [
+                {text: t('Cancel'), style: 'cancel'},
+                {text: t('Logout'), style: 'destructive', onPress: () => dispatch(logout())}
+            ]
+        );
+    }, [dispatch, t]);
+
     const photos = user?.totalImages ?? prev?.totalImages ?? 0;
     const littercoin = user?.totalLittercoin ?? prev?.littercoin ?? 0;
 
@@ -172,7 +137,7 @@ const ProfileScreen = ({ navigation }) => {
     if (hasNoData) {
         return (
             <>
-                <ProfileHeader navigation={navigation} username="" />
+                <ProfileHeader onLogout={handleLogout} t={t} />
                 <View style={styles.skeletonContainer}>
                     <View style={styles.skeletonBar} />
                     <View style={styles.skeletonBarWide} />
@@ -192,8 +157,8 @@ const ProfileScreen = ({ navigation }) => {
     return (
         <>
             <ProfileHeader
-                navigation={navigation}
-                username={user?.username || ''}
+                onLogout={handleLogout}
+                t={t}
             />
 
             <ScrollView
@@ -233,54 +198,6 @@ const ProfileScreen = ({ navigation }) => {
                     </View>
                 )}
 
-                {/* Community stats */}
-                <Text style={styles.sectionTitle}>{t('Community')}</Text>
-                <View style={styles.communityGrid}>
-                    <CommunityCell
-                        value={totalTags}
-                        startValue={prevGlobal?.totalTags}
-                        label={t('total litter')}
-                        color="#14b8a6"
-                        reduceMotion={reduceMotion}
-                    />
-                    <CommunityCell
-                        value={totalImages}
-                        startValue={prevGlobal?.totalImages}
-                        label={t('total photos')}
-                        color="#8b5cf6"
-                        reduceMotion={reduceMotion}
-                    />
-                    <CommunityCell
-                        value={totalUsers}
-                        startValue={prevGlobal?.totalUsers}
-                        label={t('total users')}
-                        color="#f59e0b"
-                        reduceMotion={reduceMotion}
-                    />
-                </View>
-
-                <View style={styles.newUsersRow}>
-                    <NewUsersBadge
-                        value={newUsersToday}
-                        label={t('today')}
-                    />
-                    <NewUsersBadge
-                        value={newUsersLast7Days}
-                        label={t('this week')}
-                    />
-                    <NewUsersBadge
-                        value={newUsersLast30Days}
-                        label={t('this month')}
-                    />
-                </View>
-
-                <View style={styles.divider} />
-
-                {/* Level hero */}
-                <LevelHero xp={xp} level={level} levels={xpLevels} />
-
-                <View style={styles.divider} />
-
                 {/* Your stats */}
                 <Text style={styles.sectionTitle}>{t('Your Stats')}</Text>
                 <StatsGrid
@@ -293,7 +210,6 @@ const ProfileScreen = ({ navigation }) => {
                     prevPhotos={prev?.totalImages}
                     littercoin={littercoin}
                     prevLittercoin={prev?.littercoin}
-                    reduceMotion={reduceMotion}
                 />
 
                 {/* Deltas */}
@@ -304,30 +220,30 @@ const ProfileScreen = ({ navigation }) => {
 
                 <View style={styles.divider} />
 
-                {/* Action button */}
                 <Pressable
-                    style={[
-                        styles.actionButton,
-                        photos === 0 && styles.actionButtonDisabled
-                    ]}
-                    onPress={() => navigation.navigate('MY_UPLOADS')}
-                    disabled={photos === 0}
+                    style={styles.settingsButton}
+                    onPress={() => navigation.navigate('SETTING')}
                 >
-                    <Text
-                        style={[
-                            styles.actionText,
-                            photos === 0 && styles.actionTextDisabled
-                        ]}
-                    >
-                        {t('View My Uploads')}
+                    <Text style={styles.settingsText}>
+                        {t('Change Settings')}
                     </Text>
                     <Icon
                         name="chevron-forward"
                         size={18}
-                        color={photos === 0 ? '#cccccc' : BRAND}
+                        color={TEXT_SECONDARY}
                         style={{ marginLeft: 4 }}
                     />
                 </Pressable>
+
+                {photos === 0 && (
+                    <Text style={styles.emptyUploadsHint}>
+                        {t('Upload some photos to see your progress here')}
+                    </Text>
+                )}
+
+                <View style={styles.divider} />
+
+                <UploadsPreview navigation={navigation} />
             </ScrollView>
         </>
     );
@@ -335,64 +251,14 @@ const ProfileScreen = ({ navigation }) => {
 
 // ——— Sub-components ———
 
-const ProfileHeader = ({ navigation, username }) => (
+const ProfileHeader = ({ onLogout, t }) => (
     <Header
-        leftContent={
-            <Text style={styles.headerUsername}>{username}</Text>
-        }
-        leftContainerStyle={{ flex: 3 }}
         rightContent={
-            <Pressable
-                onPress={() => navigation.navigate('SETTING')}
-                hitSlop={12}
-            >
-                <Icon name="settings-outline" color="white" size={24} />
+            <Pressable onPress={onLogout} hitSlop={12}>
+                <Text style={styles.logoutText}>{t('Logout')}</Text>
             </Pressable>
         }
-        rightContainerStyle={{ flex: 0 }}
     />
-);
-
-const CommunityCell = ({ value, startValue, label, color, reduceMotion }) => {
-    const hasValue = value > 0;
-    const hasStart = startValue != null && startValue > 0;
-
-    // Only count when we have both values and the new one is higher
-    const shouldCount = !reduceMotion && hasValue && hasStart && value > startValue;
-
-    const { value: displayValue } = useCountUp({
-        isCounting: shouldCount,
-        start: shouldCount ? startValue : value,
-        end: value,
-        duration: 3,
-        decimalPlaces: 0,
-        formatter: v => Math.floor(v).toLocaleString()
-    });
-
-    let text;
-    if (!hasValue && !hasStart) {
-        text = '\u2013';
-    } else if (shouldCount) {
-        text = displayValue;
-    } else {
-        text = (hasValue ? value : startValue).toLocaleString();
-    }
-
-    return (
-        <View style={styles.communityCell}>
-            <Text style={[styles.communityNumber, { color }]}>{text}</Text>
-            <Text style={styles.communityLabel}>{label}</Text>
-        </View>
-    );
-};
-
-const NewUsersBadge = ({ value, label }) => (
-    <View style={styles.newUsersBadge}>
-        <Text style={styles.newUsersValue}>
-            +{(value || 0).toLocaleString()}
-        </Text>
-        <Text style={styles.newUsersLabel}>{label}</Text>
-    </View>
 );
 
 // ——— Styles ———
@@ -402,10 +268,10 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#ffffff'
     },
-    headerUsername: {
-        fontSize: 24,
-        fontFamily: 'Poppins-SemiBold',
-        fontWeight: '600',
+    logoutText: {
+        fontSize: 15,
+        fontFamily: 'Poppins-Medium',
+        fontWeight: '500',
         color: '#ffffff'
     },
     sectionTitle: {
@@ -425,81 +291,34 @@ const styles = StyleSheet.create({
         marginHorizontal: 24
     },
 
-    // Action button
-    actionButton: {
+    settingsButton: {
         flexDirection: 'row',
         marginHorizontal: 24,
         marginTop: 16,
-        marginBottom: 40,
+        marginBottom: 16,
         paddingVertical: 14,
         borderRadius: 12,
         borderWidth: 1.5,
-        borderColor: BRAND,
+        borderColor: '#cccccc',
         alignItems: 'center',
         justifyContent: 'center',
         minHeight: 48
     },
-    actionButtonDisabled: {
-        borderColor: '#cccccc'
-    },
-    actionText: {
+    settingsText: {
         fontSize: 16,
         fontFamily: 'Poppins-SemiBold',
         fontWeight: '600',
-        color: BRAND
-    },
-    actionTextDisabled: {
-        color: '#cccccc'
+        color: TEXT_SECONDARY
     },
 
-    // Community stats
-    communityGrid: {
-        flexDirection: 'row',
-        paddingHorizontal: 24,
-        paddingTop: 12,
-        paddingBottom: 16
-    },
-    communityCell: {
-        flex: 1
-    },
-    communityNumber: {
-        fontSize: 20,
-        fontFamily: 'Poppins-SemiBold',
-        fontWeight: '600'
-    },
-    communityLabel: {
-        fontSize: 12,
+    emptyUploadsHint: {
+        fontSize: 14,
         fontFamily: 'Poppins-Regular',
         fontWeight: '400',
-        color: '#888888',
-        marginTop: 2
-    },
-    newUsersRow: {
-        flexDirection: 'row',
+        color: TEXT_SECONDARY,
+        textAlign: 'center',
         paddingHorizontal: 24,
-        paddingBottom: 24,
-        gap: 8
-    },
-    newUsersBadge: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: '#f0fdf4',
-        paddingHorizontal: 10,
-        paddingVertical: 5,
-        borderRadius: 20
-    },
-    newUsersValue: {
-        fontSize: 13,
-        fontFamily: 'Poppins-SemiBold',
-        fontWeight: '600',
-        color: BRAND,
-        marginRight: 4
-    },
-    newUsersLabel: {
-        fontSize: 12,
-        fontFamily: 'Poppins-Regular',
-        fontWeight: '400',
-        color: '#888888'
+        paddingVertical: 16
     },
 
     // Error states

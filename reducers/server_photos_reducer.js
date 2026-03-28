@@ -7,12 +7,12 @@ import {loadPhotoForEditing} from './photos_reducer';
 const initialState = {
     // Server-side untagged photo count (null = not fetched yet)
     untaggedCount: null,
-    // Preview of next untagged photo (for HomeScreen badge tile)
-    untaggedPreview: null
+    // Preview photos for the untagged section (up to 10)
+    untaggedPreviews: []
 };
 
 /**
- * Fetch untagged count + one preview photo for the HomeScreen badge.
+ * Fetch untagged count + preview photos for the HomeScreen dashboard.
  * Two lightweight calls instead of downloading all untagged photos.
  */
 export const fetchUntaggedCount = createAsyncThunk(
@@ -24,11 +24,11 @@ export const fetchUntaggedCount = createAsyncThunk(
                 api.get('/api/v3/user/photos/stats', {token}),
                 api.get('/api/v3/user/photos', {
                     token,
-                    params: {tagged: false, per_page: 1}
+                    params: {tagged: false, per_page: 10}
                 })
             ]);
 
-            // Stats is required; preview is best-effort
+            // Stats is required; previews are best-effort
             if (statsResult.status === 'rejected') {
                 return rejectWithValue(
                     statsResult.reason?.response?.data?.message || 'Network Error'
@@ -37,9 +37,9 @@ export const fetchUntaggedCount = createAsyncThunk(
 
             return {
                 count: statsResult.value.data?.leftToTag ?? 0,
-                preview: previewResult.status === 'fulfilled'
-                    ? previewResult.value.data?.photos?.[0] ?? null
-                    : null
+                previews: previewResult.status === 'fulfilled'
+                    ? previewResult.value.data?.photos ?? []
+                    : []
             };
         } catch (error) {
             return rejectWithValue(
@@ -181,15 +181,32 @@ const serverPhotosSlice = createSlice({
         builder
             .addCase(fetchUntaggedCount.fulfilled, (state, action) => {
                 state.untaggedCount = action.payload.count;
-                state.untaggedPreview = action.payload.preview;
+                state.untaggedPreviews = action.payload.previews;
             })
             .addCase(editTagsOnPhoto.fulfilled, (state, action) => {
-                // Decrement untagged count (optimistic — photo was just tagged)
+                // Decrement untagged count and remove from previews (optimistic)
                 if (state.untaggedCount > 0) {
                     state.untaggedCount--;
                 }
+                const taggedId = action.payload.photoId;
+                state.untaggedPreviews = state.untaggedPreviews.filter(
+                    p => p.id !== taggedId
+                );
             })
-            .addCase(logout, () => initialState);
+            .addCase(logout, () => initialState)
+            // addMatcher must come after all addCase calls (RTK requirement)
+            .addMatcher(
+                action => action.type === 'uploads/deleteUploadPhoto/fulfilled',
+                (state, action) => {
+                    const deletedId = action.payload;
+                    if (state.untaggedCount > 0) {
+                        state.untaggedCount--;
+                    }
+                    state.untaggedPreviews = state.untaggedPreviews.filter(
+                        p => p.id !== deletedId
+                    );
+                }
+            );
     }
 });
 

@@ -64,18 +64,20 @@ const TeamsHomeTab = ({onCreateTeam, onJoinTeam}) => {
                         {t('Collaborate with others and track your collective impact on the environment.')}
                     </Caption>
                     <View style={styles.emptyButtonRow}>
-                        <Pressable
-                            onPress={onCreateTeam}
-                            style={styles.emptyButton}>
-                            <Icon
-                                name="add-circle-outline"
-                                size={20}
-                                color={Colors.accent}
-                            />
-                            <Body color="accent" style={styles.emptyButtonText}>
-                                {t('Create')}
-                            </Body>
-                        </Pressable>
+                        {onCreateTeam && (
+                            <Pressable
+                                onPress={onCreateTeam}
+                                style={styles.emptyButton}>
+                                <Icon
+                                    name="add-circle-outline"
+                                    size={20}
+                                    color={Colors.accent}
+                                />
+                                <Body color="accent" style={styles.emptyButtonText}>
+                                    {t('Create')}
+                                </Body>
+                            </Pressable>
+                        )}
                         <Pressable
                             onPress={onJoinTeam}
                             style={styles.emptyButton}>

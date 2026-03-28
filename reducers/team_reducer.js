@@ -60,7 +60,7 @@ export const createTeam = createAsyncThunk(
             const token = getState().auth.token;
             const response = await api.post('/api/teams/create', {
                 token,
-                data: {name, identifier, team_type: 1}
+                data: {name, identifier, teamType: 1}
             });
 
             if (!response.data.success) {

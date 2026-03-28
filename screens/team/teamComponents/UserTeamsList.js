@@ -31,16 +31,18 @@ const UserTeamsList = ({ navigation, onCreateTeam, onJoinTeam }) => {
             <View style={[styles.headingRow, { marginTop: 20 }]}>
                 <SubTitle>{t('My Teams')}</SubTitle>
                 <View style={styles.actionRow}>
-                    <Pressable
-                        onPress={onCreateTeam}
-                        style={styles.actionButton}>
-                        <Icon
-                            name="add-circle-outline"
-                            size={16}
-                            color={Colors.accent}
-                        />
-                        <Caption color="accent">{t('Create')}</Caption>
-                    </Pressable>
+                    {onCreateTeam && (
+                        <Pressable
+                            onPress={onCreateTeam}
+                            style={styles.actionButton}>
+                            <Icon
+                                name="add-circle-outline"
+                                size={16}
+                                color={Colors.accent}
+                            />
+                            <Caption color="accent">{t('Create')}</Caption>
+                        </Pressable>
+                    )}
                     <Pressable
                         onPress={onJoinTeam}
                         style={styles.actionButton}>

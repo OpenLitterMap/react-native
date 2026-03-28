@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 OpenLitterMap is a React Native mobile app (iOS & Android) for crowdsourced litter mapping. Users photograph litter, tag it by category, and upload geotagged data to the OpenLitterMap Laravel backend API.
 
-**App Version:** 7.1.2 | **React Native:** 0.84.1 | **Branch:** `openlittermap/v7` (main: `main5`)
+**App Version:** 7.3.3 | **React Native:** 0.84.1 | **Branch:** `openlittermap/v7` (main: `main5`)
 
 ## Quick Start
 
@@ -25,13 +25,12 @@ Runtime: **Node v22.22.1**, **npm 10.9.4** (prefer npm over yarn) — RN 0.84 re
 ## Core User Flow
 
 ```
-Gallery → Select photos → Tag each photo → Upload → Server
+HomeScreen Dashboard → Tap photo → Tag → Auto-upload
 ```
 
-1. **Gallery** (`GalleryScreen`) — Browse camera roll, select geotagged photos (non-GPS photos blocked)
-2. **Home** (`HomeScreen`) — View selected photos in grid, tap to tag, tap upload to start
-3. **Tag** (`AddTagScreen`) — Full-screen image viewer with search/browse for litter tags, materials, brands
-4. **Upload** (`HomeScreen`) — Two-step: upload photo binary → POST tags. Sequential with progress tracking.
+1. **Home** (`HomeScreen`) — 4-section scrollable dashboard: Global Impact stats, Your Impact stats, Uploaded (untagged server photos), Ready to Map (geotagged camera roll inbox)
+2. **Tag** (`AddTagScreen`) — Full-screen image viewer with search/browse for litter tags, materials, brands
+3. **Upload** — Auto-triggered via `useFocusEffect` when returning to HomeScreen after tagging. Two-step: upload photo binary → POST tags.
 
 ## Architecture
 
@@ -45,9 +44,8 @@ MainRoutes (Stack)
     │   ├── HOME → HomeScreen
     │   ├── TEAM → TeamStack (TeamScreen, TopTeams, TeamDetails, TeamLeaderboard)
     │   └── USER_STATS → ProfileScreen
-    ├── ADD_TAGS → AddTagScreen (modal)
-    ├── ALBUM → GalleryScreen (modal)
-    ├── SETTING → SettingsScreen (modal)
+    ├── ADD_TAGS → AddTagScreen
+    ├── SETTING → SettingsScreen
     ├── PERMISSION → PermissionStack
     ├── UPDATE → NewUpdateScreen (modal)
     └── MY_UPLOADS → MyUploads (modal)
@@ -133,9 +131,9 @@ All endpoints verified against Laravel backend. See `readme/AUDIT.md` §2 for co
 ├── reducers/                 # 14 Redux slices (all use createSlice + createAsyncThunk)
 ├── routes/                   # React Navigation v6 navigators
 ├── screens/
-│   ├── home/                 # HomeScreen (upload orchestration) + homeComponents/
+│   ├── home/                 # HomeScreen (4-section dashboard) + homeComponents/
 │   ├── addTag/               # AddTagScreen + components/ (TagPills, TagSearchBar, TagDetailSheet, etc.)
-│   ├── gallery/              # GalleryScreen + galleryComponents/
+│   ├── gallery/              # DELETED — camera roll now loads directly on HomeScreen dashboard
 │   ├── auth/                 # WelcomeScreen, AuthScreen + authComponents/
 │   ├── team/                 # TeamScreen, TeamDetailsScreen, TopTeamsScreen, TeamLeaderboardScreen
 │   ├── userStats/            # UserStatsScreen + userComponents/ (MyUploads, ProgressCircleCard)

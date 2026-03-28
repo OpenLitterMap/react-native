@@ -15,7 +15,7 @@ Users can create, join, and leave teams. Teams have leaderboards and member list
 ## API Endpoints
 | Thunk | Method | Endpoint | Payload | Notes |
 |-------|--------|----------|---------|-------|
-| `createTeam` | POST | `/api/teams/create` | `{name, identifier, team_type: 1}` | |
+| `createTeam` | POST | `/api/teams/create` | `{name, identifier, teamType: 1}` | Hidden when `remaining_teams` is 0 |
 | `joinTeam` | POST | `/api/teams/join` | `{identifier}` | |
 | `leaveTeam` | POST | `/api/teams/leave` | `{team_id}` | Updates active team + removes from userTeams |
 | `changeActiveTeam` | POST | `/api/teams/active` | `{team_id}` | |

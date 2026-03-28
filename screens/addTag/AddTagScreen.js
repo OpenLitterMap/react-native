@@ -301,6 +301,8 @@ const AddTagScreen = ({navigation}) => {
                 <View style={styles.topBar}>
                     <RNPressable
                         onPress={() => {
+                            // Persist tags to Redux before leaving so they survive navigation
+                            if (!isEditMode) commitDraft(getDraft);
                             if (isEditMode) dispatch(clearEditingPhoto());
                             InteractionManager.runAfterInteractions(() => navigation.goBack());
                         }}
@@ -309,10 +311,10 @@ const AddTagScreen = ({navigation}) => {
                         <Icon name="arrow-back" size={22} color={Colors.white} />
                     </RNPressable>
 
-                    {isEditMode && untaggedCount != null ? (
+                    {isEditMode && photos.length > 0 ? (
                         <View style={styles.untaggedCounter}>
                             <Caption color="white" family="semiBold">
-                                {activeIndex + 1} / {untaggedCount}
+                                {activeIndex + 1} / {photos.length}
                             </Caption>
                         </View>
                     ) : (

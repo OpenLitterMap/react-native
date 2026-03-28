@@ -16,7 +16,7 @@
   resolved "https://registry.npmjs.org/@babel/compat-data/-/compat-data-7.29.0.tgz"
   integrity sha512-T1NCJqT/j9+cn8fvkt7jtwbLBfLC/1y1c7NtCeXFRgzGTsafi68MRv8yzkYSapBnFA6L3U2VSc02ciDzoAJhJg==
 
-"@babel/core@*", "@babel/core@^7.0.0", "@babel/core@^7.0.0 || ^8.0.0-0", "@babel/core@^7.0.0-0", "@babel/core@^7.0.0-0 || ^8.0.0-0 <8.0.0", "@babel/core@^7.11.0", "@babel/core@^7.11.6", "@babel/core@^7.12.0", "@babel/core@^7.12.3", "@babel/core@^7.13.0", "@babel/core@^7.23.9", "@babel/core@^7.24.4", "@babel/core@^7.25.0", "@babel/core@^7.25.2", "@babel/core@^7.4.0 || ^8.0.0-0 <8.0.0", "@babel/core@^7.8.0":
+"@babel/core@^7.11.6", "@babel/core@^7.12.3", "@babel/core@^7.23.9", "@babel/core@^7.24.4", "@babel/core@^7.25.0", "@babel/core@^7.25.2":
   version "7.29.0"
   resolved "https://registry.npmjs.org/@babel/core/-/core-7.29.0.tgz"
   integrity sha512-CGOfOJqWjg2qW/Mb6zNsDm+u5vFQ8DxXfbM09z69p5Z6+mE1ikP2jUXw+j42Pf1XTYED2Rni5f95npYeuwMDQA==
@@ -37,7 +37,7 @@
     json5 "^2.2.3"
     semver "^6.3.1"
 
-"@babel/eslint-parser@^7.12.0", "@babel/eslint-parser@^7.25.1":
+"@babel/eslint-parser@^7.25.1":
   version "7.28.6"
   resolved "https://registry.npmjs.org/@babel/eslint-parser/-/eslint-parser-7.28.6.tgz"
   integrity sha512-QGmsKi2PBO/MHSQk+AAgA9R6OHQr+VqnniFE0eMWZcVcfBZoA2dKn2hUsl3Csg/Plt9opRUWdY7//VXsrIlEiA==
@@ -1023,7 +1023,7 @@
     "@babel/plugin-transform-modules-commonjs" "^7.27.1"
     "@babel/plugin-transform-typescript" "^7.27.1"
 
-"@babel/runtime@*", "@babel/runtime@^7.23.2", "@babel/runtime@^7.23.9", "@babel/runtime@^7.25.0":
+"@babel/runtime@^7.23.2", "@babel/runtime@^7.23.9", "@babel/runtime@^7.25.0":
   version "7.28.6"
   resolved "https://registry.npmjs.org/@babel/runtime/-/runtime-7.28.6.tgz"
   integrity sha512-05WQkdpL9COIMz4LjTxGpPNCdlpyimKppYNoJ5Di5EUObifl8t4tuLuUBBZEpoLYOmfvIWrsp9fCl0HoPRVTdA==
@@ -1445,58 +1445,58 @@
   resolved "https://registry.npmjs.org/@react-native-clipboard/clipboard/-/clipboard-1.16.3.tgz"
   integrity sha512-cMIcvoZKIrShzJHEaHbTAp458R9WOv0fB6UyC7Ek4Qk561Ow/DrzmmJmH/rAZg21Z6ixJ4YSdFDC14crqIBmCQ==
 
-"@react-native-community/cli-clean@20.1.2":
-  version "20.1.2"
-  resolved "https://registry.npmjs.org/@react-native-community/cli-clean/-/cli-clean-20.1.2.tgz"
-  integrity sha512-XcNlmFnYOVDjvHQQn0qreI4FPLEUx8p43EdOmKbtzqwqc9T/EdBdzUnUc5wWQPO1CN7BdMfxW8fyvosz8NIlrg==
+"@react-native-community/cli-clean@20.1.3":
+  version "20.1.3"
+  resolved "https://registry.npmjs.org/@react-native-community/cli-clean/-/cli-clean-20.1.3.tgz"
+  integrity sha512-sFLdLzapfC0scjgzBJJWYDY2RhHPjuuPkA5r6q0gc/UQH/izXpMpLrhh1DW84cMDraNACK0U62tU7ebNaQ1LMQ==
   dependencies:
-    "@react-native-community/cli-tools" "20.1.2"
+    "@react-native-community/cli-tools" "20.1.3"
     execa "^5.0.0"
     fast-glob "^3.3.2"
     picocolors "^1.1.1"
 
-"@react-native-community/cli-config-android@20.1.2":
-  version "20.1.2"
-  resolved "https://registry.npmjs.org/@react-native-community/cli-config-android/-/cli-config-android-20.1.2.tgz"
-  integrity sha512-W0Qx+lW8pbQMz8x3Rlf/H7D2j2u8O+u9HnrZnKzDl1DaXgaOQqL484lTZlMEQofjq7eLXdmzWxuZdqS6K1QfmQ==
+"@react-native-community/cli-config-android@20.1.3":
+  version "20.1.3"
+  resolved "https://registry.npmjs.org/@react-native-community/cli-config-android/-/cli-config-android-20.1.3.tgz"
+  integrity sha512-DNHDP+OWLyhKShGciBqPcxhxfp1Z/7GQcb4F+TGyCeKQAr+JdnUjRXN3X+YCU/v+g2kbYYyRJKlGabzkVvdrAw==
   dependencies:
-    "@react-native-community/cli-tools" "20.1.2"
+    "@react-native-community/cli-tools" "20.1.3"
     fast-glob "^3.3.2"
     fast-xml-parser "^5.3.6"
     picocolors "^1.1.1"
 
-"@react-native-community/cli-config-apple@20.1.2":
-  version "20.1.2"
-  resolved "https://registry.npmjs.org/@react-native-community/cli-config-apple/-/cli-config-apple-20.1.2.tgz"
-  integrity sha512-Dhi1N1EoMMmJ4dnDlmNWCrJggfv7X/kl3l8uax72uaxepQI/CfohJP2rBdG2mWis+vzrCIk14z2keY0ixxsN8g==
+"@react-native-community/cli-config-apple@20.1.3":
+  version "20.1.3"
+  resolved "https://registry.npmjs.org/@react-native-community/cli-config-apple/-/cli-config-apple-20.1.3.tgz"
+  integrity sha512-QX9B83nAfCPs0KiaYz61kAEHWr9sttooxzRzNdQwvZTwnsIpvWOT9GvMMj/19OeXiQzMJBzZX0Pgt6+spiUsDQ==
   dependencies:
-    "@react-native-community/cli-tools" "20.1.2"
+    "@react-native-community/cli-tools" "20.1.3"
     execa "^5.0.0"
     fast-glob "^3.3.2"
     picocolors "^1.1.1"
 
-"@react-native-community/cli-config@20.1.2":
-  version "20.1.2"
-  resolved "https://registry.npmjs.org/@react-native-community/cli-config/-/cli-config-20.1.2.tgz"
-  integrity sha512-7aPE14QA8aXpfuQ1jmfiBfjC/N6gdbg6PpBTwb3cl8c/KaeVm+OQYoC2kn2b3XS0NPgw5Ix/VxVaX6AAUQRFuA==
+"@react-native-community/cli-config@20.1.3":
+  version "20.1.3"
+  resolved "https://registry.npmjs.org/@react-native-community/cli-config/-/cli-config-20.1.3.tgz"
+  integrity sha512-n73nW0cG92oNF0r994pPqm0DjAShOm3F8LSffDYhJqNAno+h/csmv/37iL4NtSpmKIO8xqsG3uVTXz9X/hzNaQ==
   dependencies:
-    "@react-native-community/cli-tools" "20.1.2"
+    "@react-native-community/cli-tools" "20.1.3"
     cosmiconfig "^9.0.0"
     deepmerge "^4.3.0"
     fast-glob "^3.3.2"
     joi "^17.2.1"
     picocolors "^1.1.1"
 
-"@react-native-community/cli-doctor@20.1.2":
-  version "20.1.2"
-  resolved "https://registry.npmjs.org/@react-native-community/cli-doctor/-/cli-doctor-20.1.2.tgz"
-  integrity sha512-bbT1EhomvHz5ZtzxY2czA4/JMXhP4aIAxRDsqiW6wfZA9A9/HXqA4uv6CxP0wZUUmovmPNRl3kW/LWXrRmdv3A==
+"@react-native-community/cli-doctor@20.1.3":
+  version "20.1.3"
+  resolved "https://registry.npmjs.org/@react-native-community/cli-doctor/-/cli-doctor-20.1.3.tgz"
+  integrity sha512-EI+mAPWn255/WZ4CQohy1I049yiaxVr41C3BeQ2BCyhxODIDR8XRsLzYb1t9MfqK/C3ZncUN2mPSRXFeKPPI1w==
   dependencies:
-    "@react-native-community/cli-config" "20.1.2"
-    "@react-native-community/cli-platform-android" "20.1.2"
-    "@react-native-community/cli-platform-apple" "20.1.2"
-    "@react-native-community/cli-platform-ios" "20.1.2"
-    "@react-native-community/cli-tools" "20.1.2"
+    "@react-native-community/cli-config" "20.1.3"
+    "@react-native-community/cli-platform-android" "20.1.3"
+    "@react-native-community/cli-platform-apple" "20.1.3"
+    "@react-native-community/cli-platform-ios" "20.1.3"
+    "@react-native-community/cli-tools" "20.1.3"
     command-exists "^1.2.8"
     deepmerge "^4.3.0"
     envinfo "^7.13.0"
@@ -1508,41 +1508,41 @@
     wcwidth "^1.0.1"
     yaml "^2.2.1"
 
-"@react-native-community/cli-platform-android@20.1.2":
-  version "20.1.2"
-  resolved "https://registry.npmjs.org/@react-native-community/cli-platform-android/-/cli-platform-android-20.1.2.tgz"
-  integrity sha512-1iHB8cTTJpMyEKhxWTRYsxhBBsiOq3tVguGX/HtBdHRzhlCeDpanE6U+aKxWfMFetMcFL+HLe5nQPcJXf9EtKg==
+"@react-native-community/cli-platform-android@20.1.3":
+  version "20.1.3"
+  resolved "https://registry.npmjs.org/@react-native-community/cli-platform-android/-/cli-platform-android-20.1.3.tgz"
+  integrity sha512-bzB9ELPOISuqgtDZXFPQlkuxx1YFkNx3cNgslc5ElCrk+5LeCLQLIBh/dmIuK8rwUrPcrramjeBj++Noc+TaAA==
   dependencies:
-    "@react-native-community/cli-config-android" "20.1.2"
-    "@react-native-community/cli-tools" "20.1.2"
+    "@react-native-community/cli-config-android" "20.1.3"
+    "@react-native-community/cli-tools" "20.1.3"
     execa "^5.0.0"
     logkitty "^0.7.1"
     picocolors "^1.1.1"
 
-"@react-native-community/cli-platform-apple@20.1.2":
-  version "20.1.2"
-  resolved "https://registry.npmjs.org/@react-native-community/cli-platform-apple/-/cli-platform-apple-20.1.2.tgz"
-  integrity sha512-UvzjcRGotO3E2xaty8YWE2XMGkkDDaXRtQtNRjzmtcoNY40C+y4iMHxd0o3xbD0bzYM/PO79tXye9MxTWdyVkg==
+"@react-native-community/cli-platform-apple@20.1.3":
+  version "20.1.3"
+  resolved "https://registry.npmjs.org/@react-native-community/cli-platform-apple/-/cli-platform-apple-20.1.3.tgz"
+  integrity sha512-XJ+DqAD4hkplWVXK5AMgN7pP9+4yRSe5KfZ/b42+ofkDBI55ALlUmX+9HWE3fMuRjcotTCoNZqX2ov97cFDXpQ==
   dependencies:
-    "@react-native-community/cli-config-apple" "20.1.2"
-    "@react-native-community/cli-tools" "20.1.2"
+    "@react-native-community/cli-config-apple" "20.1.3"
+    "@react-native-community/cli-tools" "20.1.3"
     execa "^5.0.0"
     fast-xml-parser "^5.3.6"
     picocolors "^1.1.1"
 
-"@react-native-community/cli-platform-ios@20.1.2":
-  version "20.1.2"
-  resolved "https://registry.npmjs.org/@react-native-community/cli-platform-ios/-/cli-platform-ios-20.1.2.tgz"
-  integrity sha512-ZzdLwJMt7ehjO0iy/rQGPgH6uZqMYXeS5uXzSi1DeLYwurV1wOqFc0SLm4TAz5FKYQmHpwBXlMiI12rUmkZxcg==
+"@react-native-community/cli-platform-ios@20.1.3":
+  version "20.1.3"
+  resolved "https://registry.npmjs.org/@react-native-community/cli-platform-ios/-/cli-platform-ios-20.1.3.tgz"
+  integrity sha512-2qL48SINotuHbZO73cgqSwqd/OWNx0xTbFSdujhpogV4p8BNwYYypfjh4vJY5qJEB5PxuoVkMXT+aCADpg9nBg==
   dependencies:
-    "@react-native-community/cli-platform-apple" "20.1.2"
+    "@react-native-community/cli-platform-apple" "20.1.3"
 
-"@react-native-community/cli-server-api@20.1.2":
-  version "20.1.2"
-  resolved "https://registry.npmjs.org/@react-native-community/cli-server-api/-/cli-server-api-20.1.2.tgz"
-  integrity sha512-ZlINtIYoDAwSemwTU9OavI1IixCCmAPPw1s3Mp0cOvrddFSZ0hx1N1IR+imLyo4lhFfM8OO3rUe9oVJj1SHUCA==
+"@react-native-community/cli-server-api@20.1.3":
+  version "20.1.3"
+  resolved "https://registry.npmjs.org/@react-native-community/cli-server-api/-/cli-server-api-20.1.3.tgz"
+  integrity sha512-hsNsdUKZDd2T99OuNuiXz4VuvLa1UN0zcxefmPjXQgI0byrBLzzDr+o7p03sKuODSzKi2h+BMnUxiS07HACQLA==
   dependencies:
-    "@react-native-community/cli-tools" "20.1.2"
+    "@react-native-community/cli-tools" "20.1.3"
     body-parser "^2.2.2"
     compression "^1.7.1"
     connect "^3.6.5"
@@ -1554,10 +1554,10 @@
     strict-url-sanitise "0.0.1"
     ws "^6.2.3"
 
-"@react-native-community/cli-tools@20.1.2":
-  version "20.1.2"
-  resolved "https://registry.npmjs.org/@react-native-community/cli-tools/-/cli-tools-20.1.2.tgz"
-  integrity sha512-on2VUBZb68RlMxvIrEdK6+NiOEYu/z+t/cz746yGtxn49fwW6Wafzmh1QNZj8HPAuZ8+Ds61LiXbwoDDkzNSSA==
+"@react-native-community/cli-tools@20.1.3":
+  version "20.1.3"
+  resolved "https://registry.npmjs.org/@react-native-community/cli-tools/-/cli-tools-20.1.3.tgz"
+  integrity sha512-EAn0vPCMxtHhfWk2UwLmSUfPfLUnFgC7NjiVJVTKJyVk5qGnkPfoT8te/1IUXFTysUB0F0RIi+NgDB4usFOLeA==
   dependencies:
     "@vscode/sudo-prompt" "^9.0.0"
     appdirsjs "^1.2.4"
@@ -1570,24 +1570,24 @@
     prompts "^2.4.2"
     semver "^7.5.2"
 
-"@react-native-community/cli-types@20.1.2":
-  version "20.1.2"
-  resolved "https://registry.npmjs.org/@react-native-community/cli-types/-/cli-types-20.1.2.tgz"
-  integrity sha512-WYK98VdcJE+lRuyRzigE/GQAbaJZOKkjpaLwhmMMItXVTqMmIccfGu9b4pRoQOVfs1aLq87DuwUOi9sxz6OG1g==
+"@react-native-community/cli-types@20.1.3":
+  version "20.1.3"
+  resolved "https://registry.npmjs.org/@react-native-community/cli-types/-/cli-types-20.1.3.tgz"
+  integrity sha512-IdAcegf0pH1hVraxWTG1ACLkYC0LDQfqtaEf42ESyLIF3Xap70JzL/9tAlxw7lSCPZPFWhrcgU0TBc4SkC/ecw==
   dependencies:
     joi "^17.2.1"
 
-"@react-native-community/cli@*":
-  version "20.1.2"
-  resolved "https://registry.npmjs.org/@react-native-community/cli/-/cli-20.1.2.tgz"
-  integrity sha512-48GRnGfm1+4ueV8ESNJmKAKW01QdbB8H6qrVxCqpHYvuRkeFBaPpwRY2bEjSwqruw3Pn9ppzGfpAxYQDiUWQxQ==
+"@react-native-community/cli@^20.1.3":
+  version "20.1.3"
+  resolved "https://registry.npmjs.org/@react-native-community/cli/-/cli-20.1.3.tgz"
+  integrity sha512-sLo8cu9JyFNfuuF1C+8NJ4DHE/PEFaXGd4enkcxi/OJjGG8+sOQrdjNQ4i+cVh/2c+ah1mEMwsYjc3z0+/MqSg==
   dependencies:
-    "@react-native-community/cli-clean" "20.1.2"
-    "@react-native-community/cli-config" "20.1.2"
-    "@react-native-community/cli-doctor" "20.1.2"
-    "@react-native-community/cli-server-api" "20.1.2"
-    "@react-native-community/cli-tools" "20.1.2"
-    "@react-native-community/cli-types" "20.1.2"
+    "@react-native-community/cli-clean" "20.1.3"
+    "@react-native-community/cli-config" "20.1.3"
+    "@react-native-community/cli-doctor" "20.1.3"
+    "@react-native-community/cli-server-api" "20.1.3"
+    "@react-native-community/cli-tools" "20.1.3"
+    "@react-native-community/cli-types" "20.1.3"
     commander "^9.4.1"
     deepmerge "^4.3.0"
     execa "^5.0.0"
@@ -1763,7 +1763,7 @@
     hermes-parser "0.32.0"
     nullthrows "^1.1.1"
 
-"@react-native/metro-config@*", "@react-native/metro-config@0.84.1":
+"@react-native/metro-config@0.84.1":
   version "0.84.1"
   resolved "https://registry.npmjs.org/@react-native/metro-config/-/metro-config-0.84.1.tgz"
   integrity sha512-KlRawK4aXxRLlR3HYVfZKhfQp7sejQefQ/LttUWUkErhKO0AFt+yznoSLq7xwIrH9K3A3YwImHuFVtUtuDmurA==
@@ -1791,6 +1791,15 @@
     invariant "^2.2.4"
     nullthrows "^1.1.1"
 
+"@react-navigation/bottom-tabs@^7.15.8":
+  version "7.15.8"
+  resolved "https://registry.npmjs.org/@react-navigation/bottom-tabs/-/bottom-tabs-7.15.8.tgz"
+  integrity sha512-Fz/AAPE6Be0CimOXvon75RNgpFCbZvzF2RPcNeZOdOxIYyHDGxDdtsfTxLHB0tOp9HHXkT0xXOX8Rk001jdpbg==
+  dependencies:
+    "@react-navigation/elements" "^2.9.13"
+    color "^4.2.3"
+    sf-symbols-typescript "^2.1.0"
+
 "@react-navigation/core@^7.16.1":
   version "7.16.1"
   resolved "https://registry.npmjs.org/@react-navigation/core/-/core-7.16.1.tgz"
@@ -1805,10 +1814,10 @@
     use-latest-callback "^0.2.4"
     use-sync-external-store "^1.5.0"
 
-"@react-navigation/elements@^2.9.10":
-  version "2.9.10"
-  resolved "https://registry.npmjs.org/@react-navigation/elements/-/elements-2.9.10.tgz"
-  integrity sha512-N8tuBekzTRb0pkMHFJGvmC6Q5OisSbt6gzvw7RHMnp4NDo5auVllT12sWFaTXf8mTduaLKNSrD/NZNaOqThCBg==
+"@react-navigation/elements@^2.9.10", "@react-navigation/elements@^2.9.13":
+  version "2.9.13"
+  resolved "https://registry.npmjs.org/@react-navigation/elements/-/elements-2.9.13.tgz"
+  integrity sha512-ZD8fPwhujgs3SwgaPRse+shLCFkeLhlfk9BHtQ604Qa7/p0/sRQV9HkTfREP8gtbt6nwk6WE+0vWfX2iqxOCKA==
   dependencies:
     color "^4.2.3"
     use-latest-callback "^0.2.4"
@@ -1833,7 +1842,7 @@
     sf-symbols-typescript "^2.1.0"
     warn-once "^0.1.1"
 
-"@react-navigation/native@^7.1.33", "@react-navigation/native@^7.1.6":
+"@react-navigation/native@^7.1.6":
   version "7.1.33"
   resolved "https://registry.npmjs.org/@react-navigation/native/-/native-7.1.33.tgz"
   integrity sha512-DpFdWGcgLajKZ1TuIvDNQsblN2QaUFWpTQaB8v7WRP9Mix8H/6TFoIrZd93pbymI2hybd6UYrD+lI408eWVcfw==
@@ -2101,7 +2110,7 @@
   dependencies:
     "@types/react" "*"
 
-"@types/react@*", "@types/react@^18.2.25 || ^19", "@types/react@^19.0.0", "@types/react@^19.1.1", "@types/react@^19.2.0":
+"@types/react@*", "@types/react@^19.0.0":
   version "19.2.14"
   resolved "https://registry.npmjs.org/@types/react/-/react-19.2.14.tgz"
   integrity sha512-ilcTH/UniCkMdtexkoCN0bI7pMcJDvmQFPvuPvmEaYA/NSfFTAgdUSLAoVjaRJm7+6PvcM+q1zYOwS4wTYMF9w==
@@ -2130,7 +2139,7 @@
   dependencies:
     "@types/yargs-parser" "*"
 
-"@typescript-eslint/eslint-plugin@^8.0.0", "@typescript-eslint/eslint-plugin@^8.36.0":
+"@typescript-eslint/eslint-plugin@^8.36.0":
   version "8.57.0"
   resolved "https://registry.npmjs.org/@typescript-eslint/eslint-plugin/-/eslint-plugin-8.57.0.tgz"
   integrity sha512-qeu4rTHR3/IaFORbD16gmjq9+rEs9fGKdX0kF6BKSfi+gCuG3RCKLlSBYzn/bGsY9Tj7KE/DAQStbp8AHJGHEQ==
@@ -2144,7 +2153,7 @@
     natural-compare "^1.4.0"
     ts-api-utils "^2.4.0"
 
-"@typescript-eslint/parser@^8.36.0", "@typescript-eslint/parser@^8.57.0":
+"@typescript-eslint/parser@^8.36.0":
   version "8.57.0"
   resolved "https://registry.npmjs.org/@typescript-eslint/parser/-/parser-8.57.0.tgz"
   integrity sha512-XZzOmihLIr8AD1b9hL9ccNMzEMWt/dE2u7NyTY9jJG6YNiNthaD5XtUHVF2uCXZ15ng+z2hT3MVuxnUYhq6k1g==
@@ -2264,7 +2273,7 @@ acorn-jsx@^5.3.2:
   resolved "https://registry.npmjs.org/acorn-jsx/-/acorn-jsx-5.3.2.tgz"
   integrity sha512-rq9s+JNhf0IChjtDXxllJ7g41oZk5SlXtp0LHwyA5cejwn7vKmKp4pPri6YEePv2PU65sAsegbXtIinmDFDXgQ==
 
-"acorn@^6.0.0 || ^7.0.0 || ^8.0.0", acorn@^8.15.0, acorn@^8.9.0:
+acorn@^8.15.0, acorn@^8.9.0:
   version "8.16.0"
   resolved "https://registry.npmjs.org/acorn/-/acorn-8.16.0.tgz"
   integrity sha512-UVJyE9MttOsBQIDKw1skb9nAwQuR5wuGD3+82K6JgJlm/Y+KI92oNsMNGZCYdDsVtRHSak0pcV5Dno5+4jh9sw==
@@ -2658,7 +2667,7 @@ braces@^3.0.3:
   dependencies:
     fill-range "^7.1.1"
 
-browserslist@^4.24.0, browserslist@^4.28.1, "browserslist@>= 4.21.0":
+browserslist@^4.24.0, browserslist@^4.28.1:
   version "4.28.1"
   resolved "https://registry.npmjs.org/browserslist/-/browserslist-4.28.1.tgz"
   integrity sha512-ZC5Bd0LgJXgwGqUknZY/vkUQ04r8NXnJZ3yYi4vDmSiZmC/pdSN0NbNRPxZpbtO4uAfDUAFffO8IZoM3Gj8IkA==
@@ -3548,7 +3557,7 @@ eslint-visitor-keys@^5.0.0:
   resolved "https://registry.npmjs.org/eslint-visitor-keys/-/eslint-visitor-keys-5.0.1.tgz"
   integrity sha512-tD40eHxA35h0PEIZNeIjkHoDR4YjjJp34biM0mDvplBe//mB+IHCqHDGV7pxF+7MklTvighcCPPZC7ynWyjdTA==
 
-"eslint@^3 || ^4 || ^5 || ^6 || ^7 || ^8 || ^9.7", "eslint@^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0-0 || ^9.0.0", "eslint@^3.17.0 || ^4 || ^5 || ^6 || ^7 || ^8 || ^9", "eslint@^6.0.0 || ^7.0.0 || >=8.0.0", "eslint@^7.5.0 || ^8.0.0 || ^9.0.0", "eslint@^8.0.0 || ^9.0.0", eslint@^8.1.0, eslint@^8.19.0, "eslint@^8.57.0 || ^9.0.0 || ^10.0.0", eslint@>=4.19.1, eslint@>=7.0.0:
+eslint@^8.19.0:
   version "8.57.1"
   resolved "https://registry.npmjs.org/eslint/-/eslint-8.57.1.tgz"
   integrity sha512-ypowyDxpVSYpkXr9WPv2PAZCtNip1Mv5KTW0SCurXv/9iOpcrH9PaqUElksqEB6pChqHGDRCFTyrZlGhnLNGiA==
@@ -3707,21 +3716,21 @@ fast-levenshtein@^2.0.6:
   resolved "https://registry.npmjs.org/fast-levenshtein/-/fast-levenshtein-2.0.6.tgz"
   integrity sha512-DCXu6Ifhqcks7TZKY3Hxp3y6qphY5SJZmrWMDrKcERSOXWQdMhU9Ig/PYrzyw/ul9jOIyh0N4M0tbC5hodg8dw==
 
-fast-xml-builder@^1.1.3:
-  version "1.1.3"
-  resolved "https://registry.npmjs.org/fast-xml-builder/-/fast-xml-builder-1.1.3.tgz"
-  integrity sha512-1o60KoFw2+LWKQu3IdcfcFlGTW4dpqEWmjhYec6H82AYZU2TVBXep6tMl8Z1Y+wM+ZrzCwe3BZ9Vyd9N2rIvmg==
+fast-xml-builder@^1.1.4:
+  version "1.1.4"
+  resolved "https://registry.npmjs.org/fast-xml-builder/-/fast-xml-builder-1.1.4.tgz"
+  integrity sha512-f2jhpN4Eccy0/Uz9csxh3Nu6q4ErKxf0XIsasomfOihuSUa3/xw6w8dnOtCDgEItQFJG8KyXPzQXzcODDrrbOg==
   dependencies:
     path-expression-matcher "^1.1.3"
 
 fast-xml-parser@^5.3.6:
-  version "5.5.5"
-  resolved "https://registry.npmjs.org/fast-xml-parser/-/fast-xml-parser-5.5.5.tgz"
-  integrity sha512-NLY+V5NNbdmiEszx9n14mZBseJTC50bRq1VHsaxOmR72JDuZt+5J1Co+dC/4JPnyq+WrIHNM69r0sqf7BMb3Mg==
+  version "5.5.9"
+  resolved "https://registry.npmjs.org/fast-xml-parser/-/fast-xml-parser-5.5.9.tgz"
+  integrity sha512-jldvxr1MC6rtiZKgrFnDSvT8xuH+eJqxqOBThUVjYrxssYTo1avZLGql5l0a0BAERR01CadYzZ83kVEkbyDg+g==
   dependencies:
-    fast-xml-builder "^1.1.3"
-    path-expression-matcher "^1.1.3"
-    strnum "^2.1.2"
+    fast-xml-builder "^1.1.4"
+    path-expression-matcher "^1.2.0"
+    strnum "^2.2.2"
 
 fastq@^1.6.0:
   version "1.20.1"
@@ -4138,7 +4147,7 @@ human-signals@^2.1.0:
   resolved "https://registry.npmjs.org/human-signals/-/human-signals-2.1.0.tgz"
   integrity sha512-B4FFZ6q/T2jhhksgkbEW3HBvWIfDW85snkQgawt07S7J5QXTk6BkNV+0yAeZrM5QpMAdYlocGoljn0sJ/WQkFw==
 
-i18next@^23.11.5, "i18next@>= 23.2.3":
+i18next@^23.11.5:
   version "23.16.8"
   resolved "https://registry.npmjs.org/i18next/-/i18next-23.16.8.tgz"
   integrity sha512-06r/TitrM88Mg5FdUXAKL96dJMzgqLE5dv3ryBAra4KCwD9mJ4ndOTS95ZuymIGoE+2hzfdaMak2X11/es7ZWg==
@@ -4758,7 +4767,7 @@ jest-resolve-dependencies@^29.7.0:
     jest-regex-util "^29.6.3"
     jest-snapshot "^29.7.0"
 
-jest-resolve@*, jest-resolve@^29.7.0:
+jest-resolve@^29.7.0:
   version "29.7.0"
   resolved "https://registry.npmjs.org/jest-resolve/-/jest-resolve-29.7.0.tgz"
   integrity sha512-IOVhZSrg+UvVAshDSDtHyFCCBUl/Q3AAJv8iZ6ZjnZ74xzvwuzLXid9IIIPgTnY62SJjfuupMKZsZQRsCvxEgA==
@@ -4902,7 +4911,7 @@ jest-worker@^29.7.0:
     merge-stream "^2.0.0"
     supports-color "^8.0.0"
 
-jest@*, jest@^29.6.3:
+jest@^29.6.3:
   version "29.7.0"
   resolved "https://registry.npmjs.org/jest/-/jest-29.7.0.tgz"
   integrity sha512-NIy3oAFp9shda19hy4HK0HRTWKtPJmGdnvywu01nOqNC2vZg+Z+fvJDxpMQA88eb2I9EcafcdjYgsDthnYTvGw==
@@ -5013,9 +5022,9 @@ kleur@^3.0.3:
   integrity sha512-eTIzlVOSUR+JxdDFepEYcBMtZ9Qqdef+rnzWdRZuMbOywu5tO2w2N7rqjoANZ5k9vywhL6Br1VRjUIgTQx4E8w==
 
 launch-editor@^2.9.1:
-  version "2.13.1"
-  resolved "https://registry.npmjs.org/launch-editor/-/launch-editor-2.13.1.tgz"
-  integrity sha512-lPSddlAAluRKJ7/cjRFoXUFzaX7q/YKI7yPHuEvSJVqoXvFnJov1/Ud87Aa4zULIbA9Nja4mSPK8l0z/7eV2wA==
+  version "2.13.2"
+  resolved "https://registry.npmjs.org/launch-editor/-/launch-editor-2.13.2.tgz"
+  integrity sha512-4VVDnbOpLXy/s8rdRCSXb+zfMeFR0WlJWpET1iA9CQdlZDfwyLjUuGQzXU4VeOoey6AicSAluWan7Etga6Kcmg==
   dependencies:
     picocolors "^1.1.1"
     shell-quote "^1.8.3"
@@ -5753,10 +5762,10 @@ path-exists@^4.0.0:
   resolved "https://registry.npmjs.org/path-exists/-/path-exists-4.0.0.tgz"
   integrity sha512-ak9Qy5Q7jYb2Wwcey5Fpvg2KoAc/ZIhLSLOSBmRmygPsGwkVVt0fZa0qrtMz+m6tJTAHfZQ8FnmB4MG4LWy7/w==
 
-path-expression-matcher@^1.1.3:
-  version "1.1.3"
-  resolved "https://registry.npmjs.org/path-expression-matcher/-/path-expression-matcher-1.1.3.tgz"
-  integrity sha512-qdVgY8KXmVdJZRSS1JdEPOKPdTiEK/pi0RkcT2sw1RhXxohdujUlJFPuS1TSkevZ9vzd3ZlL7ULl1MHGTApKzQ==
+path-expression-matcher@^1.1.3, path-expression-matcher@^1.2.0:
+  version "1.2.0"
+  resolved "https://registry.npmjs.org/path-expression-matcher/-/path-expression-matcher-1.2.0.tgz"
+  integrity sha512-DwmPWeFn+tq7TiyJ2CxezCAirXjFxvaiD03npak3cRjlP9+OjTmSy1EpIrEbh+l6JgUundniloMLDQ/6VTdhLQ==
 
 path-is-absolute@^1.0.0:
   version "1.0.1"
@@ -5793,7 +5802,7 @@ picomatch@^2.3.1:
   resolved "https://registry.npmjs.org/picomatch/-/picomatch-2.3.1.tgz"
   integrity sha512-JU3teHTNjmE2VCGFzuY8EXzCDVwEqB2a8fsIvwaStHhAWJEeVd1o1QD80CU6+ZdEXXSLbSsuLwJjkCBWqRQUVA==
 
-"picomatch@^3 || ^4", picomatch@^4.0.3:
+picomatch@^4.0.3:
   version "4.0.3"
   resolved "https://registry.npmjs.org/picomatch/-/picomatch-4.0.3.tgz"
   integrity sha512-5gTmgEY/sqK6gFXLIsQNH19lWb4ebPDLA4SdLP7dsWkIXHWlG66oPuVvXSGFPppYZz8ZDZq0dYYrbHfBCVUb1Q==
@@ -5820,7 +5829,7 @@ prelude-ls@^1.2.1:
   resolved "https://registry.npmjs.org/prelude-ls/-/prelude-ls-1.2.1.tgz"
   integrity sha512-vkcDPrRZo1QZLbn5RLGPpg/WmIQ65qoWWhcGKf/b5eplkkarX0m9z8ppCat4mlOqUsWpyNuYgO3VRyrYHSzX5g==
 
-prettier@>=2, prettier@2.8.8:
+prettier@2.8.8:
   version "2.8.8"
   resolved "https://registry.npmjs.org/prettier/-/prettier-2.8.8.tgz"
   integrity sha512-tdN8qQGvNjw4CHbY+XXk0JgCXn9QiF21a55rBe5LJAU+kDyC4WQn4+awm2Xfk2lQMk5fKup9XgzTZtGkjBdP9Q==
@@ -5990,7 +5999,7 @@ react-native-device-info@^15.0.2:
   resolved "https://registry.npmjs.org/react-native-device-info/-/react-native-device-info-15.0.2.tgz"
   integrity sha512-dd71eXG2l3Cwp66IvKNadMTB8fhU3PEjyVddI97sYan+D4bgIAUmgGDhbSOFvHcGavksb2U17kiQYaDiK2WK2g==
 
-react-native-gesture-handler@*, react-native-gesture-handler@^2.30.0:
+react-native-gesture-handler@^2.30.0:
   version "2.30.0"
   resolved "https://registry.npmjs.org/react-native-gesture-handler/-/react-native-gesture-handler-2.30.0.tgz"
   integrity sha512-5YsnKHGa0X9C8lb5oCnKm0fLUPM6CRduvUUw2Bav4RIj/C3HcFh4RIUnF8wgG6JQWCL1//gRx4v+LVWgcIQdGA==
@@ -5998,6 +6007,11 @@ react-native-gesture-handler@*, react-native-gesture-handler@^2.30.0:
     "@egjs/hammerjs" "^2.0.17"
     hoist-non-react-statics "^3.3.0"
     invariant "^2.2.4"
+
+react-native-image-picker@^8.2.1:
+  version "8.2.1"
+  resolved "https://registry.npmjs.org/react-native-image-picker/-/react-native-image-picker-8.2.1.tgz"
+  integrity sha512-FBeGYJGFDjMdGCcyubDJgBAPCQ4L1D3hwLXyUU91jY9ahOZMTbluceVvRmrEKqnDPFJ0gF1NVhJ0nr1nROFLdg==
 
 react-native-is-edge-to-edge@1.2.1:
   version "1.2.1"
@@ -6009,7 +6023,7 @@ react-native-linear-gradient@^2.8.3:
   resolved "https://registry.npmjs.org/react-native-linear-gradient/-/react-native-linear-gradient-2.8.3.tgz"
   integrity sha512-KflAXZcEg54PXkLyflaSZQ3PJp4uC4whM7nT/Uot9m0e/qxFV3p6uor1983D1YOBJbJN7rrWdqIjq0T42jOJyA==
 
-react-native-pager-view@^8.0.0, "react-native-pager-view@>= 6.0.0":
+react-native-pager-view@^8.0.0:
   version "8.0.0"
   resolved "https://registry.npmjs.org/react-native-pager-view/-/react-native-pager-view-8.0.0.tgz"
   integrity sha512-oAwlWT1lhTkIs9HhODnjNNl/owxzn9DP1MbP+az6OTUdgbmzA16Up83sBH8NRKwrH8rNm7iuWnX1qMqiiWOLhg==
@@ -6019,7 +6033,7 @@ react-native-permissions@^5.5.1:
   resolved "https://registry.npmjs.org/react-native-permissions/-/react-native-permissions-5.5.1.tgz"
   integrity sha512-nTKFoj47b6EXNqbbg+8VFwBWMpxF1/UTbrNBLpXkWpt005pH4BeFv/NwpcC1iNhToKBrxQD+5kI0z6+kTYoYWA==
 
-react-native-reanimated@*, react-native-reanimated@^4.3.0-rc.0:
+react-native-reanimated@^4.3.0-rc.0:
   version "4.3.0-rc.0"
   resolved "https://registry.npmjs.org/react-native-reanimated/-/react-native-reanimated-4.3.0-rc.0.tgz"
   integrity sha512-QBNTOKVbsVjqE4CexZrXsUYv6S/iYZYqOHQrtLMILHTD/8Wk/c0pfRjnyRg1YYoPEBI1ChXerKC7wMIv8rcAGQ==
@@ -6027,12 +6041,12 @@ react-native-reanimated@*, react-native-reanimated@^4.3.0-rc.0:
     react-native-is-edge-to-edge "1.2.1"
     semver "7.7.3"
 
-react-native-safe-area-context@*, react-native-safe-area-context@^5.4.0, "react-native-safe-area-context@>= 4.0.0":
+react-native-safe-area-context@^5.4.0:
   version "5.7.0"
   resolved "https://registry.npmjs.org/react-native-safe-area-context/-/react-native-safe-area-context-5.7.0.tgz"
   integrity sha512-/9/MtQz8ODphjsLdZ+GZAIcC/RtoqW9EeShf7Uvnfgm/pzYrJ75y3PV/J1wuAV1T5Dye5ygq4EAW20RoBq0ABQ==
 
-react-native-screens@^4.10.0, "react-native-screens@>= 4.0.0":
+react-native-screens@^4.10.0:
   version "4.24.0"
   resolved "https://registry.npmjs.org/react-native-screens/-/react-native-screens-4.24.0.tgz"
   integrity sha512-SyoiGaDofiyGPFrUkn1oGsAzkRuX1JUvTD9YQQK3G1JGQ5VWkvHgYSsc1K9OrLsDQxN7NmV71O0sHCAh8cBetA==
@@ -6064,6 +6078,11 @@ react-native-vector-icons@^10.2.0:
     prop-types "^15.7.2"
     yargs "^16.1.1"
 
+react-native-vision-camera@^4.7.3:
+  version "4.7.3"
+  resolved "https://registry.npmjs.org/react-native-vision-camera/-/react-native-vision-camera-4.7.3.tgz"
+  integrity sha512-g1/neOyjSqn1kaAa2FxI/qp5KzNvPcF0bnQw6NntfbxH6tm0+8WFZszlgb5OV+iYlB6lFUztCbDtyz5IpL47OA==
+
 react-native-worklets@^0.7.1:
   version "0.7.4"
   resolved "https://registry.npmjs.org/react-native-worklets/-/react-native-worklets-0.7.4.tgz"
@@ -6081,7 +6100,7 @@ react-native-worklets@^0.7.1:
     convert-source-map "2.0.0"
     semver "7.7.3"
 
-react-native-worklets@^0.8.0-rc.0, react-native-worklets@>=0.7.0:
+react-native-worklets@^0.8.0-rc.0:
   version "0.8.1"
   resolved "https://registry.npmjs.org/react-native-worklets/-/react-native-worklets-0.8.1.tgz"
   integrity sha512-oWP/lStsAHU6oYCaWDXrda/wOHVdhusQJz1e6x9gPnXdFf4ndNDAOtWCmk2zGrAnlapfyA3rM6PCQq94mPg9cw==
@@ -6098,7 +6117,7 @@ react-native-worklets@^0.8.0-rc.0, react-native-worklets@>=0.7.0:
     convert-source-map "^2.0.0"
     semver "^7.7.3"
 
-react-native@*, "react-native@>= 0.61.5", react-native@>=0.46, react-native@>=0.59, react-native@>=0.65.0, "react-native@0.81 - 0.85", react-native@0.84.1:
+react-native@0.84.1:
   version "0.84.1"
   resolved "https://registry.npmjs.org/react-native/-/react-native-0.84.1.tgz"
   integrity sha512-0PjxOyXRu3tZ8EobabxSukvhKje2HJbsZikR0U+pvS0pYZza2hXKjcSBiBdFN4h9D0S3v6a8kkrDK6WTRKMwzg==
@@ -6139,7 +6158,7 @@ react-native@*, "react-native@>= 0.61.5", react-native@>=0.46, react-native@>=0.
     ws "^7.5.10"
     yargs "^17.6.2"
 
-"react-redux@^7.2.1 || ^8.1.3 || ^9.0.0", react-redux@^9.1.2:
+react-redux@^9.1.2:
   version "9.2.0"
   resolved "https://registry.npmjs.org/react-redux/-/react-redux-9.2.0.tgz"
   integrity sha512-ROY9fvHhwOD9ySfrF0wmvu//bKCQ6AeZZq1nJNtbDC+kk5DuSuNX/n6YWYF/SYy7bSba4D4FSz8DJeKY/S/r+g==
@@ -6160,7 +6179,7 @@ react-test-renderer@^19.0.0:
     react-is "^19.2.4"
     scheduler "^0.27.0"
 
-react@*, "react@^16.14.0 || 17.x || 18.x || 19.x", "react@^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0", "react@^16.9.0 || ^17.0.0 || ^18 || ^19", "react@^18.0 || ^19", react@^19.2.3, react@^19.2.4, "react@>= 16.8.0", "react@>= 16.9.0", "react@>= 18.2.0", react@>=16.8, react@>=16.8.0, react@>=17.0.0, react@19.2.3:
+react@19.2.3:
   version "19.2.3"
   resolved "https://registry.npmjs.org/react/-/react-19.2.3.tgz"
   integrity sha512-Ku/hhYbVjOQnXDZFv2+RibmLFGwFdeeKHFcOTlrt7xplBnya5OGn/hIRDsqDiSUcfORsDC7MPxwork8jBwsIWA==
@@ -6192,7 +6211,7 @@ redux-thunk@^3.1.0:
   resolved "https://registry.npmjs.org/redux-thunk/-/redux-thunk-3.1.0.tgz"
   integrity sha512-NW2r5T6ksUKXCabzhL9z+h206HQw/NJkcLm1GPImRQ8IzfXwRGqjVhKJGauHirT0DAuyy6hjdnMZaRoAcy0Klw==
 
-redux@^5.0.0, redux@^5.0.1, redux@>4.0.0:
+redux@^5.0.1:
   version "5.0.1"
   resolved "https://registry.npmjs.org/redux/-/redux-5.0.1.tgz"
   integrity sha512-M9/ELqF6fy8FwmkpnF0S3YKOqMyoWJ4+CS5Efg2ct3oY9daQvd/Pc71FpGZsVsbl3Cpb+IIcjBDUnnyBdQbq4w==
@@ -6795,10 +6814,10 @@ strip-json-comments@^3.1.1:
   resolved "https://registry.npmjs.org/strip-json-comments/-/strip-json-comments-3.1.1.tgz"
   integrity sha512-6fPc+R4ihwqP6N/aIv2f1gMH8lOVtWQHoqC4yK6oSDVVocumAsfCqjkXnqiYMhmMwS/mEHLp7Vehlt3ql6lEig==
 
-strnum@^2.1.2:
-  version "2.2.0"
-  resolved "https://registry.npmjs.org/strnum/-/strnum-2.2.0.tgz"
-  integrity sha512-Y7Bj8XyJxnPAORMZj/xltsfo55uOiyHcU2tnAVzHUnSJR/KsEX+9RoDeXEnsXtl/CX4fAcrt64gZ13aGaWPeBg==
+strnum@^2.2.2:
+  version "2.2.2"
+  resolved "https://registry.npmjs.org/strnum/-/strnum-2.2.2.tgz"
+  integrity sha512-DnR90I+jtXNSTXWdwrEy9FakW7UX+qUZg28gj5fk2vxxl7uS/3bpI4fjFYVmdK9etptYBPNkpahuQnEwhwECqA==
 
 supports-color@^7.1.0:
   version "7.2.0"
@@ -6984,7 +7003,7 @@ typed-array-length@^1.0.7:
     possible-typed-array-names "^1.0.0"
     reflect.getprototypeof "^1.0.6"
 
-typescript@>=4.8.4, "typescript@>=4.8.4 <6.0.0", typescript@>=4.9.5, typescript@5.5.4:
+typescript@5.5.4:
   version "5.5.4"
   resolved "https://registry.npmjs.org/typescript/-/typescript-5.5.4.tgz"
   integrity sha512-Mtq29sKDAEYP7aljRgtPOpTvOfbwRWlS6dPRzwjdE+C0R4brX/GUyhHSecbHMFLNBLcJIPt9nl9yG5TZ1weH+Q==

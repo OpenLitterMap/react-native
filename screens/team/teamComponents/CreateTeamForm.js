@@ -49,7 +49,7 @@ const CreateTeamForm = ({ backPress }) => {
                     handleChange
                 }) => (
                     <>
-                        {user?.remaining_teams <= 0 ? (
+                        {user?.remaining_teams != null && user.remaining_teams <= 0 ? (
                             <StatusModal
                                 text={t('You have already created the maximum allowed number of teams.')}
                                 type="ERROR"

@@ -1,25 +1,9 @@
 import Config from 'react-native-config';
 
 const OLM_ENDPOINT = Config.OLM_ENDPOINT;
-const CURRENT_ENVIRONMENT = Config.CURRENT_ENVIRONMENT;
+const LOCAL_OLM_ENDPOINT = Config.LOCAL_OLM_ENDPOINT;
+export const IS_PRODUCTION = process.env.IS_PRODUCTION === 'true';
 
-// disable sentry locally
-export const IS_PRODUCTION = CURRENT_ENVIRONMENT === 'production';
-
-let ENDPOINT = '';
-
-if (CURRENT_ENVIRONMENT === 'production') {
-    ENDPOINT = OLM_ENDPOINT;
-} else if (CURRENT_ENVIRONMENT === 'local') {
-    ENDPOINT = 'http://192.168.1.28:8000';
-}
-
-if (__DEV__ && !ENDPOINT) {
-    console.warn(
-        'OLM: ENDPOINT is empty — CURRENT_ENVIRONMENT is',
-        JSON.stringify(CURRENT_ENVIRONMENT),
-        '. Set CURRENT_ENVIRONMENT to "production" or "local" in .env'
-    );
-}
+const ENDPOINT = IS_PRODUCTION ? OLM_ENDPOINT : LOCAL_OLM_ENDPOINT;
 
 export const URL = ENDPOINT;

@@ -1,34 +1,44 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useCallback} from 'react';
 import {ActivityIndicator, StyleSheet, View} from 'react-native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {useSelector, useDispatch} from 'react-redux';
-import {checkValidToken} from '../reducers/auth_reducer';
+import {checkValidToken, markOnboardingComplete} from '../reducers/auth_reducer';
+import {isOnboardingComplete} from '../utils/onboarding';
 
 import AuthStack from './AuthStack';
+import OnboardingStack from './OnboardingStack';
 import TabRoutes from './TabRoutes';
 import PermissionStack from './PermissionStack';
-import {GalleryScreen, NewUpdateScreen, SettingScreen} from '../screens';
+import {NewUpdateScreen, SettingScreen} from '../screens';
 import AddTagScreen from '../screens/addTag/AddTagScreen';
 import MyUploads from '../screens/userStats/userComponents/MyUploads';
 
 const Stack = createNativeStackNavigator();
 
 /**
- * Root navigator — decides auth vs app tree.
+ * Root navigator — three-way routing:
+ *   1. No token → AuthStack
+ *   2. Token + onboarding incomplete → OnboardingStack
+ *   3. Token + onboarding complete → App (TabRoutes + modals)
  *
- * Auth bootstrap uses redux-persist as single source of truth:
- * - PersistGate rehydrates auth.token from persisted Redux state
- * - If a token exists after rehydration, we validate it with the backend
- * - No direct AsyncStorage reads — redux-persist owns auth persistence
+ * Onboarding state is scoped per user ID and re-evaluated when auth changes.
  */
 const MainRoutes = () => {
     const dispatch = useDispatch();
     const [isValidating, setIsValidating] = useState(true);
     const token = useSelector(state => state.auth.token);
+    const user = useSelector(state => state.auth.user);
+    const onboardingComplete = useSelector(state => state.auth.onboardingComplete);
 
-    // Validate persisted token once on mount (after redux-persist rehydration).
-    // Does NOT depend on `token` — a fresh login already validates via fetchUser,
-    // so re-running checkValidToken when the token changes is redundant and slow.
+    const checkOnboarding = useCallback(async (userId) => {
+        if (!userId) return;
+        const complete = await isOnboardingComplete(userId);
+        if (complete) {
+            dispatch(markOnboardingComplete());
+        }
+    }, [dispatch]);
+
+    // Validate persisted token on mount
     useEffect(() => {
         (async () => {
             if (token) {
@@ -37,6 +47,13 @@ const MainRoutes = () => {
             setIsValidating(false);
         })();
     }, [dispatch]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    // Re-check onboarding when user changes (login, logout, switch account)
+    useEffect(() => {
+        if (user?.id) {
+            checkOnboarding(user.id);
+        }
+    }, [user?.id, checkOnboarding]);
 
     if (isValidating) {
         return (
@@ -51,15 +68,14 @@ const MainRoutes = () => {
             screenOptions={{headerShown: false, contentStyle: {backgroundColor: 'white'}}}>
             {token === null ? (
                 <Stack.Screen name="AUTH_HOME" component={AuthStack} />
+            ) : !onboardingComplete ? (
+                <Stack.Screen name="ONBOARDING" component={OnboardingStack} />
             ) : (
                 <>
                     <Stack.Screen name="APP" component={TabRoutes} />
-                    {/* Standard stack push — core workflow / destination screens */}
                     <Stack.Screen name="ADD_TAGS" component={AddTagScreen} options={{headerShown: false}} />
                     <Stack.Screen name="SETTING" component={SettingScreen} options={{headerShown: false}} />
                     <Stack.Screen name="MY_UPLOADS" component={MyUploads} options={{headerShown: false}} />
-                    {/* fullScreenModal — unchanged, these are genuinely modal/interruptive */}
-                    <Stack.Screen name="ALBUM" component={GalleryScreen} options={{presentation: 'fullScreenModal', gestureEnabled: false}} />
                     <Stack.Screen name="PERMISSION" component={PermissionStack} options={{presentation: 'fullScreenModal', gestureEnabled: false}} />
                     <Stack.Screen name="UPDATE" component={NewUpdateScreen} options={{presentation: 'fullScreenModal', gestureEnabled: false}} />
                 </>

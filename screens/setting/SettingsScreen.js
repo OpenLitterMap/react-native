@@ -13,18 +13,18 @@ import {
 import DeviceInfo from 'react-native-device-info';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {useTranslation} from 'react-i18next';
-import {Body, Caption, Colors, Header, SubTitle, Title} from '../components';
+import {Body, Caption, Colors, Header, SubTitle} from '../components';
 import SettingsComponent from './settingComponents/SettingsComponent';
 import {useDispatch, useSelector} from 'react-redux';
-import {logout} from '../../reducers/auth_reducer';
+
 import {
     saveSettings,
     toggleEditModal,
     toggleSettingsSwitch
 } from '../../reducers/settings_reducer';
 import {
-    getUntaggedImages
-} from '../../reducers/photos_reducer';
+    fetchAllUntaggedPhotos
+} from '../../reducers/server_photos_reducer';
 
 const SettingsScreen = ({navigation}) => {
     const dispatch = useDispatch();
@@ -160,7 +160,7 @@ const SettingsScreen = ({navigation}) => {
                             );
                         } else if (key === 'enable_admin_tagging') {
                             if (user?.enable_admin_tagging) {
-                                await dispatch(getUntaggedImages());
+                                await dispatch(fetchAllUntaggedPhotos());
                             }
 
                             await dispatch(
@@ -236,22 +236,6 @@ const SettingsScreen = ({navigation}) => {
                             color={Colors.white}
                             size={24}
                         />
-                    </Pressable>
-                }
-                centerContent={<Title color="white" dictionary={'Settings'} />}
-                centerContainerStyle={{flex: 2}}
-                rightContent={
-                    <Pressable onPress={() => {
-                        Alert.alert(
-                            t('Logout'),
-                            t('Are you sure you want to log out?'),
-                            [
-                                {text: t('Cancel'), style: 'cancel'},
-                                {text: t('Logout'), style: 'destructive', onPress: () => dispatch(logout())}
-                            ]
-                        );
-                    }}>
-                        <Body color="white" dictionary={'Logout'} />
                     </Pressable>
                 }
             />

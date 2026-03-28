@@ -4,7 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { rootReducer } from '../reducers';
 
 /**
- * Transform for the images reducer: only persist imagesArray.
+ * Transform for the photos reducer: only persist imagesArray.
  * Upload counters, phase tracking, and error state start fresh on relaunch.
  */
 const imagesTransform = createTransform(
@@ -24,8 +24,8 @@ const imagesTransform = createTransform(
     { whitelist: ['photos'] }
 );
 
-// Migrate persisted state from old 'images' key to 'photos'
 const migrations = {
+    // v0: Migrate persisted state from old 'images' key to 'photos'
     0: (state) => {
         if (state?.images) {
             return {
@@ -35,13 +35,21 @@ const migrations = {
             };
         }
         return state;
+    },
+    // v1: Strip retired galleryAcknowledged from photos state
+    1: (state) => {
+        if (state?.photos?.galleryAcknowledged !== undefined) {
+            const { galleryAcknowledged, ...rest } = state.photos;
+            return { ...state, photos: rest };
+        }
+        return state;
     }
 };
 
 // Configuration for Redux Persist
 const persistConfig = {
     key: 'root',
-    version: 0,
+    version: 1,
     storage: AsyncStorage,
     whitelist: ['auth', 'photos'],
     transforms: [imagesTransform],

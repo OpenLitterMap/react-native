@@ -4,11 +4,22 @@ import { Caption } from '../../../components';
 import { getCategoryColor } from '../../../addTag/components/categoryColors';
 import { useTranslation } from 'react-i18next';
 
-const TagChips = React.memo(({ newTags = [], maxVisible = 3 }) => {
+const TagChips = React.memo(({ newTags = [], summary, maxVisible = 3 }) => {
     const { t } = useTranslation();
 
     const chips = useMemo(() => {
-        if (!newTags || newTags.length === 0) return [];
+        if (!newTags || newTags.length === 0) {
+            // Fall back to summary strings if no structured tags
+            if (summary && Array.isArray(summary) && summary.length > 0) {
+                return summary.map((s, i) => ({
+                    key: `summary-${i}`,
+                    label: s,
+                    qty: 1,
+                    bg: '#6b7280'
+                }));
+            }
+            return [];
+        }
 
         // Build flat list of chips: CLO tags + custom tags from extra_tags
         const result = [];
@@ -20,9 +31,16 @@ const TagChips = React.memo(({ newTags = [], maxVisible = 3 }) => {
             // Skip unclassified.other if it only exists as a carrier for custom tags
             const isUnclassifiedOther = catKey === 'unclassified' && objKey === 'other';
             if (!isUnclassifiedOther) {
-                let label = catKey && objKey
-                    ? t(`litter.${catKey}.${objKey}`)
-                    : objKey || catKey;
+                let label = '';
+                if (catKey && objKey) {
+                    label = t(`litter.${catKey}.${objKey}`);
+                } else if (objKey) {
+                    label = objKey;
+                } else if (catKey) {
+                    label = catKey;
+                } else if (tag.key) {
+                    label = tag.key;
+                }
 
                 // If tag has a type (e.g. "juice" for carton), prepend it
                 const typeKey = tag.type?.key;
@@ -30,6 +48,8 @@ const TagChips = React.memo(({ newTags = [], maxVisible = 3 }) => {
                     const typeName = t(`litter.types.${typeKey}`);
                     label = `${typeName} ${label}`;
                 }
+
+                if (!label) continue;
 
                 result.push({
                     key: `${catKey}-${objKey}-${result.length}`,

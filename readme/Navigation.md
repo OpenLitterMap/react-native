@@ -10,7 +10,7 @@ MainRoutes (NativeStack)
 │   ├── WELCOME → WelcomeScreen
 │   └── AUTH → AuthScreen
 └── [Has token]
-    ├── APP → TabRoutes (MaterialTopTabs, bottom position)
+    ├── APP → TabRoutes (Bottom Tabs)
     │   ├── HOME → HomeScreen
     │   ├── TEAM → TeamStack (NativeStack)
     │   │   ├── TEAM_HOME → TeamScreen

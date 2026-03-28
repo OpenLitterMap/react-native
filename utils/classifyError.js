@@ -60,9 +60,11 @@ function normalizeError(error) {
     }
 
     const status = error.response.status;
-    // Support both current backend shapes: { msg }, { message }, { error: { code, message } }
+    // Support all backend shapes: { msg }, { message }, { error: { code, message } }, { error: "string" }
     const data = error.response.data;
-    const backendCode = data?.error?.code || data?.code || data?.msg || data?.message;
+    const errorField = data?.error;
+    const backendCode = (typeof errorField === 'string' ? errorField : errorField?.code)
+        || data?.code || data?.msg || data?.message;
 
     if (status === 401) {
         return {
@@ -73,7 +75,12 @@ function normalizeError(error) {
     }
 
     if (status === 422) {
-        if (backendCode === 'photo-already-uploaded' || backendCode === 'photo_already_uploaded') {
+        if (
+            backendCode === 'photo-already-uploaded' ||
+            backendCode === 'photo_already_uploaded' ||
+            backendCode === 'duplicate' ||
+            /already uploaded/i.test(backendCode)
+        ) {
             return {
                 errorType: 'photo-already-uploaded',
                 userMessage: 'This photo was already uploaded.',
@@ -89,7 +96,7 @@ function normalizeError(error) {
         }
         return {
             errorType: 'validation',
-            userMessage: data?.error?.message || data?.message || 'Photo could not be processed.',
+            userMessage: (typeof errorField === 'object' && errorField?.message) || data?.message || 'Photo could not be processed.',
             reportable: true
         };
     }
@@ -104,7 +111,7 @@ function normalizeError(error) {
 
     return {
         errorType: 'unknown',
-        userMessage: data?.error?.message || data?.message || 'Upload failed. Please try again.',
+        userMessage: (typeof errorField === 'object' && errorField?.message) || data?.message || 'Upload failed. Please try again.',
         reportable: true
     };
 }

@@ -103,6 +103,35 @@ const photosSlice = createSlice({
         },
 
         /**
+         * Add a single photo from onboarding flow.
+         * payload = { uri, filename, lat, lon, width, height, type, fileSize }
+         */
+        addOnboardingPhoto(state, action) {
+            const photo = action.payload;
+            const dedup = buildDedupSets(state);
+            if (photo.uri && dedup.uris.has(photo.uri)) return;
+
+            state.imagesArray.push({
+                id: `onboarding_${Date.now()}`,
+                date: new Date().toISOString(),
+                lat: photo.lat,
+                lon: photo.lon,
+                filename: photo.filename,
+                uri: photo.uri,
+                type: photo.type || 'image/jpeg',
+                platform: null,
+                tags: [],
+                customTags: [],
+                picked_up: null,
+                selected: false,
+                uploaded: false,
+                onboarding: true
+            });
+            // Point swiper to the newly added image
+            state.swiperIndex = state.imagesArray.length - 1;
+        },
+
+        /**
          * Change the swiperIndex (which image is currently selected).
          */
         changeSwiperIndex(state, action) {
@@ -567,6 +596,19 @@ const photosSlice = createSlice({
                     state.imagesArray[index].uploaded = true;
                 }
             })
+            .addCase(uploadImage.rejected, (state, action) => {
+                const {errorType} = action.payload || {};
+                // Server already has this photo — mark uploaded to prevent binary re-upload
+                if (errorType === 'photo-already-uploaded') {
+                    const {photoId, imageUri} = action.meta.arg;
+                    const index = state.imagesArray.findIndex(img =>
+                        imageUri ? img.uri === imageUri : img.id === photoId
+                    );
+                    if (index !== -1) {
+                        state.imagesArray[index].uploaded = true;
+                    }
+                }
+            })
             .addCase(postTagsToPhoto.fulfilled, (state, action) => {
                 const {photoId} = action.payload;
                 const idx = state.imagesArray.findIndex(img => img.id === photoId);
@@ -583,6 +625,7 @@ export const {
     addCustomTagToTag,
     addImageCustomTag,
     addImages,
+    addOnboardingPhoto,
     addTagV5,
     changeSwiperIndex,
     clearCustomTagError,

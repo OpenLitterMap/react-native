@@ -16,6 +16,8 @@ const TeamScreen = ({navigation}) => {
 
     const teamFormStatus = useSelector(state => state.teams.teamFormStatus);
     const successMessage = useSelector(state => state.teams.successMessage);
+    const remainingTeams = useSelector(state => state.auth.user?.remaining_teams);
+    const canCreate = remainingTeams != null && remainingTeams > 0;
 
     useEffect(() => {
         dispatch(getTopTeams());
@@ -46,7 +48,7 @@ const TeamScreen = ({navigation}) => {
             <Header />
 
             <LocationsTeamsWrapper
-                onCreateTeam={openCreateForm}
+                onCreateTeam={canCreate ? openCreateForm : null}
                 onJoinTeam={openJoinForm}
             />
 

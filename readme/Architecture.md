@@ -23,8 +23,8 @@
 
 ### Remaining Issues (genuine, deferred)
 
-#### 1. MaterialTopTabNavigator used as bottom tabs
-Unconventional but functional. Horizontal swipe gestures on the pager could conflict with nested gesture-heavy screens. Low priority — no current bugs from this.
+#### 1. ~~MaterialTopTabNavigator used as bottom tabs~~ — RESOLVED
+Switched to `@react-navigation/bottom-tabs` in v7.3.1. No more swipe gesture conflicts.
 
 #### 2. No memoized selectors
 Most screens use raw `useSelector`. Only `selectSelectedCount` is memoized. Low priority unless proven perf bottleneck.

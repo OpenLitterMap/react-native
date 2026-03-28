@@ -54,6 +54,18 @@ describe('classifyError', () => {
         expect(result.errorType).toBe('photo-already-uploaded');
     });
 
+    it('classifies 422 with "already uploaded" message string', () => {
+        const error = {response: {status: 422, data: {message: 'You have already uploaded this photo'}}};
+        const result = classifyError(error, 'test');
+        expect(result.errorType).toBe('photo-already-uploaded');
+    });
+
+    it('classifies 422 with error: "duplicate" format', () => {
+        const error = {response: {status: 422, data: {error: 'duplicate'}}};
+        const result = classifyError(error, 'test');
+        expect(result.errorType).toBe('photo-already-uploaded');
+    });
+
     it('classifies 422 invalid-coordinates', () => {
         const error = {response: {status: 422, data: {msg: 'invalid-coordinates'}}};
         const result = classifyError(error, 'test');

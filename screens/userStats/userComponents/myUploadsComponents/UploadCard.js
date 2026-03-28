@@ -44,6 +44,7 @@ const UploadCard = React.memo(({ item, onEditTags, onDelete, onCopyLink, onOpenM
                         style={styles.pickedUpIcon}
                     />
                 )}
+                <Caption style={styles.photoId}>#{item.id}</Caption>
                 <Caption style={styles.timeAgo}>
                     {dayjs(item.datetime).fromNow()}
                 </Caption>
@@ -58,7 +59,7 @@ const UploadCard = React.memo(({ item, onEditTags, onDelete, onCopyLink, onOpenM
                 </View>
             ) : null}
 
-            <TagChips newTags={item.new_tags} />
+            <TagChips newTags={item.new_tags} summary={item.summary} />
 
             <View style={styles.statsRow}>
                 <Caption>{totalTags} {t('tags')}</Caption>
@@ -155,8 +156,13 @@ const styles = StyleSheet.create({
     pickedUpIcon: {
         marginLeft: 6
     },
-    timeAgo: {
+    photoId: {
         marginLeft: 'auto',
+        fontSize: 11,
+        opacity: 0.4,
+        marginRight: 8
+    },
+    timeAgo: {
         opacity: 0.5
     },
     locationRow: {

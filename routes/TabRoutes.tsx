@@ -1,85 +1,79 @@
-// @ts-ignore
-
 import React from 'react';
-import {StyleSheet, View} from 'react-native';
-import {createMaterialTopTabNavigator} from '@react-navigation/material-top-tabs';
+import {StyleSheet, Text} from 'react-native';
+import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {HomeScreen, ProfileScreen} from '../screens';
+import {Colors} from '../screens/components/theme';
 import TeamStack from './TeamStack';
-import Icon from 'react-native-vector-icons/Ionicons';
-import {Colors} from '../screens/components';
 
-const Tab = createMaterialTopTabNavigator();
+const Tab = createBottomTabNavigator();
 
-const ICONS: Record<string, [string, string]> = {
-    HOME: ['home', 'home-outline'],
-    TEAM: ['people', 'people-outline'],
-    USER_STATS: ['person', 'person-outline']
+const TAB_CONFIG: Record<string, {emoji: string; label: string}> = {
+    HOME: {emoji: '🌍', label: 'Home'},
+    TEAM: {emoji: '🧗', label: 'Teams'},
+    USER_STATS: {emoji: '📱', label: 'Profile'}
 };
 
-const TabIcon = ({routeName, focused, color}: {routeName: string; focused: boolean; color: string}) => {
-    const [active, inactive] = ICONS[routeName] ?? ['help', 'help-outline'];
-    return (
-        <View
-            style={[
-                styles.iconWrap,
-                {backgroundColor: focused ? Colors.accentLight : 'white'}
-            ]}>
-            <Icon name={focused ? active : inactive} size={26} color={color} />
-        </View>
-    );
-};
+const TabIcon = ({routeName, focused}: {routeName: string; focused: boolean}) => (
+    <Text style={[styles.emoji, !focused && styles.emojiInactive]}>
+        {TAB_CONFIG[routeName]?.emoji ?? '❓'}
+    </Text>
+);
+
+const makeTabBarIcon = (routeName: string) =>
+    ({focused}: {focused: boolean}) => <TabIcon routeName={routeName} focused={focused} />;
+
+const homeIcon = makeTabBarIcon('HOME');
+const teamIcon = makeTabBarIcon('TEAM');
+const profileIcon = makeTabBarIcon('USER_STATS');
 
 const TabRoutes = () => (
     <Tab.Navigator
         id="MainTabs"
-        tabBarPosition="bottom"
         initialRouteName="HOME"
-        screenOptions={({route}) => ({
+        screenOptions={{
+            headerShown: false,
             lazy: true,
-            tabBarIcon: ({focused, color}: {focused: boolean; color: string}) => (
-                <TabIcon routeName={route.name} focused={focused} color={color} />
-            ),
+            tabBarLabelStyle: styles.label,
             tabBarActiveTintColor: Colors.accent,
-            tabBarInactiveTintColor: 'gray',
-            tabBarShowIcon: true,
-            tabBarShowLabel: false,
-            tabBarIconStyle: styles.tabBarIcon,
-            tabBarPressColor: 'white',
-            tabBarPressOpacity: 0,
-            tabBarIndicatorStyle: styles.tabBarIndicator,
+            tabBarInactiveTintColor: Colors.muted,
             tabBarStyle: styles.tabBar
-        })}>
-        <Tab.Screen name="HOME" component={HomeScreen} />
-        <Tab.Screen name="TEAM" component={TeamStack} />
-        <Tab.Screen name="USER_STATS" component={ProfileScreen} />
+        }}>
+        <Tab.Screen
+            name="HOME"
+            component={HomeScreen}
+            options={{tabBarIcon: homeIcon, tabBarLabel: 'Home'}}
+        />
+        <Tab.Screen
+            name="TEAM"
+            component={TeamStack}
+            options={{tabBarIcon: teamIcon, tabBarLabel: 'Leaderboards'}}
+        />
+        <Tab.Screen
+            name="USER_STATS"
+            component={ProfileScreen}
+            options={{tabBarIcon: profileIcon, tabBarLabel: 'Account'}}
+        />
     </Tab.Navigator>
 );
 
 const styles = StyleSheet.create({
-    iconWrap: {
-        width: 56,
-        height: 56,
-        borderRadius: 100,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginTop: -4
+    emoji: {
+        fontSize: 32
     },
-    tabBarIcon: {
-        height: 56,
-        justifyContent: 'center',
-        alignItems: 'center'
+    emojiInactive: {
+        opacity: 0.5
     },
-    tabBarIndicator: {
-        display: 'none',
-        backgroundColor: 'white'
+    label: {
+        fontFamily: 'Poppins-Medium',
+        fontWeight: '500',
+        fontSize: 11
     },
     tabBar: {
-        backgroundColor: 'white',
-        borderTopWidth: 0,
-        height: 84,
-        margin: 0,
-        paddingBottom: 12,
-        padding: 0
+        backgroundColor: Colors.white,
+        borderTopWidth: StyleSheet.hairlineWidth,
+        borderTopColor: '#e0e0e0',
+        height: 88,
+        paddingTop: 8
     }
 });
 

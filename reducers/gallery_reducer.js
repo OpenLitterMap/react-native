@@ -7,6 +7,8 @@ import {logout} from './auth_reducer';
 
 const CAMERAROLL_INCLUDE = ['location', 'filename'];
 
+const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+
 const initialState = {
     fetchStatus: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
     galleryImages: [],
@@ -15,6 +17,8 @@ const initialState = {
     lastFetchTime: null,
     hasMorePages: false,
     nextPageCursor: null,
+    recencyWindowMs: SEVEN_DAYS_MS,
+    dismissedUris: [], // URIs the user dismissed from the inbox
     error: null
 };
 
@@ -197,7 +201,14 @@ const gallerySlice = createSlice({
     initialState,
 
     reducers: {
-        resetGallery: () => initialState
+        resetGallery: () => initialState,
+        expandRecencyWindow(state) {
+            state.recencyWindowMs += SEVEN_DAYS_MS;
+        },
+        dismissPhotos(state, action) {
+            const uris = action.payload;
+            state.dismissedUris = [...new Set([...state.dismissedUris, ...uris])];
+        }
     },
 
     extraReducers: builder => {
@@ -257,11 +268,42 @@ const gallerySlice = createSlice({
     }
 });
 
-export const {resetGallery} = gallerySlice.actions;
+export const {resetGallery, expandRecencyWindow, dismissPhotos} = gallerySlice.actions;
 
 export const selectNonGeotaggedCount = createSelector(
     state => state.gallery.galleryImages,
     images => images.filter(img => !img.hasGps).length
+);
+
+/**
+ * Select geotagged photos within the recency window, sorted newest-first.
+ * Window starts at 7 days and expands when user taps "Show older photos".
+ * CameraRoll timestamps are in seconds — multiply by 1000 for JS Date.
+ */
+export const selectRecentGeotaggedPhotos = createSelector(
+    state => state.gallery.galleryImages,
+    state => state.gallery.recencyWindowMs,
+    state => state.gallery.dismissedUris,
+    (images, windowMs, dismissedUris) => {
+        const cutoff = Date.now() - windowMs;
+        const dismissed = new Set(dismissedUris);
+        return images
+            .filter(img => img.hasGps && img.date * 1000 >= cutoff && !dismissed.has(img.uri))
+            .sort((a, b) => b.date - a.date);
+    }
+);
+
+/**
+ * Returns true if there are geotagged photos in galleryImages that are
+ * older than the current recency window (i.e., expanding would show more).
+ */
+export const selectHasOlderGeotaggedPhotos = createSelector(
+    state => state.gallery.galleryImages,
+    state => state.gallery.recencyWindowMs,
+    (images, windowMs) => {
+        const cutoff = Date.now() - windowMs;
+        return images.some(img => img.hasGps && img.date * 1000 < cutoff);
+    }
 );
 
 export default gallerySlice.reducer;

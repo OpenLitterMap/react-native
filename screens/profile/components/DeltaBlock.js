@@ -10,15 +10,7 @@ const DeltaBlock = ({ deltas, isFirstVisit = false }) => {
 
     const positiveDeltas = (deltas || []).filter(d => d.value > 0);
 
-    if (positiveDeltas.length === 0) {
-        return (
-            <View style={styles.container}>
-                <Text style={styles.emptyText}>
-                    Upload some photos to see your progress here
-                </Text>
-            </View>
-        );
-    }
+    if (positiveDeltas.length === 0) return null;
 
     return (
         <View style={styles.container}>

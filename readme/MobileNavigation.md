@@ -7,7 +7,7 @@ The app uses React Navigation v6 with a combination of stack navigators and mate
 ## Files
 - `routes/MainRoutes.js` — Root stack navigator with auth gating
 - `routes/AuthStack.js` — Welcome → Auth screen stack
-- `routes/TabRoutes.tsx` — Bottom tab navigator (material top tabs positioned at bottom)
+- `routes/TabRoutes.tsx` — Bottom tab navigator (@react-navigation/bottom-tabs)
 - `routes/TeamStack.tsx` — Team screens stack navigator
 - `routes/PermissionStack.tsx` — Camera/Gallery permission screens
 ## Structure
@@ -19,7 +19,7 @@ NavigationContainer
     │   └── AUTH → AuthScreen (with tabs: Signin, Signup, ForgotPassword)
     │
     └── [Has token]
-        ├── APP → TabRoutes (Material Top Tabs, bottom position)
+        ├── APP → TabRoutes (Bottom Tabs)
         │   ├── HOME → HomeScreen
         │   ├── TEAM → TeamStack
         │   └── USER_STATS → ProfileScreen

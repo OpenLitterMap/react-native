@@ -6,7 +6,8 @@ const initialState = {
     submitStatus: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
     token: null,
     user: null,
-    serverStatusText: ''
+    serverStatusText: '',
+    onboardingComplete: false
 };
 
 /**
@@ -20,7 +21,7 @@ const initialState = {
  *     team: { id, name } | null }
  *
  * Fields intentionally excluded from enriched response (not needed by mobile UI):
- *   achievements, locations, global_stats, stats.streak
+ *   achievements, locations, global_stats
  */
 const buildUserFromProfile = (data) => {
     const profile = data.user || {};
@@ -36,6 +37,7 @@ const buildUserFromProfile = (data) => {
         totalTags: stats.tags ?? stats.litter ?? 0,
         totalLittercoin: stats.littercoin ?? 0,
         xp: stats.xp ?? 0,
+        streak: stats.streak ?? 0,
 
         // Level
         level: levelData.level ?? 0,
@@ -357,6 +359,13 @@ const authSlice = createSlice({
          */
         updateUserObject(state, action) {
             state.user = action.payload;
+        },
+
+        /**
+         * Mark onboarding as complete (synced from AsyncStorage on boot)
+         */
+        setOnboardingComplete(state) {
+            state.onboardingComplete = true;
         }
     },
 
@@ -453,12 +462,14 @@ export const {
     clearStatusText,
     logout,
     loginOrSignupReset,
-    updateUserObject
+    updateUserObject,
+    setOnboardingComplete: markOnboardingComplete
 } = authSlice.actions;
 
 // Selectors
 export const selectIsSubmitting = state => state.auth.submitStatus === 'loading';
 export const selectUser = state => state.auth.user;
 export const selectToken = state => state.auth.token;
+export const selectOnboardingComplete = state => state.auth.onboardingComplete;
 
 export default authSlice.reducer;

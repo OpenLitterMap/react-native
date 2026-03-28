@@ -10,7 +10,13 @@ const initialState = {
     totalUsers: 0,
     newUsersToday: 0,
     newUsersLast7Days: 0,
-    newUsersLast30Days: 0
+    newUsersLast30Days: 0,
+    newTagsToday: 0,
+    newTagsLast7Days: 0,
+    newTagsLast30Days: 0,
+    newPhotosToday: 0,
+    newPhotosLast7Days: 0,
+    newPhotosLast30Days: 0
 };
 
 export const getStats = createAsyncThunk(
@@ -47,6 +53,16 @@ const statsSlice = createSlice({
                     action.payload?.new_users_last_7_days || 0;
                 state.newUsersLast30Days =
                     action.payload?.new_users_last_30_days || 0;
+                state.newTagsToday = action.payload?.new_tags_today || 0;
+                state.newTagsLast7Days =
+                    action.payload?.new_tags_last_7_days || 0;
+                state.newTagsLast30Days =
+                    action.payload?.new_tags_last_30_days || 0;
+                state.newPhotosToday = action.payload?.new_photos_today || 0;
+                state.newPhotosLast7Days =
+                    action.payload?.new_photos_last_7_days || 0;
+                state.newPhotosLast30Days =
+                    action.payload?.new_photos_last_30_days || 0;
                 state.error = null;
             })
             .addCase(getStats.rejected, (state, action) => {
@@ -66,7 +82,13 @@ export const selectStats = createSelector(
         totalUsers: stats.totalUsers,
         newUsersToday: stats.newUsersToday,
         newUsersLast7Days: stats.newUsersLast7Days,
-        newUsersLast30Days: stats.newUsersLast30Days
+        newUsersLast30Days: stats.newUsersLast30Days,
+        newTagsToday: stats.newTagsToday,
+        newTagsLast7Days: stats.newTagsLast7Days,
+        newTagsLast30Days: stats.newTagsLast30Days,
+        newPhotosToday: stats.newPhotosToday,
+        newPhotosLast7Days: stats.newPhotosLast7Days,
+        newPhotosLast30Days: stats.newPhotosLast30Days
     })
 );
 

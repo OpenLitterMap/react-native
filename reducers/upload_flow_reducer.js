@@ -174,12 +174,16 @@ const uploadFlowSlice = createSlice({
                 // Don't count user cancellation as a failure
                 if (errorType === 'cancelled') return;
 
+                // "Already uploaded" = server has the photo, treat as success
+                if (errorType === 'photo-already-uploaded') {
+                    state.uploaded++;
+                    state.failedCounts.alreadyUploaded++;
+                    return;
+                }
+
                 state.uploadFailed += 1;
 
                 switch (errorType) {
-                case 'photo-already-uploaded':
-                    state.failedCounts.alreadyUploaded += 1;
-                    break;
                 case 'invalid-coordinates':
                     state.failedCounts.invalidCoordinates += 1;
                     break;
