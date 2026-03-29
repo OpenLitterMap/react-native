@@ -1,9 +1,10 @@
-import React, {useEffect} from 'react';
+import React from 'react';
 import {Image, Pressable, StyleSheet, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {useDispatch, useSelector} from 'react-redux';
+import {useTranslation} from 'react-i18next';
 import {Body, Caption, Colors, Title} from '../components';
 import StepIndicator from './components/StepIndicator';
 import {markOnboardingComplete} from '../../reducers/auth_reducer';
@@ -16,6 +17,7 @@ import {setOnboardingComplete} from '../../utils/onboarding';
  * Sets onboarding_completed_at and navigates to HomeScreen.
  */
 const CelebrationScreen = ({navigation}) => {
+    const {t} = useTranslation();
     const dispatch = useDispatch();
     const imagesArray = useSelector(state => state.photos.imagesArray);
     const swiperIndex = useSelector(state => state.photos.swiperIndex);
@@ -30,20 +32,12 @@ const CelebrationScreen = ({navigation}) => {
     const tagCount = photo?.tags?.length || 0;
     const hasCoords = photo?.lat != null && photo?.lon != null;
 
-    // Mark onboarding complete on mount (scoped to current user)
-    useEffect(() => {
-        (async () => {
-            await setOnboardingComplete(user?.id);
-            dispatch(markOnboardingComplete());
-        })();
-    }, [dispatch, user?.id]);
-
-    const handleContinue = () => {
-        // Reset navigation stack to the main app — prevents back-nav into onboarding
-        navigation.getParent()?.reset({
-            index: 0,
-            routes: [{name: 'APP'}]
-        });
+    const handleContinue = async () => {
+        // Mark onboarding complete in both AsyncStorage and Redux,
+        // then reset navigation. Done here (not useEffect) to avoid
+        // a race between Redux state change and navigation reset.
+        await setOnboardingComplete(user?.id);
+        dispatch(markOnboardingComplete());
     };
 
     return (
@@ -61,11 +55,11 @@ const CelebrationScreen = ({navigation}) => {
                     </View>
 
                     <Title style={styles.heading}>
-                        {'Your first contribution is ready!'}
+                        {t('Your first contribution is ready!')}
                     </Title>
 
                     <Caption color="muted" style={styles.subheading}>
-                        {'Your tagged photo will be uploaded and added to the global litter map when you reach the home screen.'}
+                        {t('Your tagged photo will be uploaded and added to the global litter map when you reach the home screen.')}
                     </Caption>
 
                     {/* Photo + tag summary */}
@@ -91,10 +85,10 @@ const CelebrationScreen = ({navigation}) => {
                         </View>
                     )}
 
-                    {/* XP award */}
+                    {/* XP note — photo hasn't uploaded yet */}
                     <View style={styles.xpBadge}>
                         <Caption color="accent" family="semiBold" style={styles.xpText}>
-                            {'+10 XP'}
+                            {t("You'll earn XP when this uploads")}
                         </Caption>
                     </View>
 
@@ -112,7 +106,7 @@ const CelebrationScreen = ({navigation}) => {
                             pressed && styles.primaryButtonPressed
                         ]}>
                         <Body family="semiBold" color="white" style={styles.primaryButtonText}>
-                            {user?.active_team ? "See your team's progress" : 'Start mapping'}
+                            {user?.active_team ? t("See your team's progress") : t('Start mapping')}
                         </Body>
                     </Pressable>
                 </View>

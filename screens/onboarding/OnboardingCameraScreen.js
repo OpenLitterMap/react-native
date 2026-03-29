@@ -3,21 +3,31 @@ import {Pressable, StyleSheet, View} from 'react-native';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
-import {useDispatch} from 'react-redux';
+import {useDispatch, useSelector} from 'react-redux';
 import CameraCapture from '../camera/CameraCapture';
+import {useTranslation} from 'react-i18next';
 import {Body, Caption, Colors, Title} from '../components';
 import StepIndicator from './components/StepIndicator';
 import {isValidGpsCoords} from '../../utils/gps';
 import {addOnboardingPhoto} from '../../reducers/photos_reducer';
+import {markOnboardingComplete} from '../../reducers/auth_reducer';
+import {setOnboardingComplete} from '../../utils/onboarding';
 
 /**
  * Onboarding camera screen — thin wrapper around CameraCapture.
  * Rejects photos without GPS. Shows fallback if GPS is missing.
  */
 const OnboardingCameraScreen = ({navigation}) => {
+    const {t} = useTranslation();
     const dispatch = useDispatch();
     const insets = useSafeAreaInsets();
+    const userId = useSelector(state => state.auth.user?.id);
     const [noGps, setNoGps] = useState(false);
+
+    const handleSkip = useCallback(async () => {
+        await setOnboardingComplete(userId);
+        dispatch(markOnboardingComplete());
+    }, [dispatch, userId]);
 
     const handlePhotoAccepted = useCallback((preview) => {
         if (!isValidGpsCoords(preview.lat, preview.lon)) {
@@ -62,22 +72,27 @@ const OnboardingCameraScreen = ({navigation}) => {
                             <Icon name="location-outline" size={56} color={Colors.warn} />
                         </View>
                         <Title style={styles.title}>
-                            {'Photo captured without GPS'}
+                            {t('Photo captured without GPS')}
                         </Title>
                         <Body color="muted" style={styles.bodyText}>
-                            {'Make sure location services are enabled for OpenLitterMap, then try again.'}
+                            {t('Make sure location services are enabled for OpenLitterMap, then try again.')}
                         </Body>
                         <Pressable
                             style={({pressed}) => [styles.buttonStyle, pressed && styles.buttonPressed]}
                             onPress={handleRetryCamera}>
                             <Icon name="camera-outline" size={20} color={Colors.white} />
                             <Body color="white" family="semiBold" style={styles.buttonText}>
-                                {'Try again'}
+                                {t('Try again')}
                             </Body>
                         </Pressable>
                         <Pressable onPress={switchToGallery} style={styles.secondaryLink}>
                             <Caption color="accent" family="medium">
-                                {'Choose from photos instead'}
+                                {t('Choose from photos instead')}
+                            </Caption>
+                        </Pressable>
+                        <Pressable onPress={handleSkip} style={styles.skipLink}>
+                            <Caption color="muted">
+                                {t('Skip for now')}
                             </Caption>
                         </Pressable>
                     </View>
@@ -96,7 +111,7 @@ const OnboardingCameraScreen = ({navigation}) => {
         <CameraCapture
             onPhotoAccepted={handlePhotoAccepted}
             onCancel={handleCancel}
-            hintText="Point your camera at some litter and tap the button"
+            hintText={t('Point your camera at some litter and tap the button')}
             topOverlay={topOverlay}
         />
     );
@@ -139,7 +154,8 @@ const styles = StyleSheet.create({
     },
     buttonPressed: {backgroundColor: '#229954'},
     buttonText: {fontSize: 16},
-    secondaryLink: {marginTop: 20, paddingVertical: 12, paddingHorizontal: 24}
+    secondaryLink: {marginTop: 20, paddingVertical: 12, paddingHorizontal: 24},
+    skipLink: {marginTop: 8, paddingVertical: 12, paddingHorizontal: 24}
 });
 
 export default OnboardingCameraScreen;

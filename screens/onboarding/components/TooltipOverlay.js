@@ -1,5 +1,6 @@
 import React from 'react';
 import {Pressable, StyleSheet, View} from 'react-native';
+import {useTranslation} from 'react-i18next';
 import {Body, Caption, Colors} from '../../components';
 
 /**
@@ -16,6 +17,7 @@ import {Body, Caption, Colors} from '../../components';
  * @param {boolean} [props.visible] - Whether to show the tooltip
  */
 const TooltipOverlay = ({message, hint, position = 'bottom', onDismiss, visible}) => {
+    const {t} = useTranslation();
     if (!visible) return null;
 
     return (
@@ -38,7 +40,7 @@ const TooltipOverlay = ({message, hint, position = 'bottom', onDismiss, visible}
                         </Caption>
                     )}
                     <Caption color="white" style={styles.dismissHint}>
-                        {'Tap to dismiss'}
+                        {t('Tap to dismiss')}
                     </Caption>
                 </View>
                 <View

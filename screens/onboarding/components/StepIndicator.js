@@ -1,6 +1,7 @@
 import React from 'react';
 import {StyleSheet, View} from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import {useTranslation} from 'react-i18next';
 import {Caption, Colors} from '../../components';
 
 const STEPS = [
@@ -14,6 +15,7 @@ const STEPS = [
  * Compact layout — dots + labels grouped tightly in the center.
  */
 const StepIndicator = ({currentStep, completedSteps = []}) => {
+    const {t} = useTranslation();
     return (
         <View style={styles.container}>
             <View style={styles.row}>
@@ -54,7 +56,7 @@ const StepIndicator = ({currentStep, completedSteps = []}) => {
                                 color={isComplete ? 'accent' : isActive ? 'text' : 'muted'}
                                 family={isActive ? 'semiBold' : 'regular'}
                                 style={styles.label}>
-                                {step.label}
+                                {t(step.label)}
                             </Caption>
                         </View>
                     );

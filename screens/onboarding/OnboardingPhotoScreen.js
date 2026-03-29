@@ -1,5 +1,6 @@
 import React, {useCallback, useState} from 'react';
 import {
+    ActivityIndicator,
     Pressable,
     StyleSheet,
     View
@@ -8,11 +9,14 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {launchImageLibrary} from 'react-native-image-picker';
-import {useDispatch} from 'react-redux';
+import {useDispatch, useSelector} from 'react-redux';
+import {useTranslation} from 'react-i18next';
 import {Body, Caption, Colors, Title} from '../components';
 import StepIndicator from './components/StepIndicator';
 import {addOnboardingPhoto} from '../../reducers/photos_reducer';
+import {markOnboardingComplete} from '../../reducers/auth_reducer';
 import {readGpsFromExif} from '../../utils/readGpsFromExif';
+import {setOnboardingComplete} from '../../utils/onboarding';
 
 /**
  * Gallery photo acquisition screen.
@@ -23,9 +27,17 @@ import {readGpsFromExif} from '../../utils/readGpsFromExif';
  * HomeScreen upload flow when onboarding completes.
  */
 const OnboardingPhotoScreen = ({navigation}) => {
+    const {t} = useTranslation();
     const dispatch = useDispatch();
+    const userId = useSelector(state => state.auth.user?.id);
     const [noGps, setNoGps] = useState(false);
+    const [readingExif, setReadingExif] = useState(false);
     const [error, setError] = useState(null);
+
+    const handleSkip = useCallback(async () => {
+        await setOnboardingComplete(userId);
+        dispatch(markOnboardingComplete());
+    }, [dispatch, userId]);
 
     const openPicker = useCallback(async () => {
         setError(null);
@@ -53,7 +65,9 @@ const OnboardingPhotoScreen = ({navigation}) => {
             }
 
             // react-native-image-picker doesn't return GPS — read from EXIF
+            setReadingExif(true);
             const gps = await readGpsFromExif(asset.uri);
+            setReadingExif(false);
 
             if (!gps) {
                 setNoGps(true);
@@ -74,6 +88,7 @@ const OnboardingPhotoScreen = ({navigation}) => {
             navigation.replace('ONBOARDING_TAG');
         } catch (err) {
             if (__DEV__) console.error('[Photo] picker error:', err);
+            setReadingExif(false);
             setError('Something went wrong. Please try again.');
         }
     }, [dispatch, navigation]);
@@ -81,6 +96,26 @@ const OnboardingPhotoScreen = ({navigation}) => {
     const switchToCamera = () => {
         navigation.replace('ONBOARDING_PERMISSION', {path: 'camera'});
     };
+
+    // Reading EXIF data — show spinner
+    if (readingExif) {
+        return (
+            <LinearGradient
+                colors={['#f0faf4', '#e8f5ec', '#dcffeb']}
+                locations={[0, 0.5, 1]}
+                style={styles.gradient}>
+                <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
+                    <StepIndicator currentStep={1} />
+                    <View style={styles.body}>
+                        <ActivityIndicator size="large" color={Colors.accent} />
+                        <Caption color="muted" style={styles.loadingText}>
+                            {t('Reading photo location...')}
+                        </Caption>
+                    </View>
+                </SafeAreaView>
+            </LinearGradient>
+        );
+    }
 
     // No GPS fallback
     if (noGps) {
@@ -96,22 +131,27 @@ const OnboardingPhotoScreen = ({navigation}) => {
                             <Icon name="location-outline" size={56} color={Colors.warn} />
                         </View>
                         <Title style={styles.title}>
-                            {"This photo doesn't have location data"}
+                            {t("This photo doesn't have location data")}
                         </Title>
                         <Body color="muted" style={styles.bodyText}>
-                            {"Photos taken with your phone's camera include GPS automatically. Take a fresh photo or select a different one."}
+                            {t("Photos taken with your phone's camera include GPS automatically. Take a fresh photo or select a different one.")}
                         </Body>
                         <Pressable
                             style={({pressed}) => [styles.buttonStyle, pressed && styles.buttonPressed]}
                             onPress={switchToCamera}>
                             <Icon name="camera-outline" size={20} color={Colors.white} />
                             <Body color="white" family="semiBold" style={styles.buttonText}>
-                                {'Open camera'}
+                                {t('Open camera')}
                             </Body>
                         </Pressable>
                         <Pressable onPress={openPicker} style={styles.secondaryLink}>
                             <Caption color="accent" family="medium">
-                                {'Select another photo'}
+                                {t('Select another photo')}
+                            </Caption>
+                        </Pressable>
+                        <Pressable onPress={handleSkip} style={styles.skipLink}>
+                            <Caption color="muted">
+                                {t('Skip for now')}
                             </Caption>
                         </Pressable>
                     </View>
@@ -138,7 +178,7 @@ const OnboardingPhotoScreen = ({navigation}) => {
                             style={({pressed}) => [styles.buttonStyle, pressed && styles.buttonPressed]}
                             onPress={openPicker}>
                             <Body color="white" family="semiBold" style={styles.buttonText}>
-                                {'Try again'}
+                                {t('Try again')}
                             </Body>
                         </Pressable>
                     </View>
@@ -160,17 +200,17 @@ const OnboardingPhotoScreen = ({navigation}) => {
                         <Icon name="images-outline" size={56} color={Colors.accent} />
                     </View>
                     <Title style={styles.title}>
-                        {'Select a photo of litter'}
+                        {t('Select a photo of litter')}
                     </Title>
                     <Body color="muted" style={styles.bodyText}>
-                        {'Choose a photo from your library. Photos with GPS location data work best.'}
+                        {t('Choose a photo from your library. Photos with GPS location data work best.')}
                     </Body>
                     <Pressable
                         style={({pressed}) => [styles.buttonStyle, pressed && styles.buttonPressed]}
                         onPress={openPicker}>
                         <Icon name="images-outline" size={20} color={Colors.white} />
                         <Body color="white" family="semiBold" style={styles.buttonText}>
-                            {'Choose from library'}
+                            {t('Choose from library')}
                         </Body>
                     </Pressable>
                 </View>
@@ -237,6 +277,15 @@ const styles = StyleSheet.create({
         marginTop: 20,
         paddingVertical: 12,
         paddingHorizontal: 24
+    },
+    skipLink: {
+        marginTop: 8,
+        paddingVertical: 12,
+        paddingHorizontal: 24
+    },
+    loadingText: {
+        marginTop: 12,
+        fontSize: 14
     }
 });
 

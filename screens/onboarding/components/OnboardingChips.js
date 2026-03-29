@@ -1,5 +1,6 @@
 import React, {useMemo} from 'react';
 import {Pressable, ScrollView, StyleSheet, View} from 'react-native';
+import {useTranslation} from 'react-i18next';
 import {Body, Caption, Colors} from '../../components';
 
 /**
@@ -45,6 +46,7 @@ const resolveChipEntries = (objectEntries) => {
  * @param {Array} props.selectedCloIds - Array of already-selected cloIds (to highlight)
  */
 const OnboardingChips = ({objectEntries, onSelect, selectedCloIds = []}) => {
+    const {t} = useTranslation();
     const chips = useMemo(() => resolveChipEntries(objectEntries), [objectEntries]);
 
     if (chips.length === 0) return null;
@@ -52,7 +54,7 @@ const OnboardingChips = ({objectEntries, onSelect, selectedCloIds = []}) => {
     return (
         <View style={styles.container}>
             <Caption color="muted" style={styles.hint}>
-                {'What can you see? Tap a tag or search below'}
+                {t('What can you see? Tap a tag or search below')}
             </Caption>
             <ScrollView
                 horizontal

@@ -1,5 +1,6 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {
+    ActivityIndicator,
     AppState,
     Image,
     Linking,
@@ -11,6 +12,7 @@ import {
 import {SafeAreaView} from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
+import {useTranslation} from 'react-i18next';
 import {Body, Caption, Colors, Title} from '../components';
 import StepIndicator from './components/StepIndicator';
 import {
@@ -34,6 +36,7 @@ import {
  * Both paths include cross-path fallback.
  */
 const OnboardingPermissionScreen = ({navigation, route}) => {
+    const {t} = useTranslation();
     const path = route.params?.path; // 'camera' | 'gallery'
     const isCamera = path === 'camera';
     const isMounted = useRef(true);
@@ -42,7 +45,7 @@ const OnboardingPermissionScreen = ({navigation, route}) => {
     // 'location_denied' = location denied, can't use camera
     // 'camera_denied' = camera denied (location was OK)
     // 'blocked' = one or both permissions blocked (need Settings)
-    const [screenState, setScreenState] = useState('request');
+    const [screenState, setScreenState] = useState('checking');
 
     useEffect(() => {
         (async () => {
@@ -51,18 +54,23 @@ const OnboardingPermissionScreen = ({navigation, route}) => {
                 if (!isMounted.current) return;
                 if (location === 'granted' && camera === 'granted') {
                     navigation.replace('ONBOARDING_CAMERA', {path});
+                    return;
                 } else if (location === 'blocked' || camera === 'blocked') {
                     setScreenState('blocked');
+                    return;
                 }
             } else {
                 const status = await checkCameraRollPermission();
                 if (!isMounted.current) return;
                 if (status === 'granted' || status === 'limited') {
                     navigation.replace('ONBOARDING_PHOTO', {path});
+                    return;
                 } else if (status === 'blocked') {
                     setScreenState('blocked');
+                    return;
                 }
             }
+            setScreenState('request');
         })();
 
         const handleAppState = (nextState) => {
@@ -117,8 +125,8 @@ const OnboardingPermissionScreen = ({navigation, route}) => {
             if (!isMounted.current) return;
             if (status === 'granted' || status === 'limited') {
                 navigation.replace('ONBOARDING_PHOTO', {path});
-            } else if (status === 'blocked') {
-                setScreenState('blocked');
+            } else {
+                setScreenState(status === 'blocked' ? 'blocked' : 'gallery_denied');
             }
         }
     };
@@ -134,6 +142,23 @@ const OnboardingPermissionScreen = ({navigation, route}) => {
         navigation.replace('ONBOARDING_PERMISSION', {path: otherPath});
     };
 
+    // --- Loading while checking permissions ---
+    if (screenState === 'checking') {
+        return (
+            <LinearGradient
+                colors={['#f0faf4', '#e8f5ec', '#dcffeb']}
+                locations={[0, 0.5, 1]}
+                style={styles.gradient}>
+                <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+                    <StepIndicator currentStep={1} completedSteps={[]} />
+                    <View style={styles.body}>
+                        <ActivityIndicator size="large" color={Colors.accent} />
+                    </View>
+                </SafeAreaView>
+            </LinearGradient>
+        );
+    }
+
     // --- Denied / Blocked states ---
     if (screenState === 'blocked') {
         return (
@@ -148,24 +173,24 @@ const OnboardingPermissionScreen = ({navigation, route}) => {
                             <Icon name="lock-closed-outline" size={64} color={Colors.accent} />
                         </View>
                         <Title style={styles.title}>
-                            {isCamera ? 'Camera & Location Access Required' : 'Gallery Access Required'}
+                            {isCamera ? t('Camera & Location Access Required') : t('Gallery Access Required')}
                         </Title>
                         <Body color="muted" style={styles.bodyText}>
                             {isCamera
-                                ? 'Camera and location access are needed to take GPS-tagged photos of litter. You can enable them in Settings.'
-                                : 'Photo access is needed to upload litter photos with location data. You can enable it in Settings.'}
+                                ? t('Camera and location access are needed to take GPS-tagged photos of litter. You can enable them in Settings.')
+                                : t('Photo access is needed to upload litter photos with location data. You can enable it in Settings.')}
                         </Body>
                         <Pressable
                             style={({pressed}) => [styles.buttonStyle, pressed && styles.buttonPressed]}
                             onPress={openSettings}>
                             <Icon name="settings-outline" size={20} color={Colors.white} />
                             <Body color="white" family="semiBold" style={styles.buttonText}>
-                                {'Open Settings'}
+                                {t('Open Settings')}
                             </Body>
                         </Pressable>
                         <Pressable onPress={switchPath} style={styles.secondaryLink}>
                             <Caption color="accent" family="medium">
-                                {isCamera ? 'Choose from photos instead' : 'Take a photo instead'}
+                                {isCamera ? t('Choose from photos instead') : t('Take a photo instead')}
                             </Caption>
                         </Pressable>
                     </View>
@@ -187,21 +212,21 @@ const OnboardingPermissionScreen = ({navigation, route}) => {
                             <Icon name="location-outline" size={64} color={Colors.warn} />
                         </View>
                         <Title style={styles.title}>
-                            {'Location Access Needed'}
+                            {t('Location Access Needed')}
                         </Title>
                         <Body color="muted" style={styles.bodyText}>
-                            {"Without location access, your photos won't have map coordinates. GPS data is what makes your contribution scientifically valuable."}
+                            {t("Without location access, your photos won't have map coordinates. GPS data is what makes your contribution scientifically valuable.")}
                         </Body>
                         <Pressable
                             style={({pressed}) => [styles.buttonStyle, pressed && styles.buttonPressed]}
                             onPress={handleRequestPermission}>
                             <Body color="white" family="semiBold" style={styles.buttonText}>
-                                {'Try again'}
+                                {t('Try again')}
                             </Body>
                         </Pressable>
                         <Pressable onPress={switchPath} style={styles.secondaryLink}>
                             <Caption color="accent" family="medium">
-                                {'Choose from photos instead'}
+                                {t('Choose from photos instead')}
                             </Caption>
                         </Pressable>
                     </View>
@@ -223,21 +248,57 @@ const OnboardingPermissionScreen = ({navigation, route}) => {
                             <Icon name="camera-outline" size={64} color={Colors.warn} />
                         </View>
                         <Title style={styles.title}>
-                            {'Camera Access Needed'}
+                            {t('Camera Access Needed')}
                         </Title>
                         <Body color="muted" style={styles.bodyText}>
-                            {'Camera access is needed to take photos of litter. You can try again or choose from your existing photos.'}
+                            {t('Camera access is needed to take photos of litter. You can try again or choose from your existing photos.')}
                         </Body>
                         <Pressable
                             style={({pressed}) => [styles.buttonStyle, pressed && styles.buttonPressed]}
                             onPress={handleRequestPermission}>
                             <Body color="white" family="semiBold" style={styles.buttonText}>
-                                {'Try again'}
+                                {t('Try again')}
                             </Body>
                         </Pressable>
                         <Pressable onPress={switchPath} style={styles.secondaryLink}>
                             <Caption color="accent" family="medium">
-                                {'Choose from photos instead'}
+                                {t('Choose from photos instead')}
+                            </Caption>
+                        </Pressable>
+                    </View>
+                </SafeAreaView>
+            </LinearGradient>
+        );
+    }
+
+    if (screenState === 'gallery_denied') {
+        return (
+            <LinearGradient
+                colors={['#f0faf4', '#e8f5ec', '#dcffeb']}
+                locations={[0, 0.5, 1]}
+                style={styles.gradient}>
+                <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+                    <StepIndicator currentStep={1} completedSteps={[]} />
+                    <View style={styles.body}>
+                        <View style={styles.iconCircle}>
+                            <Icon name="images-outline" size={64} color={Colors.warn} />
+                        </View>
+                        <Title style={styles.title}>
+                            {t('Gallery Access Needed')}
+                        </Title>
+                        <Body color="muted" style={styles.bodyText}>
+                            {t('Photo access is needed to select litter photos. You can try again or take a new photo instead.')}
+                        </Body>
+                        <Pressable
+                            style={({pressed}) => [styles.buttonStyle, pressed && styles.buttonPressed]}
+                            onPress={handleRequestPermission}>
+                            <Body color="white" family="semiBold" style={styles.buttonText}>
+                                {t('Try again')}
+                            </Body>
+                        </Pressable>
+                        <Pressable onPress={switchPath} style={styles.secondaryLink}>
+                            <Caption color="accent" family="medium">
+                                {t('Take a photo instead')}
                             </Caption>
                         </Pressable>
                     </View>
@@ -265,13 +326,13 @@ const OnboardingPermissionScreen = ({navigation, route}) => {
                     </View>
                     <Title style={styles.title}>
                         {isCamera
-                            ? 'Camera & Location Access'
-                            : 'Gallery Access'}
+                            ? t('Camera & Location Access')
+                            : t('Gallery Access')}
                     </Title>
                     <Body color="muted" style={styles.bodyText}>
                         {isCamera
-                            ? 'Your photo will include GPS coordinates \u2014 this is what makes your data scientifically valuable. Only photos you take and choose to submit will be uploaded.'
-                            : 'Your photos contain GPS data that tells us exactly where litter was found. Only photos you select will be uploaded \u2014 we never access your library without you choosing.'}
+                            ? t('Your photo will include GPS coordinates \u2014 this is what makes your data scientifically valuable. Only photos you take and choose to submit will be uploaded.')
+                            : t('Your photos contain GPS data that tells us exactly where litter was found. Only photos you select will be uploaded \u2014 we never access your library without you choosing.')}
                     </Body>
                     <Pressable
                         style={({pressed}) => [styles.buttonStyle, pressed && styles.buttonPressed]}
@@ -282,7 +343,7 @@ const OnboardingPermissionScreen = ({navigation, route}) => {
                             color={Colors.white}
                         />
                         <Body color="white" family="semiBold" style={styles.buttonText}>
-                            {isCamera ? 'Allow camera & location' : 'Allow access'}
+                            {isCamera ? t('Allow camera & location') : t('Allow access')}
                         </Body>
                     </Pressable>
                     <Pressable onPress={switchPath} style={styles.secondaryLink}>

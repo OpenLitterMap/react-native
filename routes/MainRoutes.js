@@ -3,7 +3,7 @@ import {ActivityIndicator, StyleSheet, View} from 'react-native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {useSelector, useDispatch} from 'react-redux';
 import {checkValidToken, markOnboardingComplete} from '../reducers/auth_reducer';
-import {isOnboardingComplete} from '../utils/onboarding';
+import {isOnboardingComplete, setOnboardingComplete as setOnboardingCompleteStorage} from '../utils/onboarding';
 
 import AuthStack from './AuthStack';
 import OnboardingStack from './OnboardingStack';
@@ -26,16 +26,26 @@ const Stack = createNativeStackNavigator();
 const MainRoutes = () => {
     const dispatch = useDispatch();
     const [isValidating, setIsValidating] = useState(true);
+    const [isCheckingOnboarding, setIsCheckingOnboarding] = useState(true);
     const token = useSelector(state => state.auth.token);
     const user = useSelector(state => state.auth.user);
     const onboardingComplete = useSelector(state => state.auth.onboardingComplete);
 
-    const checkOnboarding = useCallback(async (userId) => {
-        if (!userId) return;
+    const checkOnboarding = useCallback(async (userId, userTotalImages) => {
+        if (!userId) {
+            setIsCheckingOnboarding(false);
+            return;
+        }
         const complete = await isOnboardingComplete(userId);
         if (complete) {
             dispatch(markOnboardingComplete());
+        } else if (userTotalImages > 0) {
+            // Existing user who signed up before onboarding was added —
+            // they've already uploaded, so skip onboarding automatically.
+            await setOnboardingCompleteStorage(userId);
+            dispatch(markOnboardingComplete());
         }
+        setIsCheckingOnboarding(false);
     }, [dispatch]);
 
     // Validate persisted token on mount
@@ -51,11 +61,15 @@ const MainRoutes = () => {
     // Re-check onboarding when user changes (login, logout, switch account)
     useEffect(() => {
         if (user?.id) {
-            checkOnboarding(user.id);
+            setIsCheckingOnboarding(true);
+            checkOnboarding(user.id, user.totalImages ?? 0);
+        } else if (!token) {
+            // No user (logged out) — no onboarding check needed
+            setIsCheckingOnboarding(false);
         }
-    }, [user?.id, checkOnboarding]);
+    }, [user?.id, token, checkOnboarding]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    if (isValidating) {
+    if (isValidating || (token && isCheckingOnboarding)) {
         return (
             <View style={styles.centered}>
                 <ActivityIndicator />

@@ -3,14 +3,27 @@ import {Pressable, StatusBar, StyleSheet, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
-import {Body, Colors, Title} from '../components';
+import {useDispatch, useSelector} from 'react-redux';
+import {useTranslation} from 'react-i18next';
+import {Body, Caption, Colors, Title} from '../components';
 import StepIndicator from './components/StepIndicator';
+import {markOnboardingComplete} from '../../reducers/auth_reducer';
+import {setOnboardingComplete} from '../../utils/onboarding';
 
 /**
  * Choose your path: "Take a photo now" or "Choose from photos."
  * Both buttons are equal weight. Tapping either triggers the relevant permission flow.
  */
 const ChoosePathScreen = ({navigation}) => {
+    const {t} = useTranslation();
+    const dispatch = useDispatch();
+    const userId = useSelector(state => state.auth.user?.id);
+
+    const handleSkip = async () => {
+        await setOnboardingComplete(userId);
+        dispatch(markOnboardingComplete());
+    };
+
     return (
         <>
             <StatusBar translucent barStyle="dark-content" backgroundColor="transparent" />
@@ -23,7 +36,7 @@ const ChoosePathScreen = ({navigation}) => {
 
                     <View style={styles.content}>
                         <Title style={styles.heading}>
-                            {'How do you want to start?'}
+                            {t('How do you want to start?')}
                         </Title>
 
                         <View style={styles.buttons}>
@@ -37,7 +50,7 @@ const ChoosePathScreen = ({navigation}) => {
                                     <Icon name="camera-outline" size={32} color={Colors.accent} />
                                 </View>
                                 <Body family="semiBold" style={styles.pathLabel}>
-                                    {'Take a photo now'}
+                                    {t('Take a photo now')}
                                 </Body>
                             </Pressable>
 
@@ -51,10 +64,16 @@ const ChoosePathScreen = ({navigation}) => {
                                     <Icon name="images-outline" size={32} color={Colors.accent} />
                                 </View>
                                 <Body family="semiBold" style={styles.pathLabel}>
-                                    {'Choose from photos'}
+                                    {t('Choose from photos')}
                                 </Body>
                             </Pressable>
                         </View>
+
+                        <Pressable onPress={handleSkip} style={styles.skipLink}>
+                            <Caption color="muted">
+                                {t('Skip for now')}
+                            </Caption>
+                        </Pressable>
                     </View>
                 </SafeAreaView>
             </LinearGradient>
@@ -109,6 +128,12 @@ const styles = StyleSheet.create({
     pathLabel: {
         fontSize: 17,
         flex: 1
+    },
+    skipLink: {
+        marginTop: 32,
+        alignSelf: 'center',
+        paddingVertical: 12,
+        paddingHorizontal: 24
     }
 });
 

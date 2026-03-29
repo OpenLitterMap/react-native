@@ -1,13 +1,16 @@
-import React, {useCallback, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {
+    AppState,
     Image,
     Pressable,
     StyleSheet,
     View
 } from 'react-native';
+import {useIsFocused} from '@react-navigation/native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {Camera, useCameraDevice} from 'react-native-vision-camera';
+import {useTranslation} from 'react-i18next';
 import {Body, Caption, Colors} from '../components';
 import {readGpsFromExif} from '../../utils/readGpsFromExif';
 
@@ -23,16 +26,33 @@ import {readGpsFromExif} from '../../utils/readGpsFromExif';
  * @param {React.ReactNode} [props.topOverlay] - Optional content rendered at the top of the viewfinder (e.g. StepIndicator)
  */
 const CameraCapture = ({onPhotoAccepted, onCancel, hintText, topOverlay}) => {
+    const {t} = useTranslation();
     const insets = useSafeAreaInsets();
+    const isFocused = useIsFocused();
     const cameraRef = useRef(null);
     const device = useCameraDevice('back');
 
     const [preview, setPreview] = useState(null); // {uri, lat, lon, width, height}
     const [capturing, setCapturing] = useState(false);
+    const [captureError, setCaptureError] = useState(false);
+    const [appActive, setAppActive] = useState(true);
+    const usedRef = useRef(false); // prevents double-tap on "Use this photo"
+
+    // Track app foreground/background state
+    useEffect(() => {
+        const sub = AppState.addEventListener('change', state => {
+            setAppActive(state === 'active');
+        });
+        return () => sub.remove();
+    }, []);
+
+    // Deactivate camera when app is backgrounded, screen loses focus, or previewing
+    const cameraActive = isFocused && appActive && !preview;
 
     const takePhoto = useCallback(async () => {
         if (!cameraRef.current || capturing) return;
         setCapturing(true);
+        setCaptureError(false);
         try {
             const photo = await cameraRef.current.takePhoto({
                 enableShutterSound: true
@@ -70,17 +90,20 @@ const CameraCapture = ({onPhotoAccepted, onCancel, hintText, topOverlay}) => {
             });
         } catch (err) {
             if (__DEV__) console.error('[Camera] takePhoto error:', err);
+            setCaptureError(true);
         }
         setCapturing(false);
     }, [capturing]);
 
     const handleUsePhoto = useCallback(() => {
-        if (!preview || !onPhotoAccepted) return;
+        if (!preview || !onPhotoAccepted || usedRef.current) return;
+        usedRef.current = true;
         onPhotoAccepted(preview);
     }, [preview, onPhotoAccepted]);
 
     const handleRetake = useCallback(() => {
         setPreview(null);
+        usedRef.current = false;
     }, []);
 
     // Preview state — show captured photo with Use/Retake buttons
@@ -94,7 +117,7 @@ const CameraCapture = ({onPhotoAccepted, onCancel, hintText, topOverlay}) => {
                         <Pressable onPress={handleRetake} style={styles.retakeButton}>
                             <Icon name="refresh-outline" size={22} color={Colors.white} />
                             <Body color="white" family="medium" style={styles.actionText}>
-                                {'Retake'}
+                                {t('Retake')}
                             </Body>
                         </Pressable>
 
@@ -106,7 +129,7 @@ const CameraCapture = ({onPhotoAccepted, onCancel, hintText, topOverlay}) => {
                             ]}>
                             <Icon name="checkmark-circle" size={22} color={Colors.white} />
                             <Body color="white" family="semiBold" style={styles.actionText}>
-                                {'Use this photo'}
+                                {t('Use this photo')}
                             </Body>
                         </Pressable>
                     </View>
@@ -120,7 +143,7 @@ const CameraCapture = ({onPhotoAccepted, onCancel, hintText, topOverlay}) => {
         return (
             <View style={styles.container}>
                 <View style={styles.centered}>
-                    <Body color="white">{'Camera not available'}</Body>
+                    <Body color="white">{t('Camera not available')}</Body>
                 </View>
             </View>
         );
@@ -133,7 +156,7 @@ const CameraCapture = ({onPhotoAccepted, onCancel, hintText, topOverlay}) => {
                 ref={cameraRef}
                 style={StyleSheet.absoluteFill}
                 device={device}
-                isActive={true}
+                isActive={cameraActive}
                 photo={true}
                 enableLocation={true}
             />
@@ -141,13 +164,19 @@ const CameraCapture = ({onPhotoAccepted, onCancel, hintText, topOverlay}) => {
             <View style={styles.cameraOverlay}>
                 {topOverlay}
 
-                {hintText && (
+                {captureError ? (
+                    <View style={styles.cameraHint}>
+                        <Caption color="white" family="medium" style={styles.errorHint}>
+                            {t('Photo capture failed. Please try again.')}
+                        </Caption>
+                    </View>
+                ) : hintText ? (
                     <View style={styles.cameraHint}>
                         <Caption color="white" family="medium" style={styles.hintText}>
                             {hintText}
                         </Caption>
                     </View>
-                )}
+                ) : null}
 
                 <View style={[styles.captureRow, {paddingBottom: insets.bottom + 16}]}>
                     <Pressable onPress={onCancel} style={styles.cancelButton}>
@@ -188,6 +217,14 @@ const styles = StyleSheet.create({
     },
     hintText: {
         backgroundColor: 'rgba(0,0,0,0.5)',
+        borderRadius: 20,
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        overflow: 'hidden',
+        textAlign: 'center'
+    },
+    errorHint: {
+        backgroundColor: 'rgba(200,50,50,0.8)',
         borderRadius: 20,
         paddingHorizontal: 16,
         paddingVertical: 8,

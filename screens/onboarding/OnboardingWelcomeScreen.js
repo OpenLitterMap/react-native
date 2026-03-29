@@ -2,6 +2,7 @@ import React from 'react';
 import {Image, Pressable, StatusBar, StyleSheet, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
+import {useTranslation} from 'react-i18next';
 import {Body, Caption, Colors, Title} from '../components';
 import StepIndicator from './components/StepIndicator';
 
@@ -11,6 +12,8 @@ import StepIndicator from './components/StepIndicator';
  * states the 3-step promise, and has one CTA: "Get started."
  */
 const OnboardingWelcomeScreen = ({navigation}) => {
+    const {t} = useTranslation();
+
     return (
         <>
             <StatusBar translucent barStyle="dark-content" backgroundColor="transparent" />
@@ -23,11 +26,11 @@ const OnboardingWelcomeScreen = ({navigation}) => {
 
                     <View style={styles.content}>
                         <Title style={styles.heading}>
-                            {'Welcome to OpenLitterMap'}
+                            {t('Welcome to OpenLitterMap')}
                         </Title>
 
                         <Caption color="muted" style={styles.subheading}>
-                            {'Take a photo. Tag it. Put it on the map.'}
+                            {t('Take a photo. Tag it. Put it on the map.')}
                         </Caption>
 
                         <View style={styles.visualContainer}>
@@ -38,7 +41,7 @@ const OnboardingWelcomeScreen = ({navigation}) => {
                         </View>
 
                         <Caption color="muted" style={styles.description}>
-                            {'One photo of litter becomes real data that scientists and cities use to clean up our planet.'}
+                            {t('One photo of litter becomes real data that scientists and cities use to clean up our planet.')}
                         </Caption>
                     </View>
 
@@ -53,7 +56,7 @@ const OnboardingWelcomeScreen = ({navigation}) => {
                                 family="semiBold"
                                 color="white"
                                 style={styles.primaryButtonText}>
-                                {'Get started'}
+                                {t('Get started')}
                             </Body>
                         </Pressable>
                     </View>
