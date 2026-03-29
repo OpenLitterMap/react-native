@@ -28,9 +28,11 @@ const TooltipOverlay = ({message, hint, position = 'bottom', onDismiss, visible}
                 onPress={onDismiss}
                 style={[
                     styles.tooltip,
-                    position === 'top' ? styles.tooltipTop
-                        : position === 'mid' ? styles.tooltipMid
-                        : styles.tooltipBottom
+                    position === 'top'
+                        ? styles.tooltipTop
+                        : position === 'mid'
+                            ? styles.tooltipMid
+                            : styles.tooltipBottom
                 ]}>
                 <View style={styles.tooltipBubble}>
                     <Body color="white" family="medium" style={styles.tooltipText}>

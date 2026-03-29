@@ -1,6 +1,6 @@
 {
   "name": "openlittermap",
-  "version": "7.4.4",
+  "version": "7.5.0",
   "private": true,
   "scripts": {
     "android": "react-native run-android",

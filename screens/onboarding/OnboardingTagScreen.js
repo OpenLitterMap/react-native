@@ -1,6 +1,7 @@
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {
     ActivityIndicator,
+    Alert,
     Image,
     Keyboard,
     KeyboardAvoidingView,
@@ -24,6 +25,8 @@ import TagDetailSheet from '../addTag/components/TagDetailSheet';
 import {makeTagKey, parseTagKey, resolveTagEntry} from '../addTag/components/tagUtils';
 import useTagDraft from '../addTag/hooks/useTagDraft';
 import {commitDraftToPhoto, deleteImage} from '../../reducers/photos_reducer';
+import {markOnboardingComplete} from '../../reducers/auth_reducer';
+import {setOnboardingComplete} from '../../utils/onboarding';
 import {uploadImage, postTagsToPhoto} from '../../reducers/upload_flow_reducer';
 import {fetchAllTags} from '../../reducers/tags_reducer';
 import buildTagsPayload from '../../utils/buildTagsPayload';
@@ -204,8 +207,7 @@ const OnboardingTagScreen = ({navigation}) => {
         [draft]
     );
 
-    const handleDone = useCallback(async () => {
-        // Commit any pending custom tag
+    const commitTags = useCallback(() => {
         let justAddedCustomTag = null;
         if (pendingCustomTag?.trim()) {
             justAddedCustomTag = pendingCustomTag.trim();
@@ -219,16 +221,31 @@ const OnboardingTagScreen = ({navigation}) => {
             ? [...customs, justAddedCustomTag]
             : customs;
 
-        if (tags.length === 0 && mergedCustoms.length === 0) return;
+        if (tags.length === 0 && mergedCustoms.length === 0) return null;
 
         Keyboard.dismiss();
 
-        // Commit tags to Redux first (persists across crashes)
         dispatch(commitDraftToPhoto({
             imageIndex: swiperIndex,
             tags,
             customTags: mergedCustoms
         }));
+
+        return {tags, customTags: mergedCustoms};
+    }, [pendingCustomTag, draft, dispatch, swiperIndex]);
+
+    const handleUploadLater = useCallback(async () => {
+        const committed = commitTags();
+        if (!committed) return;
+        // Mark onboarding complete and go to HomeScreen — photo stays in queue
+        await setOnboardingComplete(user?.id);
+        dispatch(markOnboardingComplete());
+    }, [commitTags, dispatch, user]);
+
+    const handleDone = useCallback(async () => {
+        const committed = commitTags();
+        if (!committed) return;
+        const {tags, customTags: mergedCustoms} = committed;
 
         // Build the photo object with committed tags for upload
         const img = {
@@ -295,7 +312,7 @@ const OnboardingTagScreen = ({navigation}) => {
             lon: photo.lon
         });
     }, [
-        pendingCustomTag, draft, dispatch, swiperIndex, navigation,
+        commitTags, dispatch, navigation,
         photo, user, deviceModel, t
     ]);
 
@@ -427,7 +444,16 @@ const OnboardingTagScreen = ({navigation}) => {
 
                         {/* Done button */}
                         <Pressable
-                            onPress={handleDone}
+                            onPress={() => {
+                                Alert.alert(
+                                    t('Upload now?'),
+                                    t('Your data point, location & photo will appear on the map immediately.'),
+                                    [
+                                        {text: t('Upload later'), style: 'cancel', onPress: handleUploadLater},
+                                        {text: t('Upload now'), onPress: handleDone}
+                                    ]
+                                );
+                            }}
                             disabled={!hasTags || uploadState !== 'idle'}
                             style={({pressed}) => [
                                 styles.doneButton,

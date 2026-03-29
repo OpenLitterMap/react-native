@@ -17,6 +17,7 @@ import { loadPhotoForEditing } from '../../../reducers/photos_reducer';
 import ActionButton from '../../home/homeComponents/ActionButton';
 import { useTranslation } from 'react-i18next';
 import { WEB_URL } from '../../../utils/config';
+import api from '../../../utils/apiClient';
 import Clipboard from '@react-native-clipboard/clipboard';
 
 import UploadCard from './myUploadsComponents/UploadCard';
@@ -189,6 +190,24 @@ const MyUploads = ({ navigation }) => {
         [dispatch, t]
     );
 
+    const token = useSelector(state => state.auth.token);
+    const handleToggleVisibility = useCallback(async (item) => {
+        if (item.school_team) return;
+        try {
+            const newValue = !item.is_public;
+            const response = await api.patch(`/api/v3/photos/${item.id}/visibility`, {
+                token,
+                data: {is_public: newValue}
+            });
+            if (response.data?.success) {
+                // Refresh the list to show updated state
+                dispatch(fetchUploads({page: 1, filters: {}}));
+            }
+        } catch (err) {
+            Alert.alert(t('Error'), t('Failed to update visibility. Please try again.'));
+        }
+    }, [dispatch, token, t]);
+
     const renderItem = useCallback(({ item }) => (
         <UploadCard
             item={item}
@@ -196,8 +215,9 @@ const MyUploads = ({ navigation }) => {
             onDelete={handleDelete}
             onCopyLink={handleCopyLink}
             onOpenMap={handleOpenOnWeb}
+            onToggleVisibility={handleToggleVisibility}
         />
-    ), [handleEditTags, handleOpenOnWeb, handleDelete, handleCopyLink]);
+    ), [handleEditTags, handleOpenOnWeb, handleDelete, handleCopyLink, handleToggleVisibility]);
 
     const listHeader = useMemo(
         () => (

@@ -53,9 +53,9 @@ const GalleryPermissionScreen = ({navigation, route}) => {
     }, []);
 
     // Dismiss the PERMISSION modal, returning to HomeScreen.
-    // HomeScreen re-checks permission on mount, so it will pick up the grant.
+    // HomeScreen re-checks permission on focus, so it will pick up the grant.
     const dismissToHome = () => {
-        navigation.getParent()?.navigate('APP');
+        navigation.goBack();
     };
 
     const checkGalleryPermission = async () => {

@@ -126,7 +126,12 @@ const SettingsScreen = ({navigation}) => {
         const ok = t('OK');
         const cancel = t('Cancel');
 
-        if (key === 'enable_admin_tagging') {
+        if (key === 'public-photos') {
+            title = user?.public_photos ? t('Make photos private?') : t('Make photos public?');
+            subtitle = user?.public_photos
+                ? t('Your future uploads will be visible only to you. Existing photos are not affected.')
+                : t('Your future uploads will be visible to everyone on the map. You can change individual photo visibility from My Uploads.');
+        } else if (key === 'enable_admin_tagging') {
             title = user?.enable_admin_tagging ? t('Turn off') : t('Turn on');
 
             subtitle += user?.enable_admin_tagging
@@ -156,6 +161,13 @@ const SettingsScreen = ({navigation}) => {
                                 saveSettings({
                                     dataKey: 'global_flag',
                                     dataValue: countryCode?.toLowerCase()
+                                })
+                            );
+                        } else if (key === 'public-photos') {
+                            await dispatch(
+                                saveSettings({
+                                    dataKey: 'public_photos',
+                                    dataValue: !user?.public_photos
                                 })
                             );
                         } else if (key === 'enable_admin_tagging') {
@@ -221,6 +233,8 @@ const SettingsScreen = ({navigation}) => {
             return user?.picked_up === false ? 0 : 1;
         case 'enable_admin_tagging':
             return Number(user?.enable_admin_tagging);
+        case 'public-photos':
+            return user?.public_photos === false ? 0 : 1;
         default:
             break;
         }
@@ -301,6 +315,16 @@ const SettingsScreen = ({navigation}) => {
                                         id: 11,
                                         key: 'picked-up',
                                         title: 'Litter is picked up'
+                                    }
+                                ]
+                            },
+                            {
+                                title: 'UPLOADS',
+                                data: [
+                                    {
+                                        id: 14,
+                                        key: 'public-photos',
+                                        title: 'Public Photos'
                                     }
                                 ]
                             },

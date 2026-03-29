@@ -6,7 +6,7 @@ import dayjs from '../../../../utils/dayjs';
 import { useTranslation } from 'react-i18next';
 import Icon from 'react-native-vector-icons/Ionicons';
 
-const UploadCard = React.memo(({ item, onEditTags, onDelete, onCopyLink, onOpenMap }) => {
+const UploadCard = React.memo(({ item, onEditTags, onDelete, onCopyLink, onOpenMap, onToggleVisibility }) => {
     const { t } = useTranslation();
     const isTagged = (item.new_tags && item.new_tags.length > 0) || item.total_tags > 0;
     const totalTags = item.total_tags || (item.new_tags?.length || 0);
@@ -103,6 +103,22 @@ const UploadCard = React.memo(({ item, onEditTags, onDelete, onCopyLink, onOpenM
                 >
                     <Icon name="map-outline" size={16} color={Colors.muted} />
                     <Caption style={styles.actionLabel}>{t('Map')}</Caption>
+                </Pressable>
+
+                <Pressable
+                    style={styles.actionBtn}
+                    onPress={() => onToggleVisibility && onToggleVisibility(item)}
+                    disabled={item.school_team}
+                    hitSlop={6}
+                >
+                    <Icon
+                        name={item.is_public ? 'eye-outline' : 'eye-off-outline'}
+                        size={16}
+                        color={item.school_team ? '#ccc' : Colors.muted}
+                    />
+                    <Caption style={[styles.actionLabel, item.school_team && {color: '#ccc'}]}>
+                        {item.is_public ? t('Public') : t('Private')}
+                    </Caption>
                 </Pressable>
 
                 <Pressable

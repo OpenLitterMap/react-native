@@ -102,6 +102,7 @@ const SettingsComponent = () => {
 
                                 <CustomTextInput
                                     style={styles.content}
+                                    variant="light"
                                     onChangeText={text => {
                                         setFieldValue(
                                             `${formField.key}`,
@@ -166,6 +167,7 @@ const SettingsComponent = () => {
                                     <Body>{field.toLocaleUpperCase()}</Body>
                                     <CustomTextInput
                                         style={styles.content}
+                                        variant="light"
                                         onEndEditing={() =>
                                             setFieldTouched(`${field}`, true)
                                         }
@@ -206,9 +208,13 @@ const SettingsComponent = () => {
                         placeholderTextColor="grey"
                         style={{
                             height: 40,
-                            borderColor: 'gray',
-                            borderWidth: 1,
-                            paddingHorizontal: 8
+                            borderColor: '#e8e8e8',
+                            borderWidth: 1.5,
+                            borderRadius: 14,
+                            paddingHorizontal: 12,
+                            fontSize: 16,
+                            color: Colors.text,
+                            backgroundColor: Colors.white
                         }}
                         onChangeText={changeTextHandler}
                         value={password}

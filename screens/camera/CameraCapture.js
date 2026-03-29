@@ -130,20 +130,22 @@ const CameraCapture = ({onPhotoAccepted, onCancel, hintText, topOverlay}) => {
                     </View>
 
                     {/* Action buttons */}
-                    <View style={styles.previewActions}>
-                        <Pressable onPress={handleRetake} style={styles.deleteButton}>
-                            <Icon name="trash-outline" size={22} color={Colors.white} />
-                            <Body color="white" family="medium" style={styles.actionText}>
-                                {t('Delete')}
-                            </Body>
-                        </Pressable>
+                    <View style={[styles.previewActions, {paddingBottom: insets.bottom + 16}]}>
+                        <View style={styles.secondaryRow}>
+                            <Pressable onPress={handleRetake} style={styles.deleteButton}>
+                                <Icon name="trash-outline" size={20} color={Colors.white} />
+                                <Body color="white" family="medium" style={styles.actionText}>
+                                    {t('Delete')}
+                                </Body>
+                            </Pressable>
 
-                        <Pressable onPress={handleRetake} style={styles.retakeButton}>
-                            <Icon name="refresh-outline" size={22} color={Colors.white} />
-                            <Body color="white" family="medium" style={styles.actionText}>
-                                {t('Retake')}
-                            </Body>
-                        </Pressable>
+                            <Pressable onPress={handleRetake} style={styles.retakeButton}>
+                                <Icon name="refresh-outline" size={20} color={Colors.white} />
+                                <Body color="white" family="medium" style={styles.actionText}>
+                                    {t('Retake')}
+                                </Body>
+                            </Pressable>
+                        </View>
 
                         <Pressable
                             onPress={handleUsePhoto}
@@ -344,36 +346,42 @@ const styles = StyleSheet.create({
     deleteButton: {
         flexDirection: 'row',
         alignItems: 'center',
+        justifyContent: 'center',
         gap: 6,
         backgroundColor: 'rgba(200,50,50,0.7)',
         borderRadius: 100,
         paddingHorizontal: 20,
-        height: 48
+        height: 44,
+        flex: 1
     },
     previewActions: {
+        paddingHorizontal: 20,
+        gap: 10
+    },
+    secondaryRow: {
         flexDirection: 'row',
         justifyContent: 'center',
-        gap: 16,
-        paddingHorizontal: 24,
-        paddingBottom: 24
+        gap: 12
     },
     retakeButton: {
         flexDirection: 'row',
         alignItems: 'center',
+        justifyContent: 'center',
         gap: 6,
         backgroundColor: 'rgba(0,0,0,0.5)',
         borderRadius: 100,
         paddingHorizontal: 20,
-        height: 48
+        height: 44,
+        flex: 1
     },
     useButton: {
         flexDirection: 'row',
         alignItems: 'center',
-        gap: 6,
+        justifyContent: 'center',
+        gap: 8,
         backgroundColor: Colors.accent,
         borderRadius: 100,
-        paddingHorizontal: 20,
-        height: 48
+        height: 52
     },
     useButtonPressed: {
         backgroundColor: '#229954'
