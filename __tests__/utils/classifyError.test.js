@@ -4,7 +4,7 @@ jest.mock('@sentry/react-native', () => ({
 }));
 
 // Mock IS_PRODUCTION to false for tests
-jest.mock('../../actions/types', () => ({
+jest.mock('../../utils/config', () => ({
     IS_PRODUCTION: false,
     URL: 'http://localhost:8000'
 }));

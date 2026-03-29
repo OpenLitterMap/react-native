@@ -1,7 +1,7 @@
 import React from 'react';
 import {Pressable, StyleSheet, Text, View} from 'react-native';
 import * as Sentry from '@sentry/react-native';
-import {IS_PRODUCTION} from '../../actions/types';
+import {IS_PRODUCTION} from '../../utils/config';
 
 /**
  * App-level error boundary.

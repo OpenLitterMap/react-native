@@ -66,8 +66,8 @@ const CameraCapture = ({onPhotoAccepted, onCancel, hintText, topOverlay}) => {
 
             const gps = photo.metadata?.['{GPS}'];
             if (gps?.Latitude != null && gps?.Longitude != null) {
-                const lat = gps.Latitude;
-                const lon = gps.Longitude;
+                const lat = Math.abs(gps.Latitude);
+                const lon = Math.abs(gps.Longitude);
                 finalLat = gps.LatitudeRef === 'S' ? -lat : lat;
                 finalLon = gps.LongitudeRef === 'W' ? -lon : lon;
             }
@@ -106,14 +106,38 @@ const CameraCapture = ({onPhotoAccepted, onCancel, hintText, topOverlay}) => {
         usedRef.current = false;
     }, []);
 
-    // Preview state — show captured photo with Use/Retake buttons
+    // Preview state — show captured photo with GPS info + Use/Retake/Delete buttons
     if (preview) {
+        const hasGps = preview.lat != null && preview.lon != null;
+
         return (
             <View style={styles.container}>
-                <Image source={{uri: preview.uri}} style={styles.previewImage} resizeMode="cover" />
+                <Image source={{uri: preview.uri}} style={styles.previewImage} resizeMode="contain" />
+                {topOverlay}
                 <View style={styles.previewOverlay}>
-                    {topOverlay}
+                    {/* GPS info */}
+                    <View style={styles.gpsInfo}>
+                        <Icon
+                            name={hasGps ? 'location' : 'location-outline'}
+                            size={16}
+                            color={hasGps ? Colors.accent : '#ff6b6b'}
+                        />
+                        <Caption color="white" style={styles.gpsText}>
+                            {hasGps
+                                ? `${preview.lat.toFixed(6)}, ${preview.lon.toFixed(6)}`
+                                : t('No GPS data')}
+                        </Caption>
+                    </View>
+
+                    {/* Action buttons */}
                     <View style={styles.previewActions}>
+                        <Pressable onPress={handleRetake} style={styles.deleteButton}>
+                            <Icon name="trash-outline" size={22} color={Colors.white} />
+                            <Body color="white" family="medium" style={styles.actionText}>
+                                {t('Delete')}
+                            </Body>
+                        </Pressable>
+
                         <Pressable onPress={handleRetake} style={styles.retakeButton}>
                             <Icon name="refresh-outline" size={22} color={Colors.white} />
                             <Body color="white" family="medium" style={styles.actionText}>
@@ -138,12 +162,24 @@ const CameraCapture = ({onPhotoAccepted, onCancel, hintText, topOverlay}) => {
         );
     }
 
-    // No camera device
+    // No camera device (e.g. simulator)
     if (!device) {
         return (
             <View style={styles.container}>
                 <View style={styles.centered}>
-                    <Body color="white">{t('Camera not available')}</Body>
+                    <Icon name="camera-outline" size={48} color="#666" />
+                    <Body color="white" style={styles.noCameraText}>{t('Camera not available')}</Body>
+                    <Caption color="white" style={styles.noCameraHint}>
+                        {t('This device does not have a camera.')}
+                    </Caption>
+                    <Pressable
+                        onPress={onCancel}
+                        style={({pressed}) => [
+                            styles.noCameraButton,
+                            pressed && {opacity: 0.7}
+                        ]}>
+                        <Body color="white" family="semiBold">{t('Go Back')}</Body>
+                    </Pressable>
                 </View>
             </View>
         );
@@ -205,7 +241,25 @@ const styles = StyleSheet.create({
     centered: {
         flex: 1,
         justifyContent: 'center',
-        alignItems: 'center'
+        alignItems: 'center',
+        padding: 32
+    },
+    noCameraText: {
+        marginTop: 16,
+        fontSize: 17
+    },
+    noCameraHint: {
+        marginTop: 8,
+        textAlign: 'center',
+        opacity: 0.6
+    },
+    noCameraButton: {
+        marginTop: 24,
+        paddingHorizontal: 32,
+        paddingVertical: 12,
+        borderRadius: 100,
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.4)'
     },
     cameraOverlay: {
         ...StyleSheet.absoluteFillObject,
@@ -271,7 +325,30 @@ const styles = StyleSheet.create({
     },
     previewOverlay: {
         ...StyleSheet.absoluteFillObject,
-        justifyContent: 'space-between'
+        justifyContent: 'flex-end'
+    },
+    gpsInfo: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        alignSelf: 'center',
+        gap: 6,
+        backgroundColor: 'rgba(0,0,0,0.6)',
+        borderRadius: 20,
+        paddingHorizontal: 14,
+        paddingVertical: 6,
+        marginBottom: 12
+    },
+    gpsText: {
+        fontSize: 13
+    },
+    deleteButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+        backgroundColor: 'rgba(200,50,50,0.7)',
+        borderRadius: 100,
+        paddingHorizontal: 20,
+        height: 48
     },
     previewActions: {
         flexDirection: 'row',

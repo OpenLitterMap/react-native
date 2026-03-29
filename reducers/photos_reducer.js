@@ -2,6 +2,7 @@ import {createSlice, createSelector} from '@reduxjs/toolkit';
 import {getTagsFromBackend} from '../utils/getTagsFromBackend';
 import {logout} from './auth_reducer';
 import {uploadImage, postTagsToPhoto} from './upload_flow_reducer';
+import {dismissPhotos} from './gallery_reducer';
 
 /** Find a tag in tags by (cloId, typeId). */
 const findTag = (tags, cloId, typeId) =>
@@ -32,6 +33,7 @@ const getTargetImage = (state, imageIndex) => {
 
 const initialState = {
     imagesArray: [],
+    uploadedUris: [], // URIs of photos successfully uploaded+tagged — used to hide from camera roll grid
     editingPhotos: [], // Photos loaded from server for tag editing (My Uploads / untagged queue)
     taggedThisSession: [], // IDs of photos tagged/removed during this editing session (prevents re-fetch dupes)
     swiperIndex: 0,
@@ -109,11 +111,17 @@ const photosSlice = createSlice({
         addOnboardingPhoto(state, action) {
             const photo = action.payload;
             const dedup = buildDedupSets(state);
-            if (photo.uri && dedup.uris.has(photo.uri)) return;
+            if (photo.uri && dedup.uris.has(photo.uri)) {
+                // Duplicate — point swiperIndex to the existing photo
+                // so navigation to the tag screen shows the right image.
+                const idx = state.imagesArray.findIndex(img => img.uri === photo.uri);
+                if (idx !== -1) state.swiperIndex = idx;
+                return;
+            }
 
             state.imagesArray.push({
-                id: `onboarding_${Date.now()}`,
-                date: new Date().toISOString(),
+                id: `onboarding_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+                date: Math.floor(Date.now() / 1000),
                 lat: photo.lat,
                 lon: photo.lon,
                 filename: photo.filename,
@@ -612,7 +620,20 @@ const photosSlice = createSlice({
             .addCase(postTagsToPhoto.fulfilled, (state, action) => {
                 const {photoId} = action.payload;
                 const idx = state.imagesArray.findIndex(img => img.id === photoId);
-                if (idx !== -1) state.imagesArray.splice(idx, 1);
+                if (idx !== -1) {
+                    const uri = state.imagesArray[idx].uri;
+                    if (uri) {
+                        if (!state.uploadedUris) state.uploadedUris = [];
+                        state.uploadedUris.push(uri);
+                    }
+                    state.imagesArray.splice(idx, 1);
+                }
+            })
+
+            // Remove dismissed photos from imagesArray too
+            .addCase(dismissPhotos, (state, action) => {
+                const uris = new Set(action.payload);
+                state.imagesArray = state.imagesArray.filter(img => !uris.has(img.uri));
             })
 
             // Clear all images on logout

@@ -27,18 +27,27 @@ export const readGpsFromExif = async uri => {
             })
         ]);
         clearTimeout(timeoutId);
-        if (
-            tags?.GPSLatitude != null &&
-            tags?.GPSLongitude != null &&
-            isValidGpsCoords(tags.GPSLatitude, tags.GPSLongitude)
-        ) {
-            return {latitude: tags.GPSLatitude, longitude: tags.GPSLongitude};
+        if (tags?.GPSLatitude != null && tags?.GPSLongitude != null) {
+            // EXIF stores lat/lon as absolute values with separate Ref fields
+            const lat = tags.GPSLatitudeRef === 'S'
+                ? -Math.abs(tags.GPSLatitude)
+                : Math.abs(tags.GPSLatitude);
+            const lon = tags.GPSLongitudeRef === 'W'
+                ? -Math.abs(tags.GPSLongitude)
+                : Math.abs(tags.GPSLongitude);
+            if (isValidGpsCoords(lat, lon)) {
+                return {latitude: lat, longitude: lon};
+            }
         }
     } catch (e) {
         clearTimeout(timeoutId);
         if (__DEV__) {
             console.warn(`[GPS Debug] EXIF read failed for ${uri}:`, e.message);
-        } else {
+        } else if (
+            // Expected failures — don't report to Sentry
+            !/timed out/i.test(e.message) &&
+            !/ACCESS_MEDIA_LOCATION/i.test(e.message)
+        ) {
             Sentry.captureException(e, {
                 level: 'warning',
                 tags: {section: 'exif_read'}

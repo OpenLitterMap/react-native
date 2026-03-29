@@ -28,7 +28,9 @@ const TooltipOverlay = ({message, hint, position = 'bottom', onDismiss, visible}
                 onPress={onDismiss}
                 style={[
                     styles.tooltip,
-                    position === 'top' ? styles.tooltipTop : styles.tooltipBottom
+                    position === 'top' ? styles.tooltipTop
+                        : position === 'mid' ? styles.tooltipMid
+                        : styles.tooltipBottom
                 ]}>
                 <View style={styles.tooltipBubble}>
                     <Body color="white" family="medium" style={styles.tooltipText}>
@@ -68,8 +70,11 @@ const styles = StyleSheet.create({
     tooltipTop: {
         top: '15%'
     },
+    tooltipMid: {
+        bottom: '20%'
+    },
     tooltipBottom: {
-        bottom: '30%'
+        bottom: '15%'
     },
     tooltipBubble: {
         backgroundColor: Colors.accent,

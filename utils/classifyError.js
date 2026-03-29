@@ -1,5 +1,5 @@
 import * as Sentry from '@sentry/react-native';
-import {IS_PRODUCTION} from '../actions/types';
+import {IS_PRODUCTION} from './config';
 
 /**
  * Normalize an axios error into a structured object for reducers and UI.
@@ -63,8 +63,9 @@ function normalizeError(error) {
     // Support all backend shapes: { msg }, { message }, { error: { code, message } }, { error: "string" }
     const data = error.response.data;
     const errorField = data?.error;
+    const backendMessage = data?.msg || data?.message || '';
     const backendCode = (typeof errorField === 'string' ? errorField : errorField?.code)
-        || data?.code || data?.msg || data?.message;
+        || data?.code || backendMessage;
 
     if (status === 401) {
         return {
@@ -75,11 +76,13 @@ function normalizeError(error) {
     }
 
     if (status === 422) {
+        const codeStr = String(backendCode || '');
         if (
-            backendCode === 'photo-already-uploaded' ||
-            backendCode === 'photo_already_uploaded' ||
-            backendCode === 'duplicate' ||
-            /already uploaded/i.test(backendCode)
+            codeStr === 'photo-already-uploaded' ||
+            codeStr === 'photo_already_uploaded' ||
+            codeStr === 'duplicate' ||
+            /already uploaded/i.test(codeStr) ||
+            /already uploaded/i.test(backendMessage)
         ) {
             return {
                 errorType: 'photo-already-uploaded',

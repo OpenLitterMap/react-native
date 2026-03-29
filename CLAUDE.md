@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 OpenLitterMap is a React Native mobile app (iOS & Android) for crowdsourced litter mapping. Users photograph litter, tag it by category, and upload geotagged data to the OpenLitterMap Laravel backend API.
 
-**App Version:** 7.3.3 | **React Native:** 0.84.1 | **Branch:** `openlittermap/v7` (main: `main5`)
+**App Version:** 7.4.4 | **React Native:** 0.84.1 | **Branch:** `openlittermap/v7` (main: `main5`)
 
 ## Quick Start
 
@@ -223,7 +223,8 @@ Detailed documentation for each feature area lives in `readme/`:
 | `MobileUpload.md` | Upload flow, two-step process, GPS validation, error classification, retry behavior |
 | `MobileTagging.md` | CLO tagging system, search index, tag pills, detail sheet, category colors, XP estimate |
 | `MobileGallery.md` | Camera roll access, GPS detection, EXIF fallback, pagination strategies, gesture selection |
-| `MobileAuth.md` | Sanctum auth, onboarding UI, animated slides, password strength, language picker |
+| `MobileAuth.md` | Sanctum auth, animated slides, password strength, language picker |
+| `Onboarding.md` | Post-signup onboarding flow (7 screens), permissions, tagging, upload, geolink, GPS instructions |
 | `MobileTeams.md` | Team CRUD, members, leaderboard |
 | `MobileSettings.md` | Settings, privacy toggles, account deletion |
 | `MobileNavigation.md` | Navigation structure (authoritative — 3 tabs, not 5) |

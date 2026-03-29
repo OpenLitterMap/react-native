@@ -54,7 +54,7 @@ const OnboardingChips = ({objectEntries, onSelect, selectedCloIds = []}) => {
     return (
         <View style={styles.container}>
             <Caption color="muted" style={styles.hint}>
-                {t('What can you see? Tap a tag or search below')}
+                {t('What type of litter is it? Search from our list or type anything and press Enter to create a Custom Tag')}
             </Caption>
             <ScrollView
                 horizontal

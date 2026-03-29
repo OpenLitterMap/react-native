@@ -85,10 +85,11 @@ const HomeScreen = ({navigation}) => {
     const failedCounts = useSelector(state => state.uploadFlow.failedCounts);
 
     // Count tagged photos ready to upload (for the upload button)
-    const pendingUploadCount = useMemo(
-        () => images.filter(isTagged).length,
-        [images]
-    );
+    const dismissedUris = useSelector(state => state.gallery.dismissedUris);
+    const pendingUploadCount = useMemo(() => {
+        const dismissed = new Set(dismissedUris || []);
+        return images.filter(img => isTagged(img) && !dismissed.has(img.uri)).length;
+    }, [images, dismissedUris]);
 
     // Local UI state
     const [refreshing, setRefreshing] = useState(false);

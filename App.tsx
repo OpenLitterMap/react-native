@@ -10,7 +10,7 @@ import ErrorBoundary from './screens/components/ErrorBoundary';
 import * as Sentry from '@sentry/react-native';
 import Config from 'react-native-config';
 import configureAppStore from './store';
-import {IS_PRODUCTION} from './actions/types';
+import {IS_PRODUCTION} from './utils/config';
 import setupAxiosInterceptors from './utils/setupAxiosInterceptors';
 import './i18n';
 

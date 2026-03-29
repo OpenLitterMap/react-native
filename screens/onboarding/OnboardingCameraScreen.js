@@ -66,7 +66,7 @@ const OnboardingCameraScreen = ({navigation}) => {
                 locations={[0, 0.5, 1]}
                 style={styles.gradient}>
                 <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
-                    <StepIndicator currentStep={1} />
+                    <StepIndicator currentStep={1} step1Label="Take photo" />
                     <View style={styles.body}>
                         <View style={styles.iconCircle}>
                             <Icon name="location-outline" size={56} color={Colors.warn} />
@@ -102,8 +102,8 @@ const OnboardingCameraScreen = ({navigation}) => {
     }
 
     const topOverlay = (
-        <SafeAreaView edges={['top']} style={{paddingTop: insets.top}}>
-            <StepIndicator currentStep={1} />
+        <SafeAreaView edges={['top']} style={styles.cameraTopOverlay}>
+            <StepIndicator currentStep={1} step1Label="Take photo" />
         </SafeAreaView>
     );
 
@@ -111,13 +111,17 @@ const OnboardingCameraScreen = ({navigation}) => {
         <CameraCapture
             onPhotoAccepted={handlePhotoAccepted}
             onCancel={handleCancel}
-            hintText={t('Point your camera at some litter and tap the button')}
+            hintText={t('Get close to some litter and capture the object in full view')}
             topOverlay={topOverlay}
         />
     );
 };
 
 const styles = StyleSheet.create({
+    cameraTopOverlay: {
+        backgroundColor: '#f0faf4',
+        paddingBottom: 4
+    },
     gradient: {flex: 1},
     safe: {flex: 1},
     body: {

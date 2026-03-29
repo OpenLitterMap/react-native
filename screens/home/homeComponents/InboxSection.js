@@ -23,6 +23,7 @@ import {
     dismissPhotos
 } from '../../../reducers/gallery_reducer';
 import {isTagged} from '../../../utils/isTagged';
+import {deleteImage} from '../../../reducers/photos_reducer';
 import {Colors} from '../../components/theme';
 import {Body, Caption} from '../../components/typography';
 
@@ -50,9 +51,15 @@ const InboxThumbnail = React.memo(({photo, onPress, isSelecting, isSelected, has
                 <Icon name="pricetag" size={12} color={Colors.white} />
             </View>
         ) : null}
-        <View style={styles.gpsBadge}>
-            <Icon name="location" size={12} color={Colors.accent} />
-        </View>
+        {photo.fromCamera ? (
+            <View style={styles.cameraBadge}>
+                <Icon name="camera" size={12} color={Colors.white} />
+            </View>
+        ) : (
+            <View style={styles.gpsBadge}>
+                <Icon name="location" size={12} color={Colors.accent} />
+            </View>
+        )}
         <View style={styles.timeOverlay}>
             <Caption style={styles.timeText} numberOfLines={1}>
                 {formatRelativeTime(photo.date)}
@@ -65,15 +72,12 @@ const InboxThumbnail = React.memo(({photo, onPress, isSelecting, isSelected, has
 const InboxSection = ({onTapPhoto, permissionStatus, requestPermission}) => {
     const {t} = useTranslation();
     const dispatch = useDispatch();
-    const recentPhotos = useSelector(selectRecentGeotaggedPhotos);
+    const allRecentPhotos = useSelector(selectRecentGeotaggedPhotos);
     const totalGalleryPhotos = useSelector(state => state.gallery.galleryImages.length);
     const hasMorePages = useSelector(state => state.gallery.hasMorePages);
     const hasOlderPhotos = useSelector(selectHasOlderGeotaggedPhotos);
     const fetchStatus = useSelector(state => state.gallery.fetchStatus);
     const isLoading = fetchStatus === 'loading';
-    // Only show "Show older" when photos are already visible in the grid.
-    // When the grid is empty, the empty-state message + settings button handles UX.
-    const showOlderButton = recentPhotos.length > 0 && (hasMorePages || hasOlderPhotos);
 
     const imagesArray = useSelector(state => state.photos.imagesArray);
     const taggedUris = useMemo(() => {
@@ -83,6 +87,35 @@ const InboxSection = ({onTapPhoto, permissionStatus, requestPermission}) => {
         }
         return set;
     }, [imagesArray]);
+
+    // Camera-captured photos not yet uploaded (from imagesArray)
+    const cameraPhotos = useMemo(() =>
+        imagesArray
+            .filter(img => img.uri && !img.uploaded && img.lat != null)
+            .map(img => ({
+                id: img.id,
+                uri: img.uri,
+                date: img.date,
+                lat: img.lat,
+                lon: img.lon,
+                hasGps: true,
+                fromCamera: true
+            })),
+    [imagesArray]
+    );
+
+    // Filter out uploaded photos, then prepend camera captures
+    const uploadedUris = useSelector(state => state.photos.uploadedUris);
+    const recentPhotos = useMemo(() => {
+        const uploaded = new Set(uploadedUris || []);
+        const cameraUris = new Set(cameraPhotos.map(p => p.uri));
+        const filtered = allRecentPhotos.filter(
+            p => !uploaded.has(p.uri) && !cameraUris.has(p.uri)
+        );
+        return [...cameraPhotos, ...filtered];
+    }, [allRecentPhotos, uploadedUris, cameraPhotos]);
+
+    const showOlderButton = recentPhotos.length > 0 && (hasMorePages || hasOlderPhotos);
 
     const [isSelecting, setIsSelecting] = useState(false);
     const [selectedUris, setSelectedUris] = useState(new Set());
@@ -117,10 +150,17 @@ const InboxSection = ({onTapPhoto, permissionStatus, requestPermission}) => {
 
     const handleDeleteSelected = useCallback(() => {
         if (selectedUris.size === 0) return;
+        // Dismiss gallery photos
         dispatch(dismissPhotos([...selectedUris]));
+        // Delete camera-captured photos from imagesArray
+        for (const img of cameraPhotos) {
+            if (selectedUris.has(img.uri)) {
+                dispatch(deleteImage(img.id));
+            }
+        }
         setSelectedUris(new Set());
         setIsSelecting(false);
-    }, [dispatch, selectedUris]);
+    }, [dispatch, selectedUris, cameraPhotos]);
 
     const renderItem = useCallback(({item}) => (
         <InboxThumbnail
@@ -334,6 +374,14 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(255,255,255,0.9)',
         borderRadius: 8,
         padding: 2
+    },
+    cameraBadge: {
+        position: 'absolute',
+        bottom: 26,
+        left: 6,
+        backgroundColor: Colors.accent,
+        borderRadius: 8,
+        padding: 3
     },
     tagBadge: {
         position: 'absolute',

@@ -15,7 +15,7 @@ import Clipboard from '@react-native-clipboard/clipboard';
 import {Colors} from '../../components';
 import {fetchUploads, deleteUploadPhoto} from '../../../reducers/uploads_reducer';
 import {loadPhotoForEditing, changeSwiperIndex, clearEditingPhoto} from '../../../reducers/photos_reducer';
-import {URL} from '../../../actions/types';
+import {WEB_URL} from '../../../utils/config';
 import UploadCard from '../../userStats/userComponents/myUploadsComponents/UploadCard';
 
 const INITIAL_COUNT = 3;
@@ -27,7 +27,7 @@ const UploadsPreview = ({navigation}) => {
     const {t} = useTranslation();
     const dispatch = useDispatch();
     const uploads = useSelector(state => state.uploads.uploads);
-    const loading = useSelector(state => state.uploads.loading);
+    const loading = useSelector(state => state.uploads.fetchStatus === 'loading');
     const [expanded, setExpanded] = useState(false);
 
     useEffect(() => {
@@ -63,14 +63,14 @@ const UploadsPreview = ({navigation}) => {
 
     const handleCopyLink = useCallback((item) => {
         const year = new Date(item.datetime).getFullYear();
-        const link = `${URL}/global?year=${year}&lat=${item.lat}&lon=${item.lon}&zoom=14.59&photo=${item.id}`;
+        const link = `${WEB_URL}/global?year=${year}&lat=${item.lat}&lon=${item.lon}&zoom=14.59&photo=${item.id}`;
         Clipboard.setString(link);
         Alert.alert(t('Link Copied'), t('The link has been copied to your clipboard.'));
     }, [t]);
 
     const handleOpenMap = useCallback((item) => {
         const year = new Date(item.datetime).getFullYear();
-        const link = `${URL}/global?year=${year}&lat=${item.lat}&lon=${item.lon}&zoom=14.59&photo=${item.id}`;
+        const link = `${WEB_URL}/global?year=${year}&lat=${item.lat}&lon=${item.lon}&zoom=14.59&photo=${item.id}`;
         Linking.openURL(link);
     }, []);
 

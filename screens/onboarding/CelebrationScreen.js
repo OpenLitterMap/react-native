@@ -1,41 +1,39 @@
-import React from 'react';
-import {Image, Pressable, StyleSheet, View} from 'react-native';
+import React, {useState} from 'react';
+import {Linking, Pressable, ScrollView, StyleSheet, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
+import Clipboard from '@react-native-clipboard/clipboard';
 import {useDispatch, useSelector} from 'react-redux';
 import {useTranslation} from 'react-i18next';
 import {Body, Caption, Colors, Title} from '../components';
 import StepIndicator from './components/StepIndicator';
 import {markOnboardingComplete} from '../../reducers/auth_reducer';
 import {setOnboardingComplete} from '../../utils/onboarding';
+import {WEB_URL} from '../../utils/config';
 
-/**
- * Celebration screen — shown after the user submits their first tag.
- * Shows: photo, tag confirmation, XP award, and a "See it on the map" browser link.
- * No in-app map rendering — opens openlittermap.com in the default browser.
- * Sets onboarding_completed_at and navigates to HomeScreen.
- */
-const CelebrationScreen = ({navigation}) => {
+const CelebrationScreen = ({navigation, route}) => {
+    const serverPhotoId = route.params?.serverPhotoId;
+    const lat = route.params?.lat;
+    const lon = route.params?.lon;
+
     const {t} = useTranslation();
     const dispatch = useDispatch();
-    const imagesArray = useSelector(state => state.photos.imagesArray);
-    const swiperIndex = useSelector(state => state.photos.swiperIndex);
+    const [copied, setCopied] = useState(false);
     const user = useSelector(state => state.auth.user);
-    const entriesByCloId = useSelector(state => state.tags.entriesByCloId);
 
-    const photo = imagesArray[swiperIndex];
-    const firstTag = photo?.tags?.[0];
-    const tagName = firstTag && entriesByCloId?.[firstTag.cloId]
-        ? entriesByCloId[firstTag.cloId].displayName || entriesByCloId[firstTag.cloId].key
-        : 'litter';
-    const tagCount = photo?.tags?.length || 0;
-    const hasCoords = photo?.lat != null && photo?.lon != null;
+    const photoUrl = (serverPhotoId && lat != null && lon != null)
+        ? `${WEB_URL}/global?lat=${lat}&lon=${lon}&zoom=17.89&load=true&open=true&photo=${serverPhotoId}`
+        : null;
+
+    const handleCopyLink = () => {
+        if (!photoUrl) return;
+        Clipboard.setString(photoUrl);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    };
 
     const handleContinue = async () => {
-        // Mark onboarding complete in both AsyncStorage and Redux,
-        // then reset navigation. Done here (not useEffect) to avoid
-        // a race between Redux state change and navigation reset.
         await setOnboardingComplete(user?.id);
         dispatch(markOnboardingComplete());
     };
@@ -48,54 +46,71 @@ const CelebrationScreen = ({navigation}) => {
             <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
                 <StepIndicator currentStep={3} completedSteps={[1, 2]} />
 
-                <View style={styles.content}>
-                    {/* Celebration header */}
+                <ScrollView
+                    contentContainerStyle={styles.scrollContent}
+                    showsVerticalScrollIndicator={false}>
+
+                    {/* Header */}
                     <View style={styles.celebrationBadge}>
                         <Icon name="checkmark-circle" size={48} color={Colors.accent} />
                     </View>
 
                     <Title style={styles.heading}>
-                        {t('Your first contribution is ready!')}
+                        {t('You did it!')}
                     </Title>
 
                     <Caption color="muted" style={styles.subheading}>
-                        {t('Your tagged photo will be uploaded and added to the global litter map when you reach the home screen.')}
+                        {t('Your data point is now on the global map.')}
                     </Caption>
 
-                    {/* Photo + tag summary */}
-                    {photo?.uri && (
-                        <View style={styles.photoCard}>
-                            <Image
-                                source={{uri: photo.uri}}
-                                style={styles.photoThumbnail}
-                                resizeMode="cover"
-                            />
-                            <View style={styles.photoInfo}>
-                                <Body family="semiBold" style={styles.tagLabel}>
-                                    {tagCount === 1
-                                        ? `Tagged: ${tagName}`
-                                        : `${tagCount} tags applied`}
+                    <Caption color="muted" style={styles.geolinkExplainer}>
+                        {t('Every upload generates a unique geolink which you can use to share any observation with anyone.')}
+                    </Caption>
+
+                    {/* Geolink buttons */}
+                    {photoUrl && (
+                        <View style={styles.geolinkButtons}>
+                            <Pressable
+                                onPress={handleCopyLink}
+                                style={({pressed}) => [
+                                    styles.geolinkButton,
+                                    pressed && styles.geolinkButtonPressed
+                                ]}>
+                                <Icon
+                                    name={copied ? 'checkmark-circle' : 'copy-outline'}
+                                    size={20}
+                                    color={Colors.white}
+                                />
+                                <Body color="white" family="semiBold" style={styles.geolinkButtonText}>
+                                    {copied ? t('Copied') : t('Copy Link to Your Upload')}
                                 </Body>
-                                {hasCoords && (
-                                    <Caption color="muted" style={styles.gpsLabel}>
-                                        {`\uD83D\uDCCD ${photo.lat.toFixed(4)}, ${photo.lon.toFixed(4)}`}
-                                    </Caption>
-                                )}
-                            </View>
+                            </Pressable>
+
+                            <Pressable
+                                onPress={() => Linking.openURL(photoUrl)}
+                                style={({pressed}) => [
+                                    styles.geolinkButton,
+                                    styles.geolinkButtonOutline,
+                                    pressed && styles.geolinkButtonPressed
+                                ]}>
+                                <Icon name="map-outline" size={20} color={Colors.accent} />
+                                <Body color="accent" family="semiBold" style={styles.geolinkButtonText}>
+                                    {t('Show Upload on the Map')}
+                                </Body>
+                            </Pressable>
                         </View>
                     )}
 
-                    {/* XP note — photo hasn't uploaded yet */}
-                    <View style={styles.xpBadge}>
-                        <Caption color="accent" family="semiBold" style={styles.xpText}>
-                            {t("You'll earn XP when this uploads")}
+                    {/* Tip */}
+                    <View style={styles.tipCard}>
+                        <Caption color="accent" family="semiBold" style={styles.tipLabel}>
+                            {t('Tip')}
+                        </Caption>
+                        <Caption color="muted" style={styles.tipText}>
+                            {t('Take a photo of bags of litter picked up and share the link with your local council!')}
                         </Caption>
                     </View>
-
-                    {/* Map link hidden — photo hasn't uploaded yet.
-                        Upload happens on HomeScreen via the normal upload flow.
-                        The user can view their upload on the map from My Uploads later. */}
-                </View>
+                </ScrollView>
 
                 {/* CTA */}
                 <View style={styles.footer}>
@@ -106,7 +121,7 @@ const CelebrationScreen = ({navigation}) => {
                             pressed && styles.primaryButtonPressed
                         ]}>
                         <Body family="semiBold" color="white" style={styles.primaryButtonText}>
-                            {user?.active_team ? t("See your team's progress") : t('Start mapping')}
+                            {t('Continue')}
                         </Body>
                     </Pressable>
                 </View>
@@ -122,14 +137,14 @@ const styles = StyleSheet.create({
     safe: {
         flex: 1
     },
-    content: {
-        flex: 1,
-        justifyContent: 'center',
+    scrollContent: {
+        flexGrow: 1,
         alignItems: 'center',
-        paddingHorizontal: 24
+        paddingHorizontal: 24,
+        paddingTop: 8
     },
     celebrationBadge: {
-        marginBottom: 16
+        marginBottom: 12
     },
     heading: {
         textAlign: 'center',
@@ -139,47 +154,54 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         fontSize: 15,
         lineHeight: 22,
-        marginBottom: 24
+        marginBottom: 8
     },
-    photoCard: {
-        flexDirection: 'row',
-        backgroundColor: Colors.white,
-        borderRadius: 12,
-        padding: 12,
+    geolinkExplainer: {
+        textAlign: 'center',
+        fontSize: 14,
+        lineHeight: 22,
+        marginBottom: 20,
+        paddingHorizontal: 8
+    },
+    geolinkButtons: {
         width: '100%',
-        shadowColor: '#000',
-        shadowOffset: {width: 0, height: 2},
-        shadowOpacity: 0.08,
-        shadowRadius: 6,
-        elevation: 2,
+        gap: 12,
+        marginBottom: 20
+    },
+    geolinkButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 8,
+        backgroundColor: Colors.accent,
+        borderRadius: 100,
+        height: 48
+    },
+    geolinkButtonOutline: {
+        backgroundColor: 'transparent',
+        borderWidth: 1,
+        borderColor: Colors.accent
+    },
+    geolinkButtonPressed: {
+        opacity: 0.8
+    },
+    geolinkButtonText: {
+        fontSize: 15
+    },
+    tipCard: {
+        width: '100%',
+        backgroundColor: Colors.accentLight,
+        borderRadius: 12,
+        padding: 14,
         marginBottom: 16
     },
-    photoThumbnail: {
-        width: 72,
-        height: 72,
-        borderRadius: 8
-    },
-    photoInfo: {
-        flex: 1,
-        justifyContent: 'center',
-        marginLeft: 12
-    },
-    tagLabel: {
-        fontSize: 15,
+    tipLabel: {
+        fontSize: 13,
         marginBottom: 4
     },
-    gpsLabel: {
-        fontSize: 12
-    },
-    xpBadge: {
-        backgroundColor: Colors.accentLight,
-        borderRadius: 20,
-        paddingHorizontal: 20,
-        paddingVertical: 8,
-        marginBottom: 16
-    },
-    xpText: {
-        fontSize: 18
+    tipText: {
+        fontSize: 13,
+        lineHeight: 20
     },
     footer: {
         paddingHorizontal: 24,

@@ -16,7 +16,7 @@ import { clearUploads, deleteUploadPhoto, fetchUploads } from '../../../reducers
 import { loadPhotoForEditing } from '../../../reducers/photos_reducer';
 import ActionButton from '../../home/homeComponents/ActionButton';
 import { useTranslation } from 'react-i18next';
-import { URL } from '../../../actions/types';
+import { WEB_URL } from '../../../utils/config';
 import Clipboard from '@react-native-clipboard/clipboard';
 
 import UploadCard from './myUploadsComponents/UploadCard';
@@ -152,7 +152,7 @@ const MyUploads = ({ navigation }) => {
 
     const generateLink = useCallback(item => {
         const year = new Date(item.datetime).getFullYear();
-        return `${URL}/global?year=${year}&lat=${item.lat}&lon=${item.lon}&zoom=14.59&photo=${item.id}`;
+        return `${WEB_URL}/global?year=${year}&lat=${item.lat}&lon=${item.lon}&zoom=14.59&photo=${item.id}`;
     }, []);
 
     const handleCopyLink = useCallback((item) => {

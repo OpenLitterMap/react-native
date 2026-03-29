@@ -64,26 +64,26 @@ const CommunityStats = () => {
 
     return (
         <View style={styles.section}>
-            <Body style={styles.sectionTitle}>{t('Community Progress')}</Body>
+            <Body style={styles.sectionTitle}>{t('Global Impact')}</Body>
             <View style={styles.card}>
                 <View style={styles.statsRow}>
                     <StatCell
                         value={totalTags}
-                        label={t('Litter Tagged')}
+                        label={t('Tags')}
                         color="#14b8a6"
                         active={activeMode === MODES.tags}
                         onPress={() => setActiveMode(MODES.tags)}
                     />
                     <StatCell
                         value={totalImages}
-                        label={t('Photos Uploaded')}
+                        label={t('Photos')}
                         color="#8b5cf6"
                         active={activeMode === MODES.photos}
                         onPress={() => setActiveMode(MODES.photos)}
                     />
                     <StatCell
                         value={totalUsers}
-                        label={t('Contributors')}
+                        label={t('People')}
                         color="#f59e0b"
                         exact
                         active={activeMode === MODES.people}

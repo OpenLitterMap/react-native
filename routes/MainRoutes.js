@@ -31,18 +31,16 @@ const MainRoutes = () => {
     const user = useSelector(state => state.auth.user);
     const onboardingComplete = useSelector(state => state.auth.onboardingComplete);
 
-    const checkOnboarding = useCallback(async (userId, userTotalImages) => {
+    const checkOnboarding = useCallback(async (userId, webOnboardingDone) => {
         if (!userId) {
             setIsCheckingOnboarding(false);
             return;
         }
-        const complete = await isOnboardingComplete(userId);
-        if (complete) {
-            dispatch(markOnboardingComplete());
-        } else if (userTotalImages > 0) {
-            // Existing user who signed up before onboarding was added —
-            // they've already uploaded, so skip onboarding automatically.
-            await setOnboardingCompleteStorage(userId);
+        const mobileComplete = await isOnboardingComplete(userId);
+        if (mobileComplete || webOnboardingDone) {
+            if (!mobileComplete) {
+                await setOnboardingCompleteStorage(userId);
+            }
             dispatch(markOnboardingComplete());
         }
         setIsCheckingOnboarding(false);
@@ -62,7 +60,7 @@ const MainRoutes = () => {
     useEffect(() => {
         if (user?.id) {
             setIsCheckingOnboarding(true);
-            checkOnboarding(user.id, user.totalImages ?? 0);
+            checkOnboarding(user.id, user.onboarding_completed_at != null);
         } else if (!token) {
             // No user (logged out) — no onboarding check needed
             setIsCheckingOnboarding(false);

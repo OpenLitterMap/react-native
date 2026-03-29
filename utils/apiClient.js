@@ -1,5 +1,5 @@
 import axios from 'axios';
-import {URL} from '../actions/types';
+import {URL} from './config';
 
 /**
  * Authenticated API request helper.

@@ -38,12 +38,12 @@ const YourImpactSection = () => {
             <View style={styles.card}>
                 <View style={styles.statsRow}>
                     <View style={styles.stat}>
-                        <Title style={styles.statValue}>{totalImages.toLocaleString()}</Title>
-                        <Caption style={styles.statLabel}>{t('Photos')}</Caption>
-                    </View>
-                    <View style={styles.stat}>
                         <Title style={styles.statValue}>{totalTags.toLocaleString()}</Title>
                         <Caption style={styles.statLabel}>{t('Tags')}</Caption>
+                    </View>
+                    <View style={styles.stat}>
+                        <Title style={styles.statValue}>{totalImages.toLocaleString()}</Title>
+                        <Caption style={styles.statLabel}>{t('Photos')}</Caption>
                     </View>
                     <View style={styles.stat}>
                         <Title style={styles.statValue}>{xp.toLocaleString()}</Title>

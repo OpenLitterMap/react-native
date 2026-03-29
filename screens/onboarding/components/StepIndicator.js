@@ -4,7 +4,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import {useTranslation} from 'react-i18next';
 import {Caption, Colors} from '../../components';
 
-const STEPS = [
+const DEFAULT_STEPS = [
     {label: 'Import image', number: 1},
     {label: 'Add tags', number: 2},
     {label: 'Upload your data', number: 3}
@@ -13,13 +13,18 @@ const STEPS = [
 /**
  * 3-step progress indicator for onboarding with checkmark states.
  * Compact layout — dots + labels grouped tightly in the center.
+ *
+ * @param {string} [step1Label] — Override label for step 1 (e.g. 'Take photo' for camera path)
  */
-const StepIndicator = ({currentStep, completedSteps = []}) => {
+const StepIndicator = ({currentStep, completedSteps = [], step1Label}) => {
     const {t} = useTranslation();
+    const steps = step1Label
+        ? [{label: step1Label, number: 1}, ...DEFAULT_STEPS.slice(1)]
+        : DEFAULT_STEPS;
     return (
         <View style={styles.container}>
             <View style={styles.row}>
-                {STEPS.map((step, i) => {
+                {steps.map((step, i) => {
                     const isComplete = completedSteps.includes(step.number);
                     const isActive = step.number === currentStep && !isComplete;
                     const isLocked = !isActive && !isComplete;
@@ -69,7 +74,7 @@ const StepIndicator = ({currentStep, completedSteps = []}) => {
 const styles = StyleSheet.create({
     container: {
         alignItems: 'center',
-        paddingTop: 8,
+        paddingTop: 24,
         paddingBottom: 8
     },
     row: {

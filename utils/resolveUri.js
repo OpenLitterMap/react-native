@@ -1,4 +1,4 @@
-import {URL, IS_PRODUCTION} from '../actions/types';
+import {URL, IS_PRODUCTION} from './config';
 
 /**
  * Rewrite Minio 127.0.0.1 URLs to the LAN IP in dev builds.
