@@ -1,4 +1,4 @@
-import {createSlice, createAsyncThunk} from '@reduxjs/toolkit';
+import {createSlice, createAsyncThunk, createSelector} from '@reduxjs/toolkit';
 import api from '../utils/apiClient';
 import {classifyError} from '../utils/classifyError';
 import {logout} from './auth_reducer';
@@ -243,5 +243,23 @@ export const {
     showThankYouMessagesAfterUpload,
     startUploading
 } = uploadFlowSlice.actions;
+
+// Memoized selector — prevents HomeScreen re-renders when unrelated state changes
+export const selectUploadFlow = createSelector(
+    state => state.uploadFlow,
+    uf => ({
+        showUploadModal: uf.showUploadModal,
+        showThankYouMessages: uf.showThankYouMessages,
+        uploadPhase: uf.uploadPhase,
+        currentUploadIndex: uf.currentUploadIndex,
+        uploadAbortReason: uf.uploadAbortReason,
+        totalToUpload: uf.totalToUpload,
+        uploaded: uf.uploaded,
+        uploadFailed: uf.uploadFailed,
+        tagged: uf.tagged,
+        taggedFailed: uf.taggedFailed,
+        failedCounts: uf.failedCounts
+    })
+);
 
 export default uploadFlowSlice.reducer;

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useCallback} from 'react';
 import {
     FlatList,
     Image,
@@ -44,11 +44,11 @@ const UntaggedSection = ({onTagPhoto, onTagAll}) => {
     const untaggedCount = useSelector(state => state.serverPhotos.untaggedCount);
     const untaggedPreviews = useSelector(state => state.serverPhotos.untaggedPreviews);
 
-    if (!untaggedCount || untaggedCount === 0) return null;
-
-    const renderItem = ({item}) => (
+    const renderItem = useCallback(({item}) => (
         <UntaggedThumbnail photo={item} onPress={onTagPhoto} />
-    );
+    ), [onTagPhoto]);
+
+    if (!untaggedCount || untaggedCount === 0) return null;
 
     return (
         <View style={styles.section}>

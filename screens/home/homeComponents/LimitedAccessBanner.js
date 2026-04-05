@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useCallback} from 'react';
 import {Linking, Platform, Pressable, StyleSheet, View} from 'react-native';
 import {useTranslation} from 'react-i18next';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -9,20 +9,20 @@ import {Body, Caption} from '../../components/typography';
 const LimitedAccessBanner = ({permissionStatus, onRefresh}) => {
     const {t} = useTranslation();
 
-    if (permissionStatus !== 'limited') return null;
-
     const isIOS = Platform.OS === 'ios';
 
-    const handleOpenSettings = () => {
+    const handleOpenSettings = useCallback(() => {
         isIOS ? Linking.openURL('app-settings:') : Linking.openSettings();
-    };
+    }, [isIOS]);
 
-    const handleAddMore = async () => {
+    const handleAddMore = useCallback(async () => {
         if (isIOS) {
             await openLimitedPhotoPicker();
             onRefresh?.();
         }
-    };
+    }, [isIOS, onRefresh]);
+
+    if (permissionStatus !== 'limited') return null;
 
     // iOS "limited" = user selected specific photos to share
     // Android "limited" = photo access granted but media-location (GPS) denied

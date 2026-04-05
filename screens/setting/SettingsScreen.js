@@ -26,6 +26,48 @@ import {
     fetchAllUntaggedPhotos
 } from '../../reducers/server_photos_reducer';
 
+const SETTINGS_SECTIONS = [
+    {
+        title: 'MY ACCOUNT',
+        data: [
+            {id: 1, key: 'name', title: 'Name'},
+            {id: 2, key: 'username', title: 'Username'},
+            {id: 3, key: 'email', title: 'Email'},
+            {id: 4, key: 'social', title: 'Social Accounts'}
+        ]
+    },
+    {
+        title: 'Picked Up',
+        data: [{id: 11, key: 'picked-up', title: 'Litter is picked up'}]
+    },
+    {
+        title: 'UPLOADS',
+        data: [{id: 14, key: 'public-photos', title: 'Public Photos'}]
+    },
+    {
+        title: 'TAGGING',
+        data: [
+            {id: 12, key: 'enable_admin_tagging', title: 'Enable crowdsourced tagging'},
+            {id: 15, key: 'quick-tags', title: 'Quick Tags'}
+        ]
+    },
+    {
+        title: 'PRIVACY',
+        data: [
+            {id: 4, key: 'name-maps', title: 'Show Name on Maps'},
+            {id: 5, key: 'username-maps', title: 'Show Username on Maps'},
+            {id: 6, key: 'name-leaderboard', title: 'Show Name on Leaderboards'},
+            {id: 7, key: 'username-leaderboard', title: 'Show Username on Leaderboards'},
+            {id: 8, key: 'name-createdby', title: 'Show Name on Created By'},
+            {id: 9, key: 'username-createdby', title: 'Show Username on Created By'}
+        ]
+    },
+    {
+        title: 'Delete Account',
+        data: [{id: 13, key: 'delete-account', title: 'Delete your account'}]
+    }
+];
+
 const SettingsScreen = ({navigation}) => {
     const dispatch = useDispatch();
     const {t} = useTranslation();
@@ -290,113 +332,7 @@ const SettingsScreen = ({navigation}) => {
                                 dictionary={`${title}`}
                             />
                         )}
-                        sections={[
-                            {
-                                title: 'MY ACCOUNT',
-                                data: [
-                                    {
-                                        id: 1,
-                                        key: 'name',
-                                        title: 'Name'
-                                    },
-                                    {
-                                        id: 2,
-                                        key: 'username',
-                                        title: 'Username'
-                                    },
-                                    {
-                                        id: 3,
-                                        key: 'email',
-                                        title: 'Email'
-                                    },
-                                    {
-                                        id: 4,
-                                        key: 'social',
-                                        title: 'Social Accounts'
-                                    }
-                                ]
-                            },
-                            {
-                                title: 'Picked Up',
-                                data: [
-                                    {
-                                        id: 11,
-                                        key: 'picked-up',
-                                        title: 'Litter is picked up'
-                                    }
-                                ]
-                            },
-                            {
-                                title: 'UPLOADS',
-                                data: [
-                                    {
-                                        id: 14,
-                                        key: 'public-photos',
-                                        title: 'Public Photos'
-                                    }
-                                ]
-                            },
-                            {
-                                title: 'TAGGING',
-                                data: [
-                                    {
-                                        id: 12,
-                                        key: 'enable_admin_tagging',
-                                        title: 'Enable crowdsourced tagging'
-                                    },
-                                    {
-                                        id: 15,
-                                        key: 'quick-tags',
-                                        title: 'Quick Tags'
-                                    }
-                                ]
-                            },
-                            {
-                                title: 'PRIVACY',
-                                data: [
-                                    {
-                                        id: 4,
-                                        key: 'name-maps',
-                                        title: 'Show Name on Maps'
-                                    },
-                                    {
-                                        id: 5,
-                                        key: 'username-maps',
-                                        title: 'Show Username on Maps'
-                                    },
-                                    {
-                                        id: 6,
-                                        key: 'name-leaderboard',
-                                        title: 'Show Name on Leaderboards'
-                                    },
-                                    {
-                                        id: 7,
-                                        key: 'username-leaderboard',
-                                        title: 'Show Username on Leaderboards'
-                                    },
-                                    {
-                                        id: 8,
-                                        key: 'name-createdby',
-                                        title: 'Show Name on Created By'
-                                    },
-                                    {
-                                        id: 9,
-                                        key: 'username-createdby',
-                                        title: 'Show Username on Created By'
-                                    }
-                                ]
-                            },
-                            {
-                                title: 'Delete Account',
-                                data: [
-                                    {
-                                        id: 13,
-                                        key: 'delete-account',
-                                        title: 'Delete your account'
-                                    }
-                                ]
-                            }
-                        ]}
+                        sections={SETTINGS_SECTIONS}
                         renderItem={({item, index, section}) => (
                             <View style={[styles.sectionRow, {height: SCREEN_HEIGHT * 0.06}]} key={index}>
                                 {renderRow(item)}

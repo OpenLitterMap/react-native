@@ -150,7 +150,7 @@ Tag pills have category-colored left borders and a tap-to-expand interaction:
 
 ## Tag Detail Sheet (Materials, Brands, Custom Tags)
 
-The TagDetailSheet is a bottom sheet modal opened from the expanded pill's `[...]` button. It allows attaching extra metadata to a specific tag.
+The TagDetailSheet is a bottom sheet modal opened from the expanded pill's `[...]` button. It allows attaching extra metadata to a specific tag. Supports swipe-down-to-close (Pan gesture via react-native-gesture-handler + reanimated translateY tracking, scroll-aware — only activates when ScrollView is at top).
 
 ### Sections
 1. **Header**: Tag display name + category, colored by getCategoryColor

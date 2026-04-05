@@ -1,5 +1,6 @@
 import {createSlice, createSelector} from '@reduxjs/toolkit';
 import {getTagsFromBackend} from '../utils/getTagsFromBackend';
+import {isTagged} from '../utils/isTagged';
 import {logout} from './auth_reducer';
 import {uploadImage, postTagsToPhoto} from './upload_flow_reducer';
 import {dismissPhotos} from './gallery_reducer';
@@ -675,6 +676,35 @@ const selectImagesArray = state => state.photos.imagesArray;
 export const selectSelectedCount = createSelector(
     [selectImagesArray],
     images => images.filter(img => img.selected).length
+);
+
+/** Set of URIs that have been tagged (for inbox badge overlay). */
+export const selectTaggedUris = createSelector(
+    [selectImagesArray],
+    images => {
+        const set = new Set();
+        for (const img of images) {
+            if (img.uri && isTagged(img)) set.add(img.uri);
+        }
+        return set;
+    }
+);
+
+/** Camera-captured photos not yet uploaded (for inbox prepend). */
+export const selectCameraPhotos = createSelector(
+    [selectImagesArray],
+    images =>
+        images
+            .filter(img => img.uri && !img.uploaded && img.lat != null)
+            .map(img => ({
+                id: img.id,
+                uri: img.uri,
+                date: img.date,
+                lat: img.lat,
+                lon: img.lon,
+                hasGps: true,
+                fromCamera: true
+            }))
 );
 
 export default photosSlice.reducer;

@@ -1,7 +1,8 @@
-import React, {useState} from 'react';
+import React, {useCallback, useState} from 'react';
 import {Pressable, StyleSheet, View} from 'react-native';
 import {useSelector} from 'react-redux';
 import {useTranslation} from 'react-i18next';
+import {selectStats} from '../../reducers/stats_reducer';
 import {Colors} from './theme';
 import {Body, Caption, Title} from './typography';
 import useAnimatedCount from './useAnimatedCount';
@@ -15,7 +16,7 @@ const formatCount = (n) => {
 
 const exactFormatter = n => Math.round(n).toLocaleString();
 
-const StatCell = ({value, label, color, exact, active, onPress}) => {
+const StatCell = React.memo(({value, label, color, exact, active, onPress}) => {
     const display = useAnimatedCount(value, {
         formatter: exact ? exactFormatter : formatCount
     });
@@ -28,7 +29,7 @@ const StatCell = ({value, label, color, exact, active, onPress}) => {
             <Caption style={[styles.statLabel, active && {color}]}>{label}</Caption>
         </Pressable>
     );
-};
+});
 
 const GrowthBadge = ({value, label}) => (
     <View style={styles.badge}>
@@ -43,34 +44,27 @@ const MODES = {
     people: 'people'
 };
 
+const GROWTH_KEYS = {
+    [MODES.tags]: {today: 'newTagsToday', week: 'newTagsLast7Days', month: 'newTagsLast30Days'},
+    [MODES.photos]: {today: 'newPhotosToday', week: 'newPhotosLast7Days', month: 'newPhotosLast30Days'},
+    [MODES.people]: {today: 'newUsersToday', week: 'newUsersLast7Days', month: 'newUsersLast30Days'}
+};
+
 const CommunityStats = () => {
     const {t} = useTranslation();
     const [activeMode, setActiveMode] = useState(MODES.people);
+    const stats = useSelector(selectStats);
 
-    const totalTags = useSelector(state => state.stats.totalTags);
-    const totalImages = useSelector(state => state.stats.totalImages);
-    const totalUsers = useSelector(state => state.stats.totalUsers);
-
-    // Growth metrics per category
-    const growth = {
-        [MODES.tags]: {
-            today: useSelector(state => state.stats.newTagsToday),
-            week: useSelector(state => state.stats.newTagsLast7Days),
-            month: useSelector(state => state.stats.newTagsLast30Days)
-        },
-        [MODES.photos]: {
-            today: useSelector(state => state.stats.newPhotosToday),
-            week: useSelector(state => state.stats.newPhotosLast7Days),
-            month: useSelector(state => state.stats.newPhotosLast30Days)
-        },
-        [MODES.people]: {
-            today: useSelector(state => state.stats.newUsersToday),
-            week: useSelector(state => state.stats.newUsersLast7Days),
-            month: useSelector(state => state.stats.newUsersLast30Days)
-        }
+    const keys = GROWTH_KEYS[activeMode];
+    const active = {
+        today: stats[keys.today],
+        week: stats[keys.week],
+        month: stats[keys.month]
     };
 
-    const active = growth[activeMode];
+    const onPressTags = useCallback(() => setActiveMode(MODES.tags), []);
+    const onPressPhotos = useCallback(() => setActiveMode(MODES.photos), []);
+    const onPressPeople = useCallback(() => setActiveMode(MODES.people), []);
 
     return (
         <View style={styles.section}>
@@ -78,26 +72,26 @@ const CommunityStats = () => {
             <View style={styles.card}>
                 <View style={styles.statsRow}>
                     <StatCell
-                        value={totalTags}
+                        value={stats.totalTags}
                         label={t('Tags')}
                         color="#14b8a6"
                         active={activeMode === MODES.tags}
-                        onPress={() => setActiveMode(MODES.tags)}
+                        onPress={onPressTags}
                     />
                     <StatCell
-                        value={totalImages}
+                        value={stats.totalImages}
                         label={t('Photos')}
                         color="#8b5cf6"
                         active={activeMode === MODES.photos}
-                        onPress={() => setActiveMode(MODES.photos)}
+                        onPress={onPressPhotos}
                     />
                     <StatCell
-                        value={totalUsers}
+                        value={stats.totalUsers}
                         label={t('People')}
                         color="#f59e0b"
                         exact
                         active={activeMode === MODES.people}
-                        onPress={() => setActiveMode(MODES.people)}
+                        onPress={onPressPeople}
                     />
                 </View>
                 <View style={styles.badgeRow}>

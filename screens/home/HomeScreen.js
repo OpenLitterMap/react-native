@@ -21,7 +21,7 @@ import {
     fetchAllUntaggedPhotos,
     fetchUntaggedCount
 } from '../../reducers/server_photos_reducer';
-import {closeThankYouMessages, setUploadAbortReason} from '../../reducers/upload_flow_reducer';
+import {closeThankYouMessages, selectUploadFlow, setUploadAbortReason} from '../../reducers/upload_flow_reducer';
 import {getStats} from '../../reducers/stats_reducer';
 import {selectRecentGeotaggedPhotos} from '../../reducers/gallery_reducer';
 import {isTagged} from '../../utils/isTagged';
@@ -70,19 +70,21 @@ const HomeScreen = ({navigation}) => {
     const token = useSelector(state => state.auth.token);
     const images = useSelector(state => state.photos.imagesArray);
 
-    // Upload flow state
-    const showUploadModal = useSelector(state => state.uploadFlow.showUploadModal);
-    const showThankYouMessages = useSelector(state => state.uploadFlow.showThankYouMessages);
-    const uploadPhase = useSelector(state => state.uploadFlow.uploadPhase);
+    // Upload flow state (single memoized selector)
+    const {
+        showUploadModal,
+        showThankYouMessages,
+        uploadPhase,
+        currentUploadIndex,
+        uploadAbortReason,
+        totalToUpload,
+        uploaded,
+        uploadFailed,
+        tagged,
+        taggedFailed,
+        failedCounts
+    } = useSelector(selectUploadFlow);
     const isUploading = uploadPhase !== 'idle';
-    const currentUploadIndex = useSelector(state => state.uploadFlow.currentUploadIndex);
-    const uploadAbortReason = useSelector(state => state.uploadFlow.uploadAbortReason);
-    const totalToUpload = useSelector(state => state.uploadFlow.totalToUpload);
-    const uploaded = useSelector(state => state.uploadFlow.uploaded);
-    const uploadFailed = useSelector(state => state.uploadFlow.uploadFailed);
-    const tagged = useSelector(state => state.uploadFlow.tagged);
-    const taggedFailed = useSelector(state => state.uploadFlow.taggedFailed);
-    const failedCounts = useSelector(state => state.uploadFlow.failedCounts);
 
     // Count tagged photos ready to upload (for the upload button)
     const dismissedUris = useSelector(state => state.gallery.dismissedUris);

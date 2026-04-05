@@ -11,6 +11,14 @@ import {
     TextInput,
     View
 } from 'react-native';
+import {Gesture, GestureDetector} from 'react-native-gesture-handler';
+import Animated, {
+    runOnJS,
+    useAnimatedStyle,
+    useSharedValue,
+    withSpring,
+    withTiming
+} from 'react-native-reanimated';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {Body, Caption, Colors} from '../../components';
 import {getCategoryColor} from './categoryColors';
@@ -177,533 +185,573 @@ const TagDetailSheet = ({
     // Avoids full subtree mount/unmount churn that causes Fabric recycler crashes.
     const qty = tag?.quantity || 1;
 
+    // Swipe-down-to-close gesture
+    const translateY = useSharedValue(0);
+    const scrollAtTop = useRef(true);
+
+    const dismissSheet = useCallback(() => {
+        Keyboard.dismiss();
+        onClose();
+    }, [onClose]);
+
+    // Reset translateY when sheet opens
+    useEffect(() => {
+        if (visible) translateY.value = 0;
+    }, [visible, translateY]);
+
+    const swipeGesture = Gesture.Pan()
+        .activeOffsetY(12)
+        .failOffsetX([-20, 20])
+        .onUpdate(e => {
+            // Only allow dragging down, and only when scroll is at top
+            if (e.translationY > 0 && scrollAtTop.current) {
+                translateY.value = e.translationY;
+            }
+        })
+        .onEnd(e => {
+            if (e.translationY > 80 || (e.translationY > 30 && e.velocityY > 500)) {
+                translateY.value = withTiming(600, {duration: 200});
+                runOnJS(dismissSheet)();
+            } else {
+                translateY.value = withSpring(0, {damping: 20, stiffness: 300});
+            }
+        });
+
+    const sheetAnimatedStyle = useAnimatedStyle(() => ({
+        transform: [{translateY: translateY.value}]
+    }));
+
     return (
         <Modal
             animationType="slide"
             transparent
             visible={visible && tag != null}
-            onRequestClose={() => { Keyboard.dismiss(); onClose(); }}>
+            onRequestClose={dismissSheet}>
             <View style={styles.overlay}>
                 <KeyboardAvoidingView
                     behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                     style={styles.keyboardView}>
-                    <Pressable style={styles.backdrop} onPress={() => { Keyboard.dismiss(); onClose(); }} />
-                    <View style={styles.sheet}>
-                        <ScrollView
-                            ref={scrollRef}
-                            showsVerticalScrollIndicator={false}
-                            bounces={false}
-                            keyboardShouldPersistTaps="handled"
-                            contentContainerStyle={styles.scrollContent}
-                            onContentSizeChange={() => {
-                                if (isMaterialFocused) {
-                                    scrollMaterialsIntoView();
-                                }
-                                if (isBrandFocused) {
-                                    scrollBrandsIntoView();
-                                }
-                            }}>
-                            <View style={styles.handle} />
+                    <Pressable style={styles.backdrop} onPress={dismissSheet} />
+                    <GestureDetector gesture={swipeGesture}>
+                        <Animated.View style={[styles.sheet, sheetAnimatedStyle]}>
+                            <ScrollView
+                                ref={scrollRef}
+                                showsVerticalScrollIndicator={false}
+                                bounces={false}
+                                keyboardShouldPersistTaps="handled"
+                                contentContainerStyle={styles.scrollContent}
+                                onScroll={e => { scrollAtTop.current = e.nativeEvent.contentOffset.y <= 1; }}
+                                scrollEventThrottle={16}
+                                onContentSizeChange={() => {
+                                    if (isMaterialFocused) {
+                                        scrollMaterialsIntoView();
+                                    }
+                                    if (isBrandFocused) {
+                                        scrollBrandsIntoView();
+                                    }
+                                }}>
+                                <View style={styles.handle} />
 
-                            {/* Content guard: tag can be null during Modal close animation.
+                                {/* Content guard: tag can be null during Modal close animation.
                                 Sheet/ScrollView/handle stay mounted; only content is gated. */}
-                            {!tag ? <View style={styles.bottomSpacer} /> : <>
+                                {!tag ? <View style={styles.bottomSpacer} /> : <>
 
-                            {/* Header */}
-                            <View style={styles.header}>
-                                <View
-                                    style={[
-                                        styles.headerColorBar,
-                                        {backgroundColor: categoryColor}
-                                    ]}
-                                />
-                                <View>
-                                    <Body style={styles.headerName}>
-                                        {tagName}
-                                    </Body>
-                                    {categoryName ? (
-                                        <Caption>{categoryName}</Caption>
-                                    ) : null}
-                                </View>
-                            </View>
-
-                            {/* Quantity */}
-                            <View style={styles.section}>
-                                <Caption style={styles.sectionLabel}>
-                                    {t('Quantity')}
-                                </Caption>
-                                <View style={styles.quantityRow}>
-                                    <Pressable
-                                        style={styles.stepperBtn}
-                                        onPress={() => {
-                                            if (qty <= 1) {
-                                                onClose();
-                                            }
-                                            onUpdateQuantity(
-                                                tag.cloId,
-                                                tag.typeId,
-                                                qty - 1
-                                            );
-                                        }}>
-                                        <Icon
-                                            name={
-                                                qty <= 1
-                                                    ? 'trash-outline'
-                                                    : 'remove'
-                                            }
-                                            size={18}
-                                            color={
-                                                qty <= 1
-                                                    ? Colors.error
-                                                    : '#333'
-                                            }
+                                    {/* Header */}
+                                    <View style={styles.header}>
+                                        <View
+                                            style={[
+                                                styles.headerColorBar,
+                                                {backgroundColor: categoryColor}
+                                            ]}
                                         />
-                                    </Pressable>
-                                    <Body style={styles.quantityText}>
-                                        {qty}
-                                    </Body>
-                                    <Pressable
-                                        style={[
-                                            styles.stepperBtn,
-                                            qty >= maxQuantity &&
+                                        <View>
+                                            <Body style={styles.headerName}>
+                                                {tagName}
+                                            </Body>
+                                            {categoryName ? (
+                                                <Caption>{categoryName}</Caption>
+                                            ) : null}
+                                        </View>
+                                    </View>
+
+                                    {/* Quantity */}
+                                    <View style={styles.section}>
+                                        <Caption style={styles.sectionLabel}>
+                                            {t('Quantity')}
+                                        </Caption>
+                                        <View style={styles.quantityRow}>
+                                            <Pressable
+                                                style={styles.stepperBtn}
+                                                onPress={() => {
+                                                    if (qty <= 1) {
+                                                        onClose();
+                                                    }
+                                                    onUpdateQuantity(
+                                                        tag.cloId,
+                                                        tag.typeId,
+                                                        qty - 1
+                                                    );
+                                                }}>
+                                                <Icon
+                                                    name={
+                                                        qty <= 1
+                                                            ? 'trash-outline'
+                                                            : 'remove'
+                                                    }
+                                                    size={18}
+                                                    color={
+                                                        qty <= 1
+                                                            ? Colors.error
+                                                            : '#333'
+                                                    }
+                                                />
+                                            </Pressable>
+                                            <Body style={styles.quantityText}>
+                                                {qty}
+                                            </Body>
+                                            <Pressable
+                                                style={[
+                                                    styles.stepperBtn,
+                                                    qty >= maxQuantity &&
                                                 styles.stepperBtnDisabled
-                                        ]}
-                                        onPress={() =>
-                                            onUpdateQuantity(
-                                                tag.cloId,
-                                                tag.typeId,
-                                                qty + 1
-                                            )
-                                        }
-                                        disabled={qty >= maxQuantity}>
-                                        <Icon
-                                            name="add"
-                                            size={18}
-                                            color={
-                                                qty >= maxQuantity
-                                                    ? '#ccc'
-                                                    : '#333'
-                                            }
-                                        />
-                                    </Pressable>
-                                </View>
-                            </View>
-
-                            {/* Picked Up */}
-                            <View style={styles.section}>
-                                <View style={styles.sectionHeader}>
-                                    <Caption style={styles.sectionLabel}>
-                                        {t('Picked Up')}
-                                    </Caption>
-                                    <Caption
-                                        style={styles.xpHint}
-                                        color="accent">
-                                        +5 XP
-                                    </Caption>
-                                </View>
-                                <View style={styles.pickedUpRow}>
-                                    <Pressable
-                                        style={[
-                                            styles.pickedUpOption,
-                                            tag.picked_up === true && styles.pickedUpOptionActive
-                                        ]}
-                                        onPress={() => onSetPickedUp(tag.cloId, tag.typeId, true)}>
-                                        <Icon name="checkmark" size={16} color={tag.picked_up === true ? Colors.white : '#666'} />
-                                        <Caption style={{color: tag.picked_up === true ? Colors.white : '#666'}}>
-                                            {t('Yes')}
-                                        </Caption>
-                                    </Pressable>
-                                    <Pressable
-                                        style={[
-                                            styles.pickedUpOption,
-                                            tag.picked_up === false && styles.pickedUpOptionNo
-                                        ]}
-                                        onPress={() => onSetPickedUp(tag.cloId, tag.typeId, false)}>
-                                        <Icon name="close" size={16} color={tag.picked_up === false ? Colors.white : '#666'} />
-                                        <Caption style={{color: tag.picked_up === false ? Colors.white : '#666'}}>
-                                            {t('No')}
-                                        </Caption>
-                                    </Pressable>
-                                    <Pressable
-                                        style={[
-                                            styles.pickedUpOption,
-                                            (tag.picked_up === null || tag.picked_up === undefined) && styles.pickedUpOptionNull
-                                        ]}
-                                        onPress={() => onSetPickedUp(tag.cloId, tag.typeId, null)}>
-                                        <Icon name="help" size={16} color={(tag.picked_up === null || tag.picked_up === undefined) ? Colors.white : '#666'} />
-                                        <Caption style={{color: (tag.picked_up === null || tag.picked_up === undefined) ? Colors.white : '#666'}}>
-                                            {t('Unknown')}
-                                        </Caption>
-                                    </Pressable>
-                                </View>
-                            </View>
-
-                            {/* Materials */}
-                            <View
-                                style={styles.section}
-                                onLayout={event => {
-                                    materialsSectionYRef.current = event.nativeEvent.layout.y;
-                                }}>
-                                <View style={styles.sectionHeader}>
-                                    <Caption style={styles.sectionLabel}>
-                                        {t('Materials')}
-                                    </Caption>
-                                    <Caption
-                                        style={styles.xpHint}
-                                        color="accent">
-                                        +2 XP
-                                    </Caption>
-                                </View>
-
-                                {/* Selected materials */}
-                                {selectedMaterials.length > 0 && (
-                                    <View style={styles.selectedChipsWrap}>
-                                        {selectedMaterials.map(m => (
-                                            <View
-                                                key={m.id}
-                                                style={styles.selectedChip}>
-                                                <Caption
-                                                    style={
-                                                        styles.selectedChipText
-                                                    }>
-                                                    {m.name}
-                                                </Caption>
-                                                <Pressable
-                                                    onPress={() =>
-                                                        onToggleMaterial(m.id)
+                                                ]}
+                                                onPress={() =>
+                                                    onUpdateQuantity(
+                                                        tag.cloId,
+                                                        tag.typeId,
+                                                        qty + 1
+                                                    )
+                                                }
+                                                disabled={qty >= maxQuantity}>
+                                                <Icon
+                                                    name="add"
+                                                    size={18}
+                                                    color={
+                                                        qty >= maxQuantity
+                                                            ? '#ccc'
+                                                            : '#333'
                                                     }
-                                                    hitSlop={4}>
-                                                    <Icon
-                                                        name="close"
-                                                        size={14}
-                                                        color="#888"
-                                                    />
-                                                </Pressable>
-                                            </View>
-                                        ))}
+                                                />
+                                            </Pressable>
+                                        </View>
                                     </View>
-                                )}
 
-                                {/* Material search */}
-                                <View style={styles.searchRow}>
-                                    <Icon
-                                        name="search"
-                                        size={16}
-                                        color="#aaa"
-                                        style={styles.searchIcon}
-                                    />
-                                    <TextInput
-                                        style={styles.searchInput}
-                                        placeholder={t('Search materials')}
-                                        placeholderTextColor="#aaa"
-                                        value={materialQuery}
-                                        onChangeText={setMaterialQuery}
-                                        onFocus={handleMaterialFocus}
-                                        onBlur={handleMaterialBlur}
-                                        autoCapitalize="none"
-                                        autoCorrect={false}
-                                    />
-                                    <Pressable
-                                        onPress={() => setMaterialQuery('')}
-                                        hitSlop={4}
-                                        style={{opacity: materialQuery.length > 0 ? 1 : 0}}
-                                        disabled={materialQuery.length === 0}>
-                                        <Icon
-                                            name="close-circle"
-                                            size={16}
-                                            color="#ccc"
-                                        />
-                                    </Pressable>
-                                </View>
+                                    {/* Picked Up */}
+                                    <View style={styles.section}>
+                                        <View style={styles.sectionHeader}>
+                                            <Caption style={styles.sectionLabel}>
+                                                {t('Picked Up')}
+                                            </Caption>
+                                            <Caption
+                                                style={styles.xpHint}
+                                                color="accent">
+                                                +5 XP
+                                            </Caption>
+                                        </View>
+                                        <View style={styles.pickedUpRow}>
+                                            <Pressable
+                                                style={[
+                                                    styles.pickedUpOption,
+                                                    tag.picked_up === true && styles.pickedUpOptionActive
+                                                ]}
+                                                onPress={() => onSetPickedUp(tag.cloId, tag.typeId, true)}>
+                                                <Icon name="checkmark" size={16} color={tag.picked_up === true ? Colors.white : '#666'} />
+                                                <Caption style={{color: tag.picked_up === true ? Colors.white : '#666'}}>
+                                                    {t('Yes')}
+                                                </Caption>
+                                            </Pressable>
+                                            <Pressable
+                                                style={[
+                                                    styles.pickedUpOption,
+                                                    tag.picked_up === false && styles.pickedUpOptionNo
+                                                ]}
+                                                onPress={() => onSetPickedUp(tag.cloId, tag.typeId, false)}>
+                                                <Icon name="close" size={16} color={tag.picked_up === false ? Colors.white : '#666'} />
+                                                <Caption style={{color: tag.picked_up === false ? Colors.white : '#666'}}>
+                                                    {t('No')}
+                                                </Caption>
+                                            </Pressable>
+                                            <Pressable
+                                                style={[
+                                                    styles.pickedUpOption,
+                                                    (tag.picked_up === null || tag.picked_up === undefined) && styles.pickedUpOptionNull
+                                                ]}
+                                                onPress={() => onSetPickedUp(tag.cloId, tag.typeId, null)}>
+                                                <Icon name="help" size={16} color={(tag.picked_up === null || tag.picked_up === undefined) ? Colors.white : '#666'} />
+                                                <Caption style={{color: (tag.picked_up === null || tag.picked_up === undefined) ? Colors.white : '#666'}}>
+                                                    {t('Unknown')}
+                                                </Caption>
+                                            </Pressable>
+                                        </View>
+                                    </View>
 
-                                {/* Material results — container always mounted to avoid
+                                    {/* Materials */}
+                                    <View
+                                        style={styles.section}
+                                        onLayout={event => {
+                                            materialsSectionYRef.current = event.nativeEvent.layout.y;
+                                        }}>
+                                        <View style={styles.sectionHeader}>
+                                            <Caption style={styles.sectionLabel}>
+                                                {t('Materials')}
+                                            </Caption>
+                                            <Caption
+                                                style={styles.xpHint}
+                                                color="accent">
+                                                +2 XP
+                                            </Caption>
+                                        </View>
+
+                                        {/* Selected materials */}
+                                        {selectedMaterials.length > 0 && (
+                                            <View style={styles.selectedChipsWrap}>
+                                                {selectedMaterials.map(m => (
+                                                    <View
+                                                        key={m.id}
+                                                        style={styles.selectedChip}>
+                                                        <Caption
+                                                            style={
+                                                                styles.selectedChipText
+                                                            }>
+                                                            {m.name}
+                                                        </Caption>
+                                                        <Pressable
+                                                            onPress={() =>
+                                                                onToggleMaterial(m.id)
+                                                            }
+                                                            hitSlop={4}>
+                                                            <Icon
+                                                                name="close"
+                                                                size={14}
+                                                                color="#888"
+                                                            />
+                                                        </Pressable>
+                                                    </View>
+                                                ))}
+                                            </View>
+                                        )}
+
+                                        {/* Material search */}
+                                        <View style={styles.searchRow}>
+                                            <Icon
+                                                name="search"
+                                                size={16}
+                                                color="#aaa"
+                                                style={styles.searchIcon}
+                                            />
+                                            <TextInput
+                                                style={styles.searchInput}
+                                                placeholder={t('Search materials')}
+                                                placeholderTextColor="#aaa"
+                                                value={materialQuery}
+                                                onChangeText={setMaterialQuery}
+                                                onFocus={handleMaterialFocus}
+                                                onBlur={handleMaterialBlur}
+                                                autoCapitalize="none"
+                                                autoCorrect={false}
+                                            />
+                                            <Pressable
+                                                onPress={() => setMaterialQuery('')}
+                                                hitSlop={4}
+                                                style={{opacity: materialQuery.length > 0 ? 1 : 0}}
+                                                disabled={materialQuery.length === 0}>
+                                                <Icon
+                                                    name="close-circle"
+                                                    size={16}
+                                                    color="#ccc"
+                                                />
+                                            </Pressable>
+                                        </View>
+
+                                        {/* Material results — container always mounted to avoid
                                     Fabric churn while typing with active keyboard session */}
-                                <View style={materialResults.length > 0 ? styles.brandResults : undefined}>
-                                    {materialResults.map(m => (
-                                        <Pressable
-                                            key={m.id}
-                                            style={styles.brandRow}
-                                            onPress={() => {
-                                                onToggleMaterial(m.id);
-                                                setMaterialQuery('');
-                                            }}>
-                                            <Caption
-                                                style={styles.brandName}>
-                                                {m.name}
-                                            </Caption>
-                                            <Icon
-                                                name="add-circle-outline"
-                                                size={18}
-                                                color={Colors.accent}
-                                            />
-                                        </Pressable>
-                                    ))}
-                                </View>
-
-                                {/* Create custom tag from material search — always mounted */}
-                                <Pressable
-                                    style={[styles.createCustomRow, {display: showMaterialCreateOption ? 'flex' : 'none'}]}
-                                    onPress={handleCreateMaterialAsCustomTag}
-                                    disabled={!showMaterialCreateOption}>
-                                    <View style={styles.createCustomLeft}>
-                                        <Icon
-                                            name="pricetag-outline"
-                                            size={16}
-                                            color="#6366f1"
-                                        />
-                                        <Caption style={styles.createCustomText}>
-                                            {t('Create')}{' '}
-                                            <Caption style={styles.createCustomTag}>
-                                                material:{materialQuery.trim()}
-                                            </Caption>
-                                        </Caption>
-                                    </View>
-                                    <Icon
-                                        name="add-circle-outline"
-                                        size={18}
-                                        color="#6366f1"
-                                    />
-                                </Pressable>
-                            </View>
-
-                            {/* Brands */}
-                            <View
-                                style={styles.section}
-                                onLayout={event => {
-                                    brandsSectionYRef.current = event.nativeEvent.layout.y;
-                                }}>
-                                <View style={styles.sectionHeader}>
-                                    <Caption style={styles.sectionLabel}>
-                                        {t('Brands')}
-                                    </Caption>
-                                    <Caption
-                                        style={styles.xpHint}
-                                        color="accent">
-                                        +3 XP
-                                    </Caption>
-                                </View>
-
-                                {/* Selected brands */}
-                                {tag.brands && tag.brands.length > 0 && (
-                                    <View style={styles.selectedChipsWrap}>
-                                        {tag.brands.map(b => {
-                                            const brandInfo =
-                                                brandsById?.[b.id];
-                                            return (
-                                                <View
-                                                    key={b.id}
-                                                    style={
-                                                        styles.selectedChip
-                                                    }>
-                                                    <Caption
-                                                        style={
-                                                            styles.selectedChipText
-                                                        }>
-                                                        {brandInfo?.name ||
-                                                            `#${b.id}`}
-                                                    </Caption>
-                                                    <Pressable
-                                                        onPress={() =>
-                                                            onRemoveBrand(b.id)
-                                                        }
-                                                        hitSlop={4}>
-                                                        <Icon
-                                                            name="close"
-                                                            size={14}
-                                                            color="#888"
-                                                        />
-                                                    </Pressable>
-                                                </View>
-                                            );
-                                        })}
-                                    </View>
-                                )}
-
-                                {/* Brand search */}
-                                <View style={styles.searchRow}>
-                                    <Icon
-                                        name="search"
-                                        size={16}
-                                        color="#aaa"
-                                        style={styles.searchIcon}
-                                    />
-                                    <TextInput
-                                        style={styles.searchInput}
-                                        placeholder={t('Search brands')}
-                                        placeholderTextColor="#aaa"
-                                        value={brandQuery}
-                                        onChangeText={setBrandQuery}
-                                        onFocus={handleBrandFocus}
-                                        onBlur={handleBrandBlur}
-                                        autoCapitalize="none"
-                                        autoCorrect={false}
-                                    />
-                                    <Pressable
-                                        onPress={() => setBrandQuery('')}
-                                        hitSlop={4}
-                                        style={{opacity: brandQuery.length > 0 ? 1 : 0}}
-                                        disabled={brandQuery.length === 0}>
-                                        <Icon
-                                            name="close-circle"
-                                            size={16}
-                                            color="#ccc"
-                                        />
-                                    </Pressable>
-                                </View>
-
-                                {/* Brand results */}
-                                {/* Brand results — container always mounted */}
-                                <View style={brandResults.length > 0 ? styles.brandResults : undefined}>
-                                    {brandResults.map(b => (
-                                        <Pressable
-                                            key={b.id}
-                                            style={styles.brandRow}
-                                            onPress={() => {
-                                                onAddBrand(b.id);
-                                                setBrandQuery('');
-                                            }}>
-                                            <Caption
-                                                style={styles.brandName}>
-                                                {b.name}
-                                            </Caption>
-                                            <Icon
-                                                name="add-circle-outline"
-                                                size={18}
-                                                color={Colors.accent}
-                                            />
-                                        </Pressable>
-                                    ))}
-                                </View>
-
-                                {/* Create custom tag from brand search — always mounted */}
-                                <Pressable
-                                    style={[styles.createCustomRow, {display: showBrandCreateOption ? 'flex' : 'none'}]}
-                                    onPress={handleCreateBrandAsCustomTag}
-                                    disabled={!showBrandCreateOption}>
-                                    <View style={styles.createCustomLeft}>
-                                        <Icon
-                                            name="pricetag-outline"
-                                            size={16}
-                                            color="#6366f1"
-                                        />
-                                        <Caption style={styles.createCustomText}>
-                                            {t('Create')}{' '}
-                                            <Caption style={styles.createCustomTag}>
-                                                brand:{brandQuery.trim()}
-                                            </Caption>
-                                        </Caption>
-                                    </View>
-                                    <Icon
-                                        name="add-circle-outline"
-                                        size={18}
-                                        color="#6366f1"
-                                    />
-                                </Pressable>
-                            </View>
-
-                            {/* Custom Tags */}
-                            <View style={styles.section}>
-                                <View style={styles.sectionHeader}>
-                                    <Caption style={styles.sectionLabel}>
-                                        {t('Custom Tags')}
-                                    </Caption>
-                                    <Caption
-                                        style={styles.xpHint}
-                                        color="accent">
-                                        +1 XP
-                                    </Caption>
-                                </View>
-
-                                {/* Selected custom tags */}
-                                {tag.customTags && tag.customTags.length > 0 && (
-                                    <View style={styles.selectedChipsWrap}>
-                                        {tag.customTags.map(ct => (
-                                            <View
-                                                key={ct}
-                                                style={styles.selectedChip}>
-                                                <Caption
-                                                    style={
-                                                        styles.selectedChipText
-                                                    }>
-                                                    {ct}
-                                                </Caption>
+                                        <View style={materialResults.length > 0 ? styles.brandResults : undefined}>
+                                            {materialResults.map(m => (
                                                 <Pressable
-                                                    onPress={() =>
-                                                        onRemoveCustomTag(ct)
-                                                    }
-                                                    hitSlop={4}>
+                                                    key={m.id}
+                                                    style={styles.brandRow}
+                                                    onPress={() => {
+                                                        onToggleMaterial(m.id);
+                                                        setMaterialQuery('');
+                                                    }}>
+                                                    <Caption
+                                                        style={styles.brandName}>
+                                                        {m.name}
+                                                    </Caption>
                                                     <Icon
-                                                        name="close"
-                                                        size={14}
-                                                        color="#888"
+                                                        name="add-circle-outline"
+                                                        size={18}
+                                                        color={Colors.accent}
                                                     />
                                                 </Pressable>
+                                            ))}
+                                        </View>
+
+                                        {/* Create custom tag from material search — always mounted */}
+                                        <Pressable
+                                            style={[styles.createCustomRow, {display: showMaterialCreateOption ? 'flex' : 'none'}]}
+                                            onPress={handleCreateMaterialAsCustomTag}
+                                            disabled={!showMaterialCreateOption}>
+                                            <View style={styles.createCustomLeft}>
+                                                <Icon
+                                                    name="pricetag-outline"
+                                                    size={16}
+                                                    color="#6366f1"
+                                                />
+                                                <Caption style={styles.createCustomText}>
+                                                    {t('Create')}{' '}
+                                                    <Caption style={styles.createCustomTag}>
+                                                        material:{materialQuery.trim()}
+                                                    </Caption>
+                                                </Caption>
                                             </View>
-                                        ))}
+                                            <Icon
+                                                name="add-circle-outline"
+                                                size={18}
+                                                color="#6366f1"
+                                            />
+                                        </Pressable>
                                     </View>
-                                )}
 
-                                {/* Custom tag input */}
-                                <View style={styles.searchRow}>
-                                    <Icon
-                                        name="create-outline"
-                                        size={16}
-                                        color="#aaa"
-                                        style={styles.searchIcon}
-                                    />
-                                    <TextInput
-                                        style={styles.searchInput}
-                                        placeholder={t('Add custom tag')}
-                                        placeholderTextColor="#aaa"
-                                        value={customTagText}
-                                        onChangeText={setCustomTagText}
-                                        onSubmitEditing={handleAddCustomTag}
-                                        returnKeyType="done"
-                                        maxLength={100}
-                                    />
+                                    {/* Brands */}
+                                    <View
+                                        style={styles.section}
+                                        onLayout={event => {
+                                            brandsSectionYRef.current = event.nativeEvent.layout.y;
+                                        }}>
+                                        <View style={styles.sectionHeader}>
+                                            <Caption style={styles.sectionLabel}>
+                                                {t('Brands')}
+                                            </Caption>
+                                            <Caption
+                                                style={styles.xpHint}
+                                                color="accent">
+                                                +3 XP
+                                            </Caption>
+                                        </View>
+
+                                        {/* Selected brands */}
+                                        {tag.brands && tag.brands.length > 0 && (
+                                            <View style={styles.selectedChipsWrap}>
+                                                {tag.brands.map(b => {
+                                                    const brandInfo =
+                                                brandsById?.[b.id];
+                                                    return (
+                                                        <View
+                                                            key={b.id}
+                                                            style={
+                                                                styles.selectedChip
+                                                            }>
+                                                            <Caption
+                                                                style={
+                                                                    styles.selectedChipText
+                                                                }>
+                                                                {brandInfo?.name ||
+                                                            `#${b.id}`}
+                                                            </Caption>
+                                                            <Pressable
+                                                                onPress={() =>
+                                                                    onRemoveBrand(b.id)
+                                                                }
+                                                                hitSlop={4}>
+                                                                <Icon
+                                                                    name="close"
+                                                                    size={14}
+                                                                    color="#888"
+                                                                />
+                                                            </Pressable>
+                                                        </View>
+                                                    );
+                                                })}
+                                            </View>
+                                        )}
+
+                                        {/* Brand search */}
+                                        <View style={styles.searchRow}>
+                                            <Icon
+                                                name="search"
+                                                size={16}
+                                                color="#aaa"
+                                                style={styles.searchIcon}
+                                            />
+                                            <TextInput
+                                                style={styles.searchInput}
+                                                placeholder={t('Search brands')}
+                                                placeholderTextColor="#aaa"
+                                                value={brandQuery}
+                                                onChangeText={setBrandQuery}
+                                                onFocus={handleBrandFocus}
+                                                onBlur={handleBrandBlur}
+                                                autoCapitalize="none"
+                                                autoCorrect={false}
+                                            />
+                                            <Pressable
+                                                onPress={() => setBrandQuery('')}
+                                                hitSlop={4}
+                                                style={{opacity: brandQuery.length > 0 ? 1 : 0}}
+                                                disabled={brandQuery.length === 0}>
+                                                <Icon
+                                                    name="close-circle"
+                                                    size={16}
+                                                    color="#ccc"
+                                                />
+                                            </Pressable>
+                                        </View>
+
+                                        {/* Brand results */}
+                                        {/* Brand results — container always mounted */}
+                                        <View style={brandResults.length > 0 ? styles.brandResults : undefined}>
+                                            {brandResults.map(b => (
+                                                <Pressable
+                                                    key={b.id}
+                                                    style={styles.brandRow}
+                                                    onPress={() => {
+                                                        onAddBrand(b.id);
+                                                        setBrandQuery('');
+                                                    }}>
+                                                    <Caption
+                                                        style={styles.brandName}>
+                                                        {b.name}
+                                                    </Caption>
+                                                    <Icon
+                                                        name="add-circle-outline"
+                                                        size={18}
+                                                        color={Colors.accent}
+                                                    />
+                                                </Pressable>
+                                            ))}
+                                        </View>
+
+                                        {/* Create custom tag from brand search — always mounted */}
+                                        <Pressable
+                                            style={[styles.createCustomRow, {display: showBrandCreateOption ? 'flex' : 'none'}]}
+                                            onPress={handleCreateBrandAsCustomTag}
+                                            disabled={!showBrandCreateOption}>
+                                            <View style={styles.createCustomLeft}>
+                                                <Icon
+                                                    name="pricetag-outline"
+                                                    size={16}
+                                                    color="#6366f1"
+                                                />
+                                                <Caption style={styles.createCustomText}>
+                                                    {t('Create')}{' '}
+                                                    <Caption style={styles.createCustomTag}>
+                                                        brand:{brandQuery.trim()}
+                                                    </Caption>
+                                                </Caption>
+                                            </View>
+                                            <Icon
+                                                name="add-circle-outline"
+                                                size={18}
+                                                color="#6366f1"
+                                            />
+                                        </Pressable>
+                                    </View>
+
+                                    {/* Custom Tags */}
+                                    <View style={styles.section}>
+                                        <View style={styles.sectionHeader}>
+                                            <Caption style={styles.sectionLabel}>
+                                                {t('Custom Tags')}
+                                            </Caption>
+                                            <Caption
+                                                style={styles.xpHint}
+                                                color="accent">
+                                                +1 XP
+                                            </Caption>
+                                        </View>
+
+                                        {/* Selected custom tags */}
+                                        {tag.customTags && tag.customTags.length > 0 && (
+                                            <View style={styles.selectedChipsWrap}>
+                                                {tag.customTags.map(ct => (
+                                                    <View
+                                                        key={ct}
+                                                        style={styles.selectedChip}>
+                                                        <Caption
+                                                            style={
+                                                                styles.selectedChipText
+                                                            }>
+                                                            {ct}
+                                                        </Caption>
+                                                        <Pressable
+                                                            onPress={() =>
+                                                                onRemoveCustomTag(ct)
+                                                            }
+                                                            hitSlop={4}>
+                                                            <Icon
+                                                                name="close"
+                                                                size={14}
+                                                                color="#888"
+                                                            />
+                                                        </Pressable>
+                                                    </View>
+                                                ))}
+                                            </View>
+                                        )}
+
+                                        {/* Custom tag input */}
+                                        <View style={styles.searchRow}>
+                                            <Icon
+                                                name="create-outline"
+                                                size={16}
+                                                color="#aaa"
+                                                style={styles.searchIcon}
+                                            />
+                                            <TextInput
+                                                style={styles.searchInput}
+                                                placeholder={t('Add custom tag')}
+                                                placeholderTextColor="#aaa"
+                                                value={customTagText}
+                                                onChangeText={setCustomTagText}
+                                                onSubmitEditing={handleAddCustomTag}
+                                                returnKeyType="done"
+                                                maxLength={100}
+                                            />
+                                            <Pressable
+                                                onPress={handleAddCustomTag}
+                                                hitSlop={4}
+                                                style={[styles.addBtn, {opacity: customTagText.length > 0 ? 1 : 0}]}
+                                                disabled={customTagText.length === 0}>
+                                                <Icon
+                                                    name="add"
+                                                    size={18}
+                                                    color={Colors.accent}
+                                                />
+                                            </Pressable>
+                                        </View>
+                                    </View>
+
+                                    {/* Done / Create Tag */}
                                     <Pressable
-                                        onPress={handleAddCustomTag}
-                                        hitSlop={4}
-                                        style={[styles.addBtn, {opacity: customTagText.length > 0 ? 1 : 0}]}
-                                        disabled={customTagText.length === 0}>
-                                        <Icon
-                                            name="add"
-                                            size={18}
-                                            color={Colors.accent}
-                                        />
-                                    </Pressable>
-                                </View>
-                            </View>
-
-                            {/* Done / Create Tag */}
-                            <Pressable
-                                style={styles.doneButton}
-                                onPress={() => {
-                                    if (customTagText.trim()) {
-                                        handleAddCustomTag();
-                                    }
-                                    if (brandQuery.trim() && brandResults.length === 0) {
-                                        handleCreateBrandAsCustomTag();
-                                    }
-                                    if (materialQuery.trim() && materialResults.length === 0) {
-                                        handleCreateMaterialAsCustomTag();
-                                    }
-                                    Keyboard.dismiss();
-                                    onClose();
-                                }}>
-                                <Body color="white" style={styles.doneText}>
-                                    {customTagText.trim() ||
+                                        style={styles.doneButton}
+                                        onPress={() => {
+                                            if (customTagText.trim()) {
+                                                handleAddCustomTag();
+                                            }
+                                            if (brandQuery.trim() && brandResults.length === 0) {
+                                                handleCreateBrandAsCustomTag();
+                                            }
+                                            if (materialQuery.trim() && materialResults.length === 0) {
+                                                handleCreateMaterialAsCustomTag();
+                                            }
+                                            Keyboard.dismiss();
+                                            onClose();
+                                        }}>
+                                        <Body color="white" style={styles.doneText}>
+                                            {customTagText.trim() ||
                                         (brandQuery.trim() && brandResults.length === 0) ||
                                         (materialQuery.trim() && materialResults.length === 0)
-                                        ? t('Create Tag')
-                                        : t('Done')}
-                                </Body>
-                            </Pressable>
+                                                ? t('Create Tag')
+                                                : t('Done')}
+                                        </Body>
+                                    </Pressable>
 
-                            <View style={styles.bottomSpacer} />
-                            </>}
-                        </ScrollView>
-                    </View>
+                                    <View style={styles.bottomSpacer} />
+                                </>}
+                            </ScrollView>
+                        </Animated.View>
+                    </GestureDetector>
                 </KeyboardAvoidingView>
             </View>
         </Modal>

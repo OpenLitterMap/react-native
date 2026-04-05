@@ -22,8 +22,7 @@ import {
     expandRecencyWindow,
     dismissPhotos
 } from '../../../reducers/gallery_reducer';
-import {isTagged} from '../../../utils/isTagged';
-import {deleteImage} from '../../../reducers/photos_reducer';
+import {deleteImage, selectTaggedUris, selectCameraPhotos} from '../../../reducers/photos_reducer';
 import {Colors} from '../../components/theme';
 import {Body, Caption} from '../../components/typography';
 
@@ -32,6 +31,13 @@ dayjs.extend(relativeTime);
 const NUM_COLUMNS = 3;
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const THUMB_SIZE = (SCREEN_WIDTH - 32 - (NUM_COLUMNS - 1) * 6) / NUM_COLUMNS;
+const ROW_HEIGHT = THUMB_SIZE + 6; // thumb + marginBottom
+
+const getItemLayout = (_, index) => ({
+    length: ROW_HEIGHT,
+    offset: ROW_HEIGHT * index,
+    index
+});
 
 const formatRelativeTime = (timestampSeconds) => {
     return dayjs.unix(timestampSeconds).fromNow();
@@ -79,30 +85,8 @@ const InboxSection = ({onTapPhoto, permissionStatus, requestPermission}) => {
     const fetchStatus = useSelector(state => state.gallery.fetchStatus);
     const isLoading = fetchStatus === 'loading';
 
-    const imagesArray = useSelector(state => state.photos.imagesArray);
-    const taggedUris = useMemo(() => {
-        const set = new Set();
-        for (const img of imagesArray) {
-            if (img.uri && isTagged(img)) set.add(img.uri);
-        }
-        return set;
-    }, [imagesArray]);
-
-    // Camera-captured photos not yet uploaded (from imagesArray)
-    const cameraPhotos = useMemo(() =>
-        imagesArray
-            .filter(img => img.uri && !img.uploaded && img.lat != null)
-            .map(img => ({
-                id: img.id,
-                uri: img.uri,
-                date: img.date,
-                lat: img.lat,
-                lon: img.lon,
-                hasGps: true,
-                fromCamera: true
-            })),
-    [imagesArray]
-    );
+    const taggedUris = useSelector(selectTaggedUris);
+    const cameraPhotos = useSelector(selectCameraPhotos);
 
     // Filter out uploaded photos, then prepend camera captures
     const uploadedUris = useSelector(state => state.photos.uploadedUris);
@@ -267,6 +251,7 @@ const InboxSection = ({onTapPhoto, permissionStatus, requestPermission}) => {
                     keyExtractor={item => String(item.id)}
                     numColumns={NUM_COLUMNS}
                     scrollEnabled={false}
+                    getItemLayout={getItemLayout}
                     contentContainerStyle={styles.gridContent}
                     columnWrapperStyle={styles.columnWrapper}
                     extraData={selectedUris}

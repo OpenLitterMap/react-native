@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {StyleSheet, View} from 'react-native';
 import {useSelector} from 'react-redux';
 import {useTranslation} from 'react-i18next';
@@ -22,9 +22,11 @@ const YourImpactSection = () => {
     const user = useSelector(state => state.auth.user);
     const token = useSelector(state => state.auth.token);
     const [xpLevels, setXpLevels] = useState(null);
+    const hasFetchedLevels = useRef(false);
 
     useEffect(() => {
-        if (token) {
+        if (token && !hasFetchedLevels.current) {
+            hasFetchedLevels.current = true;
             fetchXpLevels(token).then(setXpLevels).catch(() => {});
         }
     }, [token]);

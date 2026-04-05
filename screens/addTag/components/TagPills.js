@@ -101,6 +101,9 @@ const TagPills = ({
                     const categoryColor = tag.brandOnly
                         ? '#dc2626'
                         : getCategoryColor(entry?.categoryKey || tag.fallbackCategoryKey);
+                    const showQuickTagStar = isExpanded && !tag.brandOnly && onToggleQuickTag;
+                    const isQuickTag = showQuickTagStar &&
+                        quickTagCloIds?.has(makeTagKey(tag.cloId, tag.typeId));
 
                     return (
                         <View key={tagKey} style={styles.pillWrapper}>
@@ -173,32 +176,27 @@ const TagPills = ({
                                         />
                                     </Pressable>
                                 )}
-                                {isExpanded && !tag.brandOnly && onToggleQuickTag && (() => {
-                                    const isQuickTag = quickTagCloIds?.has(
-                                        makeTagKey(tag.cloId, tag.typeId)
-                                    );
-                                    return (
-                                        <Pressable
-                                            style={[styles.inlineBtn, isQuickTag && styles.inlineBtnStar]}
-                                            onPress={() => onToggleQuickTag(
-                                                tag.cloId,
-                                                tag.typeId,
-                                                {
-                                                    quantity: tag.quantity,
-                                                    materials: tag.materials,
-                                                    brands: tag.brands,
-                                                    picked_up: tag.picked_up
-                                                }
-                                            )}
-                                            hitSlop={4}>
-                                            <Icon
-                                                name={isQuickTag ? 'star' : 'star-outline'}
-                                                size={14}
-                                                color={isQuickTag ? '#f59e0b' : Colors.white}
-                                            />
-                                        </Pressable>
-                                    );
-                                })()}
+                                {showQuickTagStar && (
+                                    <Pressable
+                                        style={[styles.inlineBtn, isQuickTag && styles.inlineBtnStar]}
+                                        onPress={() => onToggleQuickTag(
+                                            tag.cloId,
+                                            tag.typeId,
+                                            {
+                                                quantity: tag.quantity,
+                                                materials: tag.materials,
+                                                brands: tag.brands,
+                                                picked_up: tag.picked_up
+                                            }
+                                        )}
+                                        hitSlop={4}>
+                                        <Icon
+                                            name={isQuickTag ? 'star' : 'star-outline'}
+                                            size={14}
+                                            color={isQuickTag ? '#f59e0b' : Colors.white}
+                                        />
+                                    </Pressable>
+                                )}
                                 {isExpanded && (
                                     <Pressable
                                         style={styles.inlineBtnDanger}

@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {
     ActivityIndicator,
     Image,
@@ -23,10 +23,37 @@ const FILTER_OPTIONS = [
     {label: 'All Time', value: 'all-time'}
 ];
 
+const LeaderboardRow = React.memo(({item, flagWidth}) => {
+    const {t} = useTranslation();
+    return (
+        <View style={styles.row}>
+            <Body family="semiBold" style={styles.rank}>
+                {item.rank}
+            </Body>
+            {item.global_flag ? (
+                <Image
+                    source={flags[item.global_flag]}
+                    resizeMode="cover"
+                    style={[styles.flag, {width: flagWidth}]}
+                />
+            ) : (
+                <View style={[styles.flag, {width: flagWidth}]} />
+            )}
+            <Body style={styles.username} numberOfLines={1}>
+                {item.username || item.name || t('Anon')}
+            </Body>
+            <Body color="accent" family="semiBold" style={styles.xp}>
+                {(item.xp || 0).toLocaleString()} XP
+            </Body>
+        </View>
+    );
+});
+
 const LeaderboardsTab = () => {
     const dispatch = useDispatch();
     const {t} = useTranslation();
     const {width: SCREEN_WIDTH} = useWindowDimensions();
+    const flagWidth = SCREEN_WIDTH * 0.05;
     const [selectedValue, setSelectedValue] = useState('today');
 
     const paginated = useSelector(state => state.leaderboard.paginated);
@@ -36,17 +63,17 @@ const LeaderboardsTab = () => {
 
     useEffect(() => {
         dispatch(getLeaderboardData({timeFilter: 'today', page: 1}));
-    }, []);
+    }, [dispatch]);
 
-    const onFilterChange = value => {
+    const onFilterChange = useCallback(value => {
         setSelectedValue(value);
         dispatch(getLeaderboardData({timeFilter: value, page: 1}));
-    };
+    }, [dispatch]);
 
-    const loadMore = () => {
+    const loadMore = useCallback(() => {
         if (loadingMore || !paginated.hasNextPage) return;
         dispatch(getLeaderboardData({timeFilter: selectedValue, page: currentPage + 1}));
-    };
+    }, [dispatch, loadingMore, paginated.hasNextPage, selectedValue, currentPage]);
 
     if (loading) {
         return (
@@ -96,35 +123,7 @@ const LeaderboardsTab = () => {
                     }
                     estimatedItemSize={60}
                     renderItem={({item}) => (
-                        <View style={styles.row}>
-                            <Body
-                                family="semiBold"
-                                style={styles.rank}>
-                                {item.rank}
-                            </Body>
-
-                            {item.global_flag ? (
-                                <Image
-                                    source={flags[item.global_flag]}
-                                    resizeMode="cover"
-                                    style={[styles.flag, {width: SCREEN_WIDTH * 0.05}]}
-                                />
-                            ) : (
-                                <View style={[styles.flag, {width: SCREEN_WIDTH * 0.05}]} />
-                            )}
-
-                            <Body
-                                style={styles.username}
-                                numberOfLines={1}>
-                                {item.username || item.name || t('Anon')}
-                            </Body>
-                            <Body
-                                color="accent"
-                                family="semiBold"
-                                style={styles.xp}>
-                                {(item.xp || 0).toLocaleString()} XP
-                            </Body>
-                        </View>
+                        <LeaderboardRow item={item} flagWidth={flagWidth} />
                     )}
                     onEndReached={loadMore}
                     onEndReachedThreshold={0.3}
