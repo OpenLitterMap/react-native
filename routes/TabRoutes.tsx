@@ -4,6 +4,7 @@ import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {HomeScreen, ProfileScreen} from '../screens';
 import {Colors} from '../screens/components/theme';
 import TeamStack from './TeamStack';
+import useQuickTagsSync from '../screens/addTag/hooks/useQuickTagsSync';
 
 const Tab = createBottomTabNavigator();
 
@@ -26,35 +27,40 @@ const homeIcon = makeTabBarIcon('HOME');
 const teamIcon = makeTabBarIcon('TEAM');
 const profileIcon = makeTabBarIcon('USER_STATS');
 
-const TabRoutes = () => (
-    <Tab.Navigator
-        id="MainTabs"
-        initialRouteName="HOME"
-        screenOptions={{
-            headerShown: false,
-            lazy: true,
-            tabBarLabelStyle: styles.label,
-            tabBarActiveTintColor: Colors.accent,
-            tabBarInactiveTintColor: Colors.muted,
-            tabBarStyle: styles.tabBar
-        }}>
-        <Tab.Screen
-            name="HOME"
-            component={HomeScreen}
-            options={{tabBarIcon: homeIcon, tabBarLabel: 'Home'}}
-        />
-        <Tab.Screen
-            name="TEAM"
-            component={TeamStack}
-            options={{tabBarIcon: teamIcon, tabBarLabel: 'Leaderboards'}}
-        />
-        <Tab.Screen
-            name="USER_STATS"
-            component={ProfileScreen}
-            options={{tabBarIcon: profileIcon, tabBarLabel: 'Account'}}
-        />
-    </Tab.Navigator>
-);
+const TabRoutes = () => {
+    // Sync quick tags to backend when presets change (debounced 3s)
+    useQuickTagsSync();
+
+    return (
+        <Tab.Navigator
+            id="MainTabs"
+            initialRouteName="HOME"
+            screenOptions={{
+                headerShown: false,
+                lazy: true,
+                tabBarLabelStyle: styles.label,
+                tabBarActiveTintColor: Colors.accent,
+                tabBarInactiveTintColor: Colors.muted,
+                tabBarStyle: styles.tabBar
+            }}>
+            <Tab.Screen
+                name="HOME"
+                component={HomeScreen}
+                options={{tabBarIcon: homeIcon, tabBarLabel: 'Home'}}
+            />
+            <Tab.Screen
+                name="TEAM"
+                component={TeamStack}
+                options={{tabBarIcon: teamIcon, tabBarLabel: 'Leaderboards'}}
+            />
+            <Tab.Screen
+                name="USER_STATS"
+                component={ProfileScreen}
+                options={{tabBarIcon: profileIcon, tabBarLabel: 'Account'}}
+            />
+        </Tab.Navigator>
+    );
+};
 
 const styles = StyleSheet.create({
     emoji: {

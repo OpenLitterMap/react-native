@@ -4,21 +4,31 @@ import {useSelector} from 'react-redux';
 import {useTranslation} from 'react-i18next';
 import {Colors} from './theme';
 import {Body, Caption, Title} from './typography';
+import useAnimatedCount from './useAnimatedCount';
 
 const formatCount = (n) => {
-    if (n >= 1000000) return `${(n / 1000000).toFixed(1)}M+`;
-    if (n >= 1000) return `${Math.floor(n / 1000).toLocaleString()}k+`;
-    return n.toLocaleString();
+    const rounded = Math.round(n);
+    if (rounded >= 1000000) return `${(rounded / 1000000).toFixed(1)}M+`;
+    if (rounded >= 1000) return `${Math.floor(rounded / 1000).toLocaleString()}k+`;
+    return rounded.toLocaleString();
 };
 
-const StatCell = ({value, label, color, exact, active, onPress}) => (
-    <Pressable style={[styles.stat, active && styles.statActive]} onPress={onPress}>
-        <Title style={[styles.statValue, {color}]}>
-            {exact ? value.toLocaleString() : formatCount(value)}
-        </Title>
-        <Caption style={[styles.statLabel, active && {color}]}>{label}</Caption>
-    </Pressable>
-);
+const exactFormatter = n => Math.round(n).toLocaleString();
+
+const StatCell = ({value, label, color, exact, active, onPress}) => {
+    const display = useAnimatedCount(value, {
+        formatter: exact ? exactFormatter : formatCount
+    });
+
+    return (
+        <Pressable style={[styles.stat, active && styles.statActive]} onPress={onPress}>
+            <Title style={[styles.statValue, {color}]}>
+                {display}
+            </Title>
+            <Caption style={[styles.statLabel, active && {color}]}>{label}</Caption>
+        </Pressable>
+    );
+};
 
 const GrowthBadge = ({value, label}) => (
     <View style={styles.badge}>
@@ -91,9 +101,9 @@ const CommunityStats = () => {
                     />
                 </View>
                 <View style={styles.badgeRow}>
-                    <GrowthBadge value={active.today} label={t('today')} />
-                    <GrowthBadge value={active.week} label={t('this week')} />
-                    <GrowthBadge value={active.month} label={t('this month')} />
+                    <GrowthBadge value={active.today} label={t('24h')} />
+                    <GrowthBadge value={active.week} label={t('7d')} />
+                    <GrowthBadge value={active.month} label={t('30d')} />
                 </View>
             </View>
         </View>

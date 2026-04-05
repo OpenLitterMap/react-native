@@ -14,7 +14,7 @@ import {
 import Icon from 'react-native-vector-icons/Ionicons';
 import {Body, Caption, Colors} from '../../components';
 import {getCategoryColor} from './categoryColors';
-import {MAX_QUANTITY} from './tagUtils';
+import {MAX_QUANTITY_DEFAULT} from './tagUtils';
 import {useTranslation} from 'react-i18next';
 const MAX_SEARCH_RESULTS = 5;
 
@@ -32,7 +32,8 @@ const TagDetailSheet = ({
     onRemoveCustomTag,
     onUpdateQuantity,
     onSetPickedUp,
-    onClose
+    onClose,
+    maxQuantity = MAX_QUANTITY_DEFAULT
 }) => {
     const {t} = useTranslation();
     const [materialQuery, setMaterialQuery] = useState('');
@@ -144,7 +145,8 @@ const TagDetailSheet = ({
     const handleMaterialFocus = useCallback(() => {
         setIsMaterialFocused(true);
         scrollMaterialsIntoView();
-        setTimeout(scrollMaterialsIntoView, 120);
+        setTimeout(scrollMaterialsIntoView, 150);
+        setTimeout(scrollMaterialsIntoView, 350);
     }, [scrollMaterialsIntoView]);
 
     const handleMaterialBlur = useCallback(() => {
@@ -158,7 +160,8 @@ const TagDetailSheet = ({
     const handleBrandFocus = useCallback(() => {
         setIsBrandFocused(true);
         scrollBrandsIntoView();
-        setTimeout(scrollBrandsIntoView, 120);
+        setTimeout(scrollBrandsIntoView, 150);
+        setTimeout(scrollBrandsIntoView, 350);
     }, [scrollBrandsIntoView]);
 
     const handleBrandBlur = useCallback(() => {
@@ -191,6 +194,7 @@ const TagDetailSheet = ({
                             showsVerticalScrollIndicator={false}
                             bounces={false}
                             keyboardShouldPersistTaps="handled"
+                            contentContainerStyle={styles.scrollContent}
                             onContentSizeChange={() => {
                                 if (isMaterialFocused) {
                                     scrollMaterialsIntoView();
@@ -224,11 +228,7 @@ const TagDetailSheet = ({
                             </View>
 
                             {/* Quantity */}
-                            <View
-                                style={styles.section}
-                                onLayout={event => {
-                                    materialsSectionYRef.current = event.nativeEvent.layout.y;
-                                }}>
+                            <View style={styles.section}>
                                 <Caption style={styles.sectionLabel}>
                                     {t('Quantity')}
                                 </Caption>
@@ -265,7 +265,7 @@ const TagDetailSheet = ({
                                     <Pressable
                                         style={[
                                             styles.stepperBtn,
-                                            qty >= MAX_QUANTITY &&
+                                            qty >= maxQuantity &&
                                                 styles.stepperBtnDisabled
                                         ]}
                                         onPress={() =>
@@ -275,12 +275,12 @@ const TagDetailSheet = ({
                                                 qty + 1
                                             )
                                         }
-                                        disabled={qty >= MAX_QUANTITY}>
+                                        disabled={qty >= maxQuantity}>
                                         <Icon
                                             name="add"
                                             size={18}
                                             color={
-                                                qty >= MAX_QUANTITY
+                                                qty >= maxQuantity
                                                     ? '#ccc'
                                                     : '#333'
                                             }
@@ -290,11 +290,7 @@ const TagDetailSheet = ({
                             </View>
 
                             {/* Picked Up */}
-                            <View
-                                style={styles.section}
-                                onLayout={event => {
-                                    brandsSectionYRef.current = event.nativeEvent.layout.y;
-                                }}>
+                            <View style={styles.section}>
                                 <View style={styles.sectionHeader}>
                                     <Caption style={styles.sectionLabel}>
                                         {t('Picked Up')}
@@ -343,7 +339,11 @@ const TagDetailSheet = ({
                             </View>
 
                             {/* Materials */}
-                            <View style={styles.section}>
+                            <View
+                                style={styles.section}
+                                onLayout={event => {
+                                    materialsSectionYRef.current = event.nativeEvent.layout.y;
+                                }}>
                                 <View style={styles.sectionHeader}>
                                     <Caption style={styles.sectionLabel}>
                                         {t('Materials')}
@@ -467,7 +467,11 @@ const TagDetailSheet = ({
                             </View>
 
                             {/* Brands */}
-                            <View style={styles.section}>
+                            <View
+                                style={styles.section}
+                                onLayout={event => {
+                                    brandsSectionYRef.current = event.nativeEvent.layout.y;
+                                }}>
                                 <View style={styles.sectionHeader}>
                                     <Caption style={styles.sectionLabel}>
                                         {t('Brands')}
@@ -724,6 +728,9 @@ const styles = StyleSheet.create({
         borderTopRightRadius: 20,
         paddingHorizontal: 24,
         maxHeight: '85%'
+    },
+    scrollContent: {
+        paddingBottom: 40
     },
     handle: {
         width: 36,

@@ -48,17 +48,17 @@ const statsSlice = createSlice({
                 state.totalTags = action.payload?.total_tags || 0;
                 state.totalImages = action.payload?.total_images || 0;
                 state.totalUsers = action.payload?.total_users || 0;
-                state.newUsersToday = action.payload?.new_users_today || 0;
+                state.newUsersToday = action.payload?.new_users_last_24_hours || 0;
                 state.newUsersLast7Days =
                     action.payload?.new_users_last_7_days || 0;
                 state.newUsersLast30Days =
                     action.payload?.new_users_last_30_days || 0;
-                state.newTagsToday = action.payload?.new_tags_today || 0;
+                state.newTagsToday = action.payload?.new_tags_last_24_hours || 0;
                 state.newTagsLast7Days =
                     action.payload?.new_tags_last_7_days || 0;
                 state.newTagsLast30Days =
                     action.payload?.new_tags_last_30_days || 0;
-                state.newPhotosToday = action.payload?.new_photos_today || 0;
+                state.newPhotosToday = action.payload?.new_photos_last_24_hours || 0;
                 state.newPhotosLast7Days =
                     action.payload?.new_photos_last_7_days || 0;
                 state.newPhotosLast30Days =

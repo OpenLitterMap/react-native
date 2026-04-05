@@ -94,10 +94,8 @@ export default function useHomeBootstrap(navigation) {
         // Load camera roll photos for the inbox section
         loadCameraRoll();
 
-        if (!__DEV__) {
-            if (appVersion === null) {
-                dispatch(checkAppVersion());
-            }
+        if (!__DEV__ && appVersion === null) {
+            dispatch(checkAppVersion());
         }
         // Mount + auth-change only
         // eslint-disable-next-line react-hooks/exhaustive-deps

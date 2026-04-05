@@ -7,17 +7,20 @@ import {
 import Icon from 'react-native-vector-icons/Ionicons';
 import {Caption, Colors} from '../../components';
 import {getCategoryColor} from './categoryColors';
-import {makePrimaryTagKey, resolveTagEntry, MAX_QUANTITY} from './tagUtils';
+import {makeTagKey, makePrimaryTagKey, resolveTagEntry, MAX_QUANTITY_DEFAULT} from './tagUtils';
 
 const TagPills = ({
     tags,
     customTags,
     entriesByCloId,
     typeEntriesByKey,
+    quickTagCloIds,
+    maxQuantity = MAX_QUANTITY_DEFAULT,
     onRemove,
     onRemoveCustomTag,
     onUpdateQuantity,
-    onOpenDetail
+    onOpenDetail,
+    onToggleQuickTag
 }) => {
     const [expandedKey, setExpandedKey] = useState(null);
 
@@ -52,11 +55,11 @@ const TagPills = ({
 
     const handleIncrement = useCallback(
         (cloId, typeId, currentQty, brandId) => {
-            if (currentQty < MAX_QUANTITY) {
+            if (currentQty < maxQuantity) {
                 onUpdateQuantity(cloId, typeId, currentQty + 1, brandId);
             }
         },
-        [onUpdateQuantity]
+        [onUpdateQuantity, maxQuantity]
     );
 
     const handleDecrement = useCallback(
@@ -144,17 +147,17 @@ const TagPills = ({
                                     <Pressable
                                         style={[
                                             styles.inlineBtn,
-                                            qty >= MAX_QUANTITY && styles.inlineBtnDisabled
+                                            qty >= maxQuantity && styles.inlineBtnDisabled
                                         ]}
                                         onPress={() =>
                                             handleIncrement(tag.cloId, tag.typeId, qty, tag.brandId)
                                         }
-                                        disabled={qty >= MAX_QUANTITY}
+                                        disabled={qty >= maxQuantity}
                                         hitSlop={4}>
                                         <Icon
                                             name="add"
                                             size={16}
-                                            color={qty >= MAX_QUANTITY ? 'rgba(255,255,255,0.3)' : Colors.white}
+                                            color={qty >= maxQuantity ? 'rgba(255,255,255,0.3)' : Colors.white}
                                         />
                                     </Pressable>
                                 )}
@@ -170,6 +173,32 @@ const TagPills = ({
                                         />
                                     </Pressable>
                                 )}
+                                {isExpanded && !tag.brandOnly && onToggleQuickTag && (() => {
+                                    const isQuickTag = quickTagCloIds?.has(
+                                        makeTagKey(tag.cloId, tag.typeId)
+                                    );
+                                    return (
+                                        <Pressable
+                                            style={[styles.inlineBtn, isQuickTag && styles.inlineBtnStar]}
+                                            onPress={() => onToggleQuickTag(
+                                                tag.cloId,
+                                                tag.typeId,
+                                                {
+                                                    quantity: tag.quantity,
+                                                    materials: tag.materials,
+                                                    brands: tag.brands,
+                                                    picked_up: tag.picked_up
+                                                }
+                                            )}
+                                            hitSlop={4}>
+                                            <Icon
+                                                name={isQuickTag ? 'star' : 'star-outline'}
+                                                size={14}
+                                                color={isQuickTag ? '#f59e0b' : Colors.white}
+                                            />
+                                        </Pressable>
+                                    );
+                                })()}
                                 {isExpanded && (
                                     <Pressable
                                         style={styles.inlineBtnDanger}
@@ -317,6 +346,9 @@ const styles = StyleSheet.create({
     },
     inlineBtnDisabled: {
         opacity: 0.4
+    },
+    inlineBtnStar: {
+        backgroundColor: 'rgba(245, 158, 11, 0.3)'
     },
     inlineBtnDanger: {
         width: 34,

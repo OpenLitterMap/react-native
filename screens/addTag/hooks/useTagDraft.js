@@ -1,5 +1,5 @@
 import {useCallback, useMemo, useReducer, useRef, useEffect} from 'react';
-import {MAX_QUANTITY} from '../components/tagUtils';
+import {MAX_QUANTITY_DEFAULT} from '../components/tagUtils';
 
 /**
  * Local draft state for the active photo's tags.
@@ -34,7 +34,8 @@ function draftReducer(state, action) {
         return {
             tags: action.tags || [],
             customTags: action.customTags || [],
-            photoId: action.photoId
+            photoId: action.photoId,
+            maxQuantity: action.maxQuantity ?? MAX_QUANTITY_DEFAULT
         };
     }
     case 'ADD_TAG': {
@@ -50,7 +51,7 @@ function draftReducer(state, action) {
                 if (!brands.some(brand => brand.id === brandSeed.brandId)) {
                     brands.push({
                         id: brandSeed.brandId,
-                        quantity: Math.min(brandSeed.quantity || 1, MAX_QUANTITY)
+                        quantity: Math.min(brandSeed.quantity || 1, state.maxQuantity)
                     });
                 }
                 existing.brands = brands;
@@ -64,7 +65,7 @@ function draftReducer(state, action) {
                 };
             }
 
-            if (existing.quantity < MAX_QUANTITY) {
+            if (existing.quantity < state.maxQuantity) {
                 existing.quantity += 1;
             }
             tags[idx] = existing;
@@ -81,7 +82,7 @@ function draftReducer(state, action) {
         if (brandSeed) {
             tag.brands.push({
                 id: brandSeed.brandId,
-                quantity: Math.min(brandSeed.quantity || 1, MAX_QUANTITY)
+                quantity: Math.min(brandSeed.quantity || 1, state.maxQuantity)
             });
             if (brandSeed.picked_up != null) {
                 tag.picked_up = brandSeed.picked_up;
@@ -104,7 +105,7 @@ function draftReducer(state, action) {
         if (idx !== -1) {
             const tags = [...state.tags];
             const existing = {...tags[idx]};
-            if (existing.quantity < MAX_QUANTITY) {
+            if (existing.quantity < state.maxQuantity) {
                 existing.quantity += 1;
             }
             tags[idx] = existing;
@@ -149,7 +150,7 @@ function draftReducer(state, action) {
             : findTag(state.tags, cloId, typeId);
         if (idx === -1) return state;
         const tags = [...state.tags];
-        tags[idx] = {...tags[idx], quantity: Math.min(quantity, MAX_QUANTITY)};
+        tags[idx] = {...tags[idx], quantity: Math.min(quantity, state.maxQuantity)};
         return {...state, tags};
     }
     case 'SET_PICKED_UP': {
@@ -229,6 +230,49 @@ function draftReducer(state, action) {
         tags[idx] = tag;
         return {...state, tags};
     }
+    case 'ADD_TAG_WITH_PRESET': {
+        const {preset, defaultPickedUp} = action;
+        const {cloId, typeId, quantity, materials, brands, picked_up} = preset;
+        const idx = findTag(state.tags, cloId, typeId);
+        if (idx !== -1) {
+            const tags = [...state.tags];
+            const existing = {...tags[idx]};
+            // Increment quantity
+            existing.quantity = Math.min(existing.quantity + (quantity || 1), state.maxQuantity);
+            // Merge materials additively
+            if (materials?.length) {
+                const matSet = new Set(existing.materials || []);
+                for (const m of materials) matSet.add(m);
+                existing.materials = [...matSet];
+            }
+            // Merge brands additively
+            if (brands?.length) {
+                const existingBrands = [...(existing.brands || [])];
+                for (const b of brands) {
+                    if (!existingBrands.some(eb => eb.id === b.id)) {
+                        existingBrands.push({...b});
+                    }
+                }
+                existing.brands = existingBrands;
+            }
+            // Apply picked_up only if existing is still at default
+            if (existing.picked_up == null && picked_up != null) {
+                existing.picked_up = picked_up;
+            }
+            tags[idx] = existing;
+            return {...state, tags};
+        }
+        const tag = {
+            cloId,
+            quantity: Math.min(quantity || 1, state.maxQuantity),
+            picked_up: picked_up ?? defaultPickedUp ?? null,
+            materials: [...(materials || [])],
+            brands: (brands || []).map(b => ({...b})),
+            customTags: []
+        };
+        if (typeId != null) tag.typeId = typeId;
+        return {...state, tags: [...state.tags, tag]};
+    }
     case 'ADD_IMAGE_CUSTOM_TAG': {
         const trimmed = action.text?.trim()?.slice(0, 100);
         if (!trimmed || trimmed.length < 3) return state;
@@ -248,13 +292,14 @@ function draftReducer(state, action) {
 
 // --- Hook ---
 
-export default function useTagDraft(activePhoto, defaultPickedUp) {
+export default function useTagDraft(activePhoto, defaultPickedUp, maxQuantity) {
     const photoIdRef = useRef(null);
 
     const [draft, dispatchDraft] = useReducer(draftReducer, {
         tags: [],
         customTags: [],
-        photoId: null
+        photoId: null,
+        maxQuantity: maxQuantity ?? MAX_QUANTITY_DEFAULT
     });
 
     // Re-initialize draft when active photo changes
@@ -269,10 +314,11 @@ export default function useTagDraft(activePhoto, defaultPickedUp) {
                 type: 'RESET',
                 tags: activePhoto?.tags ? activePhoto.tags.map(t => ({...t})) : [],
                 customTags: activePhoto?.customTags ? [...activePhoto.customTags] : [],
-                photoId: newId
+                photoId: newId,
+                maxQuantity
             });
         }
-    }, [activePhoto]);
+    }, [activePhoto, maxQuantity]);
 
     const currentTags = draft.tags.length > 0 ? draft.tags : EMPTY_ARRAY;
     const currentCustomTags = draft.customTags.length > 0 ? draft.customTags : EMPTY_ARRAY;
@@ -280,6 +326,10 @@ export default function useTagDraft(activePhoto, defaultPickedUp) {
     // Tag actions
     const addTag = useCallback((cloId, typeId) => {
         dispatchDraft({type: 'ADD_TAG', cloId, typeId, defaultPickedUp});
+    }, [defaultPickedUp]);
+
+    const addTagWithPreset = useCallback((preset) => {
+        dispatchDraft({type: 'ADD_TAG_WITH_PRESET', preset, defaultPickedUp});
     }, [defaultPickedUp]);
 
     const addBrandOnly = useCallback((brandId, brandName, brandKey) => {
@@ -347,20 +397,22 @@ export default function useTagDraft(activePhoto, defaultPickedUp) {
     }, [currentTags, currentCustomTags]);
 
     // isDirty — have tags been modified from the original photo?
+    // Compare by length since RESET creates new array references.
     const isDirty = useMemo(() => {
         const origTags = activePhoto?.tags ?? [];
         const origCustom = activePhoto?.customTags ?? [];
-        return draft.tags !== origTags || draft.customTags !== origCustom ||
-            draft.tags.length !== origTags.length ||
+        return draft.tags.length !== origTags.length ||
             draft.customTags.length !== origCustom.length;
-    }, [draft.tags, draft.customTags, activePhoto]);
+    }, [draft.tags.length, draft.customTags.length, activePhoto]);
 
     return {
         currentTags,
         currentCustomTags,
+        maxQuantity: draft.maxQuantity,
         xpEstimate,
         isDirty,
         addTag,
+        addTagWithPreset,
         addBrandOnly,
         removeTag,
         updateQuantity,

@@ -41,11 +41,13 @@ const TagSearchBar = React.forwardRef(({
     currentTags,
     customTags,
     brands,
+    quickTagCloIds,
     onAddTag,
     onAddBrandOnly,
     onAddCustomTag,
     onPendingCustomTag,
     onBrowsePress,
+    onToggleQuickTag,
     showBrowser
 }, ref) => {
     const {t} = useTranslation();
@@ -53,6 +55,7 @@ const TagSearchBar = React.forwardRef(({
     const [isFocused, setIsFocused] = useState(false);
     const blurTimerRef = useRef(null);
     const inputRef = useRef(null);
+    const starPressedRef = useRef(false);
 
     useEffect(() => {
         return () => {
@@ -166,6 +169,10 @@ const TagSearchBar = React.forwardRef(({
 
     const handleSelect = useCallback(
         item => {
+            if (starPressedRef.current) {
+                starPressedRef.current = false;
+                return;
+            }
             if (item.isBrandOnly) {
                 onAddBrandOnly?.(item.brandId, item.displayName, item.brandKey);
             } else {
@@ -238,6 +245,16 @@ const TagSearchBar = React.forwardRef(({
         );
     }, []);
 
+    const handleToggleStar = useCallback(
+        (item) => {
+            starPressedRef.current = true;
+            if (!item.isBrandOnly && onToggleQuickTag) {
+                onToggleQuickTag(item.cloId, item.typeId);
+            }
+        },
+        [onToggleQuickTag]
+    );
+
     const renderItem = useCallback(
         ({item}) => {
             const isAdded = item.isBrandOnly
@@ -246,6 +263,9 @@ const TagSearchBar = React.forwardRef(({
             const categoryColor = item.isBrandOnly
                 ? '#dc2626'
                 : getCategoryColor(item.categoryKey);
+            const isQuickTag = !item.isBrandOnly && quickTagCloIds?.has(
+                makeTagKey(item.cloId, item.typeId)
+            );
 
             return (
                 <Pressable
@@ -289,6 +309,18 @@ const TagSearchBar = React.forwardRef(({
                             )}
                         </View>
                     </View>
+                    {!item.isBrandOnly && (
+                        <Pressable
+                            onPress={() => handleToggleStar(item)}
+                            style={styles.starButton}
+                            hitSlop={6}>
+                            <Icon
+                                name={isQuickTag ? 'star' : 'star-outline'}
+                                size={18}
+                                color={isQuickTag ? '#f59e0b' : Colors.muted}
+                            />
+                        </Pressable>
+                    )}
                     {isAdded ? (
                         <Icon
                             name="checkmark-circle"
@@ -305,7 +337,7 @@ const TagSearchBar = React.forwardRef(({
                 </Pressable>
             );
         },
-        [taggedKeys, handleSelect]
+        [taggedKeys, handleSelect, quickTagCloIds, handleToggleStar]
     );
 
     const keyExtractor = useCallback((item) => {
@@ -370,7 +402,7 @@ const TagSearchBar = React.forwardRef(({
             {showNoResults && (
                 <View style={styles.noResults}>
                     <Caption color="muted" family="medium">
-                        No results for &ldquo;{query.trim()}&rdquo;
+                        {t('No results for "{{query}}"', {query: query.trim()})}
                     </Caption>
                     <Pressable
                         onPress={handleBrowse}
@@ -381,7 +413,7 @@ const TagSearchBar = React.forwardRef(({
                             color={Colors.accent}
                         />
                         <Caption color="accent" family="medium">
-                            Browse categories
+                            {t('Browse Categories')}
                         </Caption>
                     </Pressable>
                 </View>
@@ -537,6 +569,10 @@ const styles = StyleSheet.create({
         fontSize: 9,
         textTransform: 'uppercase',
         letterSpacing: 0.5
+    },
+    starButton: {
+        padding: 4,
+        marginRight: 4
     },
     noResults: {
         backgroundColor: '#fff',

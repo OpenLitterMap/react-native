@@ -2,8 +2,9 @@
  * Shared utilities for the AddTag feature.
  */
 
-/** Maximum quantity per tag. */
-export const MAX_QUANTITY = 10;
+/** Maximum quantity per tag — trusted users get a higher limit. */
+export const MAX_QUANTITY_TRUSTED = 100;
+export const MAX_QUANTITY_DEFAULT = 10;
 
 /**
  * Build a unique key for a (cloId, typeId) pair.

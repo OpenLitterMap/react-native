@@ -77,11 +77,9 @@ export default function useTaggingQueue(navigation) {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [activeIndex, isEditMode]);
 
-    // If no images, redirect back (one-shot)
-    const hasNavigatedBackRef = useRef(false);
+    // If no images, redirect back (one-shot, guarded inside safeGoBack)
     useEffect(() => {
-        if (!activePhoto && photos.length === 0 && !hasNavigatedBackRef.current) {
-            hasNavigatedBackRef.current = true;
+        if (!activePhoto && photos.length === 0) {
             safeGoBack();
         }
     }, [activePhoto, photos.length, safeGoBack]);
@@ -111,9 +109,15 @@ export default function useTaggingQueue(navigation) {
         [photos, isEditMode]
     );
 
+    const hasNavigatedBackRef = useRef(false);
+
     // Defer goBack to next frame so Fabric reconciliation settles before unmount.
     // Without this, Redux dispatch + immediate goBack crashes Fabric's view recycler.
+    // Guard with hasNavigatedBackRef so multiple callers (done button + empty-photos
+    // effect) don't fire goBack twice — the second would hit "GO_BACK not handled".
     const safeGoBack = useCallback(() => {
+        if (hasNavigatedBackRef.current) return;
+        hasNavigatedBackRef.current = true;
         InteractionManager.runAfterInteractions(() => {
             navigation.goBack();
         });

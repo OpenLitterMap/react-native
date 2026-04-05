@@ -12,12 +12,14 @@ import shared from './shared_reducer';
 import settings from './settings_reducer';
 import stats from './stats_reducer';
 import tags from './tags_reducer';
+import quickTags from './quick_tags_reducer';
 import teams from './team_reducer';
 
 export const rootReducer = combineReducers({
     auth,
     gallery,
     photos,
+    quickTags,
     serverPhotos,
     uploadFlow,
     uploads,

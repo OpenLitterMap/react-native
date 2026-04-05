@@ -51,14 +51,21 @@ const SettingsScreen = ({navigation}) => {
             'username',
             'email',
             'social',
-            'delete-account'
+            'delete-account',
+            'quick-tags'
         ];
 
         if (dataKeys.includes(item?.key)) {
             return (
                 <Pressable
                     style={{flex: 1, padding: 10}}
-                    onPress={() => rowPressed(item.id, item.title, item.key)}>
+                    onPress={() => {
+                        if (item.key === 'quick-tags') {
+                            navigation.navigate('QUICK_TAGS_SETTINGS');
+                            return;
+                        }
+                        rowPressed(item.id, item.title, item.key);
+                    }}>
                     <View
                         style={{
                             flexDirection: 'row',
@@ -98,6 +105,7 @@ const SettingsScreen = ({navigation}) => {
         case 'email':
             return user?.email;
         case 'delete-account':
+        case 'quick-tags':
             return (
                 <Icon
                     name="chevron-forward-outline"
@@ -335,6 +343,11 @@ const SettingsScreen = ({navigation}) => {
                                         id: 12,
                                         key: 'enable_admin_tagging',
                                         title: 'Enable crowdsourced tagging'
+                                    },
+                                    {
+                                        id: 15,
+                                        key: 'quick-tags',
+                                        title: 'Quick Tags'
                                     }
                                 ]
                             },

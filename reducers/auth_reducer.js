@@ -1,6 +1,7 @@
 import * as Sentry from '@sentry/react-native';
 import {createAsyncThunk, createSlice} from '@reduxjs/toolkit';
 import api from '../utils/apiClient';
+import {fetchQuickTags} from './quick_tags_reducer';
 
 const initialState = {
     submitStatus: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
@@ -86,6 +87,8 @@ export const checkValidToken = createAsyncThunk(
                     dispatch(logout());
                     return rejectWithValue('Session expired');
                 }
+                // Fetch quick tags in background (non-blocking)
+                dispatch(fetchQuickTags());
                 return jwt;
             } else {
                 dispatch(logout());
@@ -125,6 +128,7 @@ export const createAccount = createAsyncThunk(
                         email: profileData.user?.email
                     });
 
+                    dispatch(fetchQuickTags(token));
                     return {token, profile: profileData};
                 }
 
@@ -135,6 +139,7 @@ export const createAccount = createAsyncThunk(
                     return rejectWithValue('Account created but session failed. Please log in.');
                 }
 
+                dispatch(fetchQuickTags(token));
                 return {token, profile: null};
             }
 
@@ -289,6 +294,8 @@ export const userLogin = createAsyncThunk(
                         email: profileData.user?.email
                     });
 
+                    // Fetch quick tags in background (non-blocking)
+                    dispatch(fetchQuickTags(token));
                     return {token, profile: profileData};
                 }
 
@@ -299,6 +306,8 @@ export const userLogin = createAsyncThunk(
                     return rejectWithValue('Login succeeded but session failed. Please try again.');
                 }
 
+                // Fetch quick tags in background (non-blocking)
+                dispatch(fetchQuickTags(token));
                 return {token, profile: null};
             } else {
                 return rejectWithValue('Login failed');

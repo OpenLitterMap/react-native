@@ -5,6 +5,17 @@ import {useTranslation} from 'react-i18next';
 import {getCurrentLevel, fetchXpLevels} from '../../profile/helpers/xpLevels';
 import {Colors} from '../../components/theme';
 import {Body, Caption, Title} from '../../components/typography';
+import useAnimatedCount from '../../components/useAnimatedCount';
+
+const ImpactStat = React.memo(({value, label}) => {
+    const display = useAnimatedCount(value);
+    return (
+        <View style={styles.stat}>
+            <Title style={styles.statValue}>{display}</Title>
+            <Caption style={styles.statLabel}>{label}</Caption>
+        </View>
+    );
+});
 
 const YourImpactSection = () => {
     const {t} = useTranslation();
@@ -18,15 +29,13 @@ const YourImpactSection = () => {
         }
     }, [token]);
 
-    if (!user) return null;
+    const totalImages = user?.totalImages ?? 0;
+    const totalTags = user?.totalTags ?? 0;
+    const xp = user?.xp ?? 0;
+    const level = user?.level ?? 0;
+    const streak = user?.streak ?? 0;
 
-    const {
-        totalImages = 0,
-        totalTags = 0,
-        xp = 0,
-        level = 0,
-        streak = 0
-    } = user;
+    if (!user) return null;
 
     const {currentLevel, nextLevel, progress, xpToNext} = getCurrentLevel(xp, xpLevels);
     const pct = Math.min(Math.max(progress, 0), 1);
@@ -37,18 +46,9 @@ const YourImpactSection = () => {
             <Body style={styles.sectionTitle}>{t('Your Impact')}</Body>
             <View style={styles.card}>
                 <View style={styles.statsRow}>
-                    <View style={styles.stat}>
-                        <Title style={styles.statValue}>{totalTags.toLocaleString()}</Title>
-                        <Caption style={styles.statLabel}>{t('Tags')}</Caption>
-                    </View>
-                    <View style={styles.stat}>
-                        <Title style={styles.statValue}>{totalImages.toLocaleString()}</Title>
-                        <Caption style={styles.statLabel}>{t('Photos')}</Caption>
-                    </View>
-                    <View style={styles.stat}>
-                        <Title style={styles.statValue}>{xp.toLocaleString()}</Title>
-                        <Caption style={styles.statLabel}>{t('XP (Points)')}</Caption>
-                    </View>
+                    <ImpactStat value={totalTags} label={t('Tags')} />
+                    <ImpactStat value={totalImages} label={t('Photos')} />
+                    <ImpactStat value={xp} label={t('XP (Points)')} />
                 </View>
 
                 <Caption style={styles.levelLabel}>

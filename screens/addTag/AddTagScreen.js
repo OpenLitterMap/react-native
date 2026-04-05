@@ -28,6 +28,7 @@ import {Body, Caption, Colors} from '../components';
 import ImageViewer from './components/ImageViewer';
 import TagPills from './components/TagPills';
 import TagSearchBar from './components/TagSearchBar';
+import QuickTags from './components/QuickTags';
 import TagSuggestions from './components/TagSuggestions';
 import CategoryBrowser from './components/CategoryBrowser';
 import ImageProgressDots from './components/ImageProgressDots';
@@ -36,10 +37,12 @@ import TagDetailSheet from './components/TagDetailSheet';
 // Hooks
 import useTaggingQueue from './hooks/useTaggingQueue';
 import useTagDraft from './hooks/useTagDraft';
+import useQuickTagsInit from './hooks/useQuickTagsInit';
 
 // Utils
-import {makeTagKey, parseTagKey, resolveTagEntry} from './components/tagUtils';
+import {makeTagKey, parseTagKey, resolveTagEntry, MAX_QUANTITY_TRUSTED, MAX_QUANTITY_DEFAULT} from './components/tagUtils';
 import {clearEditingPhoto} from '../../reducers/photos_reducer';
+import {addQuickTag, removeQuickTagByCloId} from '../../reducers/quick_tags_reducer';
 
 const AddTagScreen = ({navigation}) => {
     const dispatch = useDispatch();
@@ -53,9 +56,15 @@ const AddTagScreen = ({navigation}) => {
         goToIndex, commitDraft, deleteCurrent, handleDone: queueHandleDone
     } = queue;
 
+    // --- Quick tags initialization ---
+    useQuickTagsInit();
+
     // --- Layer C: Draft ---
-    const defaultPickedUp = useSelector(state => state.auth.user?.picked_up ?? null);
-    const draft = useTagDraft(activePhoto, defaultPickedUp);
+    const user = useSelector(state => state.auth.user);
+    const defaultPickedUp = user?.picked_up ?? null;
+    const isTrusted = user?.verification_required === false;
+    const maxQuantity = isTrusted ? MAX_QUANTITY_TRUSTED : MAX_QUANTITY_DEFAULT;
+    const draft = useTagDraft(activePhoto, defaultPickedUp, maxQuantity);
     const {currentTags, currentCustomTags, xpEstimate} = draft;
 
     // Getter for queue callbacks to read current draft state
@@ -125,13 +134,24 @@ const AddTagScreen = ({navigation}) => {
         transform: [{scale: xpScale.value}]
     }));
 
+    // --- Quick tag presets (must be above handleAddTag which references it) ---
+    const quickTagPresets = useSelector(state => state.quickTags.presets);
+
     // --- Tag actions (delegate to draft) ---
     const handleAddTag = useCallback(
         (cloId, typeId) => {
             if (__DEV__) console.log('[Tag] addTag cloId:', cloId, 'typeId:', typeId, 'index:', activeIndex);
-            draft.addTag(cloId, typeId);
+            // If there's a matching quick tag preset, apply its metadata (picked_up, materials, brands)
+            const preset = quickTagPresets.find(
+                p => p.cloId === cloId && (p.typeId ?? null) === (typeId ?? null)
+            );
+            if (preset) {
+                draft.addTagWithPreset(preset);
+            } else {
+                draft.addTag(cloId, typeId);
+            }
         },
-        [draft.addTag, activeIndex]
+        [draft.addTag, draft.addTagWithPreset, quickTagPresets, activeIndex]
     );
 
     const handleAddBrandOnly = useCallback(
@@ -139,6 +159,42 @@ const AddTagScreen = ({navigation}) => {
             draft.addBrandOnly(brandId, brandName, brandKey);
         },
         [draft.addBrandOnly]
+    );
+
+    const handleAddTagWithPreset = useCallback(
+        (preset) => {
+            if (__DEV__) console.log('[Tag] addTagWithPreset cloId:', preset.cloId, 'index:', activeIndex);
+            draft.addTagWithPreset(preset);
+        },
+        [draft.addTagWithPreset, activeIndex]
+    );
+    const quickTagCloIds = useMemo(() => {
+        const set = new Set();
+        for (const p of quickTagPresets) {
+            set.add(makeTagKey(p.cloId, p.typeId));
+        }
+        return set;
+    }, [quickTagPresets]);
+
+    const handleToggleQuickTag = useCallback(
+        (cloId, typeId, metadata) => {
+            const key = makeTagKey(cloId, typeId);
+            if (quickTagCloIds.has(key)) {
+                dispatch(removeQuickTagByCloId({cloId, typeId}));
+            } else {
+                const entry = resolveTagEntry(cloId, typeId, entriesByCloId, typeEntriesByKey);
+                dispatch(addQuickTag({
+                    cloId,
+                    typeId,
+                    name: entry?.displayName ?? null,
+                    quantity: metadata?.quantity ?? 1,
+                    picked_up: metadata?.picked_up ?? null,
+                    materials: metadata?.materials ?? [],
+                    brands: metadata?.brands ?? []
+                }));
+            }
+        },
+        [dispatch, quickTagCloIds, entriesByCloId, typeEntriesByKey]
     );
 
     const handleRemoveTag = useCallback(
@@ -304,7 +360,9 @@ const AddTagScreen = ({navigation}) => {
                             // Persist tags to Redux before leaving so they survive navigation
                             if (!isEditMode) commitDraft(getDraft);
                             if (isEditMode) dispatch(clearEditingPhoto());
-                            InteractionManager.runAfterInteractions(() => navigation.goBack());
+                            InteractionManager.runAfterInteractions(() => {
+                                if (navigation.canGoBack()) navigation.goBack();
+                            });
                         }}
                         style={styles.backButton}
                         hitSlop={12}>
@@ -356,11 +414,23 @@ const AddTagScreen = ({navigation}) => {
                     customTags={currentCustomTags}
                     entriesByCloId={entriesByCloId}
                     typeEntriesByKey={typeEntriesByKey}
+                    quickTagCloIds={quickTagCloIds}
+                    maxQuantity={maxQuantity}
                     onRemove={handleRemoveTag}
                     onRemoveCustomTag={handleRemoveImageCustomTag}
                     onUpdateQuantity={handleUpdateQuantity}
                     onOpenDetail={handleOpenDetail}
+                    onToggleQuickTag={handleToggleQuickTag}
                 />
+
+                {showDeferredPanels && (
+                    <QuickTags
+                        currentTags={currentTags}
+                        entriesByCloId={entriesByCloId}
+                        typeEntriesByKey={typeEntriesByKey}
+                        onAddTagWithPreset={handleAddTagWithPreset}
+                    />
+                )}
 
                 {showDeferredPanels && (
                     <TagSuggestions
@@ -380,11 +450,13 @@ const AddTagScreen = ({navigation}) => {
                     currentTags={currentTags}
                     customTags={currentCustomTags}
                     brands={brandsArray}
+                    quickTagCloIds={quickTagCloIds}
                     onAddTag={handleAddTag}
                     onAddBrandOnly={handleAddBrandOnly}
                     onAddCustomTag={handleAddImageCustomTag}
                     onPendingCustomTag={setPendingCustomTag}
                     onBrowsePress={handleBrowsePress}
+                    onToggleQuickTag={handleToggleQuickTag}
                     showBrowser={showBrowser}
                 />
 
@@ -442,6 +514,7 @@ const AddTagScreen = ({navigation}) => {
                 visible={detailTagCurrent != null}
                 tag={detailTagCurrent}
                 tagEntry={detailTagEntry}
+                maxQuantity={maxQuantity}
                 materials={materialsArray}
                 brands={brandsArray}
                 brandsById={brandsById}

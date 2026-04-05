@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 OpenLitterMap is a React Native mobile app (iOS & Android) for crowdsourced litter mapping. Users photograph litter, tag it by category, and upload geotagged data to the OpenLitterMap Laravel backend API.
 
-**App Version:** 7.5.0 | **React Native:** 0.84.1 | **Branch:** `openlittermap/v7` (main: `main5`)
+**App Version:** 7.7.1 | **React Native:** 0.84.1 | **Branch:** `openlittermap/v7` (main: `main5`)
 
 ## Quick Start
 
@@ -52,7 +52,7 @@ MainRoutes (Stack)
 ```
 
 
-### State Management — Redux Toolkit (14 slices)
+### State Management — Redux Toolkit (15 slices)
 
 | Slice | File | Key Data | Persisted |
 |-------|------|----------|-----------|
@@ -60,13 +60,14 @@ MainRoutes (Stack)
 | `photos` | `photos_reducer.js` | imagesArray (local gallery photos + tags), editingPhoto, swiperIndex | Yes (imagesArray only) |
 | `serverPhotos` | `server_photos_reducer.js` | untaggedCount, untaggedPreview, editTagsOnPhoto thunk | No |
 | `uploadFlow` | `upload_flow_reducer.js` | uploadPhase, counters, modal state, uploadImage/postTagsToPhoto thunks | No |
-| `gallery` | `gallery_reducer.js` | CameraRoll photos, GPS metadata | No |
+| `gallery` | `gallery_reducer.js` | CameraRoll photos, GPS metadata | Yes (dismissedUris only) |
 | `tags` | `tags_reducer.js` | Search index, materials, brands (cached 7-day TTL) | AsyncStorage cache |
+| `quickTags` | `quick_tags_reducer.js` | User quick tag presets (cloId, customName, quantity, materials, brands) | Yes |
 | `teams` | `team_reducer.js` | User teams, team members, top teams | No |
 | `uploads` | `uploads_reducer.js` | Upload history (My Uploads), stats | No |
 | `settings` | `settings_reducer.js` | User preferences, privacy toggles | No |
 | `shared` | `shared_reducer.js` | App version | No |
-| `stats` | `stats_reducer.js` | Global statistics | No |
+| `stats` | `stats_reducer.js` | Global statistics | Yes |
 | `leaderboard` | `leaderboards_reducer.js` | Leaderboard data | No |
 | `locations` | `locations_reducer.js` | Location hierarchy | No |
 

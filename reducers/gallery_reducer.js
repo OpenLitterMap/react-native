@@ -9,7 +9,7 @@ const CAMERAROLL_INCLUDE = ['location', 'filename'];
 
 const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
 
-const initialState = {
+export const initialState = {
     fetchStatus: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
     galleryImages: [],
     nextGalleryId: 0,
@@ -207,7 +207,9 @@ const gallerySlice = createSlice({
         },
         dismissPhotos(state, action) {
             const uris = action.payload;
-            state.dismissedUris = [...new Set([...state.dismissedUris, ...uris])];
+            const merged = [...new Set([...state.dismissedUris, ...uris])];
+            // Cap to prevent unbounded growth — keep most recent 500
+            state.dismissedUris = merged.length > 500 ? merged.slice(-500) : merged;
         }
     },
 
