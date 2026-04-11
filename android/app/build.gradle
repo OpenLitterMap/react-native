@@ -84,8 +84,8 @@ android {
         applicationId "com.geotech.openlittermap"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 55
-        versionName "7.7.2"
+        versionCode 57
+        versionName "7.7.4"
     }
     signingConfigs {
         release {
@@ -113,6 +113,20 @@ android {
 //buildFeatures {
 //    buildConfig = true
 //}
+
+// Fail release builds if .env is not set to production
+tasks.configureEach { task ->
+    if (task.name.matches(/^assemble.*Release$|^bundle.*Release$/)) {
+        task.doFirst {
+            if (project.env.get("IS_PRODUCTION") != "true") {
+                throw new GradleException(
+                    "BUILD BLOCKED: IS_PRODUCTION is not 'true' in .env. " +
+                    "Set IS_PRODUCTION=true before building a release."
+                )
+            }
+        }
+    }
+}
 
 dependencies {
     // The version of react-native is set by the React Native Gradle Plugin

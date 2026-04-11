@@ -190,16 +190,6 @@ const GalleryPermissionScreen = ({navigation, route}) => {
                         style={styles.buttonText}
                     />
                 </Pressable>
-
-                <Pressable
-                    onPress={dismissToHome}
-                    style={styles.secondaryLink}>
-                    <Caption
-                        color="muted"
-                        family="medium"
-                        dictionary="Not Now"
-                    />
-                </Pressable>
             </SafeAreaView>
         </LinearGradient>
     );

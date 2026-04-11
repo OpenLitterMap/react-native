@@ -9,8 +9,12 @@ The app requests camera, photo library, and location permissions using `react-na
 - `utils/permissions/cameraPermission.js` — Camera permission check/request
 - `utils/permissions/cameraRollPermission.js` — Photo library permission check/request (includes ACCESS_MEDIA_LOCATION)
 - `utils/permissions/locationPermission.js` — Location permission check/request
-- `screens/permission/CameraPermissionScreen.js` — Camera permission request UI
-- `screens/permission/GalleryPermissionScreen.js` — Gallery permission request UI
+- `screens/permission/GalleryPermissionScreen.js` — Gallery permission request UI (post-onboarding fallback when user has revoked access)
+- `screens/onboarding/OnboardingPermissionScreen.js` — Onboarding camera + gallery priming screen
+
+## App Store Compliance — Guideline 5.1.1(iv)
+
+Apple rejects any pre-permission priming screen that lets the user dismiss the screen *without* triggering the OS permission prompt. The only forward action on a priming screen MUST call `request()`. Do not add "Not Now", "Skip", "Maybe later", "Take a photo instead", or close (X) buttons to a screen that precedes the OS dialog. If the user has already blocked permission, it is fine to show a separate "Open Settings" screen — that screen runs *after* the OS prompt has been shown and is not subject to the rule.
 
 ## Declared Permissions (package.json `reactNativePermissionsIOS`)
 - Camera

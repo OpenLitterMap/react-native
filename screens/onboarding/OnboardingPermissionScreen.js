@@ -397,11 +397,6 @@ const OnboardingPermissionScreen = ({navigation, route}) => {
                             {isCamera ? t('Allow camera & location') : t('Allow access')}
                         </Body>
                     </Pressable>
-                    <Pressable onPress={switchPath} style={styles.secondaryLink}>
-                        <Caption color="accent" family="medium">
-                            {isCamera ? t('Choose from photos instead') : t('Take a photo instead')}
-                        </Caption>
-                    </Pressable>
                 </View>
             </SafeAreaView>
         </LinearGradient>
