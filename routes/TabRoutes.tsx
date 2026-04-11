@@ -1,6 +1,8 @@
 import React from 'react';
-import {StyleSheet, Text} from 'react-native';
+import {StyleSheet} from 'react-native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import Icon from 'react-native-vector-icons/Ionicons';
 import {HomeScreen, ProfileScreen} from '../screens';
 import {Colors} from '../screens/components/theme';
 import TeamStack from './TeamStack';
@@ -8,20 +10,21 @@ import useQuickTagsSync from '../screens/addTag/hooks/useQuickTagsSync';
 
 const Tab = createBottomTabNavigator();
 
-const TAB_CONFIG: Record<string, {emoji: string; label: string}> = {
-    HOME: {emoji: '🌍', label: 'Home'},
-    TEAM: {emoji: '🧗', label: 'Teams'},
-    USER_STATS: {emoji: '📱', label: 'Profile'}
+const TAB_ICONS: Record<string, {active: string; inactive: string}> = {
+    HOME: {active: 'earth', inactive: 'earth-outline'},
+    TEAM: {active: 'trophy', inactive: 'trophy-outline'},
+    USER_STATS: {active: 'person-circle', inactive: 'person-circle-outline'}
 };
 
-const TabIcon = ({routeName, focused}: {routeName: string; focused: boolean}) => (
-    <Text style={[styles.emoji, !focused && styles.emojiInactive]}>
-        {TAB_CONFIG[routeName]?.emoji ?? '❓'}
-    </Text>
-);
+const TabIcon = ({routeName, focused, color}: {routeName: string; focused: boolean; color: string}) => {
+    const name = focused ? TAB_ICONS[routeName].active : TAB_ICONS[routeName].inactive;
+    return <Icon name={name} size={26} color={color} />;
+};
 
 const makeTabBarIcon = (routeName: string) =>
-    ({focused}: {focused: boolean}) => <TabIcon routeName={routeName} focused={focused} />;
+    ({focused, color}: {focused: boolean; color: string}) => (
+        <TabIcon routeName={routeName} focused={focused} color={color} />
+    );
 
 const homeIcon = makeTabBarIcon('HOME');
 const teamIcon = makeTabBarIcon('TEAM');
@@ -30,6 +33,12 @@ const profileIcon = makeTabBarIcon('USER_STATS');
 const TabRoutes = () => {
     // Sync quick tags to backend when presets change (debounced 3s)
     useQuickTagsSync();
+
+    const insets = useSafeAreaInsets();
+    const tabBarStyle = [
+        styles.tabBar,
+        {height: 56 + insets.bottom, paddingBottom: insets.bottom + 4}
+    ];
 
     return (
         <Tab.Navigator
@@ -41,7 +50,7 @@ const TabRoutes = () => {
                 tabBarLabelStyle: styles.label,
                 tabBarActiveTintColor: Colors.accent,
                 tabBarInactiveTintColor: Colors.muted,
-                tabBarStyle: styles.tabBar
+                tabBarStyle: tabBarStyle
             }}>
             <Tab.Screen
                 name="HOME"
@@ -63,23 +72,17 @@ const TabRoutes = () => {
 };
 
 const styles = StyleSheet.create({
-    emoji: {
-        fontSize: 32
-    },
-    emojiInactive: {
-        opacity: 0.5
-    },
     label: {
         fontFamily: 'Poppins-Medium',
         fontWeight: '500',
-        fontSize: 11
+        fontSize: 11,
+        marginTop: 2
     },
     tabBar: {
         backgroundColor: Colors.white,
         borderTopWidth: StyleSheet.hairlineWidth,
         borderTopColor: '#e0e0e0',
-        height: 88,
-        paddingTop: 8
+        paddingTop: 6
     }
 });
 
