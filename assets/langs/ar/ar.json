@@ -321,6 +321,7 @@
     "This is not a valid email address": "البريد الإلكتروني غير صالح",
     "This photo doesn't have location data": "This photo doesn't have location data",
     "This photo has no location data": "هذه الصورة لا تحتوي على بيانات موقع",
+    "This photo could not be tagged and was removed.": "تعذّر وسم هذه الصورة وتمت إزالتها.",
     "This photo was already uploaded.": "تم رفع هذه الصورة مسبقًا.",
     "Timeframe:": "الإطار الزمني:",
     "To": "إلى",

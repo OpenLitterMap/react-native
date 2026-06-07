@@ -110,7 +110,7 @@ After a gallery image is uploaded, `type` stays `'gallery'` but `uploaded` becom
 ## Error Handling
 Upload failures are classified by `classifyError()` in `utils/classifyError.js`:
 - `photo-already-uploaded` — Duplicate detection (422, backend `error: "duplicate"`). The stranded photo is dropped from the inbox (it's already on the server; can't be tagged without a server id). Transitional — to be superseded by an idempotent `/api/v3/upload` that returns the existing `photo_id`.
-- `invalid-photo-id` — `addTagsToPhoto` refused a non-integer `photo_id` locally (no network call); guards against a local/onboarding id reaching the server.
+- `invalid-photo-id` — the `photo_id` can never be tagged. Raised two ways: (1) `addTagsToPhoto` refused a non-integer id locally (no network call, blocks local/onboarding ids); (2) the backend rejected a valid-integer id (422 with `errors.photo_id` — "must be an integer" / "selected photo id is invalid", i.e. no live row: stale local-counter id or a server-deleted photo). Permanent + non-reportable; `addTagsToPhoto.rejected` drops the photo from the inbox so the upload loop stops retrying it.
 - `invalid-coordinates` — lat=0, lon=0 (422)
 - `timeout` — Connection timed out (ECONNABORTED)
 - `network` — No internet connection
@@ -132,6 +132,9 @@ If the tag write fails after a successful photo upload:
 - Tags are written directly via `addTagsToPhoto` (PUT, no re-upload of the photo)
 - PUT is **replace** semantics, so re-running the upload loop is idempotent — a
   lost-response retry can't double-tag or double-count XP (POST would append)
+- **Exception — permanent failure:** an `invalid-photo-id` rejection (the id can
+  never be tagged) drops the photo from the inbox instead of retrying. Only
+  transient errors (timeout/network/server) are retried.
 
 ## Photo Deletion
 Uploaded images on HomeScreen are deleted via `deleteUploadPhoto` (from `uploads_reducer.js`), which calls `POST /api/profile/photos/delete` with `{ "photoid": <id> }`. The image is also removed from local `imagesArray` via `deleteImage`. Non-uploaded images are removed from local state only (no server call needed).
