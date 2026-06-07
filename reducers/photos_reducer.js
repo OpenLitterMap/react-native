@@ -47,6 +47,7 @@ const initialState = {
 const buildDedupSets = state => {
     const uris = new Set();
     const ids = new Set();
+    const filenames = new Set();
     for (const img of state.imagesArray) {
         if (img.uri) {
             uris.add(img.uri);
@@ -54,16 +55,32 @@ const buildDedupSets = state => {
         if (img.id != null) {
             ids.add(img.id);
         }
+        if (img.filename) {
+            filenames.add(img.filename);
+        }
     }
-    return {uris, ids};
+    return {uris, ids, filenames};
+};
+
+/** Record an added image's keys so a single batch can't add it twice. */
+const trackInDedupSets = (dedupSets, image) => {
+    if (image.uri) dedupSets.uris.add(image.uri);
+    if (image.id != null) dedupSets.ids.add(image.id);
+    if (image.filename) dedupSets.filenames.add(image.filename);
 };
 
 /** Check if image already exists using pre-built dedup sets. */
 const isDuplicate = (dedupSets, image) => {
     if (image.uri && !image.uploaded) {
-        return dedupSets.uris.has(image.uri);
+        if (dedupSets.uris.has(image.uri)) return true;
+    } else if (dedupSets.ids.has(image.id)) {
+        return true;
     }
-    return dedupSets.ids.has(image.id);
+    // Cross-source match: the OS picker returns a temp-file uri that differs
+    // from the CameraRoll ph:// uri for the same physical photo, but the
+    // filename is stable across both — dedup on it so the same photo can't be
+    // imported twice (re-picked across launches, or already in the queue).
+    return !!(image.filename && dedupSets.filenames.has(image.filename));
 };
 
 /**
@@ -117,6 +134,8 @@ const photosSlice = createSlice({
                         selected: false,
                         uploaded: image.uploaded
                     });
+                    // Track keys so a duplicate later in the same batch is caught
+                    trackInDedupSets(dedup, image);
                 }
             });
         },

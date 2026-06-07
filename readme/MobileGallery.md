@@ -26,13 +26,13 @@ photos are the list `data` (flex-sized square tiles, even gutters, inset 16px).
 3. `selectInboxPhotos` returns **all** photos (geotagged or not, minus dismissed), newest-first — **no date window**.
 4. `useInbox` shows the first **6** (`INITIAL_VISIBLE`); the grid renders them in a 3-column FlashList — geotagged tiles pinned, non-geotagged greyed.
 5. **Load more** reveals **+50** (`LOAD_MORE_STEP`) and pages the camera roll (`LOAD`, 50/page) when more are needed.
-6. **Tap a photo** → `addImages` (the whole inbox, for swiping) → navigate to `ADD_TAGS`.
-7. **Select More** (header, right of Delete) → `launchImageLibrary` multi-select → read GPS via EXIF → import geotagged picks via `addImages` → `ADD_TAGS`. Non-geotagged picks are skipped with a "Missing GPS Data" alert.
+6. **Tap a geotagged photo** → `addImages` (the **geotagged** photos only, for swiping) → navigate to `ADD_TAGS`. Non-geotagged tiles are **inert** in tag mode (the thumbnail `Pressable` is `disabled` — tap does nothing) so the tagger never dead-ends on an un-uploadable photo. Non-geotagged tiles stay selectable in **delete mode** (so they can be dismissed).
+7. **Select More** (header, right of Delete) → `launchImageLibrary` multi-select → read GPS via EXIF → import geotagged picks via `addImages` → `ADD_TAGS`. Non-geotagged picks are skipped with a "Missing GPS Data" alert. **Dedupe:** the OS picker returns a temp-file uri that differs from the CameraRoll `ph://` uri for the same physical photo, so `addImages` dedupes on `filename` (the stable cross-source key) in addition to uri/id — the same photo can't be imported twice.
 8. **Delete mode** → select photos → dismiss (`dismissPhotos` → `dismissedUris`); camera captures are removed via `deleteImage`.
 
 ## Visual indicators
 - **📍 pin**: top-right of every geotagged (mappable) photo.
-- **Greyed out**: non-geotagged photos get a soft grey wash (can't be mapped).
+- **Greyed out**: non-geotagged photos get a soft grey wash (can't be mapped) and are inert to taps in tag mode.
 - **Tag badge**: top-left, when the photo was tagged this session.
 - **Camera badge**: bottom-left, for in-app camera captures.
 - **Selection**: checkmark badge + overlay in delete mode.

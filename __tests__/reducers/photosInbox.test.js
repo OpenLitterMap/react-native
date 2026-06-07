@@ -14,7 +14,7 @@ jest.mock('../../utils/config', () => ({IS_PRODUCTION: false, URL: 'http://local
 jest.mock('@react-native-camera-roll/camera-roll', () => ({CameraRoll: {}}));
 jest.mock('@lodev09/react-native-exify', () => ({}));
 
-import photosReducer, {removeTaggedPhoto} from '../../reducers/photos_reducer';
+import photosReducer, {removeTaggedPhoto, addImages} from '../../reducers/photos_reducer';
 import {uploadImage, addTagsToPhoto} from '../../reducers/upload_flow_reducer';
 
 const baseState = imagesArray => ({
@@ -89,5 +89,43 @@ describe('photos inbox cleanup', () => {
         });
 
         expect(next.imagesArray).toHaveLength(1);
+    });
+});
+
+describe('addImages import dedupe', () => {
+    it('drops a re-imported photo matching by filename when the uri differs', () => {
+        // Same physical photo: CameraRoll ph:// uri already in the queue, OS
+        // picker hands back a temp-file uri — filename is the shared key.
+        const state = baseState([
+            {id: 1, uri: 'ph://abc', filename: 'IMG_1.HEIC', uploaded: false, tags: []}
+        ]);
+
+        const next = photosReducer(state, addImages({
+            images: [{
+                id: 'picked_x',
+                uri: 'file:///tmp/IMG_1.HEIC',
+                filename: 'IMG_1.HEIC',
+                uploaded: false
+            }],
+            picked_up: null
+        }));
+
+        expect(next.imagesArray).toHaveLength(1);
+    });
+
+    it('dedupes duplicates within a single batch (by filename)', () => {
+        const state = baseState([]);
+
+        const next = photosReducer(state, addImages({
+            images: [
+                {id: 'a', uri: 'file://1', filename: 'IMG_1.jpg', uploaded: false},
+                {id: 'b', uri: 'file://2', filename: 'IMG_2.jpg', uploaded: false},
+                {id: 'c', uri: 'file://3', filename: 'IMG_1.jpg', uploaded: false}
+            ],
+            picked_up: null
+        }));
+
+        expect(next.imagesArray).toHaveLength(2);
+        expect(next.imagesArray.map(i => i.filename)).toEqual(['IMG_1.jpg', 'IMG_2.jpg']);
     });
 });

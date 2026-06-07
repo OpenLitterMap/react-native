@@ -191,9 +191,13 @@ const HomeScreen = ({navigation}) => {
     /** Section 4: Tap a camera roll photo — load all inbox photos, swipe to tapped one */
     const recentPhotos = useSelector(selectInboxPhotos);
     const handleTapInboxPhoto = useCallback((photo) => {
+        // Only geotagged photos are mappable — keep non-geotagged out of the
+        // swipe queue so the tagger can't dead-end on an un-uploadable photo.
+        if (!photo.hasGps) return;
         dispatch(clearEditingPhoto());
-        // Add all recent geotagged photos so user can swipe through the full inbox
-        dispatch(addImages({images: recentPhotos, picked_up: null}));
+        // Add only the geotagged photos so the user swipes through mappable ones
+        const geotagged = recentPhotos.filter(p => p.hasGps);
+        dispatch(addImages({images: geotagged, picked_up: null}));
         // addImages deduplicates — photo may already be in images from a prior tap.
         // Search existing array first, then fall back to appended position.
         const existingIdx = images.findIndex(img => img.uri === photo.uri);
@@ -201,7 +205,7 @@ const HomeScreen = ({navigation}) => {
             dispatch(changeSwiperIndex(existingIdx));
         } else {
             // Photo was newly added — it's at the end after existing images
-            const tappedOffset = recentPhotos.findIndex(p => p.uri === photo.uri);
+            const tappedOffset = geotagged.findIndex(p => p.uri === photo.uri);
             dispatch(changeSwiperIndex(images.length + Math.max(0, tappedOffset)));
         }
         navigation.navigate('ADD_TAGS');

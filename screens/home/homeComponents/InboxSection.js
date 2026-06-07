@@ -25,9 +25,13 @@ const formatRelativeTime = (timestampSeconds) => {
 };
 
 export const InboxThumbnail = React.memo(({photo, onPress, isSelecting, isSelected, hasTag}) => (
-    <Pressable style={styles.thumb} onPress={() => onPress(photo)}>
+    <Pressable
+        style={styles.thumb}
+        disabled={!photo.hasGps && !isSelecting}
+        onPress={() => onPress(photo)}>
         <Image source={{uri: photo.uri}} style={styles.thumbImage} />
-        {/* Non-geotagged photos can't be mapped — grey them out */}
+        {/* Non-geotagged photos can't be mapped — grey them out (and, outside
+            delete mode, they're inert: only geotagged photos can be tagged) */}
         {!photo.hasGps && <View style={styles.mutedOverlay} />}
         {isSelecting ? (
             <View style={[styles.selectBadge, isSelected && styles.selectBadgeActive]}>
