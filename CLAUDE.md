@@ -235,13 +235,18 @@ hang) without rebuilding:
 (dSYMs live in the `.xcarchive`'s `dSYMs/` folder or DerivedData). App Hang
 tracking itself is already on by default in `@sentry/react-native`.
 
-**Coverage caveat (verified against local archives):** the archive `dSYMs/` folder
-currently contains **only `openlittermap.app.dSYM`** — i.e. the **app binary**. The
-embedded **framework dSYMs are not produced/retained**: `React.framework.dSYM` is
-absent, and `hermesvm` is a prebuilt, stripped framework with no dSYM at all. So
-this upload symbolicates the app's own ("In App") frames but **React and Hermes
-frames stay `<unknown>`**. Closing that gap (produce/retain `React.framework.dSYM`,
-fetch the matching prebuilt Hermes dSYM) is a separate follow-up.
+**Coverage (verified):** three sources, all uploaded on release builds:
+- **App binary** (+ statically-linked pods like camera-roll, Reanimated): the
+  archive `dSYMs/` folder contains only `openlittermap.app.dSYM`, uploaded by the
+  build phase above.
+- **React & Hermes frames**: these are **prebuilt vendored frameworks** in RN
+  0.84.1 (`React-Core-prebuilt`, `hermes-engine`) — **not** a `DEBUG_INFORMATION_FORMAT`
+  (dwarf) setting; the dwarf hypothesis was checked and refuted (Pods Release is
+  `dwarf-with-dsym`). No dSYM *file* is produced, but the prebuilt **release
+  artifact tarballs** (`ios/Pods/{ReactNativeCore,hermes-engine}-artifacts/*-release.tar.gz`)
+  carry symbol tables whose Debug IDs match the shipped build, and
+  `ios/sentry-upload-framework-symbols.sh` (run from the same build phase) uploads
+  them. So React/Hermes frames symbolicate too.
 
 ## Deep-Dive Documentation
 
