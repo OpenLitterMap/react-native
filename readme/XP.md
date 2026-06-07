@@ -86,7 +86,7 @@ XP accumulates into levels. Thresholds are flat (not exponential).
 **Titles and thresholds are defined on the backend** (`GET /api/levels`, returned as
 an object keyed by XP: `{ "0": { title }, "100": { title }, … }`). The mobile app
 parses that shape in `screens/profile/helpers/xpLevels.js` (`normalizeLevels`),
-caches it for 7 days (`xp_levels_cache_v2`, cleared on logout), and only falls back
+caches it for 7 days (`xp_levels_cache_v3`, cleared on logout), and only falls back
 to a hardcoded ladder when the API is unreachable. **This table is illustrative and
 may lag the live backend.**
 

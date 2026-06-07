@@ -11,7 +11,7 @@ import { initialState as galleryInitialState } from '../reducers/gallery_reducer
 // Keep in sync with: ProfileScreen.js, xpLevels.js (their CACHE_KEY values).
 const CLEAR_ON_LOGOUT = [
     'profile_stats_cache', // user-specific (xp/position/totalImages) — real leak
-    'xp_levels_cache_v2'   // global, but cleared so level names refresh on switch
+    'xp_levels_cache_v3'   // global, but cleared so level names refresh on switch
 ];
 
 const logoutListener = createListenerMiddleware();

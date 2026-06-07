@@ -119,7 +119,7 @@ Legacy fallback: if the backend returns the old `{token, user}` shape (no `stats
 Redux in standalone AsyncStorage keys. A `createListenerMiddleware` listener in
 `store/index.js` clears these on every logout (button, 401 auto-logout, account switch)
 so a new account can't inherit the previous user's data: `profile_stats_cache`
-(user-specific xp/position/totalImages) and `xp_levels_cache_v2` (so level titles
+(user-specific xp/position/totalImages) and `xp_levels_cache_v3` (so level titles
 refresh). Keep `CLEAR_ON_LOGOUT` in sync with the `CACHE_KEY` values in
 `ProfileScreen.js` and `xpLevels.js`.
 

@@ -1,9 +1,10 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import api from '../../../utils/apiClient';
 
-// Bumped to v2 so installs drop any cache that stored the hardcoded fallback
-// (the old parser couldn't read the backend's XP-keyed object shape).
-const CACHE_KEY = 'xp_levels_cache_v2';
+// Bumped to v3 so installs drop any cache that stored "Unknown" names
+// (the v2 parser read the XP-keyed object but expected object values; the
+// backend actually returns plain string titles — { "0": "Noob", ... }).
+const CACHE_KEY = 'xp_levels_cache_v3';
 const CACHE_TTL = 7 * 24 * 60 * 60 * 1000; // 7 days
 
 // Fallback if API is unreachable and no cache exists (mirror /api/levels titles)
@@ -18,7 +19,7 @@ const FALLBACK_LEVELS = [
     { xp: 100000, name: 'Planet Protector' },
     { xp: 200000, name: 'Galactic Garbagething' },
     { xp: 500000, name: 'Interplanetary' },
-    { xp: 10000000, name: 'SuperIntelligent LitterMaster' }
+    { xp: 1000000, name: 'SuperIntelligent LitterMaster' }
 ];
 
 /**
@@ -65,7 +66,9 @@ export const fetchXpLevels = async (token) => {
  */
 export const normalizeLevels = (data) => {
     // Accept an array, { data: [...] } / { levels: [...] }, OR the backend's shape:
-    // an object keyed by XP threshold — { "0": { title }, "100": { title }, ... }.
+    // an object keyed by XP threshold whose value is the title string —
+    // { "0": "Noob", "100": "Litter Picker", ... }. Object values
+    // ({ title }/{ name }) are tolerated too in case the backend shape changes.
     const raw = data?.data ?? data?.levels ?? data;
 
     let levels;
@@ -75,10 +78,17 @@ export const normalizeLevels = (data) => {
             name: item.name ?? item.title ?? item.label ?? 'Unknown'
         }));
     } else if (raw && typeof raw === 'object') {
-        levels = Object.entries(raw).map(([key, v]) => ({
-            xp: Number(key) || (v?.xp ?? v?.xp_required ?? v?.min_xp ?? 0),
-            name: (v && (v.name ?? v.title ?? v.label)) ?? 'Unknown'
-        }));
+        levels = Object.entries(raw).map(([key, v]) => {
+            const keyNum = Number(key);
+            return {
+                xp: Number.isFinite(keyNum)
+                    ? keyNum
+                    : (v?.xp ?? v?.xp_required ?? v?.min_xp ?? 0),
+                name: typeof v === 'string'
+                    ? v
+                    : (v?.name ?? v?.title ?? v?.label ?? 'Unknown')
+            };
+        });
     } else {
         return FALLBACK_LEVELS;
     }

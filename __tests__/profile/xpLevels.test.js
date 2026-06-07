@@ -1,8 +1,8 @@
 /**
- * normalizeLevels must read the backend's shape — an object keyed by XP threshold
- * ({ "0": { title }, "100": { title }, ... }) — not just arrays. The old parser
- * only handled arrays, so it silently fell back to the hardcoded list and ignored
- * backend changes.
+ * normalizeLevels must read the backend's real shape — an object keyed by XP
+ * threshold whose VALUE is the title string ({ "0": "Noob", "100": "Litter
+ * Picker", ... }). An earlier parser only handled arrays (fell back to the
+ * hardcoded list); the next expected object VALUES and produced "Unknown".
  */
 jest.mock('@react-native-async-storage/async-storage', () => ({
     getItem: jest.fn(), setItem: jest.fn(), multiRemove: jest.fn()
@@ -12,16 +12,27 @@ jest.mock('../../utils/apiClient', () => ({__esModule: true, default: {get: jest
 import FALLBACK_LEVELS, {normalizeLevels} from '../../screens/profile/helpers/xpLevels';
 
 describe('normalizeLevels', () => {
-    it('parses the backend XP-keyed object shape', () => {
+    it('parses the backend XP-keyed string-value shape', () => {
         const r = normalizeLevels({
-            '100': {title: 'Litter Picker'},
-            '0': {title: 'Noob'},
-            '1000': {title: 'Litter Wizard'}
+            '100': 'Litter Picker',
+            '0': 'Noob',
+            '1000': 'Litter Wizard'
         });
         expect(r).toEqual([
             {xp: 0, name: 'Noob'},
             {xp: 100, name: 'Litter Picker'},
             {xp: 1000, name: 'Litter Wizard'}
+        ]);
+    });
+
+    it('also tolerates object values ({ title }/{ name })', () => {
+        const r = normalizeLevels({
+            '0': {title: 'Noob'},
+            '100': {name: 'Litter Picker'}
+        });
+        expect(r).toEqual([
+            {xp: 0, name: 'Noob'},
+            {xp: 100, name: 'Litter Picker'}
         ]);
     });
 
