@@ -6,7 +6,11 @@ apply from: project(":react-native-config").projectDir.getPath() + "/dotenv.grad
 apply from: "../../node_modules/react-native-vector-icons/fonts.gradle"
 // Sentry: RN JS/Hermes sourcemap upload (hooks the RN bundle task). Relative path
 // (matches the convention above) so it needs no `node` on the Gradle PATH in CI.
-apply from: "../../node_modules/@sentry/react-native/sentry.gradle"
+// Gated on token presence so an unconfigured/CI release build can't fail (iOS parity).
+def sentryAuthPresent = (System.getenv("SENTRY_AUTH_TOKEN") ?: "").trim() != ""
+if (sentryAuthPresent) {
+    apply from: "../../node_modules/@sentry/react-native/sentry.gradle"
+}
 
 /**
  * This is the configuration block to customize your React Native Android app.
@@ -155,8 +159,9 @@ sentry {
     includeProguardMapping = false
 
     // Upload native (.so) debug symbols: app native + Hermes/JSC.
+    // autoUpload gated on token presence so unconfigured builds skip (iOS parity).
     uploadNativeSymbols = true
-    autoUploadNativeSymbols = true
+    autoUploadNativeSymbols = sentryAuthPresent
     includeNativeSources = false
 
     // @sentry/react-native already ships the sentry-android SDK -> don't double-add it.
