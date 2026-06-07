@@ -1,7 +1,11 @@
 # Follow-up ticket: symbolicate React & Hermes framework frames in Sentry
 
-**Status:** open / not started — **out of scope for the app-binary dSYM commit
-(`b67ffde`).** File this in the tracker; do not fold into that PR.
+**Status:** ✅ **RESOLVED** — implemented in `c8dfbe9` (iOS: upload the prebuilt
+React/Hermes release-artifact symbols via `ios/sentry-upload-framework-symbols.sh`,
+run from the existing Sentry build phase). The "fetch the dSYM" framing below was
+superseded: the prebuilt **release artifacts already on disk** carry symbol tables
+whose Debug IDs match the shipped build, so no separate dSYM fetch is needed. Kept
+for the investigation trail; original problem statement preserved below.
 
 ## Problem
 Native **App Hang** (and crash) events symbolicate the app's own ("In App")
