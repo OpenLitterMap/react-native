@@ -214,6 +214,35 @@ i18next with `react-i18next`. Translation keys are **full British English string
 - **Xcode 26+/macOS Tahoe**: Sentry Cocoa SDK < 8.46.0 fails to compile. The `postinstall` script patches the RNSentry podspec to use 8.46.0. After `npm install`, run `cd ios && pod update Sentry && cd ..` if `Podfile.lock` still references an older version.
 - After modifying native dependencies: clean Xcode build folder (Cmd+Shift+K) and rebuild.
 
+### Sentry symbolication (dSYM upload)
+
+Without uploaded debug symbols, native crashes and **App Hang** events arrive
+unsymbolicated (`<unknown>` frames, "required debug information file was missing").
+The iOS target has an **"Upload Debug Symbols To Sentry"** build phase
+(`project.pbxproj`) that runs `@sentry/react-native/scripts/sentry-xcode-debug-files.sh`.
+It is guarded to **skip Debug builds and any environment where `SENTRY_AUTH_TOKEN`
+is unset**, so it never breaks a local/un-configured build.
+
+To activate (Release/Archive builds):
+1. Fill `ios/sentry.properties` (`defaults.org`, `defaults.project`) — or set
+   `SENTRY_ORG` / `SENTRY_PROJECT`. The file holds **no token**.
+2. Export `SENTRY_AUTH_TOKEN` in the build/CI environment (never commit it).
+3. Archive/Release-build → dSYMs upload automatically.
+
+Backfill an existing build's symbols (e.g. to symbolicate a current production
+hang) without rebuilding:
+`SENTRY_AUTH_TOKEN=… npm run ios:upload-dsyms -- <path-to-dSYMs>`
+(dSYMs live in the `.xcarchive`'s `dSYMs/` folder or DerivedData). App Hang
+tracking itself is already on by default in `@sentry/react-native`.
+
+**Coverage caveat (verified against local archives):** the archive `dSYMs/` folder
+currently contains **only `openlittermap.app.dSYM`** — i.e. the **app binary**. The
+embedded **framework dSYMs are not produced/retained**: `React.framework.dSYM` is
+absent, and `hermesvm` is a prebuilt, stripped framework with no dSYM at all. So
+this upload symbolicates the app's own ("In App") frames but **React and Hermes
+frames stay `<unknown>`**. Closing that gap (produce/retain `React.framework.dSYM`,
+fetch the matching prebuilt Hermes dSYM) is a separate follow-up.
+
 ## Deep-Dive Documentation
 
 Detailed documentation for each feature area lives in `readme/`:
