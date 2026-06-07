@@ -4,10 +4,10 @@ import {
     Modal,
     Pressable,
     RefreshControl,
-    ScrollView,
     StyleSheet,
     View
 } from 'react-native';
+import {FlashList} from '@shopify/flash-list';
 import {useDispatch, useSelector} from 'react-redux';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {
@@ -23,9 +23,11 @@ import {
 } from '../../reducers/server_photos_reducer';
 import {closeThankYouMessages, selectUploadFlow, setUploadAbortReason} from '../../reducers/upload_flow_reducer';
 import {getStats} from '../../reducers/stats_reducer';
-import {selectRecentGeotaggedPhotos} from '../../reducers/gallery_reducer';
+import {selectGeotaggedPhotos} from '../../reducers/gallery_reducer';
+import {launchImageLibrary} from 'react-native-image-picker';
 import {isTagged} from '../../utils/isTagged';
 import {isValidGpsCoords} from '../../utils/gps';
+import {readGpsFromExif} from '../../utils/readGpsFromExif';
 import {checkCameraWithLocation, requestCameraWithLocation} from '../../utils/permissions/cameraPermission';
 import CameraCapture from '../camera/CameraCapture';
 
@@ -35,7 +37,12 @@ import {useTranslation} from 'react-i18next';
 
 // Dashboard sections
 import {
-    InboxSection,
+    NUM_COLUMNS,
+    InboxThumbnail,
+    InboxControls,
+    InboxEmpty,
+    InboxFooter,
+    useInbox,
     LimitedAccessBanner,
     UntaggedSection,
     UploadModal,
@@ -182,7 +189,7 @@ const HomeScreen = ({navigation}) => {
     }, [dispatch, navigation, t]);
 
     /** Section 4: Tap a camera roll photo — load all inbox photos, swipe to tapped one */
-    const recentPhotos = useSelector(selectRecentGeotaggedPhotos);
+    const recentPhotos = useSelector(selectGeotaggedPhotos);
     const handleTapInboxPhoto = useCallback((photo) => {
         dispatch(clearEditingPhoto());
         // Add all recent geotagged photos so user can swipe through the full inbox
@@ -215,6 +222,134 @@ const HomeScreen = ({navigation}) => {
         setRefreshing(false);
     }, [dispatch, refreshCameraRoll, user?.enable_admin_tagging]);
 
+    /** "Select More" — open the system gallery, import geotagged picks into the tag queue */
+    const handleSelectMore = useCallback(async () => {
+        let result;
+        try {
+            result = await launchImageLibrary({
+                mediaType: 'photo',
+                selectionLimit: 0,
+                includeExtra: true,
+                quality: 1
+            });
+        } catch {
+            Alert.alert(t('Error!'), t('Something went wrong. Please try again.'));
+            return;
+        }
+        if (result.didCancel) return;
+        if (result.errorCode) {
+            Alert.alert(t('Error!'), result.errorMessage || t('Something went wrong. Please try again.'));
+            return;
+        }
+
+        const imported = [];
+        let skipped = 0;
+        for (const asset of result.assets || []) {
+            // react-native-image-picker doesn't return GPS — read from EXIF
+            const gps = await readGpsFromExif(asset.uri);
+            if (gps && isValidGpsCoords(gps.latitude, gps.longitude)) {
+                imported.push({
+                    id: asset.id || `picked_${asset.uri}`,
+                    uri: asset.uri,
+                    filename: asset.fileName || `picked_${Date.now()}.jpg`,
+                    lat: gps.latitude,
+                    lon: gps.longitude,
+                    date: asset.timestamp
+                        ? Math.floor(new Date(asset.timestamp).getTime() / 1000)
+                        : Math.floor(Date.now() / 1000),
+                    type: 'gallery',
+                    platform: 'mobile',
+                    customTags: [],
+                    uploaded: false
+                });
+            } else {
+                skipped += 1;
+            }
+        }
+
+        if (imported.length === 0) {
+            Alert.alert(t('Missing GPS Data'), t('None of the selected photos have location data.'));
+            return;
+        }
+
+        dispatch(clearEditingPhoto());
+        dispatch(addImages({images: imported, picked_up: null}));
+        dispatch(changeSwiperIndex(images.length));
+        if (skipped > 0) {
+            Alert.alert(
+                t('Missing GPS Data'),
+                `${skipped} ${skipped === 1 ? t('photo') : t('photos')} ${t('skipped (no GPS data).')}`
+            );
+        }
+        navigation.navigate('ADD_TAGS');
+    }, [dispatch, navigation, images, t]);
+
+    // --- Inbox grid (the dashboard's virtualized list data) ---
+    const inbox = useInbox(handleTapInboxPhoto);
+
+    const renderInboxItem = useCallback(({item}) => (
+        <InboxThumbnail
+            photo={item}
+            onPress={inbox.handlePhotoPress}
+            isSelecting={inbox.isSelecting}
+            isSelected={inbox.selectedUris.has(item.uri)}
+            hasTag={inbox.taggedUris.has(item.uri)}
+        />
+    ), [inbox.handlePhotoPress, inbox.isSelecting, inbox.selectedUris, inbox.taggedUris]);
+
+    // Re-render items when selection / tagging / select-mode changes.
+    const inboxExtraData = useMemo(
+        () => ({selecting: inbox.isSelecting, selected: inbox.selectedUris, tagged: inbox.taggedUris}),
+        [inbox.isSelecting, inbox.selectedUris, inbox.taggedUris]
+    );
+
+    const listHeader = useMemo(() => (
+        <>
+            <CommunityStats />
+            <YourImpactSection />
+            <UntaggedSection
+                onTagPhoto={handleTagUntaggedPhoto}
+                onTagAll={handleTagAllUntagged}
+            />
+            <LimitedAccessBanner
+                permissionStatus={permissionStatus}
+                onRefresh={refreshCameraRoll}
+            />
+            <InboxControls
+                count={inbox.visiblePhotos.length}
+                isSelecting={inbox.isSelecting}
+                selectedCount={inbox.selectedUris.size}
+                onToggleDelete={inbox.handleToggleDelete}
+                onDeleteSelected={inbox.handleDeleteSelected}
+                onSelectMore={handleSelectMore}
+            />
+        </>
+    ), [
+        handleTagUntaggedPhoto, handleTagAllUntagged, permissionStatus, refreshCameraRoll,
+        inbox.visiblePhotos.length, inbox.isSelecting, inbox.selectedUris.size,
+        inbox.handleToggleDelete, inbox.handleDeleteSelected, handleSelectMore
+    ]);
+
+    const listEmpty = useMemo(() => (
+        <InboxEmpty
+            permissionStatus={permissionStatus}
+            requestPermission={requestPermission}
+            totalGalleryPhotos={inbox.totalGalleryPhotos}
+            hasMorePages={inbox.hasMorePages}
+            isLoading={inbox.isLoading}
+            onLoadMore={inbox.handleLoadMore}
+        />
+    ), [permissionStatus, requestPermission, inbox.totalGalleryPhotos, inbox.hasMorePages, inbox.isLoading, inbox.handleLoadMore]);
+
+    const listFooter = useMemo(() => (
+        <InboxFooter
+            count={inbox.visiblePhotos.length}
+            hasMoreToShow={inbox.hasMoreToShow}
+            isLoading={inbox.isLoading}
+            onLoadMore={inbox.handleLoadMore}
+        />
+    ), [inbox.visiblePhotos.length, inbox.hasMoreToShow, inbox.isLoading, inbox.handleLoadMore]);
+
     // --- Render ---
 
     return (
@@ -222,32 +357,26 @@ const HomeScreen = ({navigation}) => {
             <Header
                 rightContent={<Caption color="white">v{DeviceInfo.getVersion()}</Caption>}
             />
-            <ScrollView
-                style={styles.container}
-                contentContainerStyle={styles.contentContainer}
-                refreshControl={
-                    <RefreshControl
-                        refreshing={refreshing}
-                        onRefresh={handleRefresh}
-                        tintColor={Colors.accent}
-                    />
-                }>
-                <CommunityStats />
-                <YourImpactSection />
-                <UntaggedSection
-                    onTagPhoto={handleTagUntaggedPhoto}
-                    onTagAll={handleTagAllUntagged}
+            <View style={styles.container}>
+                <FlashList
+                    data={inbox.visiblePhotos}
+                    renderItem={renderInboxItem}
+                    keyExtractor={item => String(item.id)}
+                    numColumns={NUM_COLUMNS}
+                    extraData={inboxExtraData}
+                    contentContainerStyle={styles.contentContainer}
+                    refreshControl={
+                        <RefreshControl
+                            refreshing={refreshing}
+                            onRefresh={handleRefresh}
+                            tintColor={Colors.accent}
+                        />
+                    }
+                    ListHeaderComponent={listHeader}
+                    ListEmptyComponent={listEmpty}
+                    ListFooterComponent={listFooter}
                 />
-                <LimitedAccessBanner
-                    permissionStatus={permissionStatus}
-                    onRefresh={refreshCameraRoll}
-                />
-                <InboxSection
-                    onTapPhoto={handleTapInboxPhoto}
-                    permissionStatus={permissionStatus}
-                    requestPermission={requestPermission}
-                />
-            </ScrollView>
+            </View>
 
             {pendingUploadCount > 0 && !isUploading && (
                 <View style={styles.uploadBarContainer}>

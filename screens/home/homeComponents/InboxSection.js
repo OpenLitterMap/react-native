@@ -1,8 +1,7 @@
-import React, {useCallback, useMemo, useState} from 'react';
+import React from 'react';
 import {
     ActivityIndicator,
     Dimensions,
-    FlatList,
     Image,
     Linking,
     Platform,
@@ -10,40 +9,24 @@ import {
     StyleSheet,
     View
 } from 'react-native';
-import {useDispatch, useSelector} from 'react-redux';
 import {useTranslation} from 'react-i18next';
 import Icon from 'react-native-vector-icons/Ionicons';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
-import {
-    selectRecentGeotaggedPhotos,
-    selectHasOlderGeotaggedPhotos,
-    getPhotosFromCameraroll,
-    expandRecencyWindow,
-    dismissPhotos
-} from '../../../reducers/gallery_reducer';
-import {deleteImage, selectTaggedUris, selectCameraPhotos} from '../../../reducers/photos_reducer';
 import {Colors} from '../../components/theme';
 import {Body, Caption} from '../../components/typography';
 
 dayjs.extend(relativeTime);
 
-const NUM_COLUMNS = 3;
+export const NUM_COLUMNS = 3;
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const THUMB_SIZE = (SCREEN_WIDTH - 32 - (NUM_COLUMNS - 1) * 6) / NUM_COLUMNS;
-const ROW_HEIGHT = THUMB_SIZE + 6; // thumb + marginBottom
-
-const getItemLayout = (_, index) => ({
-    length: ROW_HEIGHT,
-    offset: ROW_HEIGHT * index,
-    index
-});
 
 const formatRelativeTime = (timestampSeconds) => {
     return dayjs.unix(timestampSeconds).fromNow();
 };
 
-const InboxThumbnail = React.memo(({photo, onPress, isSelecting, isSelected, hasTag}) => (
+export const InboxThumbnail = React.memo(({photo, onPress, isSelecting, isSelected, hasTag}) => (
     <Pressable
         style={[styles.thumb, {width: THUMB_SIZE, height: THUMB_SIZE}]}
         onPress={() => onPress(photo)}>
@@ -52,18 +35,24 @@ const InboxThumbnail = React.memo(({photo, onPress, isSelecting, isSelected, has
             <View style={[styles.selectBadge, isSelected && styles.selectBadgeActive]}>
                 {isSelected && <Icon name="checkmark" size={14} color={Colors.white} />}
             </View>
-        ) : hasTag ? (
-            <View style={styles.tagBadge}>
-                <Icon name="pricetag" size={12} color={Colors.white} />
-            </View>
-        ) : null}
-        {photo.fromCamera ? (
+        ) : (
+            <>
+                {hasTag && (
+                    <View style={styles.tagBadge}>
+                        <Icon name="pricetag" size={12} color={Colors.white} />
+                    </View>
+                )}
+                {/* Pin marks a geotagged (mappable) photo */}
+                {photo.hasGps && (
+                    <View style={styles.gpsBadge}>
+                        <Icon name="location" size={12} color={Colors.white} />
+                    </View>
+                )}
+            </>
+        )}
+        {photo.fromCamera && (
             <View style={styles.cameraBadge}>
                 <Icon name="camera" size={12} color={Colors.white} />
-            </View>
-        ) : (
-            <View style={styles.gpsBadge}>
-                <Icon name="location" size={12} color={Colors.accent} />
             </View>
         )}
         <View style={styles.timeOverlay}>
@@ -75,199 +64,102 @@ const InboxThumbnail = React.memo(({photo, onPress, isSelecting, isSelected, has
     </Pressable>
 ));
 
-const InboxSection = ({onTapPhoto, permissionStatus, requestPermission}) => {
+/** Inbox header: title + select/delete controls + delete bar (FlashList header). */
+export const InboxControls = ({count, isSelecting, selectedCount, onToggleDelete, onDeleteSelected, onSelectMore}) => {
     const {t} = useTranslation();
-    const dispatch = useDispatch();
-    const allRecentPhotos = useSelector(selectRecentGeotaggedPhotos);
-    const totalGalleryPhotos = useSelector(state => state.gallery.galleryImages.length);
-    const hasMorePages = useSelector(state => state.gallery.hasMorePages);
-    const hasOlderPhotos = useSelector(selectHasOlderGeotaggedPhotos);
-    const fetchStatus = useSelector(state => state.gallery.fetchStatus);
-    const isLoading = fetchStatus === 'loading';
-
-    const taggedUris = useSelector(selectTaggedUris);
-    const cameraPhotos = useSelector(selectCameraPhotos);
-
-    // Filter out uploaded photos, then prepend camera captures
-    const uploadedUris = useSelector(state => state.photos.uploadedUris);
-    const recentPhotos = useMemo(() => {
-        const uploaded = new Set(uploadedUris || []);
-        const cameraUris = new Set(cameraPhotos.map(p => p.uri));
-        const filtered = allRecentPhotos.filter(
-            p => !uploaded.has(p.uri) && !cameraUris.has(p.uri)
-        );
-        return [...cameraPhotos, ...filtered];
-    }, [allRecentPhotos, uploadedUris, cameraPhotos]);
-
-    const showOlderButton = recentPhotos.length > 0 && (hasMorePages || hasOlderPhotos);
-
-    const [isSelecting, setIsSelecting] = useState(false);
-    const [selectedUris, setSelectedUris] = useState(new Set());
-
-    const handleShowOlder = useCallback(() => {
-        dispatch(expandRecencyWindow());
-        if (hasMorePages && !isLoading) {
-            dispatch(getPhotosFromCameraroll('LOAD'));
-        }
-    }, [dispatch, hasMorePages, isLoading]);
-
-    const handlePhotoPress = useCallback((photo) => {
-        if (isSelecting) {
-            setSelectedUris(prev => {
-                const next = new Set(prev);
-                if (next.has(photo.uri)) {
-                    next.delete(photo.uri);
-                } else {
-                    next.add(photo.uri);
-                }
-                return next;
-            });
-        } else {
-            onTapPhoto(photo);
-        }
-    }, [isSelecting, onTapPhoto]);
-
-    const handleToggleDelete = useCallback(() => {
-        setIsSelecting(prev => !prev);
-        setSelectedUris(new Set());
-    }, []);
-
-    const handleDeleteSelected = useCallback(() => {
-        if (selectedUris.size === 0) return;
-        // Dismiss gallery photos
-        dispatch(dismissPhotos([...selectedUris]));
-        // Delete camera-captured photos from imagesArray
-        for (const img of cameraPhotos) {
-            if (selectedUris.has(img.uri)) {
-                dispatch(deleteImage(img.id));
-            }
-        }
-        setSelectedUris(new Set());
-        setIsSelecting(false);
-    }, [dispatch, selectedUris, cameraPhotos]);
-
-    const renderItem = useCallback(({item}) => (
-        <InboxThumbnail
-            photo={item}
-            onPress={handlePhotoPress}
-            isSelecting={isSelecting}
-            isSelected={selectedUris.has(item.uri)}
-            hasTag={taggedUris.has(item.uri)}
-        />
-    ), [handlePhotoPress, isSelecting, selectedUris, taggedUris]);
-
-    const handleOpenSettings = useCallback(() => {
-        Platform.OS === 'ios'
-            ? Linking.openURL('app-settings:')
-            : Linking.openSettings();
-    }, []);
-
-    const renderEmpty = () => {
-        if (permissionStatus === 'denied') {
-            return (
-                <View style={styles.emptyContainer}>
-                    <Icon name="images-outline" size={40} color={Colors.muted} />
-                    <Body style={styles.emptyText}>
-                        {t('Allow photo access to see your recent photos here.')}
-                    </Body>
-                    <Pressable onPress={requestPermission} style={styles.grantAccessButton}>
-                        <Body style={styles.grantAccessText}>{t('Grant Access')}</Body>
-                    </Pressable>
-                </View>
-            );
-        }
-        if (permissionStatus === 'blocked') {
-            return (
-                <View style={styles.emptyContainer}>
-                    <Icon name="images-outline" size={40} color={Colors.muted} />
-                    <Body style={styles.emptyText}>
-                        {t('Photo access is turned off. Enable it in Settings to get started.')}
-                    </Body>
-                    <Pressable onPress={handleOpenSettings} style={styles.grantAccessButton}>
-                        <Body style={styles.grantAccessText}>{t('Open Settings')}</Body>
-                    </Pressable>
-                </View>
-            );
-        }
-        if (totalGalleryPhotos === 0) {
-            // App has no photos from CameraRoll — user needs to select/share photos
-            return (
-                <View style={styles.emptyContainer}>
-                    <Icon name="images-outline" size={40} color={Colors.muted} />
-                    <Body style={styles.emptyText}>
-                        {t('No photos available yet. Open Settings to choose which photos OpenLitterMap can access.')}
-                    </Body>
-                    <Pressable onPress={handleOpenSettings} style={styles.grantAccessButton}>
-                        <Body style={styles.grantAccessText}>{t('Manage Photo Access')}</Body>
-                    </Pressable>
-                </View>
-            );
-        }
-        // App has photos but none are geotagged within the recency window
-        return (
-            <View style={styles.emptyContainer}>
-                <Icon name="camera-outline" size={40} color={Colors.muted} />
-                <Body style={styles.emptyText}>
-                    {t('No photos with location data in the last 7 days.')}
-                </Body>
-                <Caption style={styles.emptyHint}>
-                    {t('Turn on location in your camera settings so new photos include where they were taken.')}
-                </Caption>
-                <Pressable onPress={handleOpenSettings} style={styles.manageAccessButton}>
-                    <Icon name="settings-outline" size={14} color={Colors.accent} />
-                    <Body style={styles.manageAccessText}>{t('Manage Photo Access')}</Body>
-                </Pressable>
-            </View>
-        );
-    };
-
     return (
-        <View style={styles.section}>
+        <View style={styles.controls}>
             <View style={styles.headerRow}>
                 <Body style={styles.sectionTitle}>
-                    {t('Your Photos')} ({recentPhotos.length})
+                    {t('Your Photos')} ({count})
                 </Body>
-                {recentPhotos.length > 0 && (
-                    <Pressable onPress={handleToggleDelete} style={styles.headerButton}>
-                        <Body style={styles.headerButtonText}>
-                            {isSelecting ? t('Cancel') : t('Delete')}
-                        </Body>
-                    </Pressable>
-                )}
+                <View style={styles.headerActions}>
+                    {count > 0 && (
+                        <Pressable onPress={onToggleDelete} style={styles.headerButton}>
+                            <Body style={styles.headerButtonText}>
+                                {isSelecting ? t('Cancel') : t('Delete')}
+                            </Body>
+                        </Pressable>
+                    )}
+                    {!isSelecting && (
+                        <Pressable onPress={onSelectMore} style={styles.headerButtonAccent}>
+                            <Icon name="add" size={14} color={Colors.white} />
+                            <Body style={styles.headerButtonAccentText}>{t('Select More')}</Body>
+                        </Pressable>
+                    )}
+                </View>
             </View>
-            {isSelecting && selectedUris.size > 0 && (
-                <Pressable onPress={handleDeleteSelected} style={styles.deleteBar}>
+            {isSelecting && selectedCount > 0 && (
+                <Pressable onPress={onDeleteSelected} style={styles.deleteBar}>
                     <Icon name="trash-outline" size={16} color={Colors.white} />
                     <Body style={styles.deleteBarText}>
-                        {t('Delete')} ({selectedUris.size})
+                        {t('Delete')} ({selectedCount})
                     </Body>
                 </Pressable>
             )}
-            {recentPhotos.length === 0 && renderEmpty()}
-            {recentPhotos.length > 0 && (
-                <FlatList
-                    data={recentPhotos}
-                    renderItem={renderItem}
-                    keyExtractor={item => String(item.id)}
-                    numColumns={NUM_COLUMNS}
-                    scrollEnabled={false}
-                    getItemLayout={getItemLayout}
-                    contentContainerStyle={styles.gridContent}
-                    columnWrapperStyle={styles.columnWrapper}
-                    extraData={selectedUris}
-                />
-            )}
-            {showOlderButton && (
-                <Pressable
-                    onPress={handleShowOlder}
-                    disabled={isLoading}
-                    style={styles.showOlderButton}>
+        </View>
+    );
+};
+
+/** Inbox empty / permission / searching states (FlashList ListEmptyComponent). */
+export const InboxEmpty = ({permissionStatus, requestPermission, totalGalleryPhotos, hasMorePages, isLoading, onLoadMore}) => {
+    const {t} = useTranslation();
+    const openSettings = () =>
+        Platform.OS === 'ios' ? Linking.openURL('app-settings:') : Linking.openSettings();
+
+    if (permissionStatus === 'denied') {
+        return (
+            <View style={styles.emptyContainer}>
+                <Icon name="images-outline" size={40} color={Colors.muted} />
+                <Body style={styles.emptyText}>
+                    {t('Allow photo access to see your recent photos here.')}
+                </Body>
+                <Pressable onPress={requestPermission} style={styles.grantAccessButton}>
+                    <Body style={styles.grantAccessText}>{t('Grant Access')}</Body>
+                </Pressable>
+            </View>
+        );
+    }
+    if (permissionStatus === 'blocked') {
+        return (
+            <View style={styles.emptyContainer}>
+                <Icon name="images-outline" size={40} color={Colors.muted} />
+                <Body style={styles.emptyText}>
+                    {t('Photo access is turned off. Enable it in Settings to get started.')}
+                </Body>
+                <Pressable onPress={openSettings} style={styles.grantAccessButton}>
+                    <Body style={styles.grantAccessText}>{t('Open Settings')}</Body>
+                </Pressable>
+            </View>
+        );
+    }
+    if (totalGalleryPhotos === 0) {
+        // App has no photos from CameraRoll — user needs to select/share photos
+        return (
+            <View style={styles.emptyContainer}>
+                <Icon name="images-outline" size={40} color={Colors.muted} />
+                <Body style={styles.emptyText}>
+                    {t('No photos available yet. Open Settings to choose which photos OpenLitterMap can access.')}
+                </Body>
+                <Pressable onPress={openSettings} style={styles.grantAccessButton}>
+                    <Body style={styles.grantAccessText}>{t('Manage Photo Access')}</Body>
+                </Pressable>
+            </View>
+        );
+    }
+    // No geotagged photos in what's loaded so far — offer to load more pages.
+    return (
+        <View style={styles.emptyContainer}>
+            <Icon name="location-outline" size={40} color={Colors.muted} />
+            <Body style={styles.emptyText}>
+                {t('No photos to map right now.')}
+            </Body>
+            {hasMorePages && (
+                <Pressable onPress={onLoadMore} disabled={isLoading} style={styles.manageAccessButton}>
                     {isLoading ? (
                         <ActivityIndicator size="small" color={Colors.accent} />
                     ) : (
-                        <Body style={styles.showOlderText}>
-                            {t('Show older photos')}
-                        </Body>
+                        <Body style={styles.manageAccessText}>{t('Load more photos')}</Body>
                     )}
                 </Pressable>
             )}
@@ -275,12 +167,26 @@ const InboxSection = ({onTapPhoto, permissionStatus, requestPermission}) => {
     );
 };
 
-export default InboxSection;
+/** Inbox footer: load-more / keep-looking (FlashList ListFooterComponent). */
+export const InboxFooter = ({count, hasMoreToShow, isLoading, onLoadMore}) => {
+    const {t} = useTranslation();
+    if (!(count > 0 && hasMoreToShow)) {
+        return null;
+    }
+    return (
+        <Pressable onPress={onLoadMore} disabled={isLoading} style={styles.showOlderButton}>
+            {isLoading ? (
+                <ActivityIndicator size="small" color={Colors.accent} />
+            ) : (
+                <Body style={styles.showOlderText}>{t('Load more photos')}</Body>
+            )}
+        </Pressable>
+    );
+};
 
 const styles = StyleSheet.create({
-    section: {
-        paddingTop: 8,
-        paddingBottom: 20
+    controls: {
+        paddingTop: 8
     },
     headerRow: {
         flexDirection: 'row',
@@ -296,6 +202,11 @@ const styles = StyleSheet.create({
         textTransform: 'uppercase',
         letterSpacing: 1
     },
+    headerActions: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8
+    },
     headerButton: {
         paddingHorizontal: 14,
         paddingVertical: 6,
@@ -305,6 +216,20 @@ const styles = StyleSheet.create({
     },
     headerButtonText: {
         color: Colors.muted,
+        fontSize: 13,
+        fontWeight: '600'
+    },
+    headerButtonAccent: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 16,
+        backgroundColor: Colors.accent
+    },
+    headerButtonAccentText: {
+        color: Colors.white,
         fontSize: 13,
         fontWeight: '600'
     },
@@ -354,11 +279,11 @@ const styles = StyleSheet.create({
     },
     gpsBadge: {
         position: 'absolute',
-        bottom: 26,
-        left: 6,
-        backgroundColor: 'rgba(255,255,255,0.9)',
-        borderRadius: 8,
-        padding: 2
+        top: 6,
+        right: 6,
+        backgroundColor: Colors.accent,
+        borderRadius: 10,
+        padding: 3
     },
     cameraBadge: {
         position: 'absolute',
@@ -371,7 +296,7 @@ const styles = StyleSheet.create({
     tagBadge: {
         position: 'absolute',
         top: 6,
-        right: 6,
+        left: 6,
         backgroundColor: Colors.accent,
         borderRadius: 10,
         padding: 3

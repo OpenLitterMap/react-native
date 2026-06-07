@@ -28,7 +28,7 @@ Runtime: **Node v22.22.1**, **npm 10.9.4** (prefer npm over yarn) — RN 0.84 re
 HomeScreen Dashboard → Tap photo → Tag → Auto-upload
 ```
 
-1. **Home** (`HomeScreen`) — 4-section scrollable dashboard: Global Impact stats, Your Impact stats, Uploaded (untagged server photos), Ready to Map (geotagged camera roll inbox)
+1. **Home** (`HomeScreen`) — dashboard as a single virtualized `FlashList` (fixed sections in `ListHeaderComponent`, inbox photos as data): Global Impact stats, Your Impact stats, Uploaded (untagged server photos), "Your Photos" (geotagged camera-roll inbox — pin per photo, 6 preview + "Load more" 50/page, "Select More" picker import)
 2. **Tag** (`AddTagScreen`) — Full-screen image viewer with search/browse for litter tags, materials, brands
 3. **Upload** — Auto-triggered via `useFocusEffect` when returning to HomeScreen after tagging. Two-step: upload photo binary → PUT tags (replace/idempotent).
 
