@@ -279,7 +279,7 @@ Detailed documentation for each feature area lives in `readme/`:
 When the user says "BOOP", perform all of the following:
 
 1. Determine if the change is a new feature (minor bump) or a fix/improvement (patch bump). Ask if unsure
-2. Bump the appropriate version in `package.json`
+2. Bump the appropriate version in `package.json` **and the native build configs** so the in-app version (`DeviceInfo.getVersion()`) matches: iOS `MARKETING_VERSION` (both configs in `ios/openlittermap.xcodeproj/project.pbxproj`) + bump `CURRENT_PROJECT_VERSION`; Android `versionName` + bump `versionCode` in `android/app/build.gradle`. Keep all three `*VERSION`/`versionName` values equal to `package.json`.
 3. Append a one-line entry to `readme/changelog/YYYY-MM-DD.md` (today's date)
 4. Update any readme docs (`readme/*.md`) affected by the changes
 5. Update any skills files affected by the changes
