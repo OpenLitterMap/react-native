@@ -4,17 +4,18 @@
 
 ## Overview
 There is no separate gallery screen. Camera-roll photos surface in the **"Your
-Photos"** inbox, a section of the HomeScreen dashboard. The inbox shows the user's
-**geotagged** photos (only geotagged photos can be mapped/uploaded), newest-first,
-with a location **pin** on each. The whole dashboard is one virtualized
-`FlashList`: the fixed sections (stats, untagged, banners) sit in
-`ListHeaderComponent`, and the inbox photos are the list `data`.
+Photos"** inbox, a section of the HomeScreen dashboard. The inbox shows **all**
+camera-roll photos newest-first: **non-geotagged photos are greyed out** and
+**geotagged photos get a 📍 pin top-right** (only geotagged photos can be
+mapped/uploaded). The whole dashboard is one virtualized `FlashList`: the fixed
+sections (stats, untagged, banners) sit in `ListHeaderComponent`, and the inbox
+photos are the list `data` (flex-sized square tiles, even gutters, inset 16px).
 
 ## Files
 - `screens/home/HomeScreen.js` — hosts the dashboard FlashList; `handleTapInboxPhoto` (import + tag) and `handleSelectMore` (picker import)
 - `screens/home/homeComponents/useInbox.js` — inbox state hook (visible count, selection, load-more)
 - `screens/home/homeComponents/InboxSection.js` — presentational pieces: `InboxThumbnail`, `InboxControls`, `InboxEmpty`, `InboxFooter`
-- `reducers/gallery_reducer.js` — CameraRoll fetching (cursor pagination), GPS detection, `selectGeotaggedPhotos`
+- `reducers/gallery_reducer.js` — CameraRoll fetching (cursor pagination), GPS detection, `selectInboxPhotos`
 - `utils/isGeotagged.js` — valid-GPS check (rejects null, 0,0)
 - `utils/readGpsFromExif.js` — EXIF GPS fallback (Android camera-roll; picker imports)
 - `utils/permissions/cameraRollPermission.js` — photo-library + `ACCESS_MEDIA_LOCATION` permission handling
@@ -22,15 +23,16 @@ with a location **pin** on each. The whole dashboard is one virtualized
 ## Flow
 1. `useHomeBootstrap` checks gallery permission on mount/focus; if granted, `getPhotosFromCameraroll('INITIAL')` fetches.
 2. Each photo gets a `hasGps` boolean from its location metadata (or EXIF on Android).
-3. `selectGeotaggedPhotos` returns all geotagged photos (minus dismissed), newest-first — **no date window**.
-4. `useInbox` shows the first **6** (`INITIAL_VISIBLE`); the grid renders them in a 3-column FlashList with a pin on each.
+3. `selectInboxPhotos` returns **all** photos (geotagged or not, minus dismissed), newest-first — **no date window**.
+4. `useInbox` shows the first **6** (`INITIAL_VISIBLE`); the grid renders them in a 3-column FlashList — geotagged tiles pinned, non-geotagged greyed.
 5. **Load more** reveals **+50** (`LOAD_MORE_STEP`) and pages the camera roll (`LOAD`, 50/page) when more are needed.
 6. **Tap a photo** → `addImages` (the whole inbox, for swiping) → navigate to `ADD_TAGS`.
 7. **Select More** (header, right of Delete) → `launchImageLibrary` multi-select → read GPS via EXIF → import geotagged picks via `addImages` → `ADD_TAGS`. Non-geotagged picks are skipped with a "Missing GPS Data" alert.
 8. **Delete mode** → select photos → dismiss (`dismissPhotos` → `dismissedUris`); camera captures are removed via `deleteImage`.
 
 ## Visual indicators
-- **Pin**: accent location badge, top-right of every (geotagged) photo.
+- **📍 pin**: top-right of every geotagged (mappable) photo.
+- **Greyed out**: non-geotagged photos get a soft grey wash (can't be mapped).
 - **Tag badge**: top-left, when the photo was tagged this session.
 - **Camera badge**: bottom-left, for in-app camera captures.
 - **Selection**: checkmark badge + overlay in delete mode.
@@ -54,7 +56,7 @@ with a location **pin** on each. The whole dashboard is one virtualized
     error: string | null
 }
 ```
-Selector: `selectGeotaggedPhotos(state)` — geotagged, not-dismissed, newest-first.
+Selector: `selectInboxPhotos(state)` — all photos, not-dismissed, newest-first.
 
 ## GPS detection
 - `node.location` must have non-null, non-zero `latitude`/`longitude` → `hasGps: true`.

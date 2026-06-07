@@ -272,17 +272,18 @@ export const selectNonGeotaggedCount = createSelector(
 );
 
 /**
- * Select all loaded geotagged photos, newest-first, minus dismissed ones.
- * No date window — the user pages in more via "Load more photos" until older
- * geotagged photos surface. CameraRoll timestamps are in seconds.
+ * Select all loaded camera-roll photos, newest-first, minus dismissed ones.
+ * Non-geotagged photos are kept (greyed out in the grid); only geotagged ones
+ * are mappable. Per-photo `hasGps` drives the grey-out + pin. No date window —
+ * the user pages in more via "Load more photos". CameraRoll timestamps are seconds.
  */
-export const selectGeotaggedPhotos = createSelector(
+export const selectInboxPhotos = createSelector(
     state => state.gallery.galleryImages,
     state => state.gallery.dismissedUris,
     (images, dismissedUris) => {
         const dismissed = new Set(dismissedUris);
         return images
-            .filter(img => img.hasGps && !dismissed.has(img.uri))
+            .filter(img => !dismissed.has(img.uri))
             .sort((a, b) => b.date - a.date);
     }
 );

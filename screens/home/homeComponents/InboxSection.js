@@ -1,12 +1,12 @@
 import React from 'react';
 import {
     ActivityIndicator,
-    Dimensions,
     Image,
     Linking,
     Platform,
     Pressable,
     StyleSheet,
+    Text,
     View
 } from 'react-native';
 import {useTranslation} from 'react-i18next';
@@ -19,18 +19,16 @@ import {Body, Caption} from '../../components/typography';
 dayjs.extend(relativeTime);
 
 export const NUM_COLUMNS = 3;
-const SCREEN_WIDTH = Dimensions.get('window').width;
-const THUMB_SIZE = (SCREEN_WIDTH - 32 - (NUM_COLUMNS - 1) * 6) / NUM_COLUMNS;
 
 const formatRelativeTime = (timestampSeconds) => {
     return dayjs.unix(timestampSeconds).fromNow();
 };
 
 export const InboxThumbnail = React.memo(({photo, onPress, isSelecting, isSelected, hasTag}) => (
-    <Pressable
-        style={[styles.thumb, {width: THUMB_SIZE, height: THUMB_SIZE}]}
-        onPress={() => onPress(photo)}>
-        <Image source={{uri: photo.uri}} style={[styles.thumbImage, {width: THUMB_SIZE, height: THUMB_SIZE}]} />
+    <Pressable style={styles.thumb} onPress={() => onPress(photo)}>
+        <Image source={{uri: photo.uri}} style={styles.thumbImage} />
+        {/* Non-geotagged photos can't be mapped — grey them out */}
+        {!photo.hasGps && <View style={styles.mutedOverlay} />}
         {isSelecting ? (
             <View style={[styles.selectBadge, isSelected && styles.selectBadgeActive]}>
                 {isSelected && <Icon name="checkmark" size={14} color={Colors.white} />}
@@ -42,12 +40,8 @@ export const InboxThumbnail = React.memo(({photo, onPress, isSelecting, isSelect
                         <Icon name="pricetag" size={12} color={Colors.white} />
                     </View>
                 )}
-                {/* Pin marks a geotagged (mappable) photo */}
-                {photo.hasGps && (
-                    <View style={styles.gpsBadge}>
-                        <Icon name="location" size={12} color={Colors.white} />
-                    </View>
-                )}
+                {/* Pin emoji marks a geotagged (mappable) photo */}
+                {photo.hasGps && <Text style={styles.pinEmoji}>📍</Text>}
             </>
         )}
         {photo.fromCamera && (
@@ -269,21 +263,37 @@ const styles = StyleSheet.create({
         gap: 6,
         marginBottom: 6
     },
+    // Fills its grid column (device-consistent — no fixed width); square tiles
+    // with even 6px gutters (3px margin all round) and clipped rounded corners.
     thumb: {
-        borderRadius: 10,
-        overflow: 'hidden'
-    },
-    thumbImage: {
-        borderRadius: 10,
+        flex: 1,
+        aspectRatio: 1,
+        margin: 3,
+        borderRadius: 14,
+        overflow: 'hidden',
         backgroundColor: Colors.accentLight
     },
-    gpsBadge: {
+    thumbImage: {
+        width: '100%',
+        height: '100%'
+    },
+    pinEmoji: {
         position: 'absolute',
-        top: 6,
-        right: 6,
-        backgroundColor: Colors.accent,
-        borderRadius: 10,
-        padding: 3
+        top: 3,
+        right: 4,
+        fontSize: 15,
+        textShadowColor: 'rgba(0,0,0,0.45)',
+        textShadowOffset: {width: 0, height: 1},
+        textShadowRadius: 2
+    },
+    // Soft grey wash over non-geotagged (un-mappable) photos
+    mutedOverlay: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: 'rgba(150,150,150,0.45)'
     },
     cameraBadge: {
         position: 'absolute',

@@ -1,6 +1,6 @@
 import {useCallback, useMemo, useState} from 'react';
 import {useDispatch, useSelector} from 'react-redux';
-import {selectGeotaggedPhotos, getPhotosFromCameraroll, dismissPhotos} from '../../../reducers/gallery_reducer';
+import {selectInboxPhotos, getPhotosFromCameraroll, dismissPhotos} from '../../../reducers/gallery_reducer';
 import {deleteImage, selectTaggedUris, selectCameraPhotos} from '../../../reducers/photos_reducer';
 
 // "Your Photos" shows a compact preview, expanded on demand via "Load more".
@@ -16,7 +16,7 @@ const LOAD_MORE_STEP = 50;
 export default function useInbox(onTapPhoto) {
     const dispatch = useDispatch();
 
-    const allGeotaggedPhotos = useSelector(selectGeotaggedPhotos);
+    const allPhotos = useSelector(selectInboxPhotos);
     const totalGalleryPhotos = useSelector(state => state.gallery.galleryImages.length);
     const hasMorePages = useSelector(state => state.gallery.hasMorePages);
     const fetchStatus = useSelector(state => state.gallery.fetchStatus);
@@ -29,11 +29,11 @@ export default function useInbox(onTapPhoto) {
     const recentPhotos = useMemo(() => {
         const uploaded = new Set(uploadedUris || []);
         const cameraUris = new Set(cameraPhotos.map(p => p.uri));
-        const filtered = allGeotaggedPhotos.filter(
+        const filtered = allPhotos.filter(
             p => !uploaded.has(p.uri) && !cameraUris.has(p.uri)
         );
         return [...cameraPhotos, ...filtered];
-    }, [allGeotaggedPhotos, uploadedUris, cameraPhotos]);
+    }, [allPhotos, uploadedUris, cameraPhotos]);
 
     const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE);
     const visiblePhotos = useMemo(

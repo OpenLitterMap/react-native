@@ -23,7 +23,7 @@ import {
 } from '../../reducers/server_photos_reducer';
 import {closeThankYouMessages, selectUploadFlow, setUploadAbortReason} from '../../reducers/upload_flow_reducer';
 import {getStats} from '../../reducers/stats_reducer';
-import {selectGeotaggedPhotos} from '../../reducers/gallery_reducer';
+import {selectInboxPhotos} from '../../reducers/gallery_reducer';
 import {launchImageLibrary} from 'react-native-image-picker';
 import {isTagged} from '../../utils/isTagged';
 import {isValidGpsCoords} from '../../utils/gps';
@@ -189,7 +189,7 @@ const HomeScreen = ({navigation}) => {
     }, [dispatch, navigation, t]);
 
     /** Section 4: Tap a camera roll photo — load all inbox photos, swipe to tapped one */
-    const recentPhotos = useSelector(selectGeotaggedPhotos);
+    const recentPhotos = useSelector(selectInboxPhotos);
     const handleTapInboxPhoto = useCallback((photo) => {
         dispatch(clearEditingPhoto());
         // Add all recent geotagged photos so user can swipe through the full inbox
@@ -304,7 +304,7 @@ const HomeScreen = ({navigation}) => {
     );
 
     const listHeader = useMemo(() => (
-        <>
+        <View style={styles.gridBleed}>
             <CommunityStats />
             <YourImpactSection />
             <UntaggedSection
@@ -323,7 +323,7 @@ const HomeScreen = ({navigation}) => {
                 onDeleteSelected={inbox.handleDeleteSelected}
                 onSelectMore={handleSelectMore}
             />
-        </>
+        </View>
     ), [
         handleTagUntaggedPhoto, handleTagAllUntagged, permissionStatus, refreshCameraRoll,
         inbox.visiblePhotos.length, inbox.isSelecting, inbox.selectedUris.size,
@@ -331,23 +331,27 @@ const HomeScreen = ({navigation}) => {
     ]);
 
     const listEmpty = useMemo(() => (
-        <InboxEmpty
-            permissionStatus={permissionStatus}
-            requestPermission={requestPermission}
-            totalGalleryPhotos={inbox.totalGalleryPhotos}
-            hasMorePages={inbox.hasMorePages}
-            isLoading={inbox.isLoading}
-            onLoadMore={inbox.handleLoadMore}
-        />
+        <View style={styles.gridBleed}>
+            <InboxEmpty
+                permissionStatus={permissionStatus}
+                requestPermission={requestPermission}
+                totalGalleryPhotos={inbox.totalGalleryPhotos}
+                hasMorePages={inbox.hasMorePages}
+                isLoading={inbox.isLoading}
+                onLoadMore={inbox.handleLoadMore}
+            />
+        </View>
     ), [permissionStatus, requestPermission, inbox.totalGalleryPhotos, inbox.hasMorePages, inbox.isLoading, inbox.handleLoadMore]);
 
     const listFooter = useMemo(() => (
-        <InboxFooter
-            count={inbox.visiblePhotos.length}
-            hasMoreToShow={inbox.hasMoreToShow}
-            isLoading={inbox.isLoading}
-            onLoadMore={inbox.handleLoadMore}
-        />
+        <View style={styles.gridBleed}>
+            <InboxFooter
+                count={inbox.visiblePhotos.length}
+                hasMoreToShow={inbox.hasMoreToShow}
+                isLoading={inbox.isLoading}
+                onLoadMore={inbox.handleLoadMore}
+            />
+        </View>
     ), [inbox.visiblePhotos.length, inbox.hasMoreToShow, inbox.isLoading, inbox.handleLoadMore]);
 
     // --- Render ---
@@ -433,7 +437,13 @@ const styles = StyleSheet.create({
         backgroundColor: '#f5f7fa'
     },
     contentContainer: {
+        // Inset the grid to 16px (13 + each tile's 3px margin = 16). Full-width
+        // sections cancel this with styles.gridBleed so they keep their own 16px.
+        paddingHorizontal: 13,
         paddingBottom: 80
+    },
+    gridBleed: {
+        marginHorizontal: -13
     },
     uploadBarContainer: {
         position: 'absolute',
