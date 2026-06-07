@@ -2,7 +2,7 @@ import {createSlice, createSelector} from '@reduxjs/toolkit';
 import {getTagsFromBackend} from '../utils/getTagsFromBackend';
 import {isTagged} from '../utils/isTagged';
 import {logout} from './auth_reducer';
-import {uploadImage, postTagsToPhoto} from './upload_flow_reducer';
+import {uploadImage, addTagsToPhoto} from './upload_flow_reducer';
 import {dismissPhotos} from './gallery_reducer';
 
 /** Find a tag in tags by (cloId, typeId). */
@@ -64,6 +64,22 @@ const isDuplicate = (dedupSets, image) => {
         return dedupSets.uris.has(image.uri);
     }
     return dedupSets.ids.has(image.id);
+};
+
+/**
+ * Remove a fully-handled photo from the inbox by its server id, recording its
+ * uri so the camera-roll grid keeps hiding it. Shared by the tag-write success
+ * handler and the already-tagged skip path.
+ */
+const dropInboxPhoto = (state, photoId) => {
+    const idx = state.imagesArray.findIndex(img => img.id === photoId);
+    if (idx === -1) return;
+    const uri = state.imagesArray[idx].uri;
+    if (uri) {
+        if (!state.uploadedUris) state.uploadedUris = [];
+        state.uploadedUris.push(uri);
+    }
+    state.imagesArray.splice(idx, 1);
 };
 
 const photosSlice = createSlice({
@@ -508,6 +524,15 @@ const photosSlice = createSlice({
             state.customTagError = null;
         },
 
+        /**
+         * Idempotent-upload skip path: the server reported this photo is already
+         * uploaded AND already tagged, so there's nothing to write. Remove it
+         * from the inbox by its server id (see readme/upload-spec.md).
+         */
+        removeTaggedPhoto(state, action) {
+            dropInboxPhoto(state, action.payload);
+        },
+
 
         /**
          * When enable_admin_tagging is turned on, remove server-fetched
@@ -607,28 +632,26 @@ const photosSlice = createSlice({
             })
             .addCase(uploadImage.rejected, (state, action) => {
                 const {errorType} = action.payload || {};
-                // Server already has this photo — mark uploaded to prevent binary re-upload
+                // TRANSITIONAL — removable once /api/v3/upload is idempotent
+                // (returns {success:true, photo_id} on a duplicate instead of a
+                // 422). Until then, a duplicate gives us no server id, so we
+                // cannot post tags to it. Marking it uploaded:true would strand
+                // it with a non-server id (a local counter, or an "onboarding_..."
+                // string) and the upload loop would re-post tags every focus,
+                // 422-ing forever ("photo id must be an integer"). Drop it; it
+                // resurfaces in the untagged server-photos section with a real id.
                 if (errorType === 'photo-already-uploaded') {
                     const {photoId, imageUri} = action.meta.arg;
                     const index = state.imagesArray.findIndex(img =>
                         imageUri ? img.uri === imageUri : img.id === photoId
                     );
                     if (index !== -1) {
-                        state.imagesArray[index].uploaded = true;
+                        state.imagesArray.splice(index, 1);
                     }
                 }
             })
-            .addCase(postTagsToPhoto.fulfilled, (state, action) => {
-                const {photoId} = action.payload;
-                const idx = state.imagesArray.findIndex(img => img.id === photoId);
-                if (idx !== -1) {
-                    const uri = state.imagesArray[idx].uri;
-                    if (uri) {
-                        if (!state.uploadedUris) state.uploadedUris = [];
-                        state.uploadedUris.push(uri);
-                    }
-                    state.imagesArray.splice(idx, 1);
-                }
+            .addCase(addTagsToPhoto.fulfilled, (state, action) => {
+                dropInboxPhoto(state, action.payload.photoId);
             })
 
             // Remove dismissed photos from imagesArray too
@@ -659,6 +682,7 @@ export const {
     deselectAllImages,
     loadPhotoForEditing,
     removeEditingPhoto,
+    removeTaggedPhoto,
     removeBrandFromTag,
     removeCustomTagFromTag,
     setBrandQuantity,

@@ -1,6 +1,7 @@
 import {createSlice, createAsyncThunk, createSelector} from '@reduxjs/toolkit';
 import api from '../utils/apiClient';
 import {classifyError} from '../utils/classifyError';
+import isServerPhotoId from '../utils/isServerPhotoId';
 import {logout} from './auth_reducer';
 
 const initialState = {
@@ -67,6 +68,11 @@ export const uploadImage = createAsyncThunk(
                 photoId,
                 imageUri,
                 serverPhotoId: response.data.photo_id,
+                // Idempotent-upload fields (see readme/upload-spec.md). Absent on
+                // pre-idempotent backends → default false. Plumbed now; the tag
+                // write that consumes them lands once spec Q1 is answered.
+                alreadyUploaded: response.data.already_uploaded ?? false,
+                tagged: response.data.tagged ?? false,
                 enableAdminTagging,
                 photoHasTags
             };
@@ -77,14 +83,30 @@ export const uploadImage = createAsyncThunk(
 );
 
 /**
- * Post tags to a photo using the v3 API.
+ * Write tags to a photo using the v3 API.
+ *
+ * Uses PUT (replace), not POST (append): POST /tags appends rows and double-counts
+ * XP for ordinary users on a repeated call, so a lost-response retry would inflate
+ * the photo. PUT deletes-then-readds and converges, making the upload loop's
+ * re-runs idempotent. Safe on a brand-new photo too (replaces an empty tag set).
+ * See readme/upload-spec.md.
  */
-export const postTagsToPhoto = createAsyncThunk(
-    'uploadFlow/postTagsToPhoto',
+export const addTagsToPhoto = createAsyncThunk(
+    'uploadFlow/addTagsToPhoto',
     async ({photoId, tags, signal}, {getState, rejectWithValue}) => {
+        // Only a real server photo id can be tagged. A local id (camera-roll
+        // counter or "onboarding_..." string) would 422 server-side and retry
+        // forever. Fail locally without hitting the network or Sentry.
+        if (!isServerPhotoId(photoId)) {
+            return rejectWithValue({
+                errorType: 'invalid-photo-id',
+                userMessage: 'This photo is not ready to be tagged yet.'
+            });
+        }
+
         try {
             const token = getState().auth.token;
-            const response = await api.post('/api/v3/tags', {
+            await api.put('/api/v3/tags', {
                 token,
                 data: {
                     photo_id: photoId,
@@ -95,7 +117,7 @@ export const postTagsToPhoto = createAsyncThunk(
 
             return {photoId};
         } catch (error) {
-            return rejectWithValue(classifyError(error, 'post_tags_v3'));
+            return rejectWithValue(classifyError(error, 'put_tags_v3'));
         }
     }
 );
@@ -201,10 +223,10 @@ const uploadFlowSlice = createSlice({
                 }
             })
 
-            .addCase(postTagsToPhoto.fulfilled, (state) => {
+            .addCase(addTagsToPhoto.fulfilled, (state) => {
                 state.tagged++;
             })
-            .addCase(postTagsToPhoto.rejected, (state, action) => {
+            .addCase(addTagsToPhoto.rejected, (state, action) => {
                 const errorType = action.payload?.errorType || 'unknown';
 
                 // Don't count user cancellation as a failure

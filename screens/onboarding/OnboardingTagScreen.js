@@ -27,7 +27,7 @@ import useTagDraft from '../addTag/hooks/useTagDraft';
 import {commitDraftToPhoto, deleteImage} from '../../reducers/photos_reducer';
 import {markOnboardingComplete} from '../../reducers/auth_reducer';
 import {setOnboardingComplete} from '../../utils/onboarding';
-import {uploadImage, postTagsToPhoto} from '../../reducers/upload_flow_reducer';
+import {uploadImage, addTagsToPhoto} from '../../reducers/upload_flow_reducer';
 import {fetchAllTags} from '../../reducers/tags_reducer';
 import buildTagsPayload from '../../utils/buildTagsPayload';
 
@@ -293,7 +293,7 @@ const OnboardingTagScreen = ({navigation}) => {
 
         const tagsPayload = buildTagsPayload(img);
         if (tagsPayload && serverPhotoId) {
-            const tagResult = await dispatch(postTagsToPhoto({
+            const tagResult = await dispatch(addTagsToPhoto({
                 photoId: serverPhotoId,
                 tags: tagsPayload
             }));
