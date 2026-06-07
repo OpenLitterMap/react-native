@@ -653,6 +653,15 @@ const photosSlice = createSlice({
             .addCase(addTagsToPhoto.fulfilled, (state, action) => {
                 dropInboxPhoto(state, action.payload.photoId);
             })
+            .addCase(addTagsToPhoto.rejected, (state, action) => {
+                // The id can never be tagged — either the client guard refused a
+                // non-integer id, or the server rejected it (no such non-deleted
+                // photo). Drop it so the upload loop stops retrying every focus.
+                // Transient errors (timeout/network/server) keep the photo.
+                if (action.payload?.errorType === 'invalid-photo-id') {
+                    dropInboxPhoto(state, action.meta.arg.photoId);
+                }
+            })
 
             // Remove dismissed photos from imagesArray too
             .addCase(dismissPhotos, (state, action) => {

@@ -8,8 +8,8 @@ import {IS_PRODUCTION} from './config';
  *
  * errorType values align with reducer failedCounts buckets:
  *   cancelled, timeout, network, unauthorized,
- *   photo-already-uploaded, invalid-coordinates, validation,
- *   server, unknown
+ *   photo-already-uploaded, invalid-coordinates, invalid-photo-id,
+ *   validation, server, unknown
  */
 export function classifyError(error, section) {
     const normalized = normalizeError(error);
@@ -94,6 +94,18 @@ function normalizeError(error) {
             return {
                 errorType: 'invalid-coordinates',
                 userMessage: 'Photo has invalid GPS coordinates.',
+                reportable: false
+            };
+        }
+        // A photo_id validation failure ("The selected photo id is invalid." /
+        // "...must be an integer.") means this photo can never be tagged via this
+        // id — the server has no such non-deleted row, or it's a stale local id.
+        // Permanent, so the caller drops the photo; not a code defect, so don't
+        // report it to Sentry.
+        if (data?.errors?.photo_id || /\bphoto id\b/i.test(backendMessage)) {
+            return {
+                errorType: 'invalid-photo-id',
+                userMessage: 'This photo could not be tagged and was removed.',
                 reportable: false
             };
         }

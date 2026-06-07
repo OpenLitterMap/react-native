@@ -15,7 +15,7 @@ jest.mock('@react-native-camera-roll/camera-roll', () => ({CameraRoll: {}}));
 jest.mock('@lodev09/react-native-exify', () => ({}));
 
 import photosReducer, {removeTaggedPhoto} from '../../reducers/photos_reducer';
-import {uploadImage} from '../../reducers/upload_flow_reducer';
+import {uploadImage, addTagsToPhoto} from '../../reducers/upload_flow_reducer';
 
 const baseState = imagesArray => ({
     imagesArray,
@@ -61,5 +61,33 @@ describe('photos inbox cleanup', () => {
         });
 
         expect(next.imagesArray).toHaveLength(0);
+    });
+
+    it('drops the photo when the tag write is rejected as invalid-photo-id (server says id does not exist)', () => {
+        const state = baseState([
+            {id: 5, uri: 'file://stale.jpg', uploaded: true, tags: [{cloId: 1}]}
+        ]);
+
+        const next = photosReducer(state, {
+            type: addTagsToPhoto.rejected.type,
+            payload: {errorType: 'invalid-photo-id'},
+            meta: {arg: {photoId: 5}}
+        });
+
+        expect(next.imagesArray).toHaveLength(0);
+    });
+
+    it('keeps the photo for retry on a transient tag-write rejection (timeout)', () => {
+        const state = baseState([
+            {id: 5, uri: 'file://x.jpg', uploaded: true, tags: [{cloId: 1}]}
+        ]);
+
+        const next = photosReducer(state, {
+            type: addTagsToPhoto.rejected.type,
+            payload: {errorType: 'timeout'},
+            meta: {arg: {photoId: 5}}
+        });
+
+        expect(next.imagesArray).toHaveLength(1);
     });
 });
