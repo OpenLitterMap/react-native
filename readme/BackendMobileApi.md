@@ -2,7 +2,7 @@
 
 Endpoints the React Native app uses (or should use). All authenticated endpoints use `Authorization: Bearer <sanctum_token>`.
 
-Base URL configured in `actions/types.js` via `react-native-config`.
+Base URL configured in `utils/config.js` via `react-native-config`.
 
 ---
 

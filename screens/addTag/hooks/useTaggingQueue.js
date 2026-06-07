@@ -77,13 +77,6 @@ export default function useTaggingQueue(navigation) {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [activeIndex, isEditMode]);
 
-    // If no images, redirect back (one-shot, guarded inside safeGoBack)
-    useEffect(() => {
-        if (!activePhoto && photos.length === 0) {
-            safeGoBack();
-        }
-    }, [activePhoto, photos.length, safeGoBack]);
-
     // Navigation — index update only
     const goToIndex = useCallback(
         newIndex => {
@@ -122,6 +115,15 @@ export default function useTaggingQueue(navigation) {
             navigation.goBack();
         });
     }, [navigation]);
+
+    // If no images, redirect back (one-shot, guarded inside safeGoBack).
+    // Declared after safeGoBack so the dependency array doesn't read it in the
+    // temporal dead zone (a ReferenceError under Hermes' native `const`).
+    useEffect(() => {
+        if (!activePhoto && photos.length === 0) {
+            safeGoBack();
+        }
+    }, [activePhoto, photos.length, safeGoBack]);
 
     // Advance queue or close screen
     const advanceOrClose = useCallback(() => {

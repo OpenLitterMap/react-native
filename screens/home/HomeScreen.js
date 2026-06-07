@@ -204,9 +204,16 @@ const HomeScreen = ({navigation}) => {
         if (existingIdx >= 0) {
             dispatch(changeSwiperIndex(existingIdx));
         } else {
-            // Photo was newly added — it's at the end after existing images
-            const tappedOffset = geotagged.findIndex(p => p.uri === photo.uri);
-            dispatch(changeSwiperIndex(images.length + Math.max(0, tappedOffset)));
+            // Newly appended — its index is past the existing queue, offset by how
+            // many photos before it are *genuinely new* (addImages dropped the
+            // dupes by uri/filename, so a raw offset would overshoot the index).
+            const existingUris = new Set(images.map(i => i.uri));
+            const existingNames = new Set(images.map(i => i.filename).filter(Boolean));
+            const isNew = p => !existingUris.has(p.uri) &&
+                !(p.filename && existingNames.has(p.filename));
+            const tappedPos = geotagged.findIndex(p => p.uri === photo.uri);
+            const newBefore = geotagged.slice(0, Math.max(0, tappedPos)).filter(isNew).length;
+            dispatch(changeSwiperIndex(images.length + newBefore));
         }
         navigation.navigate('ADD_TAGS');
     }, [dispatch, navigation, recentPhotos, images]);
@@ -273,6 +280,19 @@ const HomeScreen = ({navigation}) => {
 
         if (imported.length === 0) {
             Alert.alert(t('Missing GPS Data'), t('None of the selected photos have location data.'));
+            return;
+        }
+
+        // The reducer dedupes by uri/filename, but we need the fresh count here
+        // so we don't navigate into the tagger onto a stale photo when every
+        // pick was already in the queue.
+        const queuedUris = new Set(images.map(i => i.uri));
+        const queuedNames = new Set(images.map(i => i.filename).filter(Boolean));
+        const freshCount = imported.filter(
+            p => !queuedUris.has(p.uri) && !(p.filename && queuedNames.has(p.filename))
+        ).length;
+        if (freshCount === 0) {
+            Alert.alert(t('Already Added'), t('Those photos are already in your list.'));
             return;
         }
 

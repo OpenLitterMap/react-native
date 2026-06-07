@@ -18,7 +18,7 @@ The onboarding flow uses a nature-inspired gradient design system with smooth an
 - `screens/components/textInput/CustomTextInput.tsx` — Shared text input with `variant` prop (`light`/`dark`)
 - `screens/permission/GalleryPermissionScreen.js` — Gallery access permission with gradient background
 - `screens/permission/CameraPermissionScreen.js` — Camera + location permission with permission cards
-- `actions/types.js` — Exports `URL` (API base URL) and `IS_PRODUCTION`
+- `utils/config.js` — Exports `URL` (API base URL), `WEB_URL`, and `IS_PRODUCTION`
 
 ## Visual Design
 

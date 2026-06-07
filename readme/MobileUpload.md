@@ -5,10 +5,11 @@
 The upload flow lets users select photos from their gallery, tag them with the v5 tagging system, and upload them to the OpenLitterMap backend. Photos are uploaded one at a time with progress tracking. A pre-upload validation step filters out photos without valid GPS coordinates. Tagged photos use a two-step upload: photo first, then tags via a separate API call.
 
 ## Files
-- `screens/home/HomeScreen.js` — Main upload screen, orchestrates the upload flow with GPS validation
-- `screens/home/homeComponents/UploadButton.js` — Upload trigger button
-- `screens/home/homeComponents/UploadImagesGrid.js` — 3-column image grid display
-- `screens/home/homeComponents/ActionButton.js` — FAB for gallery/delete actions
+- `screens/home/HomeScreen.js` — Dashboard + upload orchestration (auto-uploads on focus after tagging, GPS validation)
+- `screens/home/homeComponents/InboxSection.js` — "Your Photos" inbox grid (tap to tag, Select More, delete)
+- `screens/home/homeComponents/useInbox.js` — inbox state hook (visible count, selection, load-more)
+- `screens/home/homeComponents/UploadModal.js` — upload progress modal
+- `screens/home/homeComponents/ActionButton.js` — FAB for camera/gallery actions
 - `reducers/photos_reducer.js` — Local image state (imagesArray, tagging, swiperIndex)
 - `reducers/upload_flow_reducer.js` — Upload phase, counters, modal state, `uploadImage`/`addTagsToPhoto` thunks
 - `utils/isServerPhotoId.js` — Guards the tag write: only a positive-integer server photo id is sent (blocks local/onboarding ids)

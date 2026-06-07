@@ -52,4 +52,10 @@ Last reviewed: 2026-03-14
 # TODO — Photo flow (see `readme/Considerations.md`)
 
 - [ ] **Select More on large selections** — batch the EXIF GPS reads + show a "Reading photos…" indicator instead of a silent sequential wait
-- [ ] **Tap-to-tag loads the whole fetched set, incl. non-geotagged** — cap the queue or filter to geotagged-only so the swiper excludes un-mappable photos
+- [x] **Tap-to-tag loads the whole fetched set, incl. non-geotagged** — done (v7.9.0): non-geotagged tiles are inert and only geotagged photos enter the swipe queue
+
+---
+
+# TODO — i18n
+
+- [ ] **Full translation pass** — ~68 runtime UI strings exist in `en.json` but are missing from the 7 non-English files (camera, geolink, privacy, permissions, onboarding, plus the new `Already Added` / "already in your list" strings). Non-English users fall back to English for these. Translate + add to all 7 files, keep A–Z sorted.

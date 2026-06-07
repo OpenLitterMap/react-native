@@ -127,7 +127,7 @@ All endpoints verified against Laravel backend. See `readme/AUDIT.md` §2 for co
 ## File Organization
 
 ```
-├── actions/types.js          # Environment config, API URL selection
+├── utils/config.js           # Environment config, API URL selection (react-native-config)
 ├── store/index.js            # Redux store + persist config
 ├── reducers/                 # 14 Redux slices (all use createSlice + createAsyncThunk)
 ├── routes/                   # React Navigation v6 navigators
@@ -199,7 +199,7 @@ i18next with `react-i18next`. Translation keys are **full British English string
 
 - **Laravel**: `http://0.0.0.0:8000` (serves on all interfaces), web via `olm.test` (Laravel Valet)
 - **Minio**: `http://127.0.0.1:9000` (S3-compatible storage)
-- **Mobile API**: `http://192.168.1.28:8000` (LAN IP in `actions/types.js`)
+- **Mobile API**: `http://192.168.1.28:8000` (LAN IP via `.env`, read in `utils/config.js`)
 - **Minio image URLs**: Stored as `http://127.0.0.1:9000/...` which the phone can't reach. `ImageViewer.js` rewrites `127.0.0.1` to the LAN host in dev builds. Long-term fix: set `AWS_URL=http://192.168.1.28:9000/olm-public` in Laravel `.env`.
 - See `readme/LocalDev.md` for full setup details including tag data structure.
 

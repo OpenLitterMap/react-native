@@ -158,6 +158,9 @@ const OnboardingTagScreen = ({navigation}) => {
     // Upload state
     const [uploadState, setUploadState] = useState('idle'); // idle | uploading | tagging | error
     const [uploadError, setUploadError] = useState(null);
+    // Remembers the server id once the binary uploads, so a retry after a failed
+    // tag write submits tags only (no duplicate re-upload), like Home's recovery.
+    const uploadedServerIdRef = useRef(null);
 
     // Tooltip step tracking
     const [tooltipStep, setTooltipStep] = useState(0);
@@ -254,39 +257,47 @@ const OnboardingTagScreen = ({navigation}) => {
             customTags: mergedCustoms
         };
 
-        // --- Step 1: Upload photo binary ---
-        setUploadState('uploading');
         setUploadError(null);
 
-        const imageData = new FormData();
-        imageData.append('photo', {
-            name: img.filename,
-            type: 'image/jpeg',
-            uri: img.uri
-        });
-        imageData.append('lat', img.lat);
-        imageData.append('lon', img.lon);
-        const timestamp = Number(img.date);
-        if (Number.isFinite(timestamp)) {
-            imageData.append('date', String(timestamp));
+        // --- Step 1: Upload photo binary ---
+        // Skip on a tag-only retry: if a previous attempt already uploaded the
+        // binary, reuse its server id and go straight to the tag write so we
+        // don't upload a duplicate.
+        let serverPhotoId = uploadedServerIdRef.current;
+        if (!serverPhotoId) {
+            setUploadState('uploading');
+
+            const imageData = new FormData();
+            imageData.append('photo', {
+                name: img.filename,
+                type: 'image/jpeg',
+                uri: img.uri
+            });
+            imageData.append('lat', img.lat);
+            imageData.append('lon', img.lon);
+            const timestamp = Number(img.date);
+            if (Number.isFinite(timestamp)) {
+                imageData.append('date', String(timestamp));
+            }
+            if (deviceModel) imageData.append('model', deviceModel);
+
+            const uploadResult = await dispatch(uploadImage({
+                imageData,
+                photoId: img.id,
+                imageUri: img.uri,
+                enableAdminTagging: user?.enable_admin_tagging,
+                photoHasTags: true
+            }));
+
+            if (uploadResult.meta?.requestStatus !== 'fulfilled') {
+                setUploadState('error');
+                setUploadError(t('Photo upload failed. Check your connection and try again.'));
+                return;
+            }
+
+            serverPhotoId = uploadResult.payload?.serverPhotoId;
+            uploadedServerIdRef.current = serverPhotoId;
         }
-        if (deviceModel) imageData.append('model', deviceModel);
-
-        const uploadResult = await dispatch(uploadImage({
-            imageData,
-            photoId: img.id,
-            imageUri: img.uri,
-            enableAdminTagging: user?.enable_admin_tagging,
-            photoHasTags: true
-        }));
-
-        if (uploadResult.meta?.requestStatus !== 'fulfilled') {
-            setUploadState('error');
-            setUploadError(t('Photo upload failed. Check your connection and try again.'));
-            return;
-        }
-
-        const serverPhotoId = uploadResult.payload?.serverPhotoId;
 
         // --- Step 2: Submit tags ---
         setUploadState('tagging');

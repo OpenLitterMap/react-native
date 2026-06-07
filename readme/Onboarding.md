@@ -185,7 +185,7 @@ Done button disabled during upload.
 - "Your first contribution is now part of the global litter map. Every tag helps researchers and communities understand pollution."
 - **5 XP / earned so far** badge
 - **Geolink card** (shown when `serverPhotoId` available):
-  - Full URL displayed (selectable), built from `URL` (env-configured via `actions/types.js`):
+  - Full URL displayed (selectable), built from `URL` (env-configured via `utils/config.js`):
     ```
     {URL}/global?lat={lat}&lon={lon}&zoom=17.89&load=true&open=true&photo={serverPhotoId}
     ```
