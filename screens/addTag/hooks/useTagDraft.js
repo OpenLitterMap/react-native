@@ -9,6 +9,11 @@ import {MAX_QUANTITY_DEFAULT} from '../components/tagUtils';
 
 const EMPTY_ARRAY = [];
 
+// Backend custom-tag contract (mirrors CUSTOM_TAG_REGEX in photos_reducer.js):
+// word chars, spaces, colons, hyphens only. Reject invalid input at the draft
+// layer so it can't reach upload and fail server-side.
+const CUSTOM_TAG_REGEX = /^[\w\s:-]+$/;
+
 // --- Draft reducer ---
 
 function findTag(tags, cloId, typeId) {
@@ -208,6 +213,7 @@ function draftReducer(state, action) {
         const {cloId, typeId, text} = action;
         const trimmed = text?.trim()?.slice(0, 100);
         if (!trimmed || trimmed.length < 3) return state;
+        if (!CUSTOM_TAG_REGEX.test(trimmed)) return state;
         const idx = findTag(state.tags, cloId, typeId);
         if (idx === -1) return state;
         const tags = [...state.tags];
@@ -276,6 +282,7 @@ function draftReducer(state, action) {
     case 'ADD_IMAGE_CUSTOM_TAG': {
         const trimmed = action.text?.trim()?.slice(0, 100);
         if (!trimmed || trimmed.length < 3) return state;
+        if (!CUSTOM_TAG_REGEX.test(trimmed)) return state;
         if (state.customTags.includes(trimmed)) return state;
         return {...state, customTags: [...state.customTags, trimmed]};
     }

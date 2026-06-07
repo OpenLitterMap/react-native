@@ -28,9 +28,9 @@ Runtime: **Node v22.22.1**, **npm 10.9.4** (prefer npm over yarn) — RN 0.84 re
 HomeScreen Dashboard → Tap photo → Tag → Auto-upload
 ```
 
-1. **Home** (`HomeScreen`) — 4-section scrollable dashboard: Global Impact stats, Your Impact stats, Uploaded (untagged server photos), Ready to Map (geotagged camera roll inbox)
+1. **Home** (`HomeScreen`) — dashboard as a single virtualized `FlashList` (fixed sections in `ListHeaderComponent`, inbox photos as data): Global Impact stats, Your Impact stats, Uploaded (untagged server photos), "Your Photos" (geotagged camera-roll inbox — pin per photo, 6 preview + "Load more" 50/page, "Select More" picker import)
 2. **Tag** (`AddTagScreen`) — Full-screen image viewer with search/browse for litter tags, materials, brands
-3. **Upload** — Auto-triggered via `useFocusEffect` when returning to HomeScreen after tagging. Two-step: upload photo binary → POST tags.
+3. **Upload** — Auto-triggered via `useFocusEffect` when returning to HomeScreen after tagging. Two-step: upload photo binary → PUT tags (replace/idempotent).
 
 ## Architecture
 
@@ -59,7 +59,7 @@ MainRoutes (Stack)
 | `auth` | `auth_reducer.js` | token, user profile | Yes |
 | `photos` | `photos_reducer.js` | imagesArray (local gallery photos + tags), editingPhoto, swiperIndex | Yes (imagesArray only) |
 | `serverPhotos` | `server_photos_reducer.js` | untaggedCount, untaggedPreview, editTagsOnPhoto thunk | No |
-| `uploadFlow` | `upload_flow_reducer.js` | uploadPhase, counters, modal state, uploadImage/postTagsToPhoto thunks | No |
+| `uploadFlow` | `upload_flow_reducer.js` | uploadPhase, counters, modal state, uploadImage/addTagsToPhoto thunks | No |
 | `gallery` | `gallery_reducer.js` | CameraRoll photos, GPS metadata | Yes (dismissedUris only) |
 | `tags` | `tags_reducer.js` | Search index, materials, brands (cached 7-day TTL) | AsyncStorage cache |
 | `quickTags` | `quick_tags_reducer.js` | User quick tag presets (cloId, customName, quantity, materials, brands) | Yes |
@@ -92,7 +92,7 @@ Display names resolved at render time from `state.tags.entriesByCloId[cloId]`.
 
 Two-step process orchestrated in `HomeScreen.js`:
 1. **Upload photo** → `POST /api/v3/upload` (FormData with photo + GPS) → returns `photo_id`
-2. **POST tags** → `POST /api/v3/tags` (photo_id + resolved tags via `buildTagsPayload`)
+2. **Write tags** → `PUT /api/v3/tags` (photo_id + resolved tags via `buildTagsPayload`). PUT = replace, so retries are idempotent; `photo_id` is guarded by `isServerPhotoId`.
 
 Pre-upload: GPS validation via `isGeotagged()` (rejects null, 0,0). Uploaded images bypass GPS check.
 On failure: image stays with `uploaded: true` + `tags` intact for retry (tag-only path).
@@ -127,7 +127,7 @@ All endpoints verified against Laravel backend. See `readme/AUDIT.md` §2 for co
 ## File Organization
 
 ```
-├── actions/types.js          # Environment config, API URL selection
+├── utils/config.js           # Environment config, API URL selection (react-native-config)
 ├── store/index.js            # Redux store + persist config
 ├── reducers/                 # 14 Redux slices (all use createSlice + createAsyncThunk)
 ├── routes/                   # React Navigation v6 navigators
@@ -199,7 +199,7 @@ i18next with `react-i18next`. Translation keys are **full British English string
 
 - **Laravel**: `http://0.0.0.0:8000` (serves on all interfaces), web via `olm.test` (Laravel Valet)
 - **Minio**: `http://127.0.0.1:9000` (S3-compatible storage)
-- **Mobile API**: `http://192.168.1.28:8000` (LAN IP in `actions/types.js`)
+- **Mobile API**: `http://192.168.1.28:8000` (LAN IP via `.env`, read in `utils/config.js`)
 - **Minio image URLs**: Stored as `http://127.0.0.1:9000/...` which the phone can't reach. `ImageViewer.js` rewrites `127.0.0.1` to the LAN host in dev builds. Long-term fix: set `AWS_URL=http://192.168.1.28:9000/olm-public` in Laravel `.env`.
 - See `readme/LocalDev.md` for full setup details including tag data structure.
 
@@ -213,6 +213,40 @@ i18next with `react-i18next`. Translation keys are **full British English string
 
 - **Xcode 26+/macOS Tahoe**: Sentry Cocoa SDK < 8.46.0 fails to compile. The `postinstall` script patches the RNSentry podspec to use 8.46.0. After `npm install`, run `cd ios && pod update Sentry && cd ..` if `Podfile.lock` still references an older version.
 - After modifying native dependencies: clean Xcode build folder (Cmd+Shift+K) and rebuild.
+
+### Sentry symbolication (dSYM upload)
+
+Without uploaded debug symbols, native crashes and **App Hang** events arrive
+unsymbolicated (`<unknown>` frames, "required debug information file was missing").
+The iOS target has an **"Upload Debug Symbols To Sentry"** build phase
+(`project.pbxproj`) that runs `@sentry/react-native/scripts/sentry-xcode-debug-files.sh`.
+It is guarded to **skip Debug builds and any environment where `SENTRY_AUTH_TOKEN`
+is unset**, so it never breaks a local/un-configured build.
+
+To activate (Release/Archive builds):
+1. Fill `ios/sentry.properties` (`defaults.org`, `defaults.project`) — or set
+   `SENTRY_ORG` / `SENTRY_PROJECT`. The file holds **no token**.
+2. Export `SENTRY_AUTH_TOKEN` in the build/CI environment (never commit it).
+3. Archive/Release-build → dSYMs upload automatically.
+
+Backfill an existing build's symbols (e.g. to symbolicate a current production
+hang) without rebuilding:
+`SENTRY_AUTH_TOKEN=… npm run ios:upload-dsyms -- <path-to-dSYMs>`
+(dSYMs live in the `.xcarchive`'s `dSYMs/` folder or DerivedData). App Hang
+tracking itself is already on by default in `@sentry/react-native`.
+
+**Coverage (verified):** three sources, all uploaded on release builds:
+- **App binary** (+ statically-linked pods like camera-roll, Reanimated): the
+  archive `dSYMs/` folder contains only `openlittermap.app.dSYM`, uploaded by the
+  build phase above.
+- **React & Hermes frames**: these are **prebuilt vendored frameworks** in RN
+  0.84.1 (`React-Core-prebuilt`, `hermes-engine`) — **not** a `DEBUG_INFORMATION_FORMAT`
+  (dwarf) setting; the dwarf hypothesis was checked and refuted (Pods Release is
+  `dwarf-with-dsym`). No dSYM *file* is produced, but the prebuilt **release
+  artifact tarballs** (`ios/Pods/{ReactNativeCore,hermes-engine}-artifacts/*-release.tar.gz`)
+  carry symbol tables whose Debug IDs match the shipped build, and
+  `ios/sentry-upload-framework-symbols.sh` (run from the same build phase) uploads
+  them. So React/Hermes frames symbolicate too.
 
 ## Deep-Dive Documentation
 
@@ -245,7 +279,7 @@ Detailed documentation for each feature area lives in `readme/`:
 When the user says "BOOP", perform all of the following:
 
 1. Determine if the change is a new feature (minor bump) or a fix/improvement (patch bump). Ask if unsure
-2. Bump the appropriate version in `package.json`
+2. Bump the appropriate version in `package.json` **and the native build configs** so the in-app version (`DeviceInfo.getVersion()`) matches: iOS `MARKETING_VERSION` (both configs in `ios/openlittermap.xcodeproj/project.pbxproj`) + bump `CURRENT_PROJECT_VERSION`; Android `versionName` + bump `versionCode` in `android/app/build.gradle`. Keep all three `*VERSION`/`versionName` values equal to `package.json`.
 3. Append a one-line entry to `readme/changelog/YYYY-MM-DD.md` (today's date)
 4. Update any readme docs (`readme/*.md`) affected by the changes
 5. Update any skills files affected by the changes

@@ -31,7 +31,7 @@ Gallery → Select photos → Tag each photo → Upload → Server
 1. **Gallery** (`GalleryScreen`) — Browse camera roll, select geotagged photos (non-GPS photos blocked)
 2. **Home** (`HomeScreen`) — View selected photos in grid, tap to tag, tap upload to start
 3. **Tag** (`AddTagScreen`) — Full-screen image viewer with search/browse for litter tags, materials, brands
-4. **Upload** (`HomeScreen`) — Two-step: upload photo binary → POST tags. Sequential with progress tracking.
+4. **Upload** (`HomeScreen`) — Two-step: upload photo binary → PUT tags (replace/idempotent). Sequential with progress tracking.
 
 ## Architecture
 
@@ -61,7 +61,7 @@ MainRoutes (Stack)
 | `auth` | `auth_reducer.js` | token, user profile | Yes |
 | `photos` | `photos_reducer.js` | imagesArray (local gallery photos + tags), editingPhoto, swiperIndex | Yes (imagesArray only) |
 | `serverPhotos` | `server_photos_reducer.js` | untaggedCount, untaggedPreview, editTagsOnPhoto thunk | No |
-| `uploadFlow` | `upload_flow_reducer.js` | uploadPhase, counters, modal state, uploadImage/postTagsToPhoto thunks | No |
+| `uploadFlow` | `upload_flow_reducer.js` | uploadPhase, counters, modal state, uploadImage/addTagsToPhoto thunks | No |
 | `gallery` | `gallery_reducer.js` | CameraRoll photos, GPS metadata | No |
 | `tags` | `tags_reducer.js` | Search index, materials, brands (cached 7-day TTL) | AsyncStorage cache |
 | `teams` | `team_reducer.js` | User teams, team members, top teams | No |
@@ -93,7 +93,7 @@ Display names resolved at render time from `state.tags.entriesByCloId[cloId]`.
 
 Two-step process orchestrated in `HomeScreen.js`:
 1. **Upload photo** → `POST /api/v3/upload` (FormData with photo + GPS) → returns `photo_id`
-2. **POST tags** → `POST /api/v3/tags` (photo_id + resolved tags via `buildTagsPayload`)
+2. **Write tags** → `PUT /api/v3/tags` (photo_id + resolved tags via `buildTagsPayload`). PUT = replace, so retries are idempotent; `photo_id` is guarded by `isServerPhotoId`.
 
 Pre-upload: GPS validation via `isGeotagged()` (rejects null, 0,0). Uploaded images bypass GPS check.
 On failure: image stays with `uploaded: true` + `tags` intact for retry (tag-only path).

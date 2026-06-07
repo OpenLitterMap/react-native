@@ -6,7 +6,7 @@
 - Laravel: `http://0.0.0.0:8000` (serves on all interfaces)
 - Web: `olm.test` via Laravel Valet
 - Minio (S3-compatible storage): `http://127.0.0.1:9000`
-- Mobile API URL: `http://192.168.1.28:8000` (LAN IP, set in `actions/types.js`)
+- Mobile API URL: `http://192.168.1.28:8000` (LAN IP, set in `utils/config.js`)
 
 ### Minio Image URLs
 
@@ -19,7 +19,7 @@ UPDATE photos SET filename = REPLACE(filename, '127.0.0.1', '192.168.1.28');
 
 ### Environment
 
-Set via `.env`: `CURRENT_ENVIRONMENT='local'` → uses `http://192.168.1.28:8000` in `actions/types.js`
+Set via `.env`: `CURRENT_ENVIRONMENT='local'` → uses `http://192.168.1.28:8000` in `utils/config.js`
 
 ## GET /api/tags/all — Response Shape
 

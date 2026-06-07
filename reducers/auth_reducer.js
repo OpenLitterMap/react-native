@@ -84,19 +84,32 @@ export const checkValidToken = createAsyncThunk(
             ) {
                 const userResult = await dispatch(fetchUser(jwt));
                 if (userResult.meta?.requestStatus === 'rejected') {
-                    dispatch(logout());
-                    return rejectWithValue('Session expired');
+                    // fetchUser only flags isAuthError on a 401. A transient
+                    // failure (timeout/network/5xx) must NOT log the user out on
+                    // boot — keep the session and let them retry.
+                    const isAuthError = !!userResult.payload?.isAuthError;
+                    if (isAuthError) dispatch(logout());
+                    return rejectWithValue({message: 'Session expired', isAuthError});
                 }
                 // Fetch quick tags in background (non-blocking)
                 dispatch(fetchQuickTags());
                 return jwt;
             } else {
+                // Server explicitly says the token isn't valid — clear it.
                 dispatch(logout());
-                return rejectWithValue('Token invalid');
+                return rejectWithValue({message: 'Token invalid', isAuthError: true});
             }
         } catch (error) {
-            dispatch(logout());
-            return rejectWithValue('Please login again.');
+            // Only a 401 means the token is invalid. Other errors are transient
+            // (offline boot, server hiccup) and must not force a logout.
+            const isAuthError = error.response?.status === 401;
+            if (isAuthError) dispatch(logout());
+            return rejectWithValue({
+                message: isAuthError
+                    ? 'Please login again.'
+                    : 'Could not validate session.',
+                isAuthError
+            });
         }
     }
 );
@@ -387,8 +400,14 @@ const authSlice = createSlice({
                     state.token = action.payload;
                 }
             })
-            .addCase(checkValidToken.rejected, state => {
-                state.token = null;
+            .addCase(checkValidToken.rejected, (state, action) => {
+                // Only clear the session on a real auth error (401 / invalid
+                // token). Transient boot failures keep the token so a network
+                // blip can't force a logout.
+                if (action.payload?.isAuthError) {
+                    state.token = null;
+                    state.user = null;
+                }
             })
 
             // Create Account

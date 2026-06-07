@@ -72,6 +72,33 @@ describe('classifyError', () => {
         expect(result.errorType).toBe('invalid-coordinates');
     });
 
+    it('classifies 422 backend photo_id "selected ... is invalid" (nonexistent/deleted) as invalid-photo-id', () => {
+        const error = {response: {status: 422, data: {
+            message: 'The selected photo id is invalid.',
+            errors: {photo_id: ['The selected photo id is invalid.']}
+        }}};
+        const result = classifyError(error, 'put_tags_v3');
+        expect(result.errorType).toBe('invalid-photo-id');
+    });
+
+    it('classifies 422 backend photo_id "must be an integer" as invalid-photo-id', () => {
+        const error = {response: {status: 422, data: {
+            message: 'The photo id field must be an integer.',
+            errors: {photo_id: ['The photo id field must be an integer.']}
+        }}};
+        const result = classifyError(error, 'put_tags_v3');
+        expect(result.errorType).toBe('invalid-photo-id');
+    });
+
+    it('still classifies a non-photo_id 422 as generic validation', () => {
+        const error = {response: {status: 422, data: {
+            message: 'The tags field is required.',
+            errors: {tags: ['The tags field is required.']}
+        }}};
+        const result = classifyError(error, 'test');
+        expect(result.errorType).toBe('validation');
+    });
+
     it('classifies 500+ as server error', () => {
         const error = {response: {status: 503, data: {}}};
         const result = classifyError(error, 'test');

@@ -1,8 +1,16 @@
 apply plugin: "com.android.application"
 apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
+apply plugin: "io.sentry.android.gradle"
 apply from: project(":react-native-config").projectDir.getPath() + "/dotenv.gradle"
 apply from: "../../node_modules/react-native-vector-icons/fonts.gradle"
+// Sentry: RN JS/Hermes sourcemap upload (hooks the RN bundle task). Relative path
+// (matches the convention above) so it needs no `node` on the Gradle PATH in CI.
+// Gated on token presence so an unconfigured/CI release build can't fail (iOS parity).
+def sentryAuthPresent = (System.getenv("SENTRY_AUTH_TOKEN") ?: "").trim() != ""
+if (sentryAuthPresent) {
+    apply from: "../../node_modules/@sentry/react-native/sentry.gradle"
+}
 
 /**
  * This is the configuration block to customize your React Native Android app.
@@ -84,8 +92,8 @@ android {
         applicationId "com.geotech.openlittermap"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 58
-        versionName "7.7.5"
+        versionCode 62
+        versionName "7.9.0"
     }
     signingConfigs {
         release {
@@ -136,6 +144,29 @@ dependencies {
         implementation("com.facebook.react:hermes-android")
     } else {
         implementation jscFlavor
+    }
+}
+
+// Sentry native-symbol + (minify-off) mapping config for the io.sentry.android.gradle plugin.
+// org/project from android/sentry.properties; auth token from SENTRY_AUTH_TOKEN env (never committed).
+sentry {
+    org = "openlittermap"
+    projectName = "openlittermap"
+
+    // Minify is OFF (enableProguardInReleaseBuilds = false) -> no mapping to upload.
+    // If minify is ever enabled, set autoUploadProguardMapping = true.
+    autoUploadProguardMapping = false
+    includeProguardMapping = false
+
+    // Upload native (.so) debug symbols: app native + Hermes/JSC.
+    // autoUpload gated on token presence so unconfigured builds skip (iOS parity).
+    uploadNativeSymbols = true
+    autoUploadNativeSymbols = sentryAuthPresent
+    includeNativeSources = false
+
+    // @sentry/react-native already ships the sentry-android SDK -> don't double-add it.
+    autoInstallation {
+        enabled = false
     }
 }
 

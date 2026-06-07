@@ -4,10 +4,10 @@ import {
     Modal,
     Pressable,
     RefreshControl,
-    ScrollView,
     StyleSheet,
     View
 } from 'react-native';
+import {FlashList} from '@shopify/flash-list';
 import {useDispatch, useSelector} from 'react-redux';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {
@@ -23,9 +23,11 @@ import {
 } from '../../reducers/server_photos_reducer';
 import {closeThankYouMessages, selectUploadFlow, setUploadAbortReason} from '../../reducers/upload_flow_reducer';
 import {getStats} from '../../reducers/stats_reducer';
-import {selectRecentGeotaggedPhotos} from '../../reducers/gallery_reducer';
+import {selectInboxPhotos} from '../../reducers/gallery_reducer';
+import {launchImageLibrary} from 'react-native-image-picker';
 import {isTagged} from '../../utils/isTagged';
 import {isValidGpsCoords} from '../../utils/gps';
+import {readGpsFromExif} from '../../utils/readGpsFromExif';
 import {checkCameraWithLocation, requestCameraWithLocation} from '../../utils/permissions/cameraPermission';
 import CameraCapture from '../camera/CameraCapture';
 
@@ -35,7 +37,12 @@ import {useTranslation} from 'react-i18next';
 
 // Dashboard sections
 import {
-    InboxSection,
+    NUM_COLUMNS,
+    InboxThumbnail,
+    InboxControls,
+    InboxEmpty,
+    InboxFooter,
+    useInbox,
     LimitedAccessBanner,
     UntaggedSection,
     UploadModal,
@@ -182,20 +189,31 @@ const HomeScreen = ({navigation}) => {
     }, [dispatch, navigation, t]);
 
     /** Section 4: Tap a camera roll photo — load all inbox photos, swipe to tapped one */
-    const recentPhotos = useSelector(selectRecentGeotaggedPhotos);
+    const recentPhotos = useSelector(selectInboxPhotos);
     const handleTapInboxPhoto = useCallback((photo) => {
+        // Only geotagged photos are mappable — keep non-geotagged out of the
+        // swipe queue so the tagger can't dead-end on an un-uploadable photo.
+        if (!photo.hasGps) return;
         dispatch(clearEditingPhoto());
-        // Add all recent geotagged photos so user can swipe through the full inbox
-        dispatch(addImages({images: recentPhotos, picked_up: null}));
+        // Add only the geotagged photos so the user swipes through mappable ones
+        const geotagged = recentPhotos.filter(p => p.hasGps);
+        dispatch(addImages({images: geotagged, picked_up: null}));
         // addImages deduplicates — photo may already be in images from a prior tap.
         // Search existing array first, then fall back to appended position.
         const existingIdx = images.findIndex(img => img.uri === photo.uri);
         if (existingIdx >= 0) {
             dispatch(changeSwiperIndex(existingIdx));
         } else {
-            // Photo was newly added — it's at the end after existing images
-            const tappedOffset = recentPhotos.findIndex(p => p.uri === photo.uri);
-            dispatch(changeSwiperIndex(images.length + Math.max(0, tappedOffset)));
+            // Newly appended — its index is past the existing queue, offset by how
+            // many photos before it are *genuinely new* (addImages dropped the
+            // dupes by uri/filename, so a raw offset would overshoot the index).
+            const existingUris = new Set(images.map(i => i.uri));
+            const existingNames = new Set(images.map(i => i.filename).filter(Boolean));
+            const isNew = p => !existingUris.has(p.uri) &&
+                !(p.filename && existingNames.has(p.filename));
+            const tappedPos = geotagged.findIndex(p => p.uri === photo.uri);
+            const newBefore = geotagged.slice(0, Math.max(0, tappedPos)).filter(isNew).length;
+            dispatch(changeSwiperIndex(images.length + newBefore));
         }
         navigation.navigate('ADD_TAGS');
     }, [dispatch, navigation, recentPhotos, images]);
@@ -215,6 +233,151 @@ const HomeScreen = ({navigation}) => {
         setRefreshing(false);
     }, [dispatch, refreshCameraRoll, user?.enable_admin_tagging]);
 
+    /** "Select More" — open the system gallery, import geotagged picks into the tag queue */
+    const handleSelectMore = useCallback(async () => {
+        let result;
+        try {
+            result = await launchImageLibrary({
+                mediaType: 'photo',
+                selectionLimit: 0,
+                includeExtra: true,
+                quality: 1
+            });
+        } catch {
+            Alert.alert(t('Error!'), t('Something went wrong. Please try again.'));
+            return;
+        }
+        if (result.didCancel) return;
+        if (result.errorCode) {
+            Alert.alert(t('Error!'), result.errorMessage || t('Something went wrong. Please try again.'));
+            return;
+        }
+
+        const imported = [];
+        let skipped = 0;
+        for (const asset of result.assets || []) {
+            // react-native-image-picker doesn't return GPS — read from EXIF
+            const gps = await readGpsFromExif(asset.uri);
+            if (gps && isValidGpsCoords(gps.latitude, gps.longitude)) {
+                imported.push({
+                    id: asset.id || `picked_${asset.uri}`,
+                    uri: asset.uri,
+                    filename: asset.fileName || `picked_${Date.now()}.jpg`,
+                    lat: gps.latitude,
+                    lon: gps.longitude,
+                    date: asset.timestamp
+                        ? Math.floor(new Date(asset.timestamp).getTime() / 1000)
+                        : Math.floor(Date.now() / 1000),
+                    type: 'gallery',
+                    platform: 'mobile',
+                    customTags: [],
+                    uploaded: false
+                });
+            } else {
+                skipped += 1;
+            }
+        }
+
+        if (imported.length === 0) {
+            Alert.alert(t('Missing GPS Data'), t('None of the selected photos have location data.'));
+            return;
+        }
+
+        // The reducer dedupes by uri/filename, but we need the fresh count here
+        // so we don't navigate into the tagger onto a stale photo when every
+        // pick was already in the queue.
+        const queuedUris = new Set(images.map(i => i.uri));
+        const queuedNames = new Set(images.map(i => i.filename).filter(Boolean));
+        const freshCount = imported.filter(
+            p => !queuedUris.has(p.uri) && !(p.filename && queuedNames.has(p.filename))
+        ).length;
+        if (freshCount === 0) {
+            Alert.alert(t('Already Added'), t('Those photos are already in your list.'));
+            return;
+        }
+
+        dispatch(clearEditingPhoto());
+        dispatch(addImages({images: imported, picked_up: null}));
+        dispatch(changeSwiperIndex(images.length));
+        if (skipped > 0) {
+            Alert.alert(
+                t('Missing GPS Data'),
+                `${skipped} ${skipped === 1 ? t('photo') : t('photos')} ${t('skipped (no GPS data).')}`
+            );
+        }
+        navigation.navigate('ADD_TAGS');
+    }, [dispatch, navigation, images, t]);
+
+    // --- Inbox grid (the dashboard's virtualized list data) ---
+    const inbox = useInbox(handleTapInboxPhoto);
+
+    const renderInboxItem = useCallback(({item}) => (
+        <InboxThumbnail
+            photo={item}
+            onPress={inbox.handlePhotoPress}
+            isSelecting={inbox.isSelecting}
+            isSelected={inbox.selectedUris.has(item.uri)}
+            hasTag={inbox.taggedUris.has(item.uri)}
+        />
+    ), [inbox.handlePhotoPress, inbox.isSelecting, inbox.selectedUris, inbox.taggedUris]);
+
+    // Re-render items when selection / tagging / select-mode changes.
+    const inboxExtraData = useMemo(
+        () => ({selecting: inbox.isSelecting, selected: inbox.selectedUris, tagged: inbox.taggedUris}),
+        [inbox.isSelecting, inbox.selectedUris, inbox.taggedUris]
+    );
+
+    const listHeader = useMemo(() => (
+        <View style={styles.gridBleed}>
+            <CommunityStats />
+            <YourImpactSection />
+            <UntaggedSection
+                onTagPhoto={handleTagUntaggedPhoto}
+                onTagAll={handleTagAllUntagged}
+            />
+            <LimitedAccessBanner
+                permissionStatus={permissionStatus}
+                onRefresh={refreshCameraRoll}
+            />
+            <InboxControls
+                count={inbox.visiblePhotos.length}
+                isSelecting={inbox.isSelecting}
+                selectedCount={inbox.selectedUris.size}
+                onToggleDelete={inbox.handleToggleDelete}
+                onDeleteSelected={inbox.handleDeleteSelected}
+                onSelectMore={handleSelectMore}
+            />
+        </View>
+    ), [
+        handleTagUntaggedPhoto, handleTagAllUntagged, permissionStatus, refreshCameraRoll,
+        inbox.visiblePhotos.length, inbox.isSelecting, inbox.selectedUris.size,
+        inbox.handleToggleDelete, inbox.handleDeleteSelected, handleSelectMore
+    ]);
+
+    const listEmpty = useMemo(() => (
+        <View style={styles.gridBleed}>
+            <InboxEmpty
+                permissionStatus={permissionStatus}
+                requestPermission={requestPermission}
+                totalGalleryPhotos={inbox.totalGalleryPhotos}
+                hasMorePages={inbox.hasMorePages}
+                isLoading={inbox.isLoading}
+                onLoadMore={inbox.handleLoadMore}
+            />
+        </View>
+    ), [permissionStatus, requestPermission, inbox.totalGalleryPhotos, inbox.hasMorePages, inbox.isLoading, inbox.handleLoadMore]);
+
+    const listFooter = useMemo(() => (
+        <View style={styles.gridBleed}>
+            <InboxFooter
+                count={inbox.visiblePhotos.length}
+                hasMoreToShow={inbox.hasMoreToShow}
+                isLoading={inbox.isLoading}
+                onLoadMore={inbox.handleLoadMore}
+            />
+        </View>
+    ), [inbox.visiblePhotos.length, inbox.hasMoreToShow, inbox.isLoading, inbox.handleLoadMore]);
+
     // --- Render ---
 
     return (
@@ -222,32 +385,26 @@ const HomeScreen = ({navigation}) => {
             <Header
                 rightContent={<Caption color="white">v{DeviceInfo.getVersion()}</Caption>}
             />
-            <ScrollView
-                style={styles.container}
-                contentContainerStyle={styles.contentContainer}
-                refreshControl={
-                    <RefreshControl
-                        refreshing={refreshing}
-                        onRefresh={handleRefresh}
-                        tintColor={Colors.accent}
-                    />
-                }>
-                <CommunityStats />
-                <YourImpactSection />
-                <UntaggedSection
-                    onTagPhoto={handleTagUntaggedPhoto}
-                    onTagAll={handleTagAllUntagged}
+            <View style={styles.container}>
+                <FlashList
+                    data={inbox.visiblePhotos}
+                    renderItem={renderInboxItem}
+                    keyExtractor={item => String(item.id)}
+                    numColumns={NUM_COLUMNS}
+                    extraData={inboxExtraData}
+                    contentContainerStyle={styles.contentContainer}
+                    refreshControl={
+                        <RefreshControl
+                            refreshing={refreshing}
+                            onRefresh={handleRefresh}
+                            tintColor={Colors.accent}
+                        />
+                    }
+                    ListHeaderComponent={listHeader}
+                    ListEmptyComponent={listEmpty}
+                    ListFooterComponent={listFooter}
                 />
-                <LimitedAccessBanner
-                    permissionStatus={permissionStatus}
-                    onRefresh={refreshCameraRoll}
-                />
-                <InboxSection
-                    onTapPhoto={handleTapInboxPhoto}
-                    permissionStatus={permissionStatus}
-                    requestPermission={requestPermission}
-                />
-            </ScrollView>
+            </View>
 
             {pendingUploadCount > 0 && !isUploading && (
                 <View style={styles.uploadBarContainer}>
@@ -304,7 +461,13 @@ const styles = StyleSheet.create({
         backgroundColor: '#f5f7fa'
     },
     contentContainer: {
+        // Inset the grid to 16px (13 + each tile's 3px margin = 16). Full-width
+        // sections cancel this with styles.gridBleed so they keep their own 16px.
+        paddingHorizontal: 13,
         paddingBottom: 80
+    },
+    gridBleed: {
+        marginHorizontal: -13
     },
     uploadBarContainer: {
         position: 'absolute',

@@ -18,7 +18,7 @@ The onboarding flow uses a nature-inspired gradient design system with smooth an
 - `screens/components/textInput/CustomTextInput.tsx` — Shared text input with `variant` prop (`light`/`dark`)
 - `screens/permission/GalleryPermissionScreen.js` — Gallery access permission with gradient background
 - `screens/permission/CameraPermissionScreen.js` — Camera + location permission with permission cards
-- `actions/types.js` — Exports `URL` (API base URL) and `IS_PRODUCTION`
+- `utils/config.js` — Exports `URL` (API base URL), `WEB_URL`, and `IS_PRODUCTION`
 
 ## Visual Design
 
@@ -114,6 +114,14 @@ Legacy fallback: if the backend returns the old `{token, user}` shape (no `stats
 4. `checkValidToken` only runs on app resume — NOT after fresh login (useEffect has no `token` dependency)
 5. If valid, `fetchUser` is dispatched to refresh the user profile
 6. If invalid, `logout()` resets auth state (redux-persist clears the persisted token)
+
+**Logout cache cleanup:** Redux slices reset on `logout`, but some caches live outside
+Redux in standalone AsyncStorage keys. A `createListenerMiddleware` listener in
+`store/index.js` clears these on every logout (button, 401 auto-logout, account switch)
+so a new account can't inherit the previous user's data: `profile_stats_cache`
+(user-specific xp/position/totalImages) and `xp_levels_cache_v3` (so level titles
+refresh). Keep `CLEAR_ON_LOGOUT` in sync with the `CACHE_KEY` values in
+`ProfileScreen.js` and `xpLevels.js`.
 
 ## Form Components
 All auth forms use Formik + Yup validation and the shared `CustomTextInput` component. Text normalization (trim, lowercase) happens at submit time, not per-keystroke, so users see exactly what they type.

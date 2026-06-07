@@ -1,8 +1,30 @@
-import { configureStore } from '@reduxjs/toolkit';
+import { configureStore, createListenerMiddleware } from '@reduxjs/toolkit';
 import { persistReducer, persistStore, createTransform } from 'redux-persist';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { rootReducer } from '../reducers';
+import { logout } from '../reducers/auth_reducer';
 import { initialState as galleryInitialState } from '../reducers/gallery_reducer';
+
+// AsyncStorage caches that live outside redux — redux slices reset on logout, but
+// these standalone keys don't, so a new account would inherit them. Clear on every
+// logout (button, 401 auto-logout, account switch).
+// Keep in sync with: ProfileScreen.js, xpLevels.js (their CACHE_KEY values).
+const CLEAR_ON_LOGOUT = [
+    'profile_stats_cache', // user-specific (xp/position/totalImages) — real leak
+    'xp_levels_cache_v3'   // global, but cleared so level names refresh on switch
+];
+
+const logoutListener = createListenerMiddleware();
+logoutListener.startListening({
+    actionCreator: logout,
+    effect: async () => {
+        try {
+            await AsyncStorage.multiRemove(CLEAR_ON_LOGOUT);
+        } catch {
+            // best-effort cleanup — don't block logout on storage errors
+        }
+    }
+});
 
 /**
  * Transform for the photos reducer: only persist imagesArray.
@@ -135,7 +157,9 @@ export default function configureAppStore(initialState = {}) {
                 serializableCheck: {
                     ignoredActions: ['persist/PERSIST', 'persist/REHYDRATE']
                 }
-            }).concat(__DEV__ ? [require('redux-immutable-state-invariant').default()] : []),
+            })
+                .prepend(logoutListener.middleware)
+                .concat(__DEV__ ? [require('redux-immutable-state-invariant').default()] : []),
         preloadedState: initialState,
         devTools: __DEV__
     });

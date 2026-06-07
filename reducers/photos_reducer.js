@@ -2,7 +2,7 @@ import {createSlice, createSelector} from '@reduxjs/toolkit';
 import {getTagsFromBackend} from '../utils/getTagsFromBackend';
 import {isTagged} from '../utils/isTagged';
 import {logout} from './auth_reducer';
-import {uploadImage, postTagsToPhoto} from './upload_flow_reducer';
+import {uploadImage, addTagsToPhoto} from './upload_flow_reducer';
 import {dismissPhotos} from './gallery_reducer';
 
 /** Find a tag in tags by (cloId, typeId). */
@@ -47,6 +47,7 @@ const initialState = {
 const buildDedupSets = state => {
     const uris = new Set();
     const ids = new Set();
+    const filenames = new Set();
     for (const img of state.imagesArray) {
         if (img.uri) {
             uris.add(img.uri);
@@ -54,16 +55,48 @@ const buildDedupSets = state => {
         if (img.id != null) {
             ids.add(img.id);
         }
+        if (img.filename) {
+            filenames.add(img.filename);
+        }
     }
-    return {uris, ids};
+    return {uris, ids, filenames};
+};
+
+/** Record an added image's keys so a single batch can't add it twice. */
+const trackInDedupSets = (dedupSets, image) => {
+    if (image.uri) dedupSets.uris.add(image.uri);
+    if (image.id != null) dedupSets.ids.add(image.id);
+    if (image.filename) dedupSets.filenames.add(image.filename);
 };
 
 /** Check if image already exists using pre-built dedup sets. */
 const isDuplicate = (dedupSets, image) => {
     if (image.uri && !image.uploaded) {
-        return dedupSets.uris.has(image.uri);
+        if (dedupSets.uris.has(image.uri)) return true;
+    } else if (dedupSets.ids.has(image.id)) {
+        return true;
     }
-    return dedupSets.ids.has(image.id);
+    // Cross-source match: the OS picker returns a temp-file uri that differs
+    // from the CameraRoll ph:// uri for the same physical photo, but the
+    // filename is stable across both — dedup on it so the same photo can't be
+    // imported twice (re-picked across launches, or already in the queue).
+    return !!(image.filename && dedupSets.filenames.has(image.filename));
+};
+
+/**
+ * Remove a fully-handled photo from the inbox by its server id, recording its
+ * uri so the camera-roll grid keeps hiding it. Shared by the tag-write success
+ * handler and the already-tagged skip path.
+ */
+const dropInboxPhoto = (state, photoId) => {
+    const idx = state.imagesArray.findIndex(img => img.id === photoId);
+    if (idx === -1) return;
+    const uri = state.imagesArray[idx].uri;
+    if (uri) {
+        if (!state.uploadedUris) state.uploadedUris = [];
+        state.uploadedUris.push(uri);
+    }
+    state.imagesArray.splice(idx, 1);
 };
 
 const photosSlice = createSlice({
@@ -101,6 +134,8 @@ const photosSlice = createSlice({
                         selected: false,
                         uploaded: image.uploaded
                     });
+                    // Track keys so a duplicate later in the same batch is caught
+                    trackInDedupSets(dedup, image);
                 }
             });
         },
@@ -508,6 +543,15 @@ const photosSlice = createSlice({
             state.customTagError = null;
         },
 
+        /**
+         * Idempotent-upload skip path: the server reported this photo is already
+         * uploaded AND already tagged, so there's nothing to write. Remove it
+         * from the inbox by its server id (see readme/upload-spec.md).
+         */
+        removeTaggedPhoto(state, action) {
+            dropInboxPhoto(state, action.payload);
+        },
+
 
         /**
          * When enable_admin_tagging is turned on, remove server-fetched
@@ -607,27 +651,34 @@ const photosSlice = createSlice({
             })
             .addCase(uploadImage.rejected, (state, action) => {
                 const {errorType} = action.payload || {};
-                // Server already has this photo — mark uploaded to prevent binary re-upload
+                // TRANSITIONAL — removable once /api/v3/upload is idempotent
+                // (returns {success:true, photo_id} on a duplicate instead of a
+                // 422). Until then, a duplicate gives us no server id, so we
+                // cannot post tags to it. Marking it uploaded:true would strand
+                // it with a non-server id (a local counter, or an "onboarding_..."
+                // string) and the upload loop would re-post tags every focus,
+                // 422-ing forever ("photo id must be an integer"). Drop it; it
+                // resurfaces in the untagged server-photos section with a real id.
                 if (errorType === 'photo-already-uploaded') {
                     const {photoId, imageUri} = action.meta.arg;
                     const index = state.imagesArray.findIndex(img =>
                         imageUri ? img.uri === imageUri : img.id === photoId
                     );
                     if (index !== -1) {
-                        state.imagesArray[index].uploaded = true;
+                        state.imagesArray.splice(index, 1);
                     }
                 }
             })
-            .addCase(postTagsToPhoto.fulfilled, (state, action) => {
-                const {photoId} = action.payload;
-                const idx = state.imagesArray.findIndex(img => img.id === photoId);
-                if (idx !== -1) {
-                    const uri = state.imagesArray[idx].uri;
-                    if (uri) {
-                        if (!state.uploadedUris) state.uploadedUris = [];
-                        state.uploadedUris.push(uri);
-                    }
-                    state.imagesArray.splice(idx, 1);
+            .addCase(addTagsToPhoto.fulfilled, (state, action) => {
+                dropInboxPhoto(state, action.payload.photoId);
+            })
+            .addCase(addTagsToPhoto.rejected, (state, action) => {
+                // The id can never be tagged — either the client guard refused a
+                // non-integer id, or the server rejected it (no such non-deleted
+                // photo). Drop it so the upload loop stops retrying every focus.
+                // Transient errors (timeout/network/server) keep the photo.
+                if (action.payload?.errorType === 'invalid-photo-id') {
+                    dropInboxPhoto(state, action.meta.arg.photoId);
                 }
             })
 
@@ -659,6 +710,7 @@ export const {
     deselectAllImages,
     loadPhotoForEditing,
     removeEditingPhoto,
+    removeTaggedPhoto,
     removeBrandFromTag,
     removeCustomTagFromTag,
     setBrandQuantity,

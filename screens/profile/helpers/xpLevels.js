@@ -1,14 +1,16 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import api from '../../../utils/apiClient';
 
-const CACHE_KEY = 'xp_levels_cache';
+// Bumped to v3 so installs drop any cache that stored "Unknown" names
+// (the v2 parser read the XP-keyed object but expected object values; the
+// backend actually returns plain string titles — { "0": "Noob", ... }).
+const CACHE_KEY = 'xp_levels_cache_v3';
 const CACHE_TTL = 7 * 24 * 60 * 60 * 1000; // 7 days
 
-// Fallback if API is unreachable and no cache exists
+// Fallback if API is unreachable and no cache exists (mirror /api/levels titles)
 const FALLBACK_LEVELS = [
-    { xp: 0, name: 'Complete Noob' },
-    { xp: 100, name: 'Still a Noob' },
-    { xp: 500, name: 'Post-Noob' },
+    { xp: 0, name: 'Noob' },
+    { xp: 100, name: 'Litter Picker' },
     { xp: 1000, name: 'Litter Wizard' },
     { xp: 5000, name: 'Trash Warrior' },
     { xp: 10000, name: 'Early Guardian' },
@@ -17,7 +19,7 @@ const FALLBACK_LEVELS = [
     { xp: 100000, name: 'Planet Protector' },
     { xp: 200000, name: 'Galactic Garbagething' },
     { xp: 500000, name: 'Interplanetary' },
-    { xp: 10000000, name: 'SuperIntelligent LitterMaster' }
+    { xp: 1000000, name: 'SuperIntelligent LitterMaster' }
 ];
 
 /**
@@ -62,18 +64,37 @@ export const fetchXpLevels = async (token) => {
  * Normalize API response into sorted [{ xp, name }] array.
  * Handles common response shapes: array of objects, or { data: [...] }.
  */
-const normalizeLevels = (data) => {
-    const raw = Array.isArray(data) ? data : data?.data || data?.levels || [];
+export const normalizeLevels = (data) => {
+    // Accept an array, { data: [...] } / { levels: [...] }, OR the backend's shape:
+    // an object keyed by XP threshold whose value is the title string —
+    // { "0": "Noob", "100": "Litter Picker", ... }. Object values
+    // ({ title }/{ name }) are tolerated too in case the backend shape changes.
+    const raw = data?.data ?? data?.levels ?? data;
 
-    if (!Array.isArray(raw) || raw.length === 0) return FALLBACK_LEVELS;
+    let levels;
+    if (Array.isArray(raw)) {
+        levels = raw.map(item => ({
+            xp: item.xp ?? item.xp_required ?? item.min_xp ?? 0,
+            name: item.name ?? item.title ?? item.label ?? 'Unknown'
+        }));
+    } else if (raw && typeof raw === 'object') {
+        levels = Object.entries(raw).map(([key, v]) => {
+            const keyNum = Number(key);
+            return {
+                xp: Number.isFinite(keyNum)
+                    ? keyNum
+                    : (v?.xp ?? v?.xp_required ?? v?.min_xp ?? 0),
+                name: typeof v === 'string'
+                    ? v
+                    : (v?.name ?? v?.title ?? v?.label ?? 'Unknown')
+            };
+        });
+    } else {
+        return FALLBACK_LEVELS;
+    }
 
-    const levels = raw.map(item => ({
-        xp: item.xp ?? item.xp_required ?? item.min_xp ?? 0,
-        name: item.name ?? item.title ?? item.label ?? 'Unknown'
-    }));
-
+    if (!levels.length) return FALLBACK_LEVELS;
     levels.sort((a, b) => a.xp - b.xp);
-
     return levels;
 };
 

@@ -5,10 +5,11 @@ import {useTranslation} from 'react-i18next';
 import {isGeotagged} from '../../utils/isGeotagged';
 import {isTagged} from '../../utils/isTagged';
 import buildTagsPayload from '../../utils/buildTagsPayload';
+import {removeTaggedPhoto} from '../../reducers/photos_reducer';
 import {
     cancelUpload,
     closeThankYouMessages,
-    postTagsToPhoto,
+    addTagsToPhoto,
     resetThankYouMessages,
     resetUploadState,
     setCurrentUploadIndex,
@@ -128,10 +129,14 @@ export default function useUploadPhotos() {
                 if (result.meta?.requestStatus === 'rejected') {
                     failedUploads++;
                     failureReasons.push(result.payload?.userMessage || 'Upload failed');
+                } else if (result.payload?.tagged && result.payload?.serverPhotoId) {
+                    // Idempotent upload: server already has this photo AND it's
+                    // already tagged — nothing to write. Clear it from the inbox.
+                    dispatch(removeTaggedPhoto(result.payload.serverPhotoId));
                 } else if (tagsPayload && tagsPayload.length > 0 && result.payload?.serverPhotoId) {
                     dispatch(setUploadPhase('tagging'));
                     const tagResult = await dispatch(
-                        postTagsToPhoto({
+                        addTagsToPhoto({
                             photoId: result.payload.serverPhotoId,
                             tags: tagsPayload,
                             signal: abortControllerRef.current?.signal
@@ -148,7 +153,7 @@ export default function useUploadPhotos() {
             } else if (img.uploaded && tagsPayload && tagsPayload.length > 0) {
                 dispatch(setUploadPhase('tagging'));
                 const tagResult = await dispatch(
-                    postTagsToPhoto({
+                    addTagsToPhoto({
                         photoId: img.id,
                         tags: tagsPayload,
                         signal: abortControllerRef.current?.signal
