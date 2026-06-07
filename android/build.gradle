@@ -15,6 +15,8 @@ buildscript {
         classpath("com.android.tools.build:gradle")
         classpath("com.facebook.react:react-native-gradle-plugin")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin")
+        // Sentry: native (.so) symbol upload + ProGuard mapping (mapping n/a while minify off)
+        classpath("io.sentry:sentry-android-gradle-plugin:6.1.0")
     }
 }
 
