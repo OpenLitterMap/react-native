@@ -30,7 +30,7 @@ HomeScreen Dashboard → Tap photo → Tag → Auto-upload
 
 1. **Home** (`HomeScreen`) — 4-section scrollable dashboard: Global Impact stats, Your Impact stats, Uploaded (untagged server photos), Ready to Map (geotagged camera roll inbox)
 2. **Tag** (`AddTagScreen`) — Full-screen image viewer with search/browse for litter tags, materials, brands
-3. **Upload** — Auto-triggered via `useFocusEffect` when returning to HomeScreen after tagging. Two-step: upload photo binary → POST tags.
+3. **Upload** — Auto-triggered via `useFocusEffect` when returning to HomeScreen after tagging. Two-step: upload photo binary → PUT tags (replace/idempotent).
 
 ## Architecture
 
@@ -59,7 +59,7 @@ MainRoutes (Stack)
 | `auth` | `auth_reducer.js` | token, user profile | Yes |
 | `photos` | `photos_reducer.js` | imagesArray (local gallery photos + tags), editingPhoto, swiperIndex | Yes (imagesArray only) |
 | `serverPhotos` | `server_photos_reducer.js` | untaggedCount, untaggedPreview, editTagsOnPhoto thunk | No |
-| `uploadFlow` | `upload_flow_reducer.js` | uploadPhase, counters, modal state, uploadImage/postTagsToPhoto thunks | No |
+| `uploadFlow` | `upload_flow_reducer.js` | uploadPhase, counters, modal state, uploadImage/addTagsToPhoto thunks | No |
 | `gallery` | `gallery_reducer.js` | CameraRoll photos, GPS metadata | Yes (dismissedUris only) |
 | `tags` | `tags_reducer.js` | Search index, materials, brands (cached 7-day TTL) | AsyncStorage cache |
 | `quickTags` | `quick_tags_reducer.js` | User quick tag presets (cloId, customName, quantity, materials, brands) | Yes |
@@ -92,7 +92,7 @@ Display names resolved at render time from `state.tags.entriesByCloId[cloId]`.
 
 Two-step process orchestrated in `HomeScreen.js`:
 1. **Upload photo** → `POST /api/v3/upload` (FormData with photo + GPS) → returns `photo_id`
-2. **POST tags** → `POST /api/v3/tags` (photo_id + resolved tags via `buildTagsPayload`)
+2. **Write tags** → `PUT /api/v3/tags` (photo_id + resolved tags via `buildTagsPayload`). PUT = replace, so retries are idempotent; `photo_id` is guarded by `isServerPhotoId`.
 
 Pre-upload: GPS validation via `isGeotagged()` (rejects null, 0,0). Uploaded images bypass GPS check.
 On failure: image stays with `uploaded: true` + `tags` intact for retry (tag-only path).

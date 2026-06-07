@@ -197,8 +197,10 @@ Errors: `"photo-already-uploaded"`, `"invalid-coordinates"` (rejects 0,0)
 
 | Method | Route | Mobile File | Status |
 |--------|-------|-------------|--------|
-| POST | `/api/v3/tags` | `upload_flow_reducer.js` → `postTagsToPhoto` | Active |
-| PUT | `/api/v3/tags` | `server_photos_reducer.js` → `editTagsOnPhoto` | Active — **full replace** (not merge) |
+| PUT | `/api/v3/tags` | `upload_flow_reducer.js` → `addTagsToPhoto` | Active — upload-flow tagging; **replace** (idempotent retries); `photo_id` guarded by `isServerPhotoId` |
+| PUT | `/api/v3/tags` | `server_photos_reducer.js` → `editTagsOnPhoto` | Active — My Uploads tag editing; **full replace** (not merge) |
+
+> The backend `POST /api/v3/tags` route still exists, but the app no longer uses it — both tag writers use PUT (replace) so a lost-response retry can't append/double-count. The `POST` contract below is retained for reference.
 
 ### Post Tags — `POST /api/v3/tags`
 
@@ -704,7 +706,7 @@ These `UsersController` endpoints have a latent web-guard conflict and are depre
 - [x] Update `auth_reducer.js` to destructure new nested response shape
 - [x] Migrate `fetchUploads` from unguarded `/history/paginated` to `GET /api/v3/user/photos`
 - [x] Removed `deleteWebImage` — all deletion uses `deleteUploadPhoto`
-- [x] Removed `uploadTagsToWebImage` (v4) — all tagging uses `postTagsToPhoto` (v5)
+- [x] Removed `uploadTagsToWebImage` (v4) — all tagging uses `addTagsToPhoto` (v5)
 - [x] Switched register to `POST /api/auth/register`
 - [x] Removed `tagsToResultString` conversion — v5 `new_tags` is the only format
 - [x] Removed legacy cache cleanup (`tags_cache`, `tags_cache_v2`)

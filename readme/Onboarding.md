@@ -171,7 +171,7 @@ When the user taps Done:
 3. `POST /api/v3/upload` — FormData with photo binary, lat, lon, date (unix seconds), device model
 4. On success: receives `serverPhotoId` from `response.data.photo_id`
 5. **Tag overlay** shown (spinner + "Submitting tags...")
-6. `POST /api/v3/tags` — CLO payload via `buildTagsPayload()` with `serverPhotoId`
+6. `PUT /api/v3/tags` — CLO payload via `buildTagsPayload()` with `serverPhotoId` (via `addTagsToPhoto`; PUT = replace/idempotent)
 7. On success: navigate to CelebrationScreen with `{serverPhotoId}` route param
 8. **On failure at any step: error overlay with retry. Navigation blocked.**
 
@@ -218,7 +218,7 @@ After onboarding, camera-captured photos appear in the **"Your Photos"** grid on
 |-------|-------|
 | `auth` | `token`, `user`, `onboardingComplete`, `user.onboarding_completed_at` (web sync) |
 | `photos` | `imagesArray`, `swiperIndex`, `uploadedUris` — `addOnboardingPhoto` deduplicates by URI, stores date as unix seconds |
-| `uploadFlow` | `uploadImage` and `postTagsToPhoto` thunks |
+| `uploadFlow` | `uploadImage` and `addTagsToPhoto` thunks |
 | `tags` | CLO catalogue (`objectEntries`, `entriesByCloId`, `fetchStatus`) |
 | `settings` | `deviceModel` (sent with upload) |
 
