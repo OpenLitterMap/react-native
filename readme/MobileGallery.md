@@ -40,7 +40,7 @@ photos are the list `data` (flex-sized square tiles, even gutters, inset 16px).
 ## Empty / states
 - No photo permission → grant/settings prompts.
 - No camera-roll photos at all → "No photos available yet" + manage-access.
-- Photos loaded but none geotagged → "No photos to map right now." + a **Load more photos** button (page further back) when more pages exist.
+- Photos loaded but none geotagged → "Select Photos To Tag & Upload" + a **Load more photos** button (page further back) when more pages exist.
 
 ## Redux state (`state.gallery`)
 ```

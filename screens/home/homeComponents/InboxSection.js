@@ -146,7 +146,7 @@ export const InboxEmpty = ({permissionStatus, requestPermission, totalGalleryPho
         <View style={styles.emptyContainer}>
             <Icon name="location-outline" size={40} color={Colors.muted} />
             <Body style={styles.emptyText}>
-                {t('No photos to map right now.')}
+                {t('Select Photos To Tag & Upload')}
             </Body>
             {hasMorePages && (
                 <Pressable onPress={onLoadMore} disabled={isLoading} style={styles.manageAccessButton}>

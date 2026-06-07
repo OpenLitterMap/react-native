@@ -83,20 +83,26 @@ Calculation:
 
 XP accumulates into levels. Thresholds are flat (not exponential).
 
+**Titles and thresholds are defined on the backend** (`GET /api/levels`, returned as
+an object keyed by XP: `{ "0": { title }, "100": { title }, … }`). The mobile app
+parses that shape in `screens/profile/helpers/xpLevels.js` (`normalizeLevels`),
+caches it for 7 days (`xp_levels_cache_v2`, cleared on logout), and only falls back
+to a hardcoded ladder when the API is unreachable. **This table is illustrative and
+may lag the live backend.**
+
 | Level | XP Required | Title |
 |-------|-------------|-------|
-| 1 | 0 | Complete Noob |
-| 2 | 100 | Less of a Noob |
-| 3 | 500 | Post-Noob |
-| 4 | 1,000 | Litter Wizard |
-| 5 | 5,000 | Trash Warrior |
-| 6 | 10,000 | Early Guardian |
-| 7 | 15,000 | Trashmonster |
-| 8 | 50,000 | Force of Nature |
-| 9 | 100,000 | Planet Protector |
-| 10 | 200,000 | Galactic Garbagething |
-| 11 | 500,000 | Interplanetary |
-| 12 | 1,000,000 | SuperIntelligent LitterMaster |
+| 1 | 0 | Noob |
+| 2 | 100 | Litter Picker |
+| 3 | 1,000 | Litter Wizard |
+| 4 | 5,000 | Trash Warrior |
+| 5 | 10,000 | Early Guardian |
+| 6 | 15,000 | Trashmonster |
+| 7 | 50,000 | Force of Nature |
+| 8 | 100,000 | Planet Protector |
+| 9 | 200,000 | Galactic Garbagething |
+| 10 | 500,000 | Interplanetary |
+| 11 | 1,000,000 | SuperIntelligent LitterMaster |
 
 `LevelService::getUserLevel($xp)` returns: `level`, `title`, `xp_into_level`, `xp_for_next`, `xp_remaining`, `progress_percent`.
 
