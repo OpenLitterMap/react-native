@@ -28,7 +28,7 @@ Last reviewed: 2026-03-14
 
 ## Still TODO (post-upgrade)
 
-- [ ] `@shopify/flash-list` 1 → 2 — Ground-up rewrite, `estimatedItemSize` removed (auto-sizing)
+- [x] `@shopify/flash-list` 1 → 2 — Done (on 2.3.1). v2 rewrite; `estimatedItemSize` removed (auto-sizing). HomeScreen dashboard + inbox grid migrated.
 - [ ] `@react-native-async-storage/async-storage` 2 → 3 — Breaking API changes
 - [ ] `eslint` 8 → 9 — Must migrate `.eslintrc` to flat config (`eslint.config.js`)
 - [ ] `i18next` 23 → 25 — `initImmediate` renamed to `initAsync`, check `i18n.js`
@@ -46,3 +46,10 @@ Last reviewed: 2026-03-14
 - [ ] **Location-scoped leaderboards** — Leaderboards filtered by city/country/region
 - [ ] **Achievements display** — Show earned achievements/badges on profile
 - [ ] **User photo map** — Map view of the current user's uploaded photos
+
+---
+
+# TODO — Photo flow (see `readme/Considerations.md`)
+
+- [ ] **Select More on large selections** — batch the EXIF GPS reads + show a "Reading photos…" indicator instead of a silent sequential wait
+- [ ] **Tap-to-tag loads the whole fetched set, incl. non-geotagged** — cap the queue or filter to geotagged-only so the swiper excludes un-mappable photos
