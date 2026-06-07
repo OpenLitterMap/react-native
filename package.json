@@ -8,7 +8,8 @@
     "lint": "eslint .",
     "start": "react-native start",
     "test": "jest",
-    "ios:upload-dsyms": "SENTRY_PROPERTIES=ios/sentry.properties node_modules/@sentry/cli/bin/sentry-cli debug-files upload --include-sources --type dsym"
+    "ios:upload-dsyms": "SENTRY_PROPERTIES=ios/sentry.properties node_modules/@sentry/cli/bin/sentry-cli debug-files upload --include-sources --type dsym",
+    "ios:upload-framework-symbols": "sh ios/sentry-upload-framework-symbols.sh"
   },
   "dependencies": {
     "@lodev09/react-native-exify": "^1.0.3",

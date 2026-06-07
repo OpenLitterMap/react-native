@@ -321,7 +321,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "if [ \"$CONFIGURATION\" = \"Debug\" ]; then echo \"[sentry] Debug build, skipping dSYM upload\"; exit 0; fi\nif [ -z \"$SENTRY_AUTH_TOKEN\" ]; then echo \"[sentry] SENTRY_AUTH_TOKEN not set, skipping dSYM upload\"; exit 0; fi\nexport SENTRY_PROPERTIES=sentry.properties\n/bin/sh ../node_modules/@sentry/react-native/scripts/sentry-xcode-debug-files.sh\n";
+			shellScript = "if [ \"$CONFIGURATION\" = \"Debug\" ]; then echo \"[sentry] Debug build, skipping dSYM upload\"; exit 0; fi\nif [ -z \"$SENTRY_AUTH_TOKEN\" ]; then echo \"[sentry] SENTRY_AUTH_TOKEN not set, skipping dSYM upload\"; exit 0; fi\nexport SENTRY_PROPERTIES=sentry.properties\n/bin/sh ../node_modules/@sentry/react-native/scripts/sentry-xcode-debug-files.sh\n/bin/sh sentry-upload-framework-symbols.sh\n";
 		};
 		347FF7F058210AA3D2D2501E /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
