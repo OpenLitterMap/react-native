@@ -1,10 +1,10 @@
 # Architecture Review & Improvement Plan
 
-**Last updated:** 2026-03-17 (all phases 0–4 complete)
+**Phases 0–4 completed:** 2026-03-17
 
 ## Current State
 
-**App:** OpenLitterMap React Native v7.0.0
+**App:** OpenLitterMap React Native v7.9.0
 **Stack:** RN 0.84.1 (Fabric/New Architecture), React 19, Redux Toolkit, RNGH 2.30, Reanimated 4.3-rc
 
 ### What Works Well
@@ -15,9 +15,9 @@
 | Auth bootstrap | Single source of truth via redux-persist. MainRoutes validates persisted token on mount. No direct AsyncStorage reads. |
 | Reducer purity | All reducers are pure. No side effects in any slice. |
 | Tagging | Layout-separated: ImageViewer fills screen, editor panel is absolute-bottom sibling. Draft model (`useTagDraft`) is local source of truth. No gesture conflicts. |
-| HomeScreen | Decomposed: `useHomeBootstrap` (boot logic), `UploadModal` (extracted component), `useUploadPhotos` (upload orchestration). 259 lines. |
+| HomeScreen | Decomposed: `useHomeBootstrap` (boot logic), `UploadModal` (extracted component), `useUploadPhotos` (upload orchestration). ~516 lines. |
 | Error handling | `ErrorBoundary` wraps NavigationContainer. Centralized `classifyError.js`. Per-endpoint timeouts in `apiClient.js`. |
-| Persistence | Only `auth` + `photos.imagesArray` persisted. Tags cached with 7-day TTL. |
+| Persistence | Persisted: `auth`, `photos.imagesArray`, `quickTags`, `gallery.dismissedUris`, `stats` (see CLAUDE.md slice table). Tags cached 7-day TTL. |
 | i18n | 8 languages, string-key convention, litter taxonomy split |
 | Interceptor | Promise-based 401 guard. No setTimeout hacks. |
 
@@ -26,8 +26,8 @@
 #### 1. ~~MaterialTopTabNavigator used as bottom tabs~~ — RESOLVED
 Switched to `@react-navigation/bottom-tabs` in v7.3.1. No more swipe gesture conflicts.
 
-#### 2. No memoized selectors
-Most screens use raw `useSelector`. Only `selectSelectedCount` is memoized. Low priority unless proven perf bottleneck.
+#### 2. Selector memoization (partial)
+Several selectors are now memoized (`selectSelectedCount` plus consolidated stat/upload/photo selectors added in v7.7.2); some screens still use raw `useSelector`. Low priority unless profiling shows a bottleneck.
 
 #### 3. Upload modal state in Redux slice
 `showUploadModal`/`showThankYouMessages` in `upload_flow_reducer` are UI concerns. Could move to component state. Works fine as-is.
@@ -51,9 +51,7 @@ Debug-only warning from RN 0.84 + Xcode 26. `RCTSwiftUIContainerView` compiled i
 No blocking issues. The app is stable across all core workflows. Potential next steps ranked by value:
 
 1. **Ship / test on device** — all architecture work is done, runtime QA on real hardware is the highest value next step
-2. **BUG-11** — TopTeamsScreen fake 3s loading (known, low priority)
-3. **Selector memoization** — only if profiling reveals perf issues
-4. **Bottom tab migration** — evaluate `createBottomTabNavigator` if tab swipe conflicts surface
+2. **Selector memoization** — continue only if profiling reveals perf issues
 
 ---
 
@@ -65,13 +63,16 @@ No blocking issues. The app is stable across all core workflows. Potential next 
 |---|---|---|
 | `auth` | Full (token + user) | None |
 | `photos` | `imagesArray` only | Filters out `editing`/`uploaded-without-uri`. Clears `editingPhotos`, `swiperIndex` |
-| All others (12 slices) | Not persisted | Start fresh on boot |
+| `quickTags` | Full | None |
+| `gallery` | `dismissedUris` only (capped 500) | — |
+| `stats` | Full | Resets `fetchStatus`/`error` on rehydrate |
+| All others (10 slices) | Not persisted | Start fresh on boot |
 
 ### AsyncStorage (manual, outside Redux)
 
 | Key | Written by | Purpose |
 |---|---|---|
-| `'tags_cache_v5'` | `tags_reducer` | 7-day TTL cache, language-aware |
+| `'tags_cache_v7'` | `tags_reducer` | 7-day TTL cache, language-aware |
 | `'i18next_lng'` | i18next detector | Language preference |
 
 ---
@@ -104,11 +105,7 @@ ADD_TAGS, MY_UPLOADS, SETTING changed from `fullScreenModal` to standard stack p
 
 ### Redux Slice Map
 
-| Category | Slices | Persisted |
-|---|---|---|
-| Durable domain | `auth`, `photos`, `tags` | `auth` + `photos.imagesArray` |
-| Workflow | `uploadFlow`, `gallery`, `serverPhotos` | No |
-| Server-driven volatile | `uploads`, `teams`, `stats`, `leaderboards`, `locations`, `settings`, `shared` | No |
+The 15 slices and their persistence are catalogued in **CLAUDE.md** (§ State Management). Persisted: `auth`, `photos.imagesArray`, `quickTags`, `gallery.dismissedUris`, `stats`.
 
 ### Tagging Screen Layout
 
@@ -131,10 +128,12 @@ All layers are siblings. Editor touches cannot reach ImageViewer's gesture recog
 
 ```
 screens/addTag/
-├── AddTagScreen.js              # Orchestrator (~430 lines)
+├── AddTagScreen.js              # Orchestrator (~618 lines)
 ├── hooks/
 │   ├── useTaggingQueue.js       # Queue: active photo, navigation, save, delete
-│   └── useTagDraft.js           # Local draft: useReducer for tag editing
+│   ├── useTagDraft.js           # Local draft: useReducer for tag editing
+│   ├── useQuickTagsInit.js      # Resolve default quick tags at first launch
+│   └── useQuickTagsSync.js      # Sync quick-tag presets with backend
 ├── components/
 │   ├── ImageViewer.js           # Pinch, zoom, swipe only
 │   ├── TagPills.js              # Current tags display

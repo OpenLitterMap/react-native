@@ -1,5 +1,5 @@
 # Mobile Settings
-> OpenLitterMap React Native v7.0
+> Profile editing, privacy toggles, social links, and account deletion.
 
 ## Overview
 The settings screen allows users to edit their profile (name, username, email), toggle privacy switches, manage social accounts, and delete their account.
@@ -35,11 +35,11 @@ The settings screen allows users to edit their profile (name, username, email), 
     editModalVisible: boolean,
     saveResultModalVisible: boolean,
     editValue: string,
-    wait: boolean,
     editField: any,
+    toggleStatus: 'idle' | 'loading' | 'succeeded' | 'failed',
     deleteAccountError: string,
     saveResultMessage: string,
-    updatingSettings: boolean
+    saveStatus: 'idle' | 'loading' | 'succeeded' | 'failed'
 }
 ```
 

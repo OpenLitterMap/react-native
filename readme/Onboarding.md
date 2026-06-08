@@ -15,7 +15,7 @@ OnboardingWelcomeScreen → ChoosePathScreen → OnboardingPermissionScreen
                                       └───────────┬──────────────┘
                                                    │
                                           OnboardingTagScreen
-                                          (upload + tag POST)
+                                          (upload + tag write)
                                                    │
                                           CelebrationScreen
                                           (geolink + XP + sharing)
@@ -61,24 +61,7 @@ When web onboarding is detected, the mobile AsyncStorage flag is synced so subse
 
 ## Welcome Screen
 
-Shows app introduction, illustration, and a **GPS setup instructions card** that auto-detects `Platform.OS` — shows only the relevant steps for the user's device.
-
-**iOS steps:**
-1. Open Settings (tappable — opens app settings via `Linking.openURL('app-settings:')`)
-2. Privacy & Security → Location Services
-3. Make sure Location Services is ON
-4. Scroll to Camera → select While Using the App
-5. **Recommended:** Settings → Camera → Formats → select Most Compatible (saves JPGs instead of HEIC)
-
-**Android steps:**
-1. Open your Camera app
-2. Tap Settings (gear icon)
-3. Find Location tags or GPS tags → turn ON
-4. If not there: Settings → Location → turn ON
-
-Below: "Once enabled, every photo becomes geotagged." and "Remember to disable location services if you don't want your images to be geotagged."
-
-Scrollable layout to accommodate the instructions card.
+Intro + illustration + a **GPS setup instructions card** that auto-detects `Platform.OS` and shows only the relevant steps. iOS walks the user to Settings → Privacy → Location Services → Camera = "While Using" (the first step deep-links via `Linking.openURL('app-settings:')`), plus a recommended Camera → Formats → "Most Compatible" tip (saves JPG instead of HEIC). Android points at the Camera app's location-tags toggle. The card notes that enabling location geotags every photo (and how to turn it back off).
 
 ## Permission Screen
 
@@ -120,21 +103,7 @@ Native sources provide 6-8 decimal places. Passed as raw `number` values to the 
 
 ## Camera Capture (`screens/camera/CameraCapture.js`)
 
-Reusable component shared between onboarding and HomeScreen.
-
-- `react-native-vision-camera` v4+ with `enableLocation={true}`
-- GPS from iOS metadata with EXIF fallback for Android
-- **Preview screen** shows:
-  - Photo with `resizeMode="contain"` (exact match, no crop/zoom)
-  - GPS coordinates pill (lat, lon to 6 decimal places, or "No GPS data" in red)
-  - Delete button (red trash icon)
-  - Retake button
-  - "Use this photo" button
-- **Double-tap guard** — `usedRef` prevents dispatching `onPhotoAccepted` twice
-- **Error hint** — red toast on capture failure
-- **Battery-aware** — camera deactivated when app backgrounded (`AppState` listener), screen loses focus (`useIsFocused`), or previewing
-- Props: `onPhotoAccepted`, `onCancel`, `hintText`, `topOverlay`
-- All strings wrapped in `t()` for i18n
+Reusable camera component shared by onboarding and HomeScreen. Uses `react-native-vision-camera` (v4+) with `enableLocation={true}` to embed GPS (iOS metadata, EXIF fallback on Android). A preview step shows the photo with its GPS coordinates (or "No GPS data" in red) and Use / Retake / Delete actions. Battery-aware: the camera deactivates when the app is backgrounded, loses focus, or is previewing. All strings are localised.
 
 ## Camera Screen (Onboarding)
 
@@ -175,7 +144,7 @@ When the user taps Done:
 7. On success: navigate to CelebrationScreen with `{serverPhotoId}` route param
 8. **On failure at any step: error overlay with retry. Navigation blocked.**
 
-Both upload AND tag POST must succeed before advancing. This is critical because `onboarding_completed_at` is set server-side by `PhotoTagsController::store()` on first tag submission. If the tag POST fails and the user reaches celebration, they'd be dumped back into onboarding on next launch.
+Both upload AND tag write must succeed before advancing. This is critical because `onboarding_completed_at` is set server-side by `PhotoTagsController::store()` on first tag submission. If the tag write fails and the user reaches celebration, they'd be dumped back into onboarding on next launch.
 
 Done button disabled during upload.
 
@@ -230,7 +199,7 @@ After onboarding, camera-captured photos appear in the **"Your Photos"** grid on
 |----------|--------|--------|-------|
 | `/api/tags/all` | GET | OnboardingTagScreen | Cached in AsyncStorage, 7-day TTL |
 | `/api/v3/upload` | POST | OnboardingTagScreen | FormData: photo, lat, lon, date (unix seconds), model |
-| `/api/v3/tags` | POST | OnboardingTagScreen | Returns `{success, photoTags}`. XP calculated server-side. |
+| `/api/v3/tags` | PUT | OnboardingTagScreen | CLO payload via `buildTagsPayload`; PUT = replace/idempotent. XP calculated server-side. |
 
 **Upload date field:** Sent as unix seconds (`Math.floor(Date.now() / 1000)`), matching the backend's `Carbon::createFromTimestamp()` expectation.
 

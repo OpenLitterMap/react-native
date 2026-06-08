@@ -1,4 +1,5 @@
 # OpenLitterMap — XP System
+> How XP is scored and levelled. The backend is authoritative; the mobile app shows an estimate (see Mobile Preview).
 
 ## XP Values
 
@@ -13,16 +14,16 @@
 
 ### Special Object Overrides
 
-Some objects award more than the default 1 XP per item:
+Some objects (litter-size categories) award more than the default 1 XP per item — a large item rewards more because it takes more effort to document and pick up:
 
-| Object Key | XP per item |
-|------------|-------------|
-| `small` | 10 |
-| `medium` | 25 |
-| `large` | 50 |
-| `bagsLitter` | 10 |
+| Object | XP per item |
+|--------|-------------|
+| small | 10 |
+| medium | 25 |
+| large | 50 |
+| bags of litter | 10 |
 
-These are litter size categories — tagging a large item rewards more because it takes more effort to document and pick up.
+⚠️ The exact backend object **keys** are unconfirmed — this doc and `BackendMobileApi.md` disagree (`small`/`medium`/`large`/`bagsLitter` vs `dumping_small`/`dumping_medium`/`dumping_large`/`bags_litter`). Confirm against the backend `XpScore` enum before mapping them client-side (`BackendMobileApi.md` → Open questions).
 
 ---
 
@@ -110,34 +111,9 @@ Frontend reads `user.next_level.title` and `user.next_level.progress_percent` fo
 
 ---
 
-## Admin XP
+## Backend internals (reference only)
 
-Admins earn **1 XP** per verification action (approve, delete, re-tag, reset). Awarded via `rewardXpToAdmin()` which increments the user's DB `xp` column and updates their Redis leaderboard score.
-
----
-
-## When XP Is Processed
-
-1. User uploads a photo → no XP yet
-2. User adds tags → `GeneratePhotoSummaryService` calculates XP, stores in `photo.xp`
-3. `TagsVerifiedByAdmin` event fires (immediate for all non-school users)
-4. `ProcessPhotoMetrics` listener → `MetricsService::processPhoto()` adds XP to leaderboards and metrics
-
-School students: XP is calculated at tag time but metrics processing waits for teacher approval.
-
----
-
-## Key Files (Backend)
-
-| File | Purpose |
-|------|---------|
-| `app/Enums/XpScore.php` | XP multiplier values |
-| `app/Services/Tags/XpCalculator.php` | XP calculation from tags or summary |
-| `app/Services/Tags/GeneratePhotoSummaryService.php` | Builds summary + calculates XP + applies picked-up bonus |
-| `config/levels.php` | Level thresholds |
-| `app/Services/LevelService.php` | Maps XP to level info |
-| `app/Helpers/helpers.php` | `rewardXpToAdmin()` |
-| `tests/Feature/Tags/v2/CalculatePhotoXpTest.php` | XP calculation tests |
+XP is computed **on tag submission**, not on upload: `GeneratePhotoSummaryService` builds the photo summary + XP, then `ProcessPhotoMetrics` adds it to leaderboards/metrics (school students wait for teacher approval). Admins earn 1 XP per verification action. The authoritative source lives in the backend repo (`XpScore` enum, `XpCalculator`, `LevelService`, `config/levels.php`).
 
 ---
 
@@ -145,13 +121,7 @@ School students: XP is calculated at tag time but metrics processing waits for t
 
 ### Current Implementation
 
-`AddTagScreen.js` shows a `+{xpEstimate} XP` badge in the top-right corner of the image viewer. The badge pulses (scale animation) when XP changes.
-
-**Current formula (incomplete):**
-```
-xpEstimate = 5 + sum(tag.quantity) + (pickedUp ? 5 : 0)
-```
-This treats every object as 1 XP — it ignores the special overrides for `small`, `medium`, `large`, and `bagsLitter`.
+`AddTagScreen.js` shows a `+{xpEstimate} XP` badge (top-right of the image viewer) that pulses when XP changes. The value is computed in `useTagDraft.js` — see the formula below.
 
 ### Data Available at Tagging Time
 
@@ -168,22 +138,24 @@ Each tag in `tags` has `{ cloId, typeId, quantity, materials, brands, customTags
 | Custom tags (per-tag) | Yes | `tag.customTags` (array of strings) |
 | Custom tags (image-level) | Yes | `image.customTags` (array of strings) |
 
-### Current Client-Side Formula
+### Client-Side Formula
 
 ```javascript
-// AddTagScreen.js xpEstimate
-let xp = 5; // upload base
+// useTagDraft.js — xpEstimate (best-effort preview)
+let xp = 5;                               // upload base
 for (const tag of currentTags) {
-    xp += tag.quantity;
+    xp += tag.quantity || 1;              // flat 1 per object (see gaps below)
+    if (tag.picked_up === true) xp += 5;  // +5 per picked-up tag
     xp += (tag.materials?.length || 0) * 2;
     xp += (tag.brands?.length || 0) * 3;
     xp += tag.customTags?.length || 0;
 }
-xp += currentCustomTags.length; // image-level custom tags
-if (pickedUp) xp += 5;
+xp += currentCustomTags.length;           // image-level custom tags
 ```
 
-Note: This uses a flat 1 XP per object regardless of key. The special overrides for `small`, `medium`, `large`, `bagsLitter` are not yet applied client-side (requires mapping `objectKey` to `SPECIAL_XP`).
+**Known gaps vs the backend** (why the badge is only an estimate):
+- Flat **1 XP per object** — ignores the special-object overrides above (would need an `objectKey → XP` map).
+- Picked-up is added **+5 per picked-up tag** here, but the backend awards **+5 once per photo** — so a multi-tag picked-up photo over-estimates.
 
 ### Key Files (Mobile)
 

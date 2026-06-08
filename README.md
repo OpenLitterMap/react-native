@@ -1,67 +1,35 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# OpenLitterMap — Mobile App
 
-# Getting Started
+OpenLitterMap is a React Native app (iOS & Android) for **crowdsourced litter
+mapping**. Users photograph litter, tag it by category / material / brand, and
+upload the geotagged data to the OpenLitterMap backend.
 
->**Note**: Make sure you have completed the [React Native - Environment Setup](https://reactnative.dev/docs/environment-setup) instructions till "Creating a new application" step, before proceeding.
+- **App version:** see [`package.json`](package.json) · **React Native:** 0.84.1 (New Architecture, Hermes)
+- **Branch:** `openlittermap/v7` (main: `main5`)
 
-## Step 1: Start the Metro Server
-
-First, you will need to start **Metro**, the JavaScript _bundler_ that ships _with_ React Native.
-
-To start Metro, run the following command from the _root_ of your React Native project:
-
-```bash
-npm start
-```
-
-## Step 2: Start your Application
-
-Let Metro Bundler run in its _own_ terminal. Open a _new_ terminal from the _root_ of your React Native project. Run the following command to start your _Android_ or _iOS_ app:
-
-### For Android
+## Quick Start
 
 ```bash
-npm run android
+npm install                                  # install JS deps
+cd ios && bundle exec pod install && cd ..   # install iOS pods
+npm start                                     # Metro bundler
+npm run ios                                   # run on iOS
+npm run android                               # run on Android
+npm run lint                                  # ESLint
 ```
 
-### For iOS
+Runtime: **Node ≥ 22.11** (RN 0.84 requirement), npm ≥ 10.
 
-```bash
-npm run ios
-```
+## Core Flow
 
-If everything is set up _correctly_, you should see your new app running in your _Android Emulator_ or _iOS Simulator_ shortly provided you have set up your emulator/simulator correctly.
+Home dashboard → tap a geotagged photo → tag it → auto-upload on return to Home.
 
-This is one way to run your app — you can also run it directly from within Android Studio and Xcode respectively.
+## Documentation
 
-## Step 3: Modifying your App
-
-Now that you have successfully run the app, let's modify it.
-
-1. Open `App.tsx` in your text editor of choice and edit some lines.
-2. For **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Developer Menu** (<kbd>Ctrl</kbd> + <kbd>M</kbd> (on Window and Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (on macOS)) to see your changes!
-
-   For **iOS**: Hit <kbd>Cmd ⌘</kbd> + <kbd>R</kbd> in your iOS Simulator to reload the app and see your changes!
-
-## Congratulations! :tada:
-
-You've successfully run and modified your React Native App. :partying_face:
-
-### Now what?
-
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [Introduction to React Native](https://reactnative.dev/docs/getting-started).
-
-# Troubleshooting
-
-If you can't get this to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
-
-# Learn More
-
-To learn more about React Native, take a look at the following resources:
-
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+- **[`CLAUDE.md`](CLAUDE.md)** — **start here.** Architecture, Redux slices,
+  navigation, the upload & tagging model, API summary, code style, and build notes.
+  The single source of truth for contributors and AI agents.
+- **[`readme/`](readme/)** — feature deep-dives: upload, tagging, gallery inbox,
+  auth, teams, settings, permissions, onboarding, navigation, i18n, XP, local-dev
+  setup, and the backend API contract the app consumes.
+- **[`readme/changelog/`](readme/changelog/)** — dated release notes.

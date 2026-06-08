@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 OpenLitterMap is a React Native mobile app (iOS & Android) for crowdsourced litter mapping. Users photograph litter, tag it by category, and upload geotagged data to the OpenLitterMap Laravel backend API.
 
-**App Version:** 7.7.5 | **React Native:** 0.84.1 | **Branch:** `openlittermap/v7` (main: `main5`)
+**App Version:** 7.9.0 | **React Native:** 0.84.1 | **Branch:** `openlittermap/v7` (main: `main5`)
 
 ## Quick Start
 
@@ -36,19 +36,23 @@ HomeScreen Dashboard → Tap photo → Tag → Auto-upload
 
 ### Navigation (3 bottom tabs)
 
+native-stack throughout; a bottom-tab bar for the 3 main tabs. Full tree + presentation rules in `readme/Navigation.md`.
+
 ```
-MainRoutes (Stack)
-├── [No token] AuthStack → WelcomeScreen → AuthScreen
-└── [Has token]
-    ├── TabRoutes (3 tabs)
+MainRoutes (NativeStack) — 3-way: no-token / onboarding / app
+├── [No token]               AuthStack → WelcomeScreen → AuthScreen
+├── [Onboarding incomplete]  OnboardingStack
+└── [App]
+    ├── TabRoutes (3 bottom tabs)
     │   ├── HOME → HomeScreen
     │   ├── TEAM → TeamStack (TeamScreen, TopTeams, TeamDetails, TeamLeaderboard)
     │   └── USER_STATS → ProfileScreen
-    ├── ADD_TAGS → AddTagScreen
-    ├── SETTING → SettingsScreen
-    ├── PERMISSION → PermissionStack
-    ├── UPDATE → NewUpdateScreen (modal)
-    └── MY_UPLOADS → MyUploads (modal)
+    ├── ADD_TAGS → AddTagScreen                       (push)
+    ├── SETTING → SettingScreen                       (push)
+    ├── QUICK_TAGS_SETTINGS → QuickTagsSettingsScreen (push)
+    ├── MY_UPLOADS → MyUploads                        (push)
+    ├── PERMISSION → PermissionStack                  (fullScreenModal)
+    └── UPDATE → NewUpdateScreen                      (fullScreenModal)
 ```
 
 
@@ -75,7 +79,7 @@ Store configured in `store/index.js` with `redux-persist` (AsyncStorage backend)
 
 ### Litter Data Model (CLO Tags)
 
-Tag data is fetched from `GET /api/tags/all` and cached in AsyncStorage (`tags_cache_v5`, 7-day TTL).
+Tag data is fetched from `GET /api/tags/all` and cached in AsyncStorage (`tags_cache_v7`, 7-day TTL).
 
 **Key concept — `cloId`** (category_litter_object_id): Unique ID for an (object, category) pair. Objects like "bottle" exist in multiple categories (alcohol, beverages) and are disambiguated by cloId.
 
@@ -110,27 +114,28 @@ Cancel: `AbortController` aborts the in-flight axios request, resets `uploadPhas
 - `fetchUser` retries 2× with 1s/3s backoff for transient errors (timeout, network, 5xx). Only clears session on 401.
 - Global 401 interceptor in `utils/setupAxiosInterceptors.js` (30s timeout)
 
-## API Endpoints (31 total)
+## API Endpoints (33 total)
 
-All endpoints verified against Laravel backend. See `readme/AUDIT.md` §2 for complete table with payload/response details.
+The mobile app consumes these endpoints; full request/response contracts are in `readme/BackendMobileApi.md`.
 
 | Area | Endpoints | Key Routes |
 |------|-----------|------------|
 | Auth | 5 | `/api/auth/token`, `/api/auth/register`, `/api/user/profile/index`, `/api/validate-token`, `/api/password/email` |
-| Images | 4 | `/api/v3/upload`, `/api/v3/tags` (POST & PUT), `/api/v3/user/photos` |
-| My Uploads | 3 | `/api/v3/user/photos`, `/api/v3/user/photos/stats`, `/api/profile/photos/delete` |
+| Images | 2 | `/api/v3/upload`, `/api/v3/tags` (PUT = replace) |
 | Tags | 1 | `/api/tags/all` |
+| My Uploads / Photos | 5 | `/api/v3/user/photos`, `/api/v3/user/photos/stats`, `/api/v3/user/photos/locations`, `/api/v3/photos/{id}/visibility` (PATCH), `/api/profile/photos/delete` |
+| Quick Tags | 2 | `/api/v3/user/quick-tags` (GET & PUT), `/api/v3/user/top-tags` |
 | Teams | 8 | `/api/teams/{create,join,leave,active,inactivate,members,leaderboard,list}` |
 | Settings | 4 | `/api/settings/update/`, `/api/settings` (PATCH), `/api/settings/privacy/{endpoint}`, `/api/settings/delete-account/` |
-| Other | 6 | Leaderboard, stats, app version, locations (2), XP levels |
+| Other | 6 | `/api/leaderboard`, `/api/global/stats-data`, `/api/mobile-app-version`, `/api/locations/country`, `/api/locations/{type}/{id}`, `/api/levels` |
 
 ## File Organization
 
 ```
 ├── utils/config.js           # Environment config, API URL selection (react-native-config)
 ├── store/index.js            # Redux store + persist config
-├── reducers/                 # 14 Redux slices (all use createSlice + createAsyncThunk)
-├── routes/                   # React Navigation v6 navigators
+├── reducers/                 # 15 Redux slices (all use createSlice + createAsyncThunk)
+├── routes/                   # React Navigation v7 navigators (native-stack + bottom-tabs)
 ├── screens/
 │   ├── home/                 # HomeScreen (4-section dashboard) + homeComponents/
 │   ├── addTag/               # AddTagScreen + components/ (TagPills, TagSearchBar, TagDetailSheet, etc.)
@@ -139,8 +144,9 @@ All endpoints verified against Laravel backend. See `readme/AUDIT.md` §2 for co
 │   ├── team/                 # TeamScreen, TeamDetailsScreen, TopTeamsScreen, TeamLeaderboardScreen
 │   ├── userStats/            # UserStatsScreen + userComponents/ (MyUploads, ProgressCircleCard)
 │   ├── profile/              # ProfileScreen + helpers/
-│   ├── setting/              # SettingsScreen + settingComponents/
-│   ├── permission/           # CameraPermissionScreen, GalleryPermissionScreen
+│   ├── setting/              # SettingsScreen, QuickTagsSettingsScreen + settingComponents/
+│   ├── permission/           # GalleryPermissionScreen (camera priming lives in onboarding/)
+│   ├── onboarding/           # OnboardingStack screens (post-signup priming + tutorial)
 │   ├── components/           # Shared: theme/, typography/, Button, Header, CustomTextInput, etc.
 │   └── NewUpdateScreen.js
 ├── utils/
@@ -188,7 +194,7 @@ i18next with `react-i18next`. Translation keys are **full British English string
 
 - `@shopify/flash-list` — performant lists
 - `formik` + `yup` — form handling/validation
-- `react-native-gesture-handler` v2 + `react-native-reanimated` v3 — image viewer gestures
+- `react-native-gesture-handler` v2 + `react-native-reanimated` v4 — image viewer gestures
 - `react-native-permissions` — camera/location/photo library (iOS permissions in `reactNativePermissionsIOS` in package.json)
 - `@sentry/react-native` — error tracking (production only)
 - `@lodev09/react-native-exify` — Android EXIF GPS fallback
@@ -205,7 +211,6 @@ i18next with `react-i18next`. Translation keys are **full British English string
 
 ## Known Issues
 
-- **BUG-11**: `TopTeamsScreen` uses fake 3s loading instead of actual API loading state
 - **No test coverage**: Jest configured but no test files exist
 - **Upload state consolidated**: Upload modal + phase now in single `uploadFlow` slice (formerly split across `shared` and `images`)
 
@@ -254,25 +259,28 @@ Detailed documentation for each feature area lives in `readme/`:
 
 | File | Covers |
 |------|--------|
-| `AUDIT.md` | **Start here** — Complete file inventory, all 31 API endpoints with payloads/responses, Redux state map, navigation tree, bug tracker, dependency list |
+| `BackendMobileApi.md` | **API contract (canonical)** — the 33 endpoints the app consumes, with request/response shapes |
+| `Navigation.md` | **Navigation (authoritative)** — navigator tree, presentation rules, patterns |
 | `MobileUpload.md` | Upload flow, two-step process, GPS validation, error classification, retry behavior |
 | `MobileTagging.md` | CLO tagging system, search index, tag pills, detail sheet, category colors, XP estimate |
-| `MobileGallery.md` | Camera roll access, GPS detection, EXIF fallback, pagination strategies, gesture selection |
-| `MobileAuth.md` | Sanctum auth, animated slides, password strength, language picker |
-| `Onboarding.md` | Post-signup onboarding flow (7 screens), permissions, tagging, upload, geolink, GPS instructions |
+| `MobileGallery.md` | Camera-roll "Your Photos" inbox, GPS detection, EXIF fallback, pagination |
+| `MobileAuth.md` | Sanctum auth, boot flow, password strength, language picker |
 | `MobileTeams.md` | Team CRUD, members, leaderboard |
 | `MobileSettings.md` | Settings, privacy toggles, account deletion |
-| `MobileNavigation.md` | Navigation structure (authoritative — 3 tabs, not 5) |
+| `MobileMyUploads.md` | Upload history, filters, edit-tags + visibility swipe actions |
 | `MobilePermissions.md` | iOS/Android permission handling |
-| `MobileMyUploads.md` | Upload history, filters, swipe actions |
-| `BackendAPI.md` | Backend API architecture and field mappings |
-| `BackendMobileApi.md` | Mobile-specific API contracts |
-| `BackendTagging.md` | Backend tagging architecture, XP calculation |
-| `BackendTagsConfig.md` | Backend TagsConfig source of truth |
-| `BackendLocations.md` | Backend location resolution (design doc) |
-| `XP.md` | XP formula — backend awards correctly; mobile preview is incomplete (doesn't handle special object bonuses) |
-| `GPS_AUDIT.md` | GPS handling audit (thorough, accurate) |
-| `LocalDev.md` | Local development setup, tag data structure |
+| `Onboarding.md` | Post-signup onboarding flow, permissions, tagging, upload, GPS instructions |
+| `Architecture.md` | Architecture review: tagging layout, hooks, Fabric rules, persistence |
+| `Considerations.md` | Known UX sharp edges (large selections, persistence size) |
+| `XP.md` | XP formula — backend awards correctly; mobile preview is incomplete |
+| `Translations.md` | i18n structure, litter taxonomy, adding keys/languages |
+| `TODO.md` | Tracked follow-ups (e.g. i18n string gaps) |
+| `LocalDev.md` | Local-dev setup, `/api/tags/all` shape + cloId mechanics |
+| `BackendAPI.md` | Backend API surface map (mobile-relevant; defers to BackendMobileApi.md) |
+| `BackendTagging.md` | Tag API contract (cloId, tag payloads, response format) |
+| `BackendTagsConfig.md` | Tag catalogue summary (`/api/tags/all`); canonical source in backend repo |
+| `BackendLocations.md` | The 2 location endpoints the app calls |
+| `BackendQuickTags.md` | Quick-tags endpoints (GET/PUT) + mobile sync notes |
 
 ## BOOP
 

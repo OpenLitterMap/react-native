@@ -1,5 +1,5 @@
 # Mobile Teams
-> OpenLitterMap React Native v7.0
+> Team create/join/leave, active team, members, and the teams leaderboard.
 
 ## Overview
 Users can create, join, and leave teams. Teams have leaderboards and member lists. One team can be set as the user's "active team" which receives credit for their uploads.
@@ -28,6 +28,7 @@ Users can create, join, and leave teams. Teams have leaderboards and member list
 ```
 {
     topTeams: array,
+    topTeamsStatus: 'idle' | 'loading' | 'succeeded' | 'failed',
     userTeams: array,
     teamMembers: array,
     selectedTeam: object,

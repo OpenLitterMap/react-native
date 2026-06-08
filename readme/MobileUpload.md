@@ -1,141 +1,69 @@
 # Mobile Upload
-> OpenLitterMap React Native v7.0
+> The two-step auto-upload flow: GPS filter, photo binary, then the idempotent tag write.
 
 ## Overview
-The upload flow lets users select photos from their gallery, tag them with the v5 tagging system, and upload them to the OpenLitterMap backend. Photos are uploaded one at a time with progress tracking. A pre-upload validation step filters out photos without valid GPS coordinates. Tagged photos use a two-step upload: photo first, then tags via a separate API call.
+Geotagged camera-roll photos surface in the HomeScreen inbox. Tapping one opens the tagging screen; on returning to HomeScreen the upload is auto-triggered. Uploads run one photo at a time. A pre-upload step filters out photos without valid GPS. Tagged photos use a two-step upload: photo binary first, then tags via a separate idempotent call.
 
 ## Files
-- `screens/home/HomeScreen.js` — Dashboard + upload orchestration (auto-uploads on focus after tagging, GPS validation)
+- `screens/home/HomeScreen.js` — Dashboard + upload orchestration (auto-uploads on focus after tagging)
+- `screens/home/useUploadPhotos.js` — Upload loop hook (sequential upload, GPS filter, cancel, retry)
 - `screens/home/homeComponents/InboxSection.js` — "Your Photos" inbox grid (tap to tag, Select More, delete)
 - `screens/home/homeComponents/useInbox.js` — inbox state hook (visible count, selection, load-more)
 - `screens/home/homeComponents/UploadModal.js` — upload progress modal
-- `screens/home/homeComponents/ActionButton.js` — FAB for camera/gallery actions
 - `reducers/photos_reducer.js` — Local image state (imagesArray, tagging, swiperIndex)
 - `reducers/upload_flow_reducer.js` — Upload phase, counters, modal state, `uploadImage`/`addTagsToPhoto` thunks
+- `reducers/server_photos_reducer.js` — Server-side untagged count + previews (`fetchUntaggedCount`, `fetchAllUntaggedPhotos`)
+- `utils/buildTagsPayload.js` — Converts an image's tags into the backend CLO payload
 - `utils/isServerPhotoId.js` — Guards the tag write: only a positive-integer server photo id is sent (blocks local/onboarding ids)
-- `reducers/uploads_reducer.js` — Photo deletion thunk (`deleteUploadPhoto`)
 - `utils/isGeotagged.js` — GPS validation (rejects null, undefined, and 0,0 coordinates)
 - `utils/isTagged.js` — Checks for tags or custom tags
 
 ## API Endpoints
 | Thunk | Method | Endpoint | Payload | Notes |
 |-------|--------|----------|---------|-------|
-| `uploadImage` | POST | `/api/v3/upload` | FormData (photo, lat, lon, date, picked_up, model) | multipart/form-data, returns `photo_id` |
-| `addTagsToPhoto` | PUT | `/api/v3/tags` | `{photo_id, tags[]}` | Replace semantics (idempotent — safe to retry); guarded by `isServerPhotoId`. v5 tags with CLO IDs, materials, brands, custom tags |
-| `getUntaggedImages` | GET | `/api/v3/user/photos?tagged=false&per_page=100` | — | Fetches user's untagged uploads |
-| `deleteUploadPhoto` | POST | `/api/profile/photos/delete` | `{ "photoid": <id> }` | Deletes photo from server and local state |
+| `uploadImage` | POST | `/api/v3/upload` | FormData (`photo`, `lat`, `lon`, `date`, `model`) | multipart/form-data, returns `photo_id`. No tags and no `picked_up` here — those go in the tag write. |
+| `addTagsToPhoto` | PUT | `/api/v3/tags` | `{ photo_id, tags }` | Replace semantics (idempotent — safe to retry); guarded by `isServerPhotoId`. Tags carry CLO IDs, materials, brands, custom tags, and per-tag `picked_up`. |
+| `fetchUntaggedCount` | GET | `/api/v3/user/photos/stats` **and** `/api/v3/user/photos?tagged=false&per_page=10` | — | One `Promise.all` — stats + a few preview tiles for the dashboard badge (`server_photos_reducer`). |
+| `fetchAllUntaggedPhotos` | GET | `/api/v3/user/photos?tagged=false&per_page=50` | — | Paginates the full untagged queue into the editing flow. |
+
+Photo deletion lives in `uploads_reducer` (`deleteUploadPhoto`) — see `MobileMyUploads.md`.
 
 ## Upload Flow (Two-Step)
-1. User selects photos from gallery (GalleryScreen)
-2. Photos appear in `UploadImagesGrid` on HomeScreen
-3. User taps an image → navigates to `AddTagScreen` to tag it
-4. User adds v5 tags (stored as `[{ cloId, quantity, materials, brands, customTags }]` per image)
-5. User taps upload button → `uploadPhotos()` called
-6. **Pre-upload GPS validation**: filters images through `isGeotagged()`
-7. If any photos skipped, Alert shows skip count with Cancel/Continue
-8. Modal shows with progress counter (`uploaded / totalToUpload`)
-9. **For each gallery image:**
-   - **Step 1**: Upload photo via `uploadImage` (FormData with photo + GPS, NO tags)
-   - Image stays in state with `uploaded: true` and server `photo_id`
-   - **Step 2**: Write tags via `addTagsToPhoto` (PUT — photo_id + resolved tags)
-   - On success: image removed from state, `tagged++`
-   - On failure: image stays for retry (uploaded=true, tags intact)
-   - If the upload response says the photo is `already_uploaded` AND `tagged`, the
-     tag write is skipped and the photo is cleared from the inbox (`removeTaggedPhoto`)
-10. **For uploaded images with v5 tags**: write tags directly via `addTagsToPhoto` (PUT)
-11. On completion, result modal shows upload summary (success/failure counts)
-12. User can cancel mid-upload via cancel button (AbortController aborts in-flight request)
+Orchestrated by `useUploadPhotos.js`, auto-triggered from HomeScreen on focus after tagging.
+
+1. **Filter** — Only images that are both geotagged (`isGeotagged`) and tagged (`isTagged`) are uploadable. If any tagged photos lack GPS, an Alert reports the skip count with Cancel/Continue.
+2. **Per photo** — for a not-yet-uploaded photo: **(a)** POST the binary via `uploadImage` → server returns `photo_id`; **(b)** PUT the resolved tags via `addTagsToPhoto`. For an already-uploaded photo (retry path), the binary step is skipped and only the tag write runs.
+3. **Idempotent short-circuit** — if `uploadImage` reports the photo is `already_uploaded` AND `tagged`, the tag write is skipped and the photo is cleared from the inbox (`removeTaggedPhoto`).
+4. **Progress + result** — the modal shows a `uploaded / totalToUpload` counter while running, then a thank-you/result summary on completion.
 
 ### Untagged Preview Shortcut
-The top-left untagged preview tile on HomeScreen opens `AddTagScreen` immediately with the exact preview photo already shown. The full untagged queue is then fetched in the background after navigation so the tap feels instant.
+The untagged preview tile on HomeScreen opens the tagging screen immediately with the tapped photo already shown. The full untagged queue is fetched in the background after navigation so the tap feels instant.
 
 ## Tag Payload Resolution
-At upload time, `buildTagsPayload(img)` (from `utils/buildTagsPayload.js`) converts each tag into the POST format:
-
-```json
-{
-    "category_litter_object_id": 1,
-    "litter_object_type_id": null,
-    "quantity": 3,
-    "picked_up": true,
-    "materials": [1, 5],
-    "brands": [{ "id": 42, "quantity": 1 }],
-    "custom_tags": ["near café"]
-}
-```
-
-- `materials` — Array of material IDs from `tag.materials`
-- `brands` — Array of `{ id, quantity }` from `tag.brands`
-- `custom_tags` — Array of strings from `tag.customTags`
-- Image-level custom tags (`img.customTags`) are merged into the first tag entry's `custom_tags` array
+At upload time, `buildTagsPayload(img)` converts each tag to the CLO format: `category_litter_object_id`, `litter_object_type_id`, `quantity`, `picked_up` (per tag), `materials` (array of IDs), `brands` (`[{id, quantity}]`), and `custom_tags` (strings). Image-level custom tags (`img.customTags`) are merged into the first tag entry; an image with only custom tags sends `{ custom: true, key }` entries. See `utils/buildTagsPayload.js` for the exact shape.
 
 ## GPS Validation
-Before upload, `uploadPhotos()` filters images:
-- Non-uploaded images must pass `isGeotagged()` — requires non-null, non-zero lat/lon
-- Uploaded images (`uploaded === true`) are always considered valid (GPS managed server-side)
-- `isGeotagged()` rejects: null/undefined coordinates, 0,0 (Null Island)
+Non-uploaded images must pass `isGeotagged()` (non-null, non-zero lat/lon — rejects 0,0 / Null Island). Already-uploaded images bypass the check (GPS is managed server-side).
 
 ## Image Types & Upload State
-- **type** — Origin of the image: `'gallery'` (phone camera roll), `'camera'` (in-app capture), `'web'` (server/web app)
-- **uploaded** — Boolean. `true` = photo binary is on the server, `false` = local only
+- **type** — Origin of the image: `'gallery'`, `'camera'`, or `'web'`.
+- **uploaded** — Boolean: `true` = binary is on the server, `false` = local only.
 
-After a gallery image is uploaded, `type` stays `'gallery'` but `uploaded` becomes `true`. All server-state routing (skip binary upload, tag-only path, server deletion, GPS bypass) uses the `uploaded` boolean, not `type`.
+After a gallery image uploads, `type` stays `'gallery'` but `uploaded` becomes `true`. All server-state routing (skip binary upload, tag-only path, deletion, GPS bypass) keys off the `uploaded` boolean, not `type`.
 
 ## Redux State
-
-### `state.photos` (persisted — imagesArray only)
-```
-{
-    imagesArray: array,       // All images (each has tags, customTags, picked_up, etc.)
-    swiperIndex: number,      // Currently selected image index in AddTagScreen
-}
-```
-
-### `state.uploadFlow` (not persisted)
-```
-{
-    totalToUpload: number,
-    uploaded: number,
-    uploadFailed: number,
-    tagged: number,
-    taggedFailed: number,
-    uploadPhase: 'idle' | 'uploading' | 'tagging',
-    currentUploadIndex: number,
-    uploadAbortReason: null | 'token-expired' | 'cancelled',
-    failedCounts: { alreadyUploaded, invalidCoordinates, timeout, network, server, unknown },
-    showUploadModal: boolean,
-    showThankYouMessages: boolean,
-}
-```
+- `state.photos` (persisted — `imagesArray` only): local images with their tags/customTags/picked_up plus `swiperIndex`. See `reducers/photos_reducer.js`.
+- `state.uploadFlow` (not persisted): upload phase (`idle`/`uploading`/`tagging`), progress counters, per-reason failure counts, abort reason, and modal flags. See `reducers/upload_flow_reducer.js`.
 
 ## Error Handling
-Upload failures are classified by `classifyError()` in `utils/classifyError.js`:
-- `photo-already-uploaded` — Duplicate detection (422, backend `error: "duplicate"`). The stranded photo is dropped from the inbox (it's already on the server; can't be tagged without a server id). Transitional — to be superseded by an idempotent `/api/v3/upload` that returns the existing `photo_id`.
-- `invalid-photo-id` — the `photo_id` can never be tagged. Raised two ways: (1) `addTagsToPhoto` refused a non-integer id locally (no network call, blocks local/onboarding ids); (2) the backend rejected a valid-integer id (422 with `errors.photo_id` — "must be an integer" / "selected photo id is invalid", i.e. no live row: stale local-counter id or a server-deleted photo). Permanent + non-reportable; `addTagsToPhoto.rejected` drops the photo from the inbox so the upload loop stops retrying it.
-- `invalid-coordinates` — lat=0, lon=0 (422)
-- `timeout` — Connection timed out (ECONNABORTED)
-- `network` — No internet connection
-- `server` — Server error (5xx)
-- `unauthorized` — Session expired (401) — triggers abort via `setUploadAbortReason('token-expired')`
-- `unknown` — Other errors
+Upload failures are classified by `classifyError()` (`utils/classifyError.js`) into: `photo-already-uploaded`, `invalid-photo-id`, `invalid-coordinates`, `timeout`, `network`, `server`, `unauthorized`, `unknown`.
 
-On 401, the axios interceptor signals the upload loop to stop gracefully. After re-login, a recovery alert lets the user retry with preserved photos.
+- **`photo-already-uploaded`** — duplicate detected server-side; the stranded photo is dropped from the inbox (it's already on the server and can't be tagged without a live photo id).
+- **`invalid-photo-id`** — the id can never be tagged: either `addTagsToPhoto` refused a non-integer id locally (no network call) or the backend rejected a valid-integer id with no live row. Permanent + non-reportable; the photo is dropped so the loop stops retrying it.
+- **`unauthorized` (401)** — the axios interceptor signals the loop to stop via `setUploadAbortReason('token-expired')`. After re-login, a recovery flow lets the user retry with photos preserved.
 
-Tag POST failures increment `taggedFailed`. The image stays in state for retry.
+## Cancel Behaviour
+Cancel uses an `AbortController` to abort the in-flight axios request, resets `uploadPhase` to `idle`, and closes the modal. The loop checks `isUploadCancelled` before each iteration and early-returns after a cancel so the result modal can't re-appear.
 
-## Cancel Behavior
-Cancel uses an `AbortController` to abort the in-flight axios request, then resets `uploadPhase` to `idle` and closes the modal. The upload loop checks `isUploadCancelled` ref before each iteration and early-returns after a cancel to prevent the result modal from re-appearing.
-
-## Retry Behavior
-If the tag write fails after a successful photo upload:
-- Image stays in `imagesArray` with `uploaded: true` and `tags` intact
-- On next upload attempt, the loop routes it to the "uploaded + tags" path
-- Tags are written directly via `addTagsToPhoto` (PUT, no re-upload of the photo)
-- PUT is **replace** semantics, so re-running the upload loop is idempotent — a
-  lost-response retry can't double-tag or double-count XP (POST would append)
-- **Exception — permanent failure:** an `invalid-photo-id` rejection (the id can
-  never be tagged) drops the photo from the inbox instead of retrying. Only
-  transient errors (timeout/network/server) are retried.
-
-## Photo Deletion
-Uploaded images on HomeScreen are deleted via `deleteUploadPhoto` (from `uploads_reducer.js`), which calls `POST /api/profile/photos/delete` with `{ "photoid": <id> }`. The image is also removed from local `imagesArray` via `deleteImage`. Non-uploaded images are removed from local state only (no server call needed).
+## Retry Behaviour
+If a tag write fails after a successful binary upload, the image stays in `imagesArray` with `uploaded: true` and `tags` intact. On the next attempt the loop routes it straight to the tag-only path. Because `PUT /api/v3/tags` is **replace** semantics, re-running the loop is idempotent — a lost-response retry can't double-tag or double-count XP. **Exception:** an `invalid-photo-id` rejection drops the photo instead of retrying; only transient errors (timeout/network/server) are retried.

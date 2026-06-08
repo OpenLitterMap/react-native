@@ -1,383 +1,61 @@
-<?php
+# Backend Tags Config — Mobile Summary
 
-namespace App\Tags;
+A mobile-developer summary of the tag taxonomy that `GET /api/tags/all` derives
+from and that the mobile app caches. **This is not the source of truth** — the
+canonical definition is `App\Tags\TagsConfig` in the backend repo.
 
-use App\Enums\CategoryKey;
+> Mobile caching: AsyncStorage key `tags_cache_v7`, 7-day TTL
+> (`reducers/tags_reducer.js`). See **MobileTagging.md** for how the cache is
+> built into the search index.
 
-class TagsConfig
-{
-    /**
-     * Get the complete tags configuration.
-     *
-     * Canonical objects per category. All keys are snake_case.
-     * Types represent "what was in the container" (beer, water, soda, etc.)
-     */
-    public static function get(): array
-    {
-        return [
-            CategoryKey::Smoking->value => [
-                'butts' => [
-                    'materials' => ['plastic', 'paper'],
-                ],
-                'lighters' => [
-                    'materials' => ['plastic', 'metal'],
-                ],
-                'cigarette_box' => [
-                    'materials' => ['cardboard'],
-                ],
-                'tobacco_pouch' => [
-                    'materials' => ['plastic'],
-                ],
-                'rolling_papers' => [
-                    'materials' => ['paper'],
-                ],
-                'packaging' => [
-                    'materials' => ['plastic', 'foil'],
-                ],
-                'cigarette_filter' => [
-                    'materials' => ['plastic'],
-                ],
-                'vape_pen' => [
-                    'materials' => ['plastic', 'metal'],
-                ],
-                'vape_cartridge' => [
-                    'materials' => ['plastic', 'glass'],
-                ],
-                'match_box' => [
-                    'materials' => ['cardboard'],
-                ],
-                'ashtray' => [
-                    'materials' => ['glass', 'ceramic', 'metal'],
-                ],
-                'other' => [],
-            ],
+---
 
-            CategoryKey::Alcohol->value => [
-                'bottle' => [
-                    'materials' => ['glass', 'plastic'],
-                    'types' => ['beer', 'wine', 'spirits', 'cider', 'unknown'],
-                ],
-                'can' => [
-                    'materials' => ['aluminium'],
-                    'types' => ['beer', 'cider', 'spirits', 'unknown'],
-                ],
-                'pint_glass' => [
-                    'materials' => ['glass'],
-                    'types' => ['beer', 'cider', 'unknown'],
-                ],
-                'wine_glass' => [
-                    'materials' => ['glass'],
-                    'types' => ['wine', 'unknown'],
-                ],
-                'shot_glass' => [
-                    'materials' => ['glass'],
-                    'types' => ['spirits', 'unknown'],
-                ],
-                'broken_glass' => [
-                    'materials' => ['glass'],
-                ],
-                'bottle_cap' => [
-                    'materials' => ['metal', 'plastic', 'cork'],
-                ],
-                'pull_ring' => [
-                    'materials' => ['aluminium'],
-                ],
-                'six_pack_rings' => [
-                    'materials' => ['plastic'],
-                ],
-                'cup' => [
-                    'materials' => ['plastic'],
-                ],
-                'packaging' => [
-                    'materials' => ['cardboard', 'paper', 'plastic'],
-                ],
-                'other' => [],
-            ],
+## What the catalogue contains
 
-            CategoryKey::Softdrinks->value => [
-                'bottle' => [
-                    'materials' => ['plastic', 'glass'],
-                    'types' => ['water', 'soda', 'juice', 'energy', 'sports', 'tea', 'milk', 'smoothie', 'unknown'],
-                ],
-                'can' => [
-                    'materials' => ['aluminium'],
-                    'types' => ['soda', 'energy', 'juice', 'iced_tea', 'sparkling_water', 'unknown'],
-                ],
-                'carton' => [
-                    'materials' => ['cardboard', 'foil', 'plastic'],
-                    'types' => ['juice', 'milk', 'iced_tea', 'plant_milk', 'unknown'],
-                ],
-                'cup' => [
-                    'materials' => ['paper', 'plastic', 'foam', 'ceramic', 'metal'],
-                    'types' => ['coffee', 'tea', 'soda', 'smoothie', 'unknown'],
-                ],
-                'lid' => [
-                    'materials' => ['plastic', 'paper', 'bioplastic'],
-                ],
-                'straw' => [
-                    'materials' => ['plastic', 'paper', 'metal', 'bamboo'],
-                ],
-                'straw_wrapper' => [
-                    'materials' => ['paper', 'plastic'],
-                ],
-                'juice_pouch' => [
-                    'materials' => ['plastic', 'foil'],
-                ],
-                'coffee_pod' => [
-                    'materials' => ['plastic', 'aluminium'],
-                ],
-                'label' => [
-                    'materials' => ['paper', 'plastic'],
-                ],
-                'broken_glass' => [
-                    'materials' => ['glass'],
-                ],
-                'packaging' => [
-                    'materials' => ['cardboard', 'plastic', 'foil'],
-                ],
-                'other' => [],
-            ],
+`GET /api/tags/all` returns flat arrays the app indexes locally:
 
-            CategoryKey::Food->value => [
-                'bag' => [
-                    'materials' => ['plastic', 'paper', 'cloth', 'bioplastic'],
-                ],
-                'box' => [
-                    'materials' => ['cardboard', 'plastic', 'wood', 'metal'],
-                ],
-                'can' => [
-                    'materials' => ['aluminium', 'steel'],
-                ],
-                'crisp_packet' => [
-                    'materials' => ['foil'],
-                ],
-                'cutlery' => [
-                    'materials' => ['plastic', 'wood', 'bioplastic', 'bamboo', 'metal'],
-                ],
-                'gum' => [
-                    'materials' => ['rubber'],
-                ],
-                'jar' => [
-                    'materials' => ['glass', 'plastic', 'metal'],
-                ],
-                'lid' => [
-                    'materials' => ['ceramic', 'metal', 'plastic', 'glass'],
-                ],
-                'packet' => [
-                    'materials' => ['plastic', 'foil', 'paper'],
-                ],
-                'packaging' => [
-                    'materials' => ['plastic', 'paper', 'foam', 'cardboard', 'bioplastic'],
-                ],
-                'plate' => [
-                    'materials' => ['plastic', 'paper', 'foam', 'ceramic', 'metal', 'glass', 'bioplastic'],
-                ],
-                'pizza_box' => [
-                    'materials' => ['cardboard'],
-                ],
-                'napkins' => [
-                    'materials' => ['paper', 'cloth'],
-                ],
-                'tinfoil' => [
-                    'materials' => ['aluminium'],
-                ],
-                'wrapper' => [
-                    'materials' => ['plastic', 'paper', 'foil', 'bioplastic'],
-                ],
-                'other' => [],
-            ],
+| Entity | Meaning |
+|---|---|
+| **categories** | Top-level groups: smoking, alcohol, food, personal_care, medical, industrial, vehicles, marine, electronics, pets + a soft-drinks group. ⚠️ The exact soft-drinks key (`beverages` vs `softdrinks`) and whether `unclassified` is a category are **unconfirmed** — see [BackendMobileApi.md → Open questions](BackendMobileApi.md#open-questions-pending-backend-confirmation). The client matches returned keys against `litter.json`. |
+| **objects** | Litter objects (e.g. `butts`, `bottle`, `can`, `wrapper`). Each object key is `snake_case`. |
+| **materials** | What an object is made of (e.g. `plastic`, `glass`, `aluminium`, `cardboard`) |
+| **brands** | Brand list (e.g. `coca-cola`, `marlboro`), used as extra tags |
+| **types** | Optional object refinement — "what was in the container" (e.g. `beer`, `water`, `juice`) |
 
-            CategoryKey::PersonalCare->value => [
-                'wipes' => [
-                    'materials' => ['polyester', 'plastic'],
-                ],
-                'nappies' => [
-                    'materials' => ['plastic', 'cloth'],
-                ],
-                'ear_swabs' => [
-                    'materials' => ['plastic', 'cotton'],
-                ],
-                'toothbrush' => [
-                    'materials' => ['plastic', 'nylon', 'bamboo', 'wood'],
-                ],
-                'toothpaste_tube' => [
-                    'materials' => ['plastic', 'aluminium'],
-                ],
-                'dental_floss' => [
-                    'materials' => ['nylon', 'plastic'],
-                ],
-                'deodorant_can' => [
-                    'materials' => ['aluminium'],
-                ],
-                'sanitary_pad' => [
-                    'materials' => ['cotton', 'plastic'],
-                ],
-                'tampon' => [
-                    'materials' => ['plastic'],
-                ],
-                'menstrual_cup' => [
-                    'materials' => ['plastic'],
-                ],
-                'condom' => [
-                    'materials' => ['latex'],
-                ],
-                'condom_wrapper' => [
-                    'materials' => ['plastic', 'foil'],
-                ],
-                'other' => [],
-            ],
+Plus two pivot arrays that wire the above together:
 
-            CategoryKey::Medical->value => [
-                'syringe' => [
-                    'materials' => ['plastic', 'metal'],
-                ],
-                'pill_pack' => [
-                    'materials' => ['plastic', 'aluminium'],
-                ],
-                'medicine_bottle' => [
-                    'materials' => ['plastic', 'glass'],
-                ],
-                'bandage' => [
-                    'materials' => ['cotton', 'elastic'],
-                ],
-                'plaster' => [
-                    'materials' => ['plastic'],
-                ],
-                'gloves' => [
-                    'materials' => ['latex', 'rubber', 'plastic'],
-                ],
-                'face_mask' => [
-                    'materials' => ['cotton', 'polyester', 'paper'],
-                ],
-                'sanitiser' => [
-                    'materials' => ['plastic'],
-                ],
-                'other' => [],
-            ],
+- **category_objects** — the **(category, object)** pairs. Each pair has a
+  `category_litter_object_id` (**cloId**), the ID the mobile app sends on every
+  tag. This is why the same object (`bottle`) can belong to multiple categories
+  (alcohol, softdrinks, food) without ambiguity.
+- **category_object_types** — links a cloId to the `litter_object_type_id`
+  values valid for it (e.g. an alcohol `bottle` allows `beer`, `wine`,
+  `spirits`). This pivot carries only `category_litter_object_id` and
+  `litter_object_type_id` (no own `id` column).
 
-            CategoryKey::Industrial->value => [
-                'oil_container' => [
-                    'materials' => ['plastic', 'metal'],
-                ],
-                'oil_drum' => [
-                    'materials' => ['metal', 'plastic'],
-                ],
-                'chemical_container' => [
-                    'materials' => ['plastic', 'metal', 'glass'],
-                ],
-                'construction' => [
-                    'materials' => ['clay', 'concrete', 'plastic', 'metal', 'fiberglass', 'foam', 'asphalt', 'ceramic', 'stone'],
-                ],
-                'bricks' => [
-                    'materials' => ['clay', 'concrete', 'stone'],
-                ],
-                'tape' => [
-                    'materials' => ['plastic'],
-                ],
-                'pallet' => [
-                    'materials' => ['wood', 'plastic'],
-                ],
-                'wire' => [
-                    'materials' => ['copper', 'plastic', 'steel'],
-                ],
-                'pipe' => [
-                    'materials' => ['metal', 'plastic', 'concrete'],
-                ],
-                'container' => [
-                    'materials' => ['metal', 'plastic'],
-                ],
-                'dumping_small' => [],
-                'dumping_medium' => [],
-                'dumping_large' => [],
-                'other' => [],
-            ],
+---
 
-            CategoryKey::Vehicles->value => [
-                'car_part' => [
-                    'materials' => ['metal', 'plastic', 'rubber', 'glass'],
-                ],
-                'battery' => [
-                    'materials' => ['metal', 'plastic'],
-                ],
-                'bumper' => [
-                    'materials' => ['plastic', 'metal'],
-                ],
-                'tyre' => [
-                    'materials' => ['rubber'],
-                ],
-                'wheel' => [
-                    'materials' => ['metal'],
-                ],
-                'light' => [
-                    'materials' => ['glass', 'plastic'],
-                ],
-                'mirror' => [
-                    'materials' => ['glass', 'plastic'],
-                ],
-                'license_plate' => [
-                    'materials' => ['metal', 'plastic'],
-                ],
-                'other' => [],
-            ],
+## Keys → display names
 
-            CategoryKey::Marine->value => [
-                'fishing_net' => [
-                    'materials' => ['nylon', 'plastic'],
-                ],
-                'rope' => [
-                    'materials' => ['nylon', 'plastic'],
-                ],
-                'buoy' => [
-                    'materials' => ['plastic'],
-                ],
-                'crate' => [
-                    'materials' => ['plastic'],
-                ],
-                'microplastics' => [
-                    'materials' => ['plastic'],
-                ],
-                'macroplastics' => [
-                    'materials' => ['plastic'],
-                ],
-                'styrofoam' => [
-                    'materials' => ['polystyrene'],
-                ],
-                'shotgun_cartridge' => [
-                    'materials' => ['metal', 'plastic'],
-                ],
-                'other' => [],
-            ],
+All catalogue entries use a `key` (snake_case slug); objects do **not** carry a
+`display_name`. The app converts keys to display text at render time with
+`utils/formatKey.js` (`snake_case` → `Title Case`). Localised litter names come
+from `assets/langs/{lang}/litter.json`, not from the API.
 
-            CategoryKey::Electronics->value => [
-                'battery' => [
-                    'materials' => ['metal', 'plastic'],
-                ],
-                'cable' => [
-                    'materials' => ['plastic', 'copper'],
-                ],
-                'phone' => [
-                    'materials' => ['metal', 'plastic', 'glass'],
-                ],
-                'charger' => [
-                    'materials' => ['plastic', 'metal'],
-                ],
-                'headphones' => [
-                    'materials' => ['plastic', 'metal'],
-                ],
-                'other' => [],
-            ],
+---
 
-            CategoryKey::Pets->value => [
-                'dog_waste' => [],
-                'dog_waste_in_bag' => [
-                    'materials' => ['plastic'],
-                ],
-                'other' => [],
-            ],
+## Default object/material associations
 
-            CategoryKey::Unclassified->value => [
-                'other' => [],
-            ],
-        ];
-    }
-}
+`TagsConfig` also defines, per category, the canonical objects and the materials
+each object is typically made of (e.g. `butts` → `[plastic, paper]`; an alcohol
+`bottle` → `[glass, plastic]` with types `[beer, wine, spirits, cider]`). The
+mobile app uses these as suggested materials in the tag detail sheet. The exact,
+authoritative associations live in `App\Tags\TagsConfig::get()` in the backend
+repo — consult it there rather than duplicating the full table here.
+
+---
+
+## Related Docs
+
+- **BackendTagging.md** — the tag API contract (POST/PUT `/api/v3/tags`)
+- **MobileTagging.md** — search index, tag pills, detail sheet

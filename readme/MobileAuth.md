@@ -1,5 +1,5 @@
-# Mobile Auth & Onboarding
-> OpenLitterMap React Native v7.1.2
+# Mobile Auth
+> Sanctum token login/registration, the boot & token flow, and the auth/welcome screens.
 
 ## Overview
 Authentication is handled via Laravel Sanctum token-based auth. The user logs in with email or username + password, receives a Bearer token, and that token is stored in AsyncStorage and attached to all subsequent API requests.
@@ -16,72 +16,24 @@ The onboarding flow uses a nature-inspired gradient design system with smooth an
 - `screens/auth/authComponents/ForgotPasswordForm.js` — Password reset form
 - `screens/auth/authComponents/LanguageFlags.js` — Language picker with animated dropdown panel
 - `screens/components/textInput/CustomTextInput.tsx` — Shared text input with `variant` prop (`light`/`dark`)
-- `screens/permission/GalleryPermissionScreen.js` — Gallery access permission with gradient background
-- `screens/permission/CameraPermissionScreen.js` — Camera + location permission with permission cards
+- `screens/permission/GalleryPermissionScreen.js` — Gallery access permission with gradient background (the only screen left in `screens/permission/`)
 - `utils/config.js` — Exports `URL` (API base URL), `WEB_URL`, and `IS_PRODUCTION`
+
+Camera (and the rest of permission priming) now lives in the onboarding flow — see `screens/onboarding/OnboardingPermissionScreen.js` and `OnboardingCameraScreen.js`, covered in `Onboarding.md`.
 
 ## Visual Design
 
-### Gradient System
-All onboarding screens use `react-native-linear-gradient` for depth and warmth:
+The auth and welcome screens share a nature-inspired green-gradient design system (`react-native-linear-gradient`): a light gradient on WelcomeScreen, a richer diagonal gradient on AuthScreen, consistent pill-shaped buttons, and a glassmorphic form card floating over the gradient. `CustomTextInput` has `variant="light"` (default, light backgrounds) and `variant="dark"` (translucent, for use over the gradient). Exact colours/dimensions live in the component styles.
 
-- **WelcomeScreen**: Soft green gradient (`#f0faf4` → `#e8f5ec` → `#dcffeb` → `#d4f7e2`) — nature-inspired, light
-- **AuthScreen**: Rich green gradient (`#1a6b3c` → `#1b8a4a` → `#27ae60` → `#2ecc71`) — diagonal, immersive
-- **Permission screens**: Matching soft green gradient from WelcomeScreen for continuity
-
-### Button Styles
-Consistent pill-shaped buttons (`borderRadius: 100`, `height: 52`) across all screens:
-- **Primary (Welcome)**: Green fill with accent shadow, white text
-- **Primary (Auth forms)**: White fill, green text — inverted for contrast on dark gradient
-- **Skip/Secondary**: Text-only, muted color
-
-### Form Card
-Auth forms are wrapped in a glassmorphic card (`rgba(255,255,255,0.12)` background, subtle border) that floats over the gradient. A small uppercase label identifies the current form mode.
-
-### CustomTextInput Variants
-The `variant` prop controls visual style:
-- `variant="light"` (default): White background, gray border — for use on light backgrounds
-- `variant="dark"`: Semi-transparent background (`rgba(255,255,255,0.12)`), light border — for use on dark/gradient backgrounds. Error colors use `#ff8a80` (soft red) instead of the standard error red.
-
-## Animated Slides (WelcomeScreen)
-
-The Slides component uses `Animated.event` to drive scroll-linked animations:
-
-- **Parallax images**: Images shift horizontally with a subtle offset as you swipe
-- **Content fade**: Title and description fade in/out with a vertical translation
-- **Dot indicators**: Active dot expands from 8px to 24px width with opacity transition, all driven by scroll position (no discrete state updates)
-
-Slide data uses `titleText` (plain string like "Easy", "Fun", "Open") instead of the old `"It's EASY!"` format.
-
-## Auth Logo Animation
-
-When the keyboard opens, the logo smoothly animates to `height: 0` and `opacity: 0` instead of abruptly disappearing. Uses `Animated.timing` tied to keyboard show/hide events with platform-appropriate durations (250ms iOS, 150ms Android).
+The WelcomeScreen carousel (`Slides.js`) is scroll-driven: parallax images, fading title/description, and an expanding active dot, all tied to scroll position. On AuthScreen the logo animates out when the keyboard opens.
 
 ## Password Strength Indicator (SignupForm)
 
-Visual 4-segment bar showing password strength:
-- Checks: length >= 3, length >= 6, has uppercase or digit, length >= 10
-- Labels: Short → OK → Good → Strong
-- Colors: orange (`#ff8800`) → amber (`#ffbb00`) → green (accent) → green (accent)
-- Appears only when the password field has content
+A 4-segment bar that appears once the password field has content. Strength is scored on four checks (length ≥ 3, ≥ 6, has uppercase or digit, length ≥ 10) and labelled Short → OK → Good → Strong, with the bar colour shifting warm-to-green as strength rises.
 
 ## Language Flags (LanguageFlags)
 
-Redesigned with:
-- Animated dropdown panel with `LayoutAnimation` transitions
-- White card background with shadow when expanded
-- Active language highlighted with green tint
-- Dynamic positioning via absolute `top: -12, right: (SCREEN_WIDTH * 0.35) / 2 - 24`
-
-## Permission Screens
-
-Both permission screens share a consistent layout:
-- Gradient background matching WelcomeScreen
-- Illustration in a subtle circular container (`rgba(39,174,96,0.08)`)
-- CameraPermissionScreen: Permission items shown in rounded cards with icon circles
-- Pill button with icon + text, accent shadow
-- "Not now" skip link below
-
+An animated dropdown panel (`LayoutAnimation`) that expands into a white card, highlights the active language with a green tint, and lets the user switch UI language.
 
 ## API Endpoints
 | Thunk | Method | Endpoint | Payload | Notes |

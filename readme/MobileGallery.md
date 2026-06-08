@@ -1,6 +1,6 @@
 # Mobile Gallery (the "Your Photos" inbox)
 
-> OpenLitterMap React Native
+> The camera-roll inbox on the HomeScreen dashboard: GPS detection, pagination, and tap-to-tag.
 
 ## Overview
 There is no separate gallery screen. Camera-roll photos surface in the **"Your
@@ -70,6 +70,4 @@ Selector: `selectInboxPhotos(state)` — all photos, not-dismissed, newest-first
 - `REFRESH`: full re-fetch (after iOS limited-permission changes)
 
 ## Permissions
-- iOS: `PERMISSIONS.IOS.PHOTO_LIBRARY` (+ limited-library "Select More Photos" flow)
-- Android 13+: `READ_MEDIA_IMAGES` + `ACCESS_MEDIA_LOCATION`
-- Android 12-: `READ_EXTERNAL_STORAGE`
+Camera-roll access + `ACCESS_MEDIA_LOCATION` (iOS, Android 13+/12-) is documented in `MobilePermissions.md`; the inbox uses `utils/permissions/cameraRollPermission.js`.

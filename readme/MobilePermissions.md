@@ -1,14 +1,13 @@
 # Mobile Permissions
-> OpenLitterMap React Native v7.0
+> Camera, photo-library, and location permission handling across iOS and Android.
 
 ## Overview
 The app requests camera, photo library, and location permissions using `react-native-permissions`. Platform-specific permission handling covers iOS and Android (including Android 13+ changes). On Android 13+, `ACCESS_MEDIA_LOCATION` is checked at runtime to ensure GPS metadata is accessible from photos.
 
 ## Files
 - `utils/permissions/index.js` — Barrel exports
-- `utils/permissions/cameraPermission.js` — Camera permission check/request
+- `utils/permissions/cameraPermission.js` — Camera **and location** permission check/request
 - `utils/permissions/cameraRollPermission.js` — Photo library permission check/request (includes ACCESS_MEDIA_LOCATION)
-- `utils/permissions/locationPermission.js` — Location permission check/request
 - `screens/permission/GalleryPermissionScreen.js` — Gallery permission request UI (post-onboarding fallback when user has revoked access)
 - `screens/onboarding/OnboardingPermissionScreen.js` — Onboarding camera + gallery priming screen
 
@@ -54,7 +53,7 @@ This ensures the app knows whether GPS data will be available from CameraRoll.
 | Android | `PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION` |
 
 ## Permission Flow
-1. HomeScreen checks gallery permission on mount
+1. `useHomeBootstrap` checks gallery permission on mount/focus
 2. If denied, navigates to `PERMISSION` stack → appropriate permission screen
 3. Permission screen explains why the permission is needed and provides a request button
 4. On grant, navigates back to the requesting screen
