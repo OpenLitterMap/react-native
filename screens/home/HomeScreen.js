@@ -224,18 +224,19 @@ const HomeScreen = ({navigation}) => {
         const imported = [];
         const skipped = [];
         for (const asset of result.assets || []) {
-            // react-native-image-picker doesn't return GPS — read from EXIF
-            const gps = await readGpsFromExif(asset.uri);
-            if (gps && isValidGpsCoords(gps.latitude, gps.longitude)) {
+            // RNIP doesn't return GPS or capture time — read both from EXIF in one
+            // pass (avoids includeExtra, which ties to library permissions)
+            const meta = await readGpsFromExif(asset.uri);
+            if (meta && isValidGpsCoords(meta.latitude, meta.longitude)) {
                 imported.push({
                     id: asset.id || `picked_${asset.uri}`,
                     uri: asset.uri,
                     filename: asset.fileName || `picked_${Date.now()}.jpg`,
-                    lat: gps.latitude,
-                    lon: gps.longitude,
-                    date: asset.timestamp
-                        ? Math.floor(new Date(asset.timestamp).getTime() / 1000)
-                        : Math.floor(Date.now() / 1000),
+                    lat: meta.latitude,
+                    lon: meta.longitude,
+                    // EXIF capture time (epoch seconds); fall back to import time
+                    // only when the photo carries no EXIF date
+                    date: meta.takenAt ?? Math.floor(Date.now() / 1000),
                     type: 'gallery',
                     platform: 'mobile',
                     customTags: [],
