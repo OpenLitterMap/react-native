@@ -87,6 +87,12 @@ verified first.
 1. Prepare a build with the three permissions removed (Phase 1 manifest edit only).
 2. On a real Android device — **test both Android 13 and 14**; picker redaction
    behaviour differs across versions — pick a known-geotagged photo via "Add Photos".
+   **Test a source/format matrix** (each can behave differently): **JPEG**, **HEIC/
+   HEIF** (RNIP may transcode HEIC→JPEG on Android, and its conversion path preserves
+   orientation but *not necessarily* GPS EXIF — if HEIC loses GPS on-device, set
+   `assetRepresentationMode: 'current'` on the `launchImageLibrary` calls and re-test),
+   an iOS **Live Photo**, and an **iCloud-only** (not-yet-downloaded) photo. Verify a
+   **release** build too, not just debug.
 3. Read GPS at **two points** to localise where (if anywhere) location is lost:
    - **(a) RNIP's returned cache `file://`** — `readGpsFromExif(asset.uri)`. Failure
      here means the picker redacted location *at the copy boundary* (RNIP copied an
