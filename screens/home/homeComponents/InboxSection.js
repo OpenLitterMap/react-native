@@ -1,9 +1,6 @@
 import React from 'react';
 import {
-    ActivityIndicator,
     Image,
-    Linking,
-    Platform,
     Pressable,
     StyleSheet,
     Text,
@@ -63,7 +60,7 @@ export const InboxThumbnail = React.memo(({photo, onPress, isSelecting, isSelect
 ));
 
 /** Inbox header: title + select/delete controls + delete bar (FlashList header). */
-export const InboxControls = ({count, isSelecting, selectedCount, onToggleDelete, onDeleteSelected, onSelectMore}) => {
+export const InboxControls = ({count, isSelecting, selectedCount, onToggleDelete, onDeleteSelected, onAddPhotos}) => {
     const {t} = useTranslation();
     return (
         <View style={styles.controls}>
@@ -80,9 +77,9 @@ export const InboxControls = ({count, isSelecting, selectedCount, onToggleDelete
                         </Pressable>
                     )}
                     {!isSelecting && (
-                        <Pressable onPress={onSelectMore} style={styles.headerButtonAccent}>
+                        <Pressable onPress={onAddPhotos} style={styles.headerButtonAccent}>
                             <Icon name="add" size={14} color={Colors.white} />
-                            <Body style={styles.headerButtonAccentText}>{t('Select More')}</Body>
+                            <Body style={styles.headerButtonAccentText}>{t('Add Photos')}</Body>
                         </Pressable>
                     )}
                 </View>
@@ -99,86 +96,51 @@ export const InboxControls = ({count, isSelecting, selectedCount, onToggleDelete
     );
 };
 
-/** Inbox empty / permission / searching states (FlashList ListEmptyComponent). */
-export const InboxEmpty = ({permissionStatus, requestPermission, totalGalleryPhotos, hasMorePages, isLoading, onLoadMore}) => {
+/** Inbox empty state — the primary first-run call to action. */
+export const InboxEmpty = ({onAddPhotos}) => {
     const {t} = useTranslation();
-    const openSettings = () =>
-        Platform.OS === 'ios' ? Linking.openURL('app-settings:') : Linking.openSettings();
-
-    if (permissionStatus === 'denied') {
-        return (
-            <View style={styles.emptyContainer}>
-                <Icon name="images-outline" size={40} color={Colors.muted} />
-                <Body style={styles.emptyText}>
-                    {t('Allow photo access to see your recent photos here.')}
-                </Body>
-                <Pressable onPress={requestPermission} style={styles.grantAccessButton}>
-                    <Body style={styles.grantAccessText}>{t('Grant Access')}</Body>
-                </Pressable>
-            </View>
-        );
-    }
-    if (permissionStatus === 'blocked') {
-        return (
-            <View style={styles.emptyContainer}>
-                <Icon name="images-outline" size={40} color={Colors.muted} />
-                <Body style={styles.emptyText}>
-                    {t('Photo access is turned off. Enable it in Settings to get started.')}
-                </Body>
-                <Pressable onPress={openSettings} style={styles.grantAccessButton}>
-                    <Body style={styles.grantAccessText}>{t('Open Settings')}</Body>
-                </Pressable>
-            </View>
-        );
-    }
-    if (totalGalleryPhotos === 0) {
-        // App has no photos from CameraRoll — user needs to select/share photos
-        return (
-            <View style={styles.emptyContainer}>
-                <Icon name="images-outline" size={40} color={Colors.muted} />
-                <Body style={styles.emptyText}>
-                    {t('No photos available yet. Open Settings to choose which photos OpenLitterMap can access.')}
-                </Body>
-                <Pressable onPress={openSettings} style={styles.grantAccessButton}>
-                    <Body style={styles.grantAccessText}>{t('Manage Photo Access')}</Body>
-                </Pressable>
-            </View>
-        );
-    }
-    // No geotagged photos in what's loaded so far — offer to load more pages.
     return (
         <View style={styles.emptyContainer}>
-            <Icon name="location-outline" size={40} color={Colors.muted} />
-            <Body style={styles.emptyText}>
-                {t('Select Photos To Tag & Upload')}
+            <View style={styles.emptyIconCircle}>
+                <Icon name="images-outline" size={48} color={Colors.accent} />
+            </View>
+            <Body style={styles.emptyTitle}>
+                {t('Add your litter photos to start tagging')}
             </Body>
-            {hasMorePages && (
-                <Pressable onPress={onLoadMore} disabled={isLoading} style={styles.manageAccessButton}>
-                    {isLoading ? (
-                        <ActivityIndicator size="small" color={Colors.accent} />
-                    ) : (
-                        <Body style={styles.manageAccessText}>{t('Load more photos')}</Body>
-                    )}
-                </Pressable>
-            )}
+            <Caption color="muted" style={styles.emptyText}>
+                {t('Choose litter photos from your gallery — only the photos you pick are uploaded.')}
+            </Caption>
+            <Pressable onPress={onAddPhotos} style={styles.addPhotosPrimary}>
+                <Icon name="add" size={18} color={Colors.white} />
+                <Body style={styles.addPhotosPrimaryText}>{t('Add Photos')}</Body>
+            </Pressable>
         </View>
     );
 };
 
-/** Inbox footer: load-more / keep-looking (FlashList ListFooterComponent). */
-export const InboxFooter = ({count, hasMoreToShow, isLoading, onLoadMore}) => {
+/** Per-photo notice for picks that had no GPS (can't be mapped). Dismissible. */
+export const NoGpsPicksCard = ({picks, onDismiss}) => {
     const {t} = useTranslation();
-    if (!(count > 0 && hasMoreToShow)) {
-        return null;
-    }
+    if (!picks || picks.length === 0) return null;
     return (
-        <Pressable onPress={onLoadMore} disabled={isLoading} style={styles.showOlderButton}>
-            {isLoading ? (
-                <ActivityIndicator size="small" color={Colors.accent} />
-            ) : (
-                <Body style={styles.showOlderText}>{t('Load more photos')}</Body>
-            )}
-        </Pressable>
+        <View style={styles.noGpsCard}>
+            <View style={styles.noGpsHeader}>
+                <Icon name="location-outline" size={16} color={Colors.error} />
+                <Body style={styles.noGpsTitle}>{t("Couldn't add — no location data")}</Body>
+                <Pressable onPress={onDismiss} hitSlop={8} style={styles.noGpsDismiss}>
+                    <Icon name="close" size={18} color={Colors.muted} />
+                </Pressable>
+            </View>
+            {picks.map(p => (
+                <View key={p.uri} style={styles.noGpsRow}>
+                    <Image source={{uri: p.uri}} style={styles.noGpsThumb} />
+                    <Caption color="muted" numberOfLines={1} style={styles.noGpsName}>
+                        {p.filename || t('Photo')}
+                    </Caption>
+                    <Caption style={styles.noGpsTag}>{t('No location data')}</Caption>
+                </View>
+            ))}
+        </View>
     );
 };
 
@@ -245,19 +207,6 @@ const styles = StyleSheet.create({
     deleteBarText: {
         color: Colors.white,
         fontSize: 14,
-        fontWeight: '600'
-    },
-    showOlderButton: {
-        alignItems: 'center',
-        paddingVertical: 14,
-        marginHorizontal: 16,
-        marginTop: 4,
-        borderRadius: 10,
-        backgroundColor: Colors.accentLight
-    },
-    showOlderText: {
-        fontSize: 14,
-        color: Colors.accent,
         fontWeight: '600'
     },
     gridContent: {
@@ -363,38 +312,31 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         marginTop: 12
     },
-    grantAccessButton: {
-        backgroundColor: Colors.accent,
-        paddingHorizontal: 20,
-        paddingVertical: 10,
-        borderRadius: 20,
-        marginTop: 16
+    emptyIconCircle: {
+        width: 96, height: 96, borderRadius: 48,
+        backgroundColor: 'rgba(39,174,96,0.08)',
+        justifyContent: 'center', alignItems: 'center', marginBottom: 16
     },
-    grantAccessText: {
-        color: Colors.white,
-        fontSize: 14,
-        fontWeight: '600'
+    emptyTitle: {
+        fontSize: 16, fontWeight: '600', color: Colors.text ?? '#222',
+        textAlign: 'center', marginBottom: 6
     },
-    emptyHint: {
-        fontSize: 12,
-        color: Colors.muted,
-        textAlign: 'center',
-        marginTop: 6
+    addPhotosPrimary: {
+        flexDirection: 'row', alignItems: 'center', gap: 6,
+        backgroundColor: Colors.accent, paddingHorizontal: 24, paddingVertical: 12,
+        borderRadius: 24, marginTop: 18
     },
-    manageAccessButton: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 6,
-        marginTop: 16,
-        paddingHorizontal: 16,
-        paddingVertical: 8,
-        borderRadius: 16,
-        borderWidth: 1,
-        borderColor: Colors.accent
+    addPhotosPrimaryText: {color: Colors.white, fontSize: 15, fontWeight: '600'},
+    noGpsCard: {
+        marginHorizontal: 16, marginBottom: 12, padding: 12,
+        borderRadius: 12, borderWidth: 1, borderColor: Colors.error,
+        backgroundColor: 'rgba(231,76,60,0.06)'
     },
-    manageAccessText: {
-        fontSize: 13,
-        color: Colors.accent,
-        fontWeight: '600'
-    }
+    noGpsHeader: {flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8},
+    noGpsTitle: {flex: 1, fontSize: 13, fontWeight: '600', color: Colors.error},
+    noGpsDismiss: {padding: 2},
+    noGpsRow: {flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 4},
+    noGpsThumb: {width: 36, height: 36, borderRadius: 6, backgroundColor: Colors.accentLight},
+    noGpsName: {flex: 1, fontSize: 12},
+    noGpsTag: {fontSize: 11, color: Colors.error, fontWeight: '600'}
 });
