@@ -47,8 +47,9 @@ const OnboardingPhotoScreen = ({navigation}) => {
             const result = await launchImageLibrary({
                 mediaType: 'photo',
                 selectionLimit: 1,
-                includeExtra: true,
                 quality: 1
+                // No includeExtra (ties to library permissions; we only need the
+                // base asset fields + GPS via readGpsFromExif).
             });
 
             if (result.didCancel) return; // User cancelled — stay on this screen

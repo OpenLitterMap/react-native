@@ -206,8 +206,10 @@ const HomeScreen = ({navigation}) => {
             result = await launchImageLibrary({
                 mediaType: 'photo',
                 selectionLimit: 0, // 0 = multi-select (PickMultipleVisualMedia)
-                includeExtra: true,
                 quality: 1
+                // No includeExtra: RNIP docs tie it to library permissions, and we
+                // don't need timestamp/id (GPS comes from readGpsFromExif; id/date
+                // fall back below). Keeps the picker truly permission-free.
             });
         } catch {
             Alert.alert(t('Error!'), t('Something went wrong. Please try again.'));

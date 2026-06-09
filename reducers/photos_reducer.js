@@ -1,6 +1,7 @@
 import {createSlice, createSelector} from '@reduxjs/toolkit';
 import {getTagsFromBackend} from '../utils/getTagsFromBackend';
 import {isTagged} from '../utils/isTagged';
+import {isValidGpsCoords} from '../utils/gps';
 import {logout} from './auth_reducer';
 import {uploadImage, addTagsToPhoto} from './upload_flow_reducer';
 
@@ -744,7 +745,7 @@ export const selectInboxPhotos = createSelector(
     [selectImagesArray],
     images =>
         images
-            .filter(img => img.uri && !img.uploaded && img.lat != null)
+            .filter(img => img.uri && !img.uploaded && isValidGpsCoords(img.lat, img.lon))
             .map(img => ({
                 id: img.id,
                 uri: img.uri,

@@ -28,4 +28,12 @@ describe('selectInboxPhotos (photos_reducer)', () => {
         ]));
         expect(r.map(p => p.uri)).toEqual(['c']);
     });
+
+    it('excludes invalid coordinates (0,0 Null Island), matching isValidGpsCoords', () => {
+        const r = selectInboxPhotos(mk([
+            {id: 1, uri: 'a', lat: 0, lon: 0, date: 100, uploaded: false, type: 'gallery'},
+            {id: 2, uri: 'b', lat: 5, lon: 6, date: 200, uploaded: false, type: 'gallery'}
+        ]));
+        expect(r.map(p => p.uri)).toEqual(['b']);
+    });
 });
