@@ -19,6 +19,7 @@ const parseExifCaptureTime = tags => {
     // EXIF datetime format: "YYYY:MM:DD HH:MM:SS"
     const m = raw.match(/^(\d{4}):(\d{2}):(\d{2})[ T](\d{2}):(\d{2}):(\d{2})/);
     if (!m) return null;
+    // No timezone in EXIF → interpreted as DEVICE-LOCAL time
     const ms = new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], +m[6]).getTime();
     return Number.isNaN(ms) ? null : Math.floor(ms / 1000);
 };

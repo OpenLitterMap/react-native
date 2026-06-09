@@ -4,6 +4,25 @@ Triaged from Codex's review of `fix/photo-picker-migration`. Items already fixed
 the branch are NOT listed here (see commits). This file tracks what was deliberately
 deferred or needs a decision.
 
+## Release-blocking QA (on device, before shipping)
+
+The migration's correctness depends on `readGpsFromExif(asset.uri)` recovering GPS from
+RNIP's cache/`file://` path once the broad permission is gone — **unverified in this
+environment**. Treat the following as **release-blocking, not optional**:
+
+- **GPS survives the picker** — pick a known-geotagged photo via "Add Photos"; it must
+  land in the queue, not the no-GPS card. Run the **source/format matrix**: JPEG,
+  **HEIC/HEIF**, iOS Live Photo, iCloud-only (not-yet-downloaded), on **Android 13 and
+  14**, in a **release** build. If HEIC loses GPS, set `assetRepresentationMode:
+  'current'` on the picker calls and re-test (spec §2).
+- **Capture time** — an imported photo's date must reflect when it was TAKEN (EXIF),
+  not when imported. (Import time is used only for photos with no EXIF date.)
+- **Known behaviour (PM-aware):** EXIF carries no timezone, so `parseExifCaptureTime`
+  (`readGpsFromExif.js`) interprets capture time as **device-local**. Accepted.
+- **Merged manifest** — confirm a *fresh* release build declares no
+  `READ_MEDIA_IMAGES`/`READ_EXTERNAL_STORAGE`/`WRITE_EXTERNAL_STORAGE` (the artifact in
+  `android/app/build/` is stale and still shows the old set).
+
 ## Decided this review
 
 ### F1 — Auto-upload-on-focus (Codex "High") — DECISION: keep the manual bar (B)
@@ -31,7 +50,8 @@ stamped `Date.now()` via `addOnboardingPhoto`.)
 ## 6-star UX pass (Codex "Medium" ×2) — bounded, pending approval
 
 > Reported, not yet implemented — the maintainer asked to approve UX changes first.
-> Do these as one tight pass, no scope creep.
+> Do these as ONE tight pass after approval. **Scope: F2 + F3 only — do NOT touch
+> dedupe (F4) or auto-upload (F1) in this pass.**
 
 ### F2 — No-GPS card: per-row → summary count
 `NoGpsPicksCard` (`InboxSection.js`) renders one thumbnail row per skipped photo.
@@ -62,18 +82,19 @@ here.
 `launchImageLibrary` + `readGpsFromExif`.
 
 ## Already addressed on the branch (for reference)
-- `includeExtra: true` removed from both picker calls (permission-free hygiene; we
-  don't need timestamp/id — GPS comes from `readGpsFromExif`). It never injected a
-  manifest permission, so compliance was not actually at risk via it.
+- `includeExtra: true` removed from both picker calls (permission-free hygiene; it
+  never injected a manifest permission, so compliance was not actually at risk via it).
+  It *did* supply `asset.timestamp` — now replaced by EXIF `takenAt` from
+  `readGpsFromExif` (see F0). Only `id` went unused (falls back to the uri).
 - `selectInboxPhotos` now uses `isValidGpsCoords(lat, lon)` (was `lat != null`),
   matching the import/upload guard; covered by a new test case.
 - Native cleanup: debug `AndroidManifest.xml` storage perms removed; `ios/Podfile`
   `setup_permissions` dropped `'PhotoLibrary'` (the authoritative removal for a
   bare-Podfile setup — needs `pod install`); orphan `NSAppleMusicUsageDescription`
   (which held photo copy, no MPMediaLibrary usage) removed from `Info.plist`.
-- HEIC GPS: added to the on-device test matrix in the spec (Phase 0 §2) with an
-  `assetRepresentationMode: 'current'` fallback — verified on-device, not changed on a
-  guess.
+- HEIC GPS: added to the on-device test matrix (see "Release-blocking QA" above) with
+  an `assetRepresentationMode: 'current'` fallback if HEIC drops GPS — **to be verified
+  on-device before release**, not changed on a guess.
 
 ## Lint note
 Repo-wide `npm run lint` = 354 problems (262 errors / 92 warnings) — **entirely
