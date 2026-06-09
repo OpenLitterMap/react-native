@@ -11,13 +11,13 @@
 
 | Area | Strength |
 |---|---|
-| Route structure | Auth stack vs app tabs. ADD_TAGS/SETTINGS/MY_UPLOADS are standard stack pushes. PERMISSION/UPDATE are fullScreenModal. |
+| Route structure | Auth stack vs app tabs. ADD_TAGS/SETTINGS/MY_UPLOADS are standard stack pushes. UPDATE is fullScreenModal. |
 | Auth bootstrap | Single source of truth via redux-persist. MainRoutes validates persisted token on mount. No direct AsyncStorage reads. |
 | Reducer purity | All reducers are pure. No side effects in any slice. |
 | Tagging | Layout-separated: ImageViewer fills screen, editor panel is absolute-bottom sibling. Draft model (`useTagDraft`) is local source of truth. No gesture conflicts. |
 | HomeScreen | Decomposed: `useHomeBootstrap` (boot logic), `UploadModal` (extracted component), `useUploadPhotos` (upload orchestration). ~516 lines. |
 | Error handling | `ErrorBoundary` wraps NavigationContainer. Centralized `classifyError.js`. Per-endpoint timeouts in `apiClient.js`. |
-| Persistence | Persisted: `auth`, `photos.imagesArray`, `quickTags`, `gallery.dismissedUris`, `stats` (see CLAUDE.md slice table). Tags cached 7-day TTL. |
+| Persistence | Persisted: `auth`, `photos.imagesArray`, `quickTags`, `stats` (see CLAUDE.md slice table). Tags cached 7-day TTL. |
 | i18n | 8 languages, string-key convention, litter taxonomy split |
 | Interceptor | Promise-based 401 guard. No setTimeout hacks. |
 
@@ -33,7 +33,7 @@ Several selectors are now memoized (`selectSelectedCount` plus consolidated stat
 `showUploadModal`/`showThankYouMessages` in `upload_flow_reducer` are UI concerns. Could move to component state. Works fine as-is.
 
 #### 4. Photo-related slice overlap
-Five slices touch the photo domain (`gallery`, `photos`, `uploads`, `uploadFlow`, `serverPhotos`). Current split works but boundaries aren't optimally clear. Candidates for future consolidation, not committed.
+Four slices touch the photo domain (`photos`, `uploads`, `uploadFlow`, `serverPhotos`). Current split works but boundaries aren't optimally clear. Candidates for future consolidation, not committed. (The `gallery` slice was removed in the v7.10.0 picker migration.)
 
 #### 5. `photos.swiperIndex` and `photos.editingPhotos` in Redux
 These are transient tagging state. Candidates for moving into local hook state as the tagging refactor matures. Not urgent — currently functional.
@@ -64,7 +64,6 @@ No blocking issues. The app is stable across all core workflows. Potential next 
 | `auth` | Full (token + user) | None |
 | `photos` | `imagesArray` only | Filters out `editing`/`uploaded-without-uri`. Clears `editingPhotos`, `swiperIndex` |
 | `quickTags` | Full | None |
-| `gallery` | `dismissedUris` only (capped 500) | — |
 | `stats` | Full | Resets `fetchStatus`/`error` on rehydrate |
 | All others (10 slices) | Not persisted | Start fresh on boot |
 
@@ -89,7 +88,7 @@ Single persistence source (redux-persist). Removed dual AsyncStorage writes. Pur
 
 ### Phase 2: Navigation (DONE)
 
-ADD_TAGS, MY_UPLOADS, SETTING changed from `fullScreenModal` to standard stack push. PERMISSION and UPDATE remain as fullScreenModal.
+ADD_TAGS, MY_UPLOADS, SETTING changed from `fullScreenModal` to standard stack push. UPDATE remains as fullScreenModal. (PERMISSION was also a fullScreenModal at the time; the route was later removed in the v7.10.0 picker migration.)
 
 ### Phase 3: HomeScreen (DONE)
 
@@ -105,7 +104,7 @@ ADD_TAGS, MY_UPLOADS, SETTING changed from `fullScreenModal` to standard stack p
 
 ### Redux Slice Map
 
-The 15 slices and their persistence are catalogued in **CLAUDE.md** (§ State Management). Persisted: `auth`, `photos.imagesArray`, `quickTags`, `gallery.dismissedUris`, `stats`.
+The 14 slices and their persistence are catalogued in **CLAUDE.md** (§ State Management). Persisted: `auth`, `photos.imagesArray`, `quickTags`, `stats`.
 
 ### Tagging Screen Layout
 

@@ -31,7 +31,7 @@ The full RN 0.74 → 0.84 upgrade is **done** — React 19, New Architecture (iO
 
 # TODO — Photo flow (see `readme/Considerations.md`)
 
-- [ ] **Select More on large selections** — batch the EXIF GPS reads + show a "Reading photos…" indicator instead of a silent sequential wait
+- [ ] **Add Photos on large selections** — batch the per-pick EXIF GPS reads + show a "Reading photos…" indicator instead of a silent sequential wait
 - [x] **Tap-to-tag loads the whole fetched set, incl. non-geotagged** — done (v7.9.0): non-geotagged tiles are inert and only geotagged photos enter the swipe queue
 
 ---

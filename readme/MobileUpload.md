@@ -2,13 +2,13 @@
 > The two-step auto-upload flow: GPS filter, photo binary, then the idempotent tag write.
 
 ## Overview
-Geotagged camera-roll photos surface in the HomeScreen inbox. Tapping one opens the tagging screen; on returning to HomeScreen the upload is auto-triggered. Uploads run one photo at a time. A pre-upload step filters out photos without valid GPS. Tagged photos use a two-step upload: photo binary first, then tags via a separate idempotent call.
+Photos enter the HomeScreen "Your Photos" inbox via the **system photo picker** ("Add Photos", multi-select) and in-app camera captures — there is no camera-roll scan. The inbox is a persistent, geotagged-only queue backed by `photos.imagesArray`. Tapping a photo opens the tagging screen; on returning to HomeScreen the upload is auto-triggered. Uploads run one photo at a time. A pre-upload step still filters out any photo without valid GPS as defence. Tagged photos use a two-step upload: photo binary first, then tags via a separate idempotent call.
 
 ## Files
 - `screens/home/HomeScreen.js` — Dashboard + upload orchestration (auto-uploads on focus after tagging)
 - `screens/home/useUploadPhotos.js` — Upload loop hook (sequential upload, GPS filter, cancel, retry)
-- `screens/home/homeComponents/InboxSection.js` — "Your Photos" inbox grid (tap to tag, Select More, delete)
-- `screens/home/homeComponents/useInbox.js` — inbox state hook (visible count, selection, load-more)
+- `screens/home/homeComponents/InboxSection.js` — "Your Photos" inbox grid (tap to tag, Add Photos, delete)
+- `screens/home/homeComponents/useInbox.js` — inbox state hook (selection + delete mode; the queue is the local `imagesArray`, no paging)
 - `screens/home/homeComponents/UploadModal.js` — upload progress modal
 - `reducers/photos_reducer.js` — Local image state (imagesArray, tagging, swiperIndex)
 - `reducers/upload_flow_reducer.js` — Upload phase, counters, modal state, `uploadImage`/`addTagsToPhoto` thunks

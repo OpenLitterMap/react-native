@@ -5,22 +5,25 @@
 ## Screen Flow
 
 ```
-OnboardingWelcomeScreen → ChoosePathScreen → OnboardingPermissionScreen
-                                                    │
-                                      ┌─────────────┴─────────────┐
-                                 Camera path                 Gallery path
-                                      │                           │
-                             OnboardingCameraScreen      OnboardingPhotoScreen
-                                      │                           │
-                                      └───────────┬──────────────┘
-                                                   │
-                                          OnboardingTagScreen
-                                          (upload + tag write)
-                                                   │
-                                          CelebrationScreen
-                                          (geolink + XP + sharing)
-                                                   │
-                                               HomeScreen
+OnboardingWelcomeScreen → ChoosePathScreen
+                                │
+                  ┌─────────────┴─────────────┐
+             Camera path                  Gallery path
+                  │                            │
+        OnboardingPermissionScreen   (no permission — system picker)
+        (location → camera)                   │
+                  │                            │
+        OnboardingCameraScreen        OnboardingPhotoScreen
+                  │                            │
+                  └─────────────┬─────────────┘
+                                │
+                       OnboardingTagScreen
+                       (upload + tag write)
+                                │
+                       CelebrationScreen
+                       (geolink + XP + sharing)
+                                │
+                            HomeScreen
 ```
 
 ## Files
@@ -30,9 +33,9 @@ OnboardingWelcomeScreen → ChoosePathScreen → OnboardingPermissionScreen
 | `routes/OnboardingStack.js` | Navigation stack (gestures disabled, slide_from_right) |
 | `screens/onboarding/OnboardingWelcomeScreen.js` | Welcome, GPS setup instructions (platform-detected) |
 | `screens/onboarding/ChoosePathScreen.js` | Camera vs gallery path cards, "Skip for now" |
-| `screens/onboarding/OnboardingPermissionScreen.js` | Permission state machine (7 states) |
+| `screens/onboarding/OnboardingPermissionScreen.js` | Camera-path permission state machine (location → camera) |
 | `screens/onboarding/OnboardingCameraScreen.js` | CameraCapture wrapper, GPS validation |
-| `screens/onboarding/OnboardingPhotoScreen.js` | Gallery picker, EXIF GPS read with spinner |
+| `screens/onboarding/OnboardingPhotoScreen.js` | System photo picker (no permission), EXIF GPS read with spinner |
 | `screens/onboarding/OnboardingTagScreen.js` | Guided tagging + inline upload + tag submission |
 | `screens/onboarding/CelebrationScreen.js` | "You did it!", geolink, XP, sharing tip |
 | `screens/onboarding/components/StepIndicator.js` | 3-step progress, `step1Label` prop for camera path |
@@ -65,21 +68,23 @@ Intro + illustration + a **GPS setup instructions card** that auto-detects `Plat
 
 ## Permission Screen
 
-State machine with 7 states:
+**Camera path only.** The gallery path needs no permission (system photo picker),
+so `ChoosePathScreen`'s "Choose from photos" button routes straight to
+`ONBOARDING_PHOTO` and never reaches this screen.
+
+State machine with 5 states:
 
 | State | Condition | UI |
 |-------|-----------|-----|
 | `checking` | Mount | Spinner |
 | `request` | Not yet asked | Illustration + rationale + "Allow" button |
-| `location_denied` | Camera path, location denied | Recovery + "Choose from photos instead" |
-| `camera_denied` | Camera path, camera denied | Recovery + "Choose from photos instead" |
-| `gallery_denied` | Gallery path, denied | Recovery + "Take a photo instead" |
-| `gallery_no_gps` | Android: photos OK but GPS redacted | "Enable Media location in Settings" + camera fallback |
-| `blocked` | Permission blocked by OS | "Open Settings" + alternative path |
+| `location_denied` | Location denied | Recovery + "Choose from photos instead" |
+| `camera_denied` | Location OK, camera denied | Recovery + "Choose from photos instead" |
+| `blocked` | Permission blocked by OS | "Open Settings" + "Choose from photos instead" |
 
-**Camera path** requests location first (GPS required for scientifically useful data), then camera. **Gallery path** requests photo library access. Both offer cross-path fallback (camera ↔ gallery).
-
-**Android `limited` handling:** On Android 10+, `limited` means `READ_MEDIA_IMAGES` granted but `ACCESS_MEDIA_LOCATION` denied (GPS EXIF is redacted by the OS). The `isGalleryUsable()` helper routes this to `gallery_no_gps` with a Settings link and camera fallback. On iOS, `limited` means user-selected photos with GPS intact — treated as usable.
+The camera path requests **location first** (GPS required for scientifically
+useful data), then camera. Every recovery state offers a fallback to the
+permission-free picker (`navigation.replace('ONBOARDING_PHOTO', {path: 'gallery'})`).
 
 AppState listener rechecks permissions when user returns from Settings.
 
@@ -94,8 +99,8 @@ GPS is a **non-negotiable requirement** — photos without coordinates cannot be
 4. `OnboardingCameraScreen` validates via `isValidGpsCoords()` before accepting. If null/invalid → "Photo captured without GPS" recovery.
 
 ### Gallery Path
-1. `OnboardingPermissionScreen` requests `PHOTO_LIBRARY` (iOS) / `READ_MEDIA_IMAGES` + `ACCESS_MEDIA_LOCATION` (Android).
-2. `readGpsFromExif()` reads GPS from selected photo's EXIF data (5s timeout, spinner shown).
+1. `OnboardingPhotoScreen` opens the **system photo picker** (`launchImageLibrary`) directly — no permission request (iOS PHPicker, Android system picker).
+2. `readGpsFromExif()` reads GPS from the selected photo's EXIF data (5s timeout, spinner shown).
 3. If EXIF GPS is null → "This photo doesn't have location data" recovery.
 
 ### Coordinate Precision

@@ -11,16 +11,15 @@ photos. (Flows: `handleSelectMore` / `handleTapInboxPhoto` in `HomeScreen.js`,
 
 ### Large numbers
 
-- **"Select More" has no count limit** (`selectionLimit: 0`) — a user can pick
+- **"Add Photos" has no count limit** (`selectionLimit: 0`) — a user can pick
   hundreds. GPS is read from EXIF **sequentially, one photo at a time**
   (`for … await readGpsFromExif`) with **no progress indicator**, so a big
-  selection leaves the screen sitting on Home for several seconds before it jumps
-  to tagging. (The gallery's own EXIF fallback batches in 10s; Select More does not.)
-- **Tapping one inbox photo loads all currently-loaded geotagged photos into the
-  tagger**, not just the 6 shown. After a few "Load more" taps (50/page) one tap can
-  drop 100+ photos into the swipe queue. (Since v7.9.0 only geotagged photos are
-  added — non-geotagged tiles are inert in tag mode — so the queue is never polluted
-  with un-uploadable photos.)
+  selection leaves the screen sitting on Home for several seconds before the
+  geotagged picks land in the queue.
+- **Tapping one inbox photo loads the whole geotagged queue into the tagger**,
+  not just the 6 shown. A large picker import can drop 100+ photos into the
+  swipe queue in one tap. (The queue is geotagged-only — non-geotagged picks
+  never enter `imagesArray` — so it is never polluted with un-uploadable photos.)
 - **The tagging swiper scales fine** — `ImageViewer` is windowed (mounts ~5 images
   around the current index), so a huge queue is not a rendering problem.
 - **Upload is strictly sequential** — one request at a time, with a progress modal
@@ -33,17 +32,18 @@ photos. (Flows: `handleSelectMore` / `handleTapInboxPhoto` in `HomeScreen.js`,
 
 ### Small numbers / edge cases
 
-- **Select More with 0 geotagged picks** → "None of the selected photos have location
-  data." (nothing imported).
+- **Add Photos with 0 geotagged picks** → nothing enters the queue; the picks
+  surface in the dismissible "Couldn't add — no location data" card instead.
 - **A photo needs ≥1 tag to upload** (`isTagged`); untagged photos are skipped.
 - **Per-tag quantity caps** (not photo caps): new users max 10 per tag, trusted users
   max 100; custom tags 3–100 chars.
 
 ### Worth fixing
 
-1. **Select More on large selections** — batch the EXIF reads (like the gallery does)
-   and show a "Reading photos…" indicator, instead of a silent sequential wait.
+1. **Add Photos on large selections** — batch the per-pick EXIF reads
+   (`readGpsFromExif`) and show a "Reading photos…" indicator, instead of a
+   silent sequential wait.
 
-_Resolved in v7.9.0: tap-to-tag now adds geotagged-only photos, and non-geotagged
-tiles are inert in tag mode — so tagging effort can no longer be wasted on
+_Resolved in v7.10.0: the inbox queue is geotagged-only — non-geotagged picks
+never enter `imagesArray`, so tagging effort can no longer be wasted on
 un-uploadable photos._
