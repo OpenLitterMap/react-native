@@ -55,7 +55,7 @@ const ChoosePathScreen = ({navigation}) => {
                             </Pressable>
 
                             <Pressable
-                                onPress={() => navigation.navigate('ONBOARDING_PERMISSION', {path: 'gallery'})}
+                                onPress={() => navigation.navigate('ONBOARDING_PHOTO', {path: 'gallery'})}
                                 style={({pressed}) => [
                                     styles.pathButton,
                                     pressed && styles.pathButtonPressed

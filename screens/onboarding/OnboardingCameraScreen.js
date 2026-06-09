@@ -56,7 +56,7 @@ const OnboardingCameraScreen = ({navigation}) => {
     }, []);
 
     const switchToGallery = () => {
-        navigation.replace('ONBOARDING_PERMISSION', {path: 'gallery'});
+        navigation.replace('ONBOARDING_PHOTO', {path: 'gallery'});
     };
 
     if (noGps) {

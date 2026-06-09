@@ -16,28 +16,23 @@ import {useTranslation} from 'react-i18next';
 import {Body, Caption, Colors, Title} from '../components';
 import StepIndicator from './components/StepIndicator';
 import {
-    checkCameraRollPermission,
-    requestCameraRollPermission
-} from '../../utils/permissions/cameraRollPermission';
-import {
     checkCameraWithLocation,
     requestCameraWithLocation
 } from '../../utils/permissions/cameraPermission';
 
 /**
- * Onboarding permission screen — camera or gallery variant.
+ * Onboarding permission screen — camera path only.
  *
- * Camera path requests location FIRST, then camera. Without location, camera
- * photos have no GPS and are useless for mapping. If location is denied,
- * we show a recovery screen before ever asking for camera.
+ * Requests location FIRST, then camera. Without location, camera photos have
+ * no GPS and are useless for mapping. If location is denied, we show a recovery
+ * screen before ever asking for camera.
  *
- * Gallery path requests photo library access as before.
- *
- * Both paths include cross-path fallback.
+ * The gallery path needs no permission (system photo picker), so it routes
+ * straight to ONBOARDING_PHOTO and never reaches this screen.
  */
 const OnboardingPermissionScreen = ({navigation, route}) => {
     const {t} = useTranslation();
-    const path = route.params?.path; // 'camera' | 'gallery'
+    const path = route.params?.path; // 'camera' (gallery routes to ONBOARDING_PHOTO)
     const isCamera = path === 'camera';
     const isMounted = useRef(true);
 
@@ -45,40 +40,18 @@ const OnboardingPermissionScreen = ({navigation, route}) => {
     // 'location_denied' = location denied, can't use camera
     // 'camera_denied' = camera denied (location was OK)
     // 'blocked' = one or both permissions blocked (need Settings)
-    // On Android, 'limited' means ACCESS_MEDIA_LOCATION was denied —
-    // EXIF GPS is redacted and photos will fail the GPS check.
-    // On iOS, 'limited' means the user chose specific photos — GPS is fine.
-    const isGalleryUsable = (status) =>
-        status === 'granted' || (status === 'limited' && Platform.OS === 'ios');
-
     const [screenState, setScreenState] = useState('checking');
 
     useEffect(() => {
         (async () => {
-            if (isCamera) {
-                const {location, camera} = await checkCameraWithLocation();
-                if (!isMounted.current) return;
-                if (location === 'granted' && camera === 'granted') {
-                    navigation.replace('ONBOARDING_CAMERA', {path});
-                    return;
-                } else if (location === 'blocked' || camera === 'blocked') {
-                    setScreenState('blocked');
-                    return;
-                }
-            } else {
-                const status = await checkCameraRollPermission();
-                if (!isMounted.current) return;
-                if (isGalleryUsable(status)) {
-                    navigation.replace('ONBOARDING_PHOTO', {path});
-                    return;
-                } else if (status === 'limited') {
-                    // Android: photos accessible but GPS redacted
-                    setScreenState('gallery_no_gps');
-                    return;
-                } else if (status === 'blocked') {
-                    setScreenState('blocked');
-                    return;
-                }
+            const {location, camera} = await checkCameraWithLocation();
+            if (!isMounted.current) return;
+            if (location === 'granted' && camera === 'granted') {
+                navigation.replace('ONBOARDING_CAMERA', {path});
+                return;
+            } else if (location === 'blocked' || camera === 'blocked') {
+                setScreenState('blocked');
+                return;
             }
             setScreenState('request');
         })();
@@ -96,52 +69,28 @@ const OnboardingPermissionScreen = ({navigation, route}) => {
     }, []);
 
     const recheckPermission = async () => {
-        if (isCamera) {
-            const {location, camera} = await checkCameraWithLocation();
-            if (!isMounted.current) return;
-            if (location === 'granted' && camera === 'granted') {
-                navigation.replace('ONBOARDING_CAMERA', {path});
-            } else if (location === 'blocked' || camera === 'blocked') {
-                setScreenState('blocked');
-            }
-        } else {
-            const status = await checkCameraRollPermission();
-            if (!isMounted.current) return;
-            if (isGalleryUsable(status)) {
-                navigation.replace('ONBOARDING_PHOTO', {path});
-            } else if (status === 'limited') {
-                setScreenState('gallery_no_gps');
-            } else if (status === 'blocked') {
-                setScreenState('blocked');
-            }
+        const {location, camera} = await checkCameraWithLocation();
+        if (!isMounted.current) return;
+        if (location === 'granted' && camera === 'granted') {
+            navigation.replace('ONBOARDING_CAMERA', {path});
+        } else if (location === 'blocked' || camera === 'blocked') {
+            setScreenState('blocked');
         }
     };
 
     const handleRequestPermission = async () => {
-        if (isCamera) {
-            const {location, camera} = await requestCameraWithLocation();
-            if (!isMounted.current) return;
+        const {location, camera} = await requestCameraWithLocation();
+        if (!isMounted.current) return;
 
-            if (location !== 'granted') {
-                // Location denied — can't proceed with camera
-                setScreenState(location === 'blocked' ? 'blocked' : 'location_denied');
-                return;
-            }
-            if (camera === 'granted') {
-                navigation.replace('ONBOARDING_CAMERA', {path});
-            } else {
-                setScreenState(camera === 'blocked' ? 'blocked' : 'camera_denied');
-            }
+        if (location !== 'granted') {
+            // Location denied — can't proceed with camera
+            setScreenState(location === 'blocked' ? 'blocked' : 'location_denied');
+            return;
+        }
+        if (camera === 'granted') {
+            navigation.replace('ONBOARDING_CAMERA', {path});
         } else {
-            const status = await requestCameraRollPermission();
-            if (!isMounted.current) return;
-            if (isGalleryUsable(status)) {
-                navigation.replace('ONBOARDING_PHOTO', {path});
-            } else if (status === 'limited') {
-                setScreenState('gallery_no_gps');
-            } else {
-                setScreenState(status === 'blocked' ? 'blocked' : 'gallery_denied');
-            }
+            setScreenState(camera === 'blocked' ? 'blocked' : 'camera_denied');
         }
     };
 
@@ -151,9 +100,9 @@ const OnboardingPermissionScreen = ({navigation, route}) => {
             : Linking.openSettings();
     };
 
+    // Camera fallback → the permission-free picker (gallery path).
     const switchPath = () => {
-        const otherPath = isCamera ? 'gallery' : 'camera';
-        navigation.replace('ONBOARDING_PERMISSION', {path: otherPath});
+        navigation.replace('ONBOARDING_PHOTO', {path: 'gallery'});
     };
 
     // --- Loading while checking permissions ---
@@ -277,79 +226,6 @@ const OnboardingPermissionScreen = ({navigation, route}) => {
                         <Pressable onPress={switchPath} style={styles.secondaryLink}>
                             <Caption color="accent" family="medium">
                                 {t('Choose from photos instead')}
-                            </Caption>
-                        </Pressable>
-                    </View>
-                </SafeAreaView>
-            </LinearGradient>
-        );
-    }
-
-    if (screenState === 'gallery_denied') {
-        return (
-            <LinearGradient
-                colors={['#f0faf4', '#e8f5ec', '#dcffeb']}
-                locations={[0, 0.5, 1]}
-                style={styles.gradient}>
-                <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
-                    <StepIndicator currentStep={1} completedSteps={[]} />
-                    <View style={styles.body}>
-                        <View style={styles.iconCircle}>
-                            <Icon name="images-outline" size={64} color={Colors.warn} />
-                        </View>
-                        <Title style={styles.title}>
-                            {t('Gallery Access Needed')}
-                        </Title>
-                        <Body color="muted" style={styles.bodyText}>
-                            {t('Photo access is needed to select litter photos. You can try again or take a new photo instead.')}
-                        </Body>
-                        <Pressable
-                            style={({pressed}) => [styles.buttonStyle, pressed && styles.buttonPressed]}
-                            onPress={handleRequestPermission}>
-                            <Body color="white" family="semiBold" style={styles.buttonText}>
-                                {t('Try again')}
-                            </Body>
-                        </Pressable>
-                        <Pressable onPress={switchPath} style={styles.secondaryLink}>
-                            <Caption color="accent" family="medium">
-                                {t('Take a photo instead')}
-                            </Caption>
-                        </Pressable>
-                    </View>
-                </SafeAreaView>
-            </LinearGradient>
-        );
-    }
-
-    if (screenState === 'gallery_no_gps') {
-        return (
-            <LinearGradient
-                colors={['#f0faf4', '#e8f5ec', '#dcffeb']}
-                locations={[0, 0.5, 1]}
-                style={styles.gradient}>
-                <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
-                    <StepIndicator currentStep={1} completedSteps={[]} />
-                    <View style={styles.body}>
-                        <View style={styles.iconCircle}>
-                            <Icon name="location-outline" size={64} color={Colors.warn} />
-                        </View>
-                        <Title style={styles.title}>
-                            {t('Photo location access needed')}
-                        </Title>
-                        <Body color="muted" style={styles.bodyText}>
-                            {t('Your photos are accessible but location data is blocked. Enable "Media location" in Settings so we can read where photos were taken.')}
-                        </Body>
-                        <Pressable
-                            style={({pressed}) => [styles.buttonStyle, pressed && styles.buttonPressed]}
-                            onPress={openSettings}>
-                            <Icon name="settings-outline" size={20} color={Colors.white} />
-                            <Body color="white" family="semiBold" style={styles.buttonText}>
-                                {t('Open Settings')}
-                            </Body>
-                        </Pressable>
-                        <Pressable onPress={switchPath} style={styles.secondaryLink}>
-                            <Caption color="accent" family="medium">
-                                {t('Take a photo instead')}
                             </Caption>
                         </Pressable>
                     </View>
