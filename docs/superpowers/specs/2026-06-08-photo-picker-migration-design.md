@@ -158,14 +158,22 @@ GPS — the user can pick anything, and "no location" is only discovered *after*
 pick, on EXIF read. This **will** happen and needs deliberate handling, not a silent
 drop or a batch failure.
 
-- Admit GPS-less picks into the queue **greyed out with an explicit "No location
-  data" label** (reuse the existing `mutedOverlay`, but add visible text — not just
-  a wash). Tapping shows a one-line explainer ("This photo has no GPS data, so it
-  can't be mapped — delete it or pick another"). Excluded from auto-upload;
-  removable via the existing delete affordance.
+**Constraint discovered in code (2026-06-09):** `imagesArray` *is* the tagger's
+swipe queue and is deliberately **geotagged-only** — `handleTapInboxPhoto`
+(`HomeScreen.js:194-217`) explicitly keeps non-geotagged photos out "so the tagger
+can't dead-end on an un-uploadable photo." Admitting GPS-less picks *into the queue*
+(as first drafted) would violate that invariant and pollute the swiper. So:
+
+- After a pick, partition assets by EXIF GPS: **geotagged → the queue** (via
+  `addImages`, as today); **non-geotagged → an ephemeral per-photo result**, not the
+  queue. The geotagged-only invariant is preserved and the tagger is untouched.
+- Render non-geotagged picks in a **dismissible "Couldn't add — no location data"
+  card** on the home screen (HomeScreen local state, shown below `InboxControls`):
+  one row per photo — thumbnail + filename + "No location data". The user sees
+  exactly which picks failed and why — per-photo, inline, not a batch alert.
 - **Drop** the current batch alert in `handleSelectMore` ("N photos skipped (no GPS
-  data)") in favour of this per-photo, inline treatment — the user sees exactly
-  which picks lack GPS and why.
+  data)"); the card replaces it. The card clears on dismiss and on the next pick.
+  Non-geotagged picks intentionally do **not** persist — they were never uploadable.
 
 ### 4. Code surface
 
@@ -187,8 +195,10 @@ drop or a batch failure.
   dispatch on mount/focus/refresh.
 - `screens/home/homeComponents/InboxSection.js` — "Select More" → primary
   "Add Photos" affordance; **`InboxEmpty` rewritten** as the primary first-run
-  screen (§3a); **`InboxThumbnail` gains an explicit "No location data" label**
-  for GPS-less picks (§3b); remove "Load more" / `InboxFooter` paging.
+  screen (§3a); add a **`NoGpsPicksCard`** (dismissible, one row per skipped photo)
+  for non-geotagged picks (§3b); remove "Load more" / `InboxFooter` paging.
+- `screens/home/homeComponents/LimitedAccessBanner.js` — **delete** (iOS
+  limited-access banner; obsolete once there's no photo permission).
 - `screens/home/HomeScreen.js` — `handleSelectMore` routes picks into the queue
   (`addImages`) rather than navigating straight to `ADD_TAGS`; **keeps
   `selectionLimit: 0`** (multi-select); **replaces the batch "N skipped" alert
@@ -244,7 +254,7 @@ multi-select) land in Phase 2.
 |------|------------|
 | Picker strips GPS without broad permission | Phase 0 device gate isolates the cause (§2); `READ_MEDIA_VISUAL_USER_SELECTED` + read-original fallback |
 | First-run lands on a blank grid → reads as broken | Empty state treated as a primary screen with a prominent "Add Photos" CTA (§3a) |
-| User picks a GPS-less photo (picker can't pre-filter) | Admit it greyed + "No location data" label, inline explainer, excluded from upload (§3b) — no silent drop / batch-only alert |
+| User picks a GPS-less photo (picker can't pre-filter) | Geotagged-only queue invariant preserved; non-geotagged surfaced in a dismissible per-photo card (§3b) — no silent drop / batch-only alert |
 | Removing the camera-roll dep breaks an unseen consumer | Grep confirms sole importer is `gallery_reducer.js`; verify at build |
 | iOS regression from dropping the scan | Full RNIP/PHPicker path already shipped via onboarding/Select More |
 | redux-persist rehydrate error from removed `gallery` key | Drop gallery from persist allowlist; add migration if a versioned persist key exists |
