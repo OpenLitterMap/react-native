@@ -77,7 +77,6 @@
   "reactNativePermissionsIOS": [
     "Camera",
     "LocationAccuracy",
-    "LocationWhenInUse",
-    "PhotoLibrary"
+    "LocationWhenInUse"
   ]
 }
