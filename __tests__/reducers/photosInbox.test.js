@@ -10,9 +10,6 @@ jest.mock('../../utils/apiClient', () => ({
 }));
 jest.mock('@sentry/react-native', () => ({captureException: jest.fn()}));
 jest.mock('../../utils/config', () => ({IS_PRODUCTION: false, URL: 'http://localhost:8000'}));
-// Native modules pulled in transitively via gallery_reducer — not needed here.
-jest.mock('@react-native-camera-roll/camera-roll', () => ({CameraRoll: {}}));
-jest.mock('@lodev09/react-native-exify', () => ({}));
 
 import photosReducer, {removeTaggedPhoto, addImages} from '../../reducers/photos_reducer';
 import {uploadImage, addTagsToPhoto} from '../../reducers/upload_flow_reducer';
