@@ -1,11 +1,11 @@
 # Mobile Upload
-> The two-step auto-upload flow: GPS filter, photo binary, then the idempotent tag write.
+> The two-step upload flow: GPS filter, photo binary, then the idempotent tag write.
 
 ## Overview
-Photos enter the HomeScreen "Your Photos" inbox via the **system photo picker** ("Add Photos", multi-select) and in-app camera captures — there is no camera-roll scan. The inbox is a persistent, geotagged-only queue backed by `photos.imagesArray`. Tapping a photo opens the tagging screen; on returning to HomeScreen the upload is auto-triggered. Uploads run one photo at a time. A pre-upload step still filters out any photo without valid GPS as defence. Tagged photos use a two-step upload: photo binary first, then tags via a separate idempotent call.
+Photos enter the HomeScreen "Your Photos" inbox via the **system photo picker** ("Add Photos", multi-select) and in-app camera captures — there is no camera-roll scan. The inbox is a persistent, geotagged-only queue backed by `photos.imagesArray`. Tapping a photo opens the tagging screen; back on HomeScreen, tagged photos surface an "Upload (N)" bar — tapping it starts the upload (there is no auto-upload-on-focus). Uploads run one photo at a time. A pre-upload step still filters out any photo without valid GPS as defence. Tagged photos use a two-step upload: photo binary first, then tags via a separate idempotent call.
 
 ## Files
-- `screens/home/HomeScreen.js` — Dashboard + upload orchestration (auto-uploads on focus after tagging)
+- `screens/home/HomeScreen.js` — Dashboard + upload orchestration (runs the upload loop when the user taps the "Upload (N)" bar)
 - `screens/home/useUploadPhotos.js` — Upload loop hook (sequential upload, GPS filter, cancel, retry)
 - `screens/home/homeComponents/InboxSection.js` — "Your Photos" inbox grid (tap to tag, Add Photos, delete)
 - `screens/home/homeComponents/useInbox.js` — inbox state hook (selection + delete mode; the queue is the local `imagesArray`, no paging)
@@ -29,7 +29,7 @@ Photos enter the HomeScreen "Your Photos" inbox via the **system photo picker** 
 Photo deletion lives in `uploads_reducer` (`deleteUploadPhoto`) — see `MobileMyUploads.md`.
 
 ## Upload Flow (Two-Step)
-Orchestrated by `useUploadPhotos.js`, auto-triggered from HomeScreen on focus after tagging.
+Orchestrated by `useUploadPhotos.js`, started by tapping the **"Upload (N)" bar** on HomeScreen (there is no auto-upload-on-focus; see `docs/superpowers/photo-picker-followups.md` F1).
 
 1. **Filter** — Only images that are both geotagged (`isGeotagged`) and tagged (`isTagged`) are uploadable. If any tagged photos lack GPS, an Alert reports the skip count with Cancel/Continue.
 2. **Per photo** — for a not-yet-uploaded photo: **(a)** POST the binary via `uploadImage` → server returns `photo_id`; **(b)** PUT the resolved tags via `addTagsToPhoto`. For an already-uploaded photo (retry path), the binary step is skipped and only the tag write runs.

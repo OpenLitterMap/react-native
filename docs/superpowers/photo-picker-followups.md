@@ -4,23 +4,29 @@ Triaged from Codex's review of `fix/photo-picker-migration`. Items already fixed
 the branch are NOT listed here (see commits). This file tracks what was deliberately
 deferred or needs a decision.
 
-## Needs a product decision (do NOT implement blind)
+## Decided this review
 
-### F1 — Auto-upload after tagging? (Codex "High")
+### F1 — Auto-upload-on-focus (Codex "High") — DECISION: keep the manual bar (B)
 **Finding:** there is no auto-upload-on-focus. `uploadPhotos` is invoked only by the
 manual "Upload (N)" bar (`HomeScreen.js`) and the retry timer (`useUploadPhotos.js`).
-No `useFocusEffect`/focus listener triggers upload in `screens/home/`.
-**Key fact:** this is **pre-existing, not a migration regression** — `openlittermap/v7`'s
-HomeScreen had the same manual bar and no focus trigger. CLAUDE.md (lines 28, 33) and
-`readme/MobileUpload.md` (lines 5, 32) claim auto-upload-on-focus; those docs are
-**stale/aspirational** — the code has never done it on this branch or its base.
-**Decision needed:**
-- (A) Wire the documented behaviour: add a HomeScreen `useFocusEffect` that calls
-  `uploadPhotos()` when returning after tagging (matches the docs; clears the queue
-  automatically), OR
-- (B) Keep the manual "Upload (N)" bar as the intended UX and **correct the 4 stale
-  doc claims** to match.
-Owner: maintainer. Until decided, code + docs are left as-is.
+**Pre-existing, not a migration regression** — `openlittermap/v7`'s HomeScreen had the
+same manual bar and no focus trigger; the docs that claimed auto-upload were stale.
+**Decided 2026-06-09:** keep the manual "Upload (N)" bar as the shipping behaviour; the
+stale claims in `CLAUDE.md` and `readme/MobileUpload.md` have been **corrected** to
+describe it.
+**Future ticket (NOT this release):** optionally add a HomeScreen `useFocusEffect` that
+calls `uploadPhotos()` on return after tagging so the queue clears automatically —
+weigh against accidental/duplicate uploads. Out of scope for this branch.
+
+### F0 — Capture-time regression from dropping `includeExtra` — FIXED
+Removing `includeExtra` also dropped `asset.timestamp`, so gallery imports briefly
+stamped **import time** (`Date.now()`) instead of **capture time** — a dataset-integrity
+bug. Fixed by reading the capture date from the same EXIF pass as GPS: `readGpsFromExif`
+now returns `takenAt` (epoch seconds from `DateTimeOriginal` → `DateTimeDigitized` →
+`DateTime`), and `handleSelectMore` uses `meta.takenAt ?? Date.now()`. Falls back to
+import time only when the photo carries no EXIF date. Covered by
+`__tests__/utils/readGpsFromExif.test.js`. (Onboarding was unaffected — it always
+stamped `Date.now()` via `addOnboardingPhoto`.)
 
 ## 6-star UX pass (Codex "Medium" ×2) — bounded, pending approval
 

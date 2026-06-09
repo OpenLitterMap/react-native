@@ -25,12 +25,12 @@ Runtime: **Node v22.22.1**, **npm 10.9.4** (prefer npm over yarn) — RN 0.84 re
 ## Core User Flow
 
 ```
-HomeScreen Dashboard → Tap photo → Tag → Auto-upload
+HomeScreen Dashboard → Tap photo → Tag → Tap "Upload (N)" bar
 ```
 
 1. **Home** (`HomeScreen`) — dashboard as a single virtualized `FlashList` (fixed sections in `ListHeaderComponent`, inbox photos as data): Global Impact stats, Your Impact stats, Uploaded (untagged server photos), "Your Photos" (a **persistent geotagged-only to-tag queue** sourced from `photos.imagesArray` — local camera captures + system-photo-picker imports; no camera-roll scan). "Add Photos" opens the OS picker; non-geotagged picks surface in a dismissible no-GPS card instead of entering the queue.
 2. **Tag** (`AddTagScreen`) — Full-screen image viewer with search/browse for litter tags, materials, brands
-3. **Upload** — Auto-triggered via `useFocusEffect` when returning to HomeScreen after tagging. Two-step: upload photo binary → PUT tags (replace/idempotent).
+3. **Upload** — Tagged photos surface an **"Upload (N)" bar** on HomeScreen; tapping it runs the upload (orchestrated by `useUploadPhotos`, with a retry path). There is **no** auto-upload-on-focus — tracked as a future enhancement (`docs/superpowers/photo-picker-followups.md` F1). Two-step: upload photo binary → PUT tags (replace/idempotent).
 
 ## Architecture
 
