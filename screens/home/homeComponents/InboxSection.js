@@ -1,6 +1,8 @@
 import React from 'react';
 import {
+    ActivityIndicator,
     Image,
+    Modal,
     Pressable,
     StyleSheet,
     Text,
@@ -118,29 +120,60 @@ export const InboxEmpty = ({onAddPhotos}) => {
     );
 };
 
-/** Per-photo notice for picks that had no GPS (can't be mapped). Dismissible. */
+/** Summary notice for picks with no GPS (can't be mapped): count + up to three
+ *  thumbnails, the rest collapsing into a "+N" tile. Dismissible. */
 export const NoGpsPicksCard = ({picks, onDismiss}) => {
     const {t} = useTranslation();
     if (!picks || picks.length === 0) return null;
+    const preview = picks.slice(0, 3);
+    const extra = picks.length - preview.length;
     return (
         <View style={styles.noGpsCard}>
             <View style={styles.noGpsHeader}>
                 <Icon name="location-outline" size={16} color={Colors.error} />
-                <Body style={styles.noGpsTitle}>{t("Couldn't add — no location data")}</Body>
+                <Body style={styles.noGpsTitle}>
+                    {t("Couldn't add — no location data")} ({picks.length})
+                </Body>
                 <Pressable onPress={onDismiss} hitSlop={8} style={styles.noGpsDismiss}>
                     <Icon name="close" size={18} color={Colors.muted} />
                 </Pressable>
             </View>
-            {picks.map(p => (
-                <View key={p.uri} style={styles.noGpsRow}>
-                    <Image source={{uri: p.uri}} style={styles.noGpsThumb} />
-                    <Caption color="muted" numberOfLines={1} style={styles.noGpsName}>
-                        {p.filename || t('Photo')}
-                    </Caption>
-                    <Caption style={styles.noGpsTag}>{t('No location data')}</Caption>
-                </View>
-            ))}
+            <View style={styles.noGpsThumbRow}>
+                {preview.map(p => (
+                    <Image key={p.uri} source={{uri: p.uri}} style={styles.noGpsThumb} />
+                ))}
+                {extra > 0 && (
+                    <View style={[styles.noGpsThumb, styles.noGpsMore]}>
+                        <Caption style={styles.noGpsMoreText}>+{extra}</Caption>
+                    </View>
+                )}
+            </View>
         </View>
+    );
+};
+
+/** Bounded progress overlay while EXIF locations are read for a large multi-select.
+ *  Shown only for big batches (small picks finish before it'd matter). Cancel stops
+ *  further reads. */
+export const ImportProgressModal = ({progress, onCancel}) => {
+    const {t} = useTranslation();
+    return (
+        <Modal visible={!!progress} transparent animationType="fade" onRequestClose={onCancel}>
+            <View style={styles.importBackdrop}>
+                <View style={styles.importCard}>
+                    <ActivityIndicator size="large" color={Colors.accent} />
+                    <Body style={styles.importTitle}>{t('Reading photo locations...')}</Body>
+                    {progress && (
+                        <Caption color="muted" style={styles.importCount}>
+                            {progress.done} / {progress.total}
+                        </Caption>
+                    )}
+                    <Pressable onPress={onCancel} style={styles.importCancel} hitSlop={8}>
+                        <Body style={styles.importCancelText}>{t('Cancel')}</Body>
+                    </Pressable>
+                </View>
+            </View>
+        </Modal>
     );
 };
 
@@ -335,8 +368,14 @@ const styles = StyleSheet.create({
     noGpsHeader: {flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8},
     noGpsTitle: {flex: 1, fontSize: 13, fontWeight: '600', color: Colors.error},
     noGpsDismiss: {padding: 2},
-    noGpsRow: {flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 4},
+    noGpsThumbRow: {flexDirection: 'row', gap: 6},
     noGpsThumb: {width: 36, height: 36, borderRadius: 6, backgroundColor: Colors.accentLight},
-    noGpsName: {flex: 1, fontSize: 12},
-    noGpsTag: {fontSize: 11, color: Colors.error, fontWeight: '600'}
+    noGpsMore: {alignItems: 'center', justifyContent: 'center', backgroundColor: Colors.error},
+    noGpsMoreText: {color: Colors.white, fontSize: 12, fontWeight: '700'},
+    importBackdrop: {flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', alignItems: 'center'},
+    importCard: {backgroundColor: Colors.white, borderRadius: 16, paddingVertical: 24, paddingHorizontal: 32, alignItems: 'center', minWidth: 220},
+    importTitle: {marginTop: 14, fontSize: 15, fontWeight: '600', textAlign: 'center'},
+    importCount: {marginTop: 4, fontSize: 13},
+    importCancel: {marginTop: 18, paddingVertical: 8, paddingHorizontal: 20},
+    importCancelText: {color: Colors.accent, fontSize: 14, fontWeight: '600'}
 });

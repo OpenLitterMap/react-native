@@ -453,5 +453,6 @@
     "{{count}}% Next Littercoin": "{{count}}% Littercoin التالي",
     "{{count}}-day streak": "سلسلة {{count}} يوم",
     "{{current}} / {{target}} XP": "{{current}} / {{target}} XP",
-    "{{photos}} selected": "{{photos}} مختارة"
+    "{{photos}} selected": "{{photos}} مختارة",
+    "Reading photo locations...": "جارٍ قراءة مواقع الصور..."
 }

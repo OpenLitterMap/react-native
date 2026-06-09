@@ -453,5 +453,6 @@
     "{{count}}% Next Littercoin": "{{count}}% nächster Littercoin",
     "{{count}}-day streak": "{{count}}-Tage-Serie",
     "{{current}} / {{target}} XP": "{{current}} / {{target}} XP",
-    "{{photos}} selected": "{{photos}} ausgewählt"
+    "{{photos}} selected": "{{photos}} ausgewählt",
+    "Reading photo locations...": "Fotostandorte werden gelesen..."
 }

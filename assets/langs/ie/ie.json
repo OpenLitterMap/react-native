@@ -453,5 +453,6 @@
     "{{count}}% Next Littercoin": "{{count}}% an chéad Littercoin eile",
     "{{count}}-day streak": "Sraith {{count}} lá",
     "{{current}} / {{target}} XP": "{{current}} / {{target}} XP",
-    "{{photos}} selected": "{{photos}} roghnaithe"
+    "{{photos}} selected": "{{photos}} roghnaithe",
+    "Reading photo locations...": "Ag léamh suíomhanna na ngrianghraf..."
 }

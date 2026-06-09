@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {
     Alert,
     Modal,
@@ -37,6 +37,7 @@ import {
     InboxControls,
     InboxEmpty,
     NoGpsPicksCard,
+    ImportProgressModal,
     useInbox,
     UntaggedSection,
     UploadModal,
@@ -47,6 +48,12 @@ import CommunityStats from '../components/CommunityStats';
 // Hooks
 import useUploadPhotos from './useUploadPhotos';
 import useHomeBootstrap from './useHomeBootstrap';
+
+// EXIF reads run with bounded concurrency so a large multi-select import doesn't read
+// one-photo-at-a-time (each read has a 5s timeout). The progress modal shows only for
+// larger batches; small picks finish before it'd matter.
+const EXIF_CONCURRENCY = 6;
+const PROGRESS_THRESHOLD = 6;
 
 const HomeScreen = ({navigation}) => {
     const dispatch = useDispatch();
@@ -97,6 +104,8 @@ const HomeScreen = ({navigation}) => {
     const [refreshing, setRefreshing] = useState(false);
     const [showCamera, setShowCamera] = useState(false);
     const [noGpsPicks, setNoGpsPicks] = useState([]);
+    const [importProgress, setImportProgress] = useState(null); // {done,total} while reading EXIF
+    const importCancelRef = useRef(false);
 
     // Camera FAB: check permissions, then open camera modal
     const handleCameraFab = useCallback(async () => {
@@ -222,33 +231,59 @@ const HomeScreen = ({navigation}) => {
             return;
         }
 
+        const assets = result.assets || [];
         const imported = [];
         const skipped = [];
-        for (const asset of result.assets || []) {
-            // RNIP doesn't return GPS or capture time — read both from EXIF in one
-            // pass (avoids includeExtra, which ties to library permissions)
-            const meta = await readGpsFromExif(asset.uri);
-            if (meta && isValidGpsCoords(meta.latitude, meta.longitude)) {
-                imported.push({
-                    id: asset.id || `picked_${asset.uri}`,
-                    uri: asset.uri,
-                    filename: asset.fileName || `picked_${Date.now()}.jpg`,
-                    lat: meta.latitude,
-                    lon: meta.longitude,
-                    // EXIF capture time (epoch seconds); fall back to import time
-                    // only when the photo carries no EXIF date
-                    date: meta.takenAt ?? Math.floor(Date.now() / 1000),
-                    type: 'gallery',
-                    platform: 'mobile',
-                    customTags: [],
-                    uploaded: false
+
+        // Read EXIF with bounded concurrency (not one-at-a-time). Show progress +
+        // allow cancel only for larger batches.
+        const showProgress = assets.length > PROGRESS_THRESHOLD;
+        importCancelRef.current = false;
+        if (showProgress) setImportProgress({done: 0, total: assets.length});
+
+        try {
+            for (let i = 0; i < assets.length; i += EXIF_CONCURRENCY) {
+                if (importCancelRef.current) break;
+                const chunk = assets.slice(i, i + EXIF_CONCURRENCY);
+                // RNIP returns no GPS/capture time — read both from EXIF in one pass
+                // (avoids includeExtra, which ties to library permissions)
+                const metas = await Promise.all(
+                    chunk.map(a => readGpsFromExif(a.uri).catch(() => null))
+                );
+                chunk.forEach((asset, j) => {
+                    const meta = metas[j];
+                    if (meta && isValidGpsCoords(meta.latitude, meta.longitude)) {
+                        imported.push({
+                            id: asset.id || `picked_${asset.uri}`,
+                            uri: asset.uri,
+                            filename: asset.fileName || `picked_${Date.now()}.jpg`,
+                            lat: meta.latitude,
+                            lon: meta.longitude,
+                            // EXIF capture time (epoch s); fall back to import time
+                            // only when the photo carries no EXIF date
+                            date: meta.takenAt ?? Math.floor(Date.now() / 1000),
+                            type: 'gallery',
+                            platform: 'mobile',
+                            customTags: [],
+                            uploaded: false
+                        });
+                    } else {
+                        skipped.push({uri: asset.uri, filename: asset.fileName});
+                    }
                 });
-            } else {
-                skipped.push({uri: asset.uri, filename: asset.fileName});
+                if (showProgress) {
+                    setImportProgress({
+                        done: Math.min(i + chunk.length, assets.length),
+                        total: assets.length
+                    });
+                }
             }
+        } finally {
+            setImportProgress(null);
         }
 
-        // Non-geotagged → per-photo card (not the queue; queue stays geotagged-only)
+        // Non-geotagged → summary card (not the queue; queue stays geotagged-only).
+        // On cancel, keep whatever was already read.
         setNoGpsPicks(skipped);
 
         if (imported.length > 0) {
@@ -351,6 +386,11 @@ const HomeScreen = ({navigation}) => {
                 ]}>
                 <Icon name="camera" size={26} color={Colors.white} />
             </Pressable>
+
+            <ImportProgressModal
+                progress={importProgress}
+                onCancel={() => { importCancelRef.current = true; }}
+            />
 
             {/* Camera Modal */}
             <Modal visible={showCamera} animationType="slide">
