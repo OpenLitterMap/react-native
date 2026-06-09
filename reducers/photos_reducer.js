@@ -3,7 +3,6 @@ import {getTagsFromBackend} from '../utils/getTagsFromBackend';
 import {isTagged} from '../utils/isTagged';
 import {logout} from './auth_reducer';
 import {uploadImage, addTagsToPhoto} from './upload_flow_reducer';
-import {dismissPhotos} from './gallery_reducer';
 
 /** Find a tag in tags by (cloId, typeId). */
 const findTag = (tags, cloId, typeId) =>
@@ -682,12 +681,6 @@ const photosSlice = createSlice({
                 }
             })
 
-            // Remove dismissed photos from imagesArray too
-            .addCase(dismissPhotos, (state, action) => {
-                const uris = new Set(action.payload);
-                state.imagesArray = state.imagesArray.filter(img => !uris.has(img.uri));
-            })
-
             // Clear all images on logout
             .addCase(logout, () => initialState);
     }
@@ -742,8 +735,12 @@ export const selectTaggedUris = createSelector(
     }
 );
 
-/** Camera-captured photos not yet uploaded (for inbox prepend). */
-export const selectCameraPhotos = createSelector(
+/**
+ * Local photos awaiting tagging/upload (camera captures + picker imports),
+ * newest-first. imagesArray is geotagged-only — non-geotagged picks never enter
+ * it (see HomeScreen handleSelectMore) — so every inbox photo is mappable.
+ */
+export const selectInboxPhotos = createSelector(
     [selectImagesArray],
     images =>
         images
@@ -755,8 +752,9 @@ export const selectCameraPhotos = createSelector(
                 lat: img.lat,
                 lon: img.lon,
                 hasGps: true,
-                fromCamera: true
+                fromCamera: img.type !== 'gallery'
             }))
+            .sort((a, b) => (b.date ?? 0) - (a.date ?? 0))
 );
 
 export default photosSlice.reducer;
