@@ -47,26 +47,26 @@ import time only when the photo carries no EXIF date. Covered by
 `__tests__/utils/readGpsFromExif.test.js`. (Onboarding was unaffected — it always
 stamped `Date.now()` via `addOnboardingPhoto`.)
 
-## 6-star UX pass (Codex "Medium" ×2) — bounded, pending approval
+## 6-star UX pass (Codex "Medium" ×2) — DONE 2026-06-09 (commit 0387e68)
 
-> Reported, not yet implemented — the maintainer asked to approve UX changes first.
-> Do these as ONE tight pass after approval. **Scope: F2 + F3 only — do NOT touch
-> dedupe (F4) or auto-upload (F1) in this pass.**
+> Implemented as one bounded pass — F2 + F3 only; dedupe (F4) and auto-upload (F1)
+> untouched.
 
 ### F2 — No-GPS card: per-row → summary count
 `NoGpsPicksCard` (`InboxSection.js`) renders one thumbnail row per skipped photo.
 Selecting ~100 screenshots ⇒ a wall of rows pushing the queue offscreen.
-**Proposed:** collapse to a summary ("N photos skipped — no location data") with maybe
-the first 1–3 thumbnails + "and N more", dismissible. Keep the per-photo intent (still
-tells them which/how many) without the unbounded list.
+**Done:** `NoGpsPicksCard` now shows `"Couldn't add — no location data" (N)` + up to 3
+thumbnails with a "+N" overflow tile, dismissible. Bounded regardless of pick count.
 
 ### F3 — Bounded "Reading photo locations…" progress for large multi-selects
 `selectionLimit: 0` allows unlimited picks; `handleSelectMore` then reads EXIF
 serially with a 5 s timeout each and no progress UI — a large/corrupt selection can
 look frozen.
-**Proposed:** a lightweight import state with progress (e.g. "Reading 12/80…"),
-bounded concurrency for the EXIF reads, optional cancel, and a final summary
-(imported / no-GPS / failed). Keep it tight.
+**Done:** `ImportProgressModal` shows "Reading photo locations… (n/total)" with Cancel
+for batches > 6; EXIF reads run at concurrency 6 (was one-at-a-time). Cancel stops
+further reads and keeps what's read. Imported land in the queue; no-GPS in the F2 card.
+(Read-failures fold into no-GPS via `readGpsFromExif` returning null — no separate
+"failed" bucket.)
 
 ## Ticket — not in this branch
 
