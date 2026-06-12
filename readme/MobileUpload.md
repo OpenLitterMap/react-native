@@ -69,11 +69,12 @@ After a gallery image uploads, `type` stays `'gallery'` but `uploaded` becomes `
 Upload failures are classified by `classifyError()` (`utils/classifyError.js`) into: `photo-already-uploaded`, `invalid-photo-id`, `invalid-coordinates`, `timeout`, `network`, `server`, `unauthorized`, `unknown`.
 
 - **`photo-already-uploaded`** — duplicate detected server-side; the stranded photo is dropped from the inbox (it's already on the server and can't be tagged without a live photo id).
-- **`invalid-photo-id`** — the id can never be tagged: either `addTagsToPhoto` refused a non-integer id locally (no network call) or the backend rejected a valid-integer id with no live row. Permanent + non-reportable; the photo is dropped so the loop stops retrying it.
+- **`invalid-photo-id`** — the id can never be tagged: either `addTagsToPhoto` refused a non-integer id locally (no network call), or the backend's `Rule::exists` failed for a deleted/soft-deleted photo (returned as a `422` validation error). Permanent + non-reportable; the photo is dropped so the loop stops retrying it.
+- **Forbidden / not-found (`403` / `404`)** — `403` means the photo belongs to another user (ownership — permanent per backend); `404` is defensive (the tags endpoint doesn't 404). Both drop the photo from the inbox so the loop stops re-hitting the gate. Status-based (the `errorType` is `unknown`), surfaced via a `status` field on the rejection.
 - **`unauthorized` (401)** — the axios interceptor signals the loop to stop via `setUploadAbortReason('token-expired')`. After re-login, a recovery flow lets the user retry with photos preserved.
 
 ## Cancel Behaviour
 Cancel uses an `AbortController` to abort the in-flight axios request, resets `uploadPhase` to `idle`, and closes the modal. The loop checks `isUploadCancelled` before each iteration and early-returns after a cancel so the result modal can't re-appear.
 
 ## Retry Behaviour
-If a tag write fails after a successful binary upload, the image stays in `imagesArray` with `uploaded: true` and `tags` intact. On the next attempt the loop routes it straight to the tag-only path. Because `PUT /api/v3/tags` is **replace** semantics, re-running the loop is idempotent — a lost-response retry can't double-tag or double-count XP. **Exception:** an `invalid-photo-id` rejection drops the photo instead of retrying; only transient errors (timeout/network/server) are retried.
+If a tag write fails after a successful binary upload, the image stays in `imagesArray` with `uploaded: true` and `tags` intact. On the next attempt the loop routes it straight to the tag-only path. Because `PUT /api/v3/tags` is **replace** semantics, re-running the loop is idempotent — a lost-response retry can't double-tag or double-count XP. **Exception:** an `invalid-photo-id` rejection, or a permanent **`403` (ownership) / `404`**, drops the photo instead of retrying; only transient errors (timeout/network/5xx) are retried.
