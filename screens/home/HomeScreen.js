@@ -256,7 +256,11 @@ const HomeScreen = ({navigation}) => {
                         imported.push({
                             id: asset.id || `picked_${asset.uri}`,
                             uri: asset.uri,
-                            filename: asset.fileName || `picked_${Date.now()}.jpg`,
+                            // i + j is the asset's global index in this import, so the
+                            // fallback name is unique per pick — without it, picks that
+                            // share a millisecond (or the same generated name) would
+                            // collide and could be dropped/overwritten downstream.
+                            filename: asset.fileName || `picked_${Date.now()}_${i + j}.jpg`,
                             lat: meta.latitude,
                             lon: meta.longitude,
                             // EXIF capture time (epoch s); fall back to import time

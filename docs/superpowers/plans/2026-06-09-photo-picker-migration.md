@@ -14,7 +14,7 @@
 
 ## Dependency ordering note
 
-Tasks are ordered so that deletions happen **after** every consumer is updated — some intermediate states between groups won't compile, so run the build/lint check at the **end of each phase**, not after every task. Phase 0 (GPS device-verify) is the gate: do not start Phase 1 until it passes.
+Tasks are ordered so thow cahat deletions happen **after** every consumer is updated — some intermediate states between groups won't compile, so run the build/lint check at the **end of each phase**, not after every task. Phase 0 (GPS device-verify) is the gate: do not start Phase 1 until it passes.
 
 ## File structure
 

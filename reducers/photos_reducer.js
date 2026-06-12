@@ -47,7 +47,6 @@ const initialState = {
 const buildDedupSets = state => {
     const uris = new Set();
     const ids = new Set();
-    const filenames = new Set();
     for (const img of state.imagesArray) {
         if (img.uri) {
             uris.add(img.uri);
@@ -55,32 +54,29 @@ const buildDedupSets = state => {
         if (img.id != null) {
             ids.add(img.id);
         }
-        if (img.filename) {
-            filenames.add(img.filename);
-        }
     }
-    return {uris, ids, filenames};
+    return {uris, ids};
 };
 
 /** Record an added image's keys so a single batch can't add it twice. */
 const trackInDedupSets = (dedupSets, image) => {
     if (image.uri) dedupSets.uris.add(image.uri);
     if (image.id != null) dedupSets.ids.add(image.id);
-    if (image.filename) dedupSets.filenames.add(image.filename);
 };
 
-/** Check if image already exists using pre-built dedup sets. */
+/**
+ * Check if image already exists using pre-built dedup sets. Dedup is by the
+ * unique uri/id only — NOT filename. Different photos routinely share a filename
+ * (screenshots, multi-device libraries, WhatsApp exports), so deduping on name
+ * silently dropped distinct picks. (The old filename match existed to reconcile a
+ * CameraRoll `ph://` uri with the picker's temp-file uri for the same photo; the
+ * camera-roll scan is gone, so that cross-source case no longer arises.)
+ */
 const isDuplicate = (dedupSets, image) => {
     if (image.uri && !image.uploaded) {
-        if (dedupSets.uris.has(image.uri)) return true;
-    } else if (dedupSets.ids.has(image.id)) {
-        return true;
+        return dedupSets.uris.has(image.uri);
     }
-    // Cross-source match: the OS picker returns a temp-file uri that differs
-    // from the CameraRoll ph:// uri for the same physical photo, but the
-    // filename is stable across both — dedup on it so the same photo can't be
-    // imported twice (re-picked across launches, or already in the queue).
-    return !!(image.filename && dedupSets.filenames.has(image.filename));
+    return image.id != null && dedupSets.ids.has(image.id);
 };
 
 /**

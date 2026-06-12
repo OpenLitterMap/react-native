@@ -90,39 +90,41 @@ describe('photos inbox cleanup', () => {
 });
 
 describe('addImages import dedupe', () => {
-    it('drops a re-imported photo matching by filename when the uri differs', () => {
-        // Same physical photo: CameraRoll ph:// uri already in the queue, OS
-        // picker hands back a temp-file uri — filename is the shared key.
+    it('keeps two different photos that share a filename (dedup is by uri/id, not name)', () => {
+        // Distinct physical photos commonly share a filename (screenshots,
+        // multi-device libraries, WhatsApp exports). The picker hands back a
+        // unique temp-file uri for each, so both must be kept — deduping on the
+        // shared name silently dropped the second.
         const state = baseState([
-            {id: 1, uri: 'ph://abc', filename: 'IMG_1.HEIC', uploaded: false, tags: []}
+            {id: 1, uri: 'file://1', filename: 'IMG_1.jpg', uploaded: false, tags: []}
         ]);
 
         const next = photosReducer(state, addImages({
             images: [{
                 id: 'picked_x',
-                uri: 'file:///tmp/IMG_1.HEIC',
-                filename: 'IMG_1.HEIC',
+                uri: 'file://2',
+                filename: 'IMG_1.jpg',
                 uploaded: false
             }],
             picked_up: null
         }));
 
-        expect(next.imagesArray).toHaveLength(1);
+        expect(next.imagesArray).toHaveLength(2);
     });
 
-    it('dedupes duplicates within a single batch (by filename)', () => {
+    it('dedupes a genuinely re-picked photo by uri within a single batch', () => {
         const state = baseState([]);
 
         const next = photosReducer(state, addImages({
             images: [
                 {id: 'a', uri: 'file://1', filename: 'IMG_1.jpg', uploaded: false},
                 {id: 'b', uri: 'file://2', filename: 'IMG_2.jpg', uploaded: false},
-                {id: 'c', uri: 'file://3', filename: 'IMG_1.jpg', uploaded: false}
+                {id: 'c', uri: 'file://1', filename: 'IMG_1.jpg', uploaded: false} // same uri as a
             ],
             picked_up: null
         }));
 
         expect(next.imagesArray).toHaveLength(2);
-        expect(next.imagesArray.map(i => i.filename)).toEqual(['IMG_1.jpg', 'IMG_2.jpg']);
+        expect(next.imagesArray.map(i => i.uri)).toEqual(['file://1', 'file://2']);
     });
 });
