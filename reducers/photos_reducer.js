@@ -669,11 +669,20 @@ const photosSlice = createSlice({
                 dropInboxPhoto(state, action.payload.photoId);
             })
             .addCase(addTagsToPhoto.rejected, (state, action) => {
-                // The id can never be tagged — either the client guard refused a
-                // non-integer id, or the server rejected it (no such non-deleted
-                // photo). Drop it so the upload loop stops retrying every focus.
-                // Transient errors (timeout/network/server) keep the photo.
-                if (action.payload?.errorType === 'invalid-photo-id') {
+                // The id can never be tagged — drop it so the upload loop stops
+                // retrying it every focus. Permanent failures:
+                //   - invalid-photo-id: the client guard refused a non-integer id,
+                //     or the server's Rule::exists failed (deleted/soft-deleted
+                //     photo → 422 validation error).
+                //   - 403: ownership — the photo belongs to another user.
+                //   - 404: defensive (backend doesn't 404 tags, but harmless).
+                // Transient errors (timeout/network/5xx) keep the photo for retry.
+                const status = action.payload?.status;
+                if (
+                    action.payload?.errorType === 'invalid-photo-id' ||
+                    status === 403 ||
+                    status === 404
+                ) {
                     dropInboxPhoto(state, action.meta.arg.photoId);
                 }
             })

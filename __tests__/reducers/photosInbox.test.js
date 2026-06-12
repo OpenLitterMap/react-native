@@ -87,6 +87,48 @@ describe('photos inbox cleanup', () => {
 
         expect(next.imagesArray).toHaveLength(1);
     });
+
+    it('drops the photo when the tag write is forbidden (403 — ownership, permanent)', () => {
+        const state = baseState([
+            {id: 5, uri: 'file://forbidden.jpg', uploaded: true, tags: [{cloId: 1}]}
+        ]);
+
+        const next = photosReducer(state, {
+            type: addTagsToPhoto.rejected.type,
+            payload: {errorType: 'unknown', status: 403},
+            meta: {arg: {photoId: 5}}
+        });
+
+        expect(next.imagesArray).toHaveLength(0);
+    });
+
+    it('drops the photo when the tag write returns 404', () => {
+        const state = baseState([
+            {id: 5, uri: 'file://gone.jpg', uploaded: true, tags: [{cloId: 1}]}
+        ]);
+
+        const next = photosReducer(state, {
+            type: addTagsToPhoto.rejected.type,
+            payload: {errorType: 'unknown', status: 404},
+            meta: {arg: {photoId: 5}}
+        });
+
+        expect(next.imagesArray).toHaveLength(0);
+    });
+
+    it('keeps the photo on a 5xx tag-write rejection (transient server error)', () => {
+        const state = baseState([
+            {id: 5, uri: 'file://x.jpg', uploaded: true, tags: [{cloId: 1}]}
+        ]);
+
+        const next = photosReducer(state, {
+            type: addTagsToPhoto.rejected.type,
+            payload: {errorType: 'server', status: 503},
+            meta: {arg: {photoId: 5}}
+        });
+
+        expect(next.imagesArray).toHaveLength(1);
+    });
 });
 
 describe('addImages import dedupe', () => {

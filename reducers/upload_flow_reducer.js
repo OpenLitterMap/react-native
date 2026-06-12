@@ -117,7 +117,10 @@ export const addTagsToPhoto = createAsyncThunk(
 
             return {photoId};
         } catch (error) {
-            return rejectWithValue(classifyError(error, 'put_tags_v3'));
+            return rejectWithValue({
+                ...classifyError(error, 'put_tags_v3'),
+                status: error?.response?.status ?? null
+            });
         }
     }
 );
