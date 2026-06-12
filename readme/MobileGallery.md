@@ -65,6 +65,17 @@ valid-GPS picks are imported; the rest go to the no-GPS card. On Android,
 `ACCESS_MEDIA_LOCATION` (not a flagged permission) lets the EXIF read return
 unredacted coordinates.
 
+**Known issue — Android HEIC picks lose GPS (v7.10.0, unreleased).** On Android a
+*decodable* HEIC/HEIF pick is re-encoded to JPEG by `react-native-image-picker`
+*before* the app sees it, and that transcode **strips EXIF** (GPS + capture date).
+`readGpsFromExif` then reads the stripped file → no GPS → the photo lands in the
+no-GPS card with a misleading "no location data" message even though it had a
+location. `ACCESS_MEDIA_LOCATION` doesn't help (the read targets the stripped
+transcode, not the original). iOS picks pass HEIC through untouched, so GPS survives
+there; an exotic/undecodable Android HEIC also keeps GPS (no transcode runs). Tracked,
+with the `assetRepresentationMode: 'current'` fast-follow, in
+`docs/superpowers/photo-picker-followups.md`.
+
 ## Permissions
 The photo picker needs **no** media/library permission on either platform
 (Android Photo Picker / iOS PHPicker). See `MobilePermissions.md`. The only

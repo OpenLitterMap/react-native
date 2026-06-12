@@ -28,6 +28,16 @@ Photos enter the HomeScreen "Your Photos" inbox via the **system photo picker** 
 
 Photo deletion lives in `uploads_reducer` (`deleteUploadPhoto`) — see `MobileMyUploads.md`.
 
+**Photo format / MIME (v7.10.0).** The `photo` part is sent with a hardcoded
+`type: 'image/jpeg'` (`useUploadPhotos.js`) regardless of the actual bytes. On iOS the
+bytes are frequently **HEIC** — the picker passes HEIC through (mislabeled `.jpg`) and
+the in-app camera (vision-camera) captures HEVC/HEIC by default; on Android an
+exotic/undecodable HEIC can also pass through raw. The backend sniffs the bytes (not the
+MIME) and converts HEIC server-side (backend 5.12.3). `lat`/`lon`/`date` ride as explicit
+form fields, so the upload does not depend on the file's EXIF. MIME-honesty and an
+optional client-side transcode are scoped post-release in
+`docs/superpowers/photo-picker-followups.md`.
+
 ## Upload Flow (Two-Step)
 Orchestrated by `useUploadPhotos.js`, started by tapping the **"Upload (N)" bar** on HomeScreen (there is no auto-upload-on-focus; see `docs/superpowers/photo-picker-followups.md` F1).
 

@@ -11,10 +11,22 @@ RNIP's cache/`file://` path once the broad permission is gone — **unverified i
 environment**. Treat the following as **release-blocking, not optional**:
 
 - **GPS survives the picker** — pick a known-geotagged photo via "Add Photos"; it must
-  land in the queue, not the no-GPS card. Run the **source/format matrix**: JPEG,
-  **HEIC/HEIF**, iOS Live Photo, iCloud-only (not-yet-downloaded), on **Android 13 and
-  14**, in a **release** build. If HEIC loses GPS, set `assetRepresentationMode:
-  'current'` on the picker calls and re-test (spec §2).
+  land in the queue, not the no-GPS card. Run the **source/format matrix** below on
+  **Android 13 and 14** + iOS, in a **release** build. If HEIC loses GPS on Android, the
+  fix is `assetRepresentationMode: 'current'` on the picker calls (spec §2) — see the
+  known-issue note below before applying.
+
+  | # | Case (geotagged, release build) | Platform / OS | Expected CURRENT behaviour | Pass |
+  |---|---|---|---|---|
+  | 1 | JPEG pick | iOS + Android 13/14 | GPS survives → queue | in queue |
+  | 2 | HEIC pick (decodable) | iOS | Passthrough, GPS survives → queue; uploads raw HEIC mislabeled `image/jpeg` | in queue |
+  | 3 | **HEIC pick (decodable)** | **Android 13/14** | RNIP transcodes → EXIF stripped → `readGpsFromExif` null → **photo DROPPED to no-GPS card** (mislabeled "no location data" though it HAS location) — **live data loss** | *currently FAILS*; fix = in queue |
+  | 4 | **Exotic/undecodable HEIC** (e.g. 2026 Xiaomi `mif1,MiHE,MiPr,miaf,MiHB`) — if obtainable | **Android** | RNIP decode fails → raw HEIC passthrough → **GPS SURVIVES** → queue → uploads raw HEIC | in queue + note raw-HEIC upload |
+  | 5 | iOS Live Photo | iOS | RNIP forces `public.jpeg` → JPEG; verify GPS | in queue |
+  | 6 | iCloud-only (not downloaded) | iOS | Verify download + GPS, no error | in queue |
+
+  Cases **3 and 4** are the explicit Android-HEIC rows (drop vs passthrough); #1 (JPEG)
+  is the release gate.
 - **Capture time** — an imported photo's date must reflect when it was TAKEN (EXIF),
   not when imported. (Import time is used only for photos with no EXIF date.)
 - **Known behaviour (PM-aware):** EXIF carries no timezone, so `parseExifCaptureTime`
@@ -22,6 +34,37 @@ environment**. Treat the following as **release-blocking, not optional**:
 - **Merged manifest** — confirm a *fresh* release build declares no
   `READ_MEDIA_IMAGES`/`READ_EXTERNAL_STORAGE`/`WRITE_EXTERNAL_STORAGE` (the artifact in
   `android/app/build/` is stale and still shows the old set).
+
+### Known issue (this release) — Android decodable-HEIC picks lose GPS and are dropped
+
+Matrix case **#3**. On Android a *decodable* HEIC pick is re-encoded to JPEG by
+`react-native-image-picker` v8.2.1 (`Utils.java` `resizeOrConvertImage`, ~211-258),
+which strips EXIF — GPS **and** capture date — re-applying only orientation.
+`readGpsFromExif(asset.uri)` then reads the stripped file → `null` → the photo is
+dropped to the no-GPS card with a misleading "no location data" message (the photo
+*does* have location). **Live data loss; Android-only, HEIC-only.** iOS picks pass HEIC
+through untouched so GPS survives (case #2); the exotic/undecodable Android case (#4)
+also keeps GPS because no transcode runs.
+
+**Why not fixed in this release:** the only small lever is `assetRepresentationMode:
+'current'` on the two `launchImageLibrary` calls (`HomeScreen.js`,
+`OnboardingPhotoScreen.js` — ~2 lines), which *disables* the Android transcode so RNIP
+returns the raw HEIC with EXIF intact. "Read GPS from the original before transcode" is
+**not feasible** — RNIP v8.2.1 surfaces no handle to the pre-transcode original (the raw
+copy is `deleteFile`'d at `Utils.java:249`; the picker `content://` is never returned;
+`originalPath` is `null` for photo-picker URIs). Setting `'current'` makes Android upload
+**raw HEIC**, so it was held until the backend can convert raw HEIC.
+
+**Fast-follow — unblocked once backend 5.12.3 is deployed.** Backend 5.12.3 converts raw
+HEIC server-side with GPS intact, so sending raw HEIC from Android becomes safe. With it
+deployed, the `'current'` flip's **only remaining cost is on-device verification**
+(Android 13/14: confirm the raw HEIC's GPS reads via exify and the upload round-trips).
+Then apply `'current'`, re-run matrix cases #3/#4, and ship as a fast-follow.
+
+**Release gate unchanged:** this drop does not block the compliance release on its own
+(Android-only, HEIC-only, degrades to the no-GPS card, no crash). The gate remains the
+**physical-device JPEG GPS test** (case #1) — if JPEG loses GPS through the picker, that
+blocks the release regardless of HEIC.
 
 ## Decided this review
 
