@@ -6,6 +6,7 @@ const initialState = {
     topTeams: [],
     topTeamsStatus: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
     userTeams: [],
+    userTeamsStatus: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
     teamMembers: [],
     selectedTeam: {},
     teamsFormError: '',
@@ -400,8 +401,16 @@ const teamSlice = createSlice({
                 state.teamsFormError = action.payload || 'Failed to load teams';
             })
 
+            .addCase(getUserTeams.pending, state => {
+                state.userTeamsStatus = 'loading';
+            })
             .addCase(getUserTeams.fulfilled, (state, action) => {
                 state.userTeams = action.payload;
+                state.userTeamsStatus = 'succeeded';
+            })
+            .addCase(getUserTeams.rejected, (state, action) => {
+                state.userTeamsStatus = 'failed';
+                state.teamsFormError = action.payload || 'Failed to load teams';
             })
 
             .addCase(joinTeam.fulfilled, (state, action) => {
