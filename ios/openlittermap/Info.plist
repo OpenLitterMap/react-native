@@ -54,6 +54,8 @@
 	<string>OpenLitterMap needs permission to your local if you would like to collect geotagged photos using the app</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>OpenLitterMap needs permission to your location services to geotag the location of the photos you take with the app.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>OpenLitterMap lets you choose existing geotagged photos of litter from your library to tag and upload to the map. Only the photos you specifically select are accessed.</string>
 	<key>RCTNewArchEnabled</key>
 	<true/>
 	<key>UIAppFonts</key>

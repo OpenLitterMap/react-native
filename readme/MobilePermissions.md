@@ -39,9 +39,16 @@ been shown and is not subject to the rule. (This now applies only to the
 - LocationAccuracy
 - LocationWhenInUse
 
-`NSPhotoLibraryUsageDescription` has been **removed** from `Info.plist` — PHPicker
-(used by `react-native-image-picker` on iOS) needs no usage description.
-`NSCameraUsageDescription` and the location usage strings remain.
+`NSPhotoLibraryUsageDescription` **is required in `Info.plist`** and must not be
+removed. PHPicker is permission-free at *runtime* (no prompt is shown for the
+normal pick flow), but Apple's *static binary scan* still mandates the purpose
+string: `react-native-image-picker` and `@lodev09/react-native-exify` link
+PhotoKit symbols (`PHPhotoLibrary`, `PHAsset`), so the App Store rejects the
+binary with **ITMS-90683** if the key is absent — regardless of whether those
+APIs are ever called. It was wrongly dropped in the v7.10.0 migration (assuming
+"PHPicker = permission-free = no string needed") and re-added in the build-89
+resubmission after Apple rejected build 88 with ITMS-90683.
+`NSCameraUsageDescription` and the location usage strings also remain.
 
 ### Android (`AndroidManifest.xml`)
 - `INTERNET`
@@ -57,7 +64,7 @@ The flagged media permissions (`READ_MEDIA_IMAGES`, `READ_EXTERNAL_STORAGE`,
 ### Photos (picker)
 | Platform | Permission | Notes |
 |----------|-----------|-------|
-| iOS | none | PHPicker returns only picked photos; no `NSPhotoLibraryUsageDescription` |
+| iOS | none at runtime | PHPicker returns only picked photos (no prompt), but `NSPhotoLibraryUsageDescription` **must** be in `Info.plist` — Apple static-scan requirement (ITMS-90683), see below |
 | Android | none | Android Photo Picker; `ACCESS_MEDIA_LOCATION` only, for EXIF GPS |
 
 GPS for picked photos is read from EXIF via `utils/readGpsFromExif.js` (RNIP
