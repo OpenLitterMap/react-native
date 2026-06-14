@@ -3,5 +3,4 @@ export { default as SettingScreen } from './setting/SettingsScreen';
 export { default as HomeScreen } from './home/HomeScreen';
 
 export { default as NewUpdateScreen } from './NewUpdateScreen';
-export * from './permission';
 export * from './team';

@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 OpenLitterMap is a React Native mobile app (iOS & Android) for crowdsourced litter mapping. Users photograph litter, tag it by category, and upload geotagged data to the OpenLitterMap Laravel backend API.
 
-**App Version:** 7.9.0 | **React Native:** 0.84.1 | **Branch:** `openlittermap/v7` (main: `main5`)
+**App Version:** 7.10.0 | **React Native:** 0.84.1 | **Branch:** `openlittermap/v7` (main: `main5`)
 
 ## Quick Start
 
@@ -25,12 +25,12 @@ Runtime: **Node v22.22.1**, **npm 10.9.4** (prefer npm over yarn) — RN 0.84 re
 ## Core User Flow
 
 ```
-HomeScreen Dashboard → Tap photo → Tag → Auto-upload
+HomeScreen Dashboard → Tap photo → Tag → Tap "Upload (N)" bar
 ```
 
-1. **Home** (`HomeScreen`) — dashboard as a single virtualized `FlashList` (fixed sections in `ListHeaderComponent`, inbox photos as data): Global Impact stats, Your Impact stats, Uploaded (untagged server photos), "Your Photos" (geotagged camera-roll inbox — pin per photo, 6 preview + "Load more" 50/page, "Select More" picker import)
+1. **Home** (`HomeScreen`) — dashboard as a single virtualized `FlashList` (fixed sections in `ListHeaderComponent`, inbox photos as data): Global Impact stats, Your Impact stats, Uploaded (untagged server photos), "Your Photos" (a **persistent geotagged-only to-tag queue** sourced from `photos.imagesArray` — local camera captures + system-photo-picker imports; no camera-roll scan). "Add Photos" opens the OS picker; non-geotagged picks surface in a dismissible no-GPS card instead of entering the queue.
 2. **Tag** (`AddTagScreen`) — Full-screen image viewer with search/browse for litter tags, materials, brands
-3. **Upload** — Auto-triggered via `useFocusEffect` when returning to HomeScreen after tagging. Two-step: upload photo binary → PUT tags (replace/idempotent).
+3. **Upload** — Tagged photos surface an **"Upload (N)" bar** on HomeScreen; tapping it runs the upload (orchestrated by `useUploadPhotos`, with a retry path). There is **no** auto-upload-on-focus — tracked as a future enhancement (`docs/superpowers/photo-picker-followups.md` F1). Two-step: upload photo binary → PUT tags (replace/idempotent).
 
 ## Architecture
 
@@ -51,20 +51,18 @@ MainRoutes (NativeStack) — 3-way: no-token / onboarding / app
     ├── SETTING → SettingScreen                       (push)
     ├── QUICK_TAGS_SETTINGS → QuickTagsSettingsScreen (push)
     ├── MY_UPLOADS → MyUploads                        (push)
-    ├── PERMISSION → PermissionStack                  (fullScreenModal)
     └── UPDATE → NewUpdateScreen                      (fullScreenModal)
 ```
 
 
-### State Management — Redux Toolkit (15 slices)
+### State Management — Redux Toolkit (14 slices)
 
 | Slice | File | Key Data | Persisted |
 |-------|------|----------|-----------|
 | `auth` | `auth_reducer.js` | token, user profile | Yes |
-| `photos` | `photos_reducer.js` | imagesArray (local gallery photos + tags), editingPhoto, swiperIndex | Yes (imagesArray only) |
+| `photos` | `photos_reducer.js` | imagesArray (local camera captures + picker imports + tags), editingPhoto, swiperIndex; `selectInboxPhotos` feeds the "Your Photos" queue | Yes (imagesArray only) |
 | `serverPhotos` | `server_photos_reducer.js` | untaggedCount, untaggedPreview, editTagsOnPhoto thunk | No |
 | `uploadFlow` | `upload_flow_reducer.js` | uploadPhase, counters, modal state, uploadImage/addTagsToPhoto thunks | No |
-| `gallery` | `gallery_reducer.js` | CameraRoll photos, GPS metadata | Yes (dismissedUris only) |
 | `tags` | `tags_reducer.js` | Search index, materials, brands (cached 7-day TTL) | AsyncStorage cache |
 | `quickTags` | `quick_tags_reducer.js` | User quick tag presets (cloId, customName, quantity, materials, brands) | Yes |
 | `teams` | `team_reducer.js` | User teams, team members, top teams | No |
@@ -134,18 +132,16 @@ The mobile app consumes these endpoints; full request/response contracts are in 
 ```
 ├── utils/config.js           # Environment config, API URL selection (react-native-config)
 ├── store/index.js            # Redux store + persist config
-├── reducers/                 # 15 Redux slices (all use createSlice + createAsyncThunk)
+├── reducers/                 # 14 Redux slices (all use createSlice + createAsyncThunk)
 ├── routes/                   # React Navigation v7 navigators (native-stack + bottom-tabs)
 ├── screens/
 │   ├── home/                 # HomeScreen (4-section dashboard) + homeComponents/
 │   ├── addTag/               # AddTagScreen + components/ (TagPills, TagSearchBar, TagDetailSheet, etc.)
-│   ├── gallery/              # DELETED — camera roll now loads directly on HomeScreen dashboard
 │   ├── auth/                 # WelcomeScreen, AuthScreen + authComponents/
 │   ├── team/                 # TeamScreen, TeamDetailsScreen, TopTeamsScreen, TeamLeaderboardScreen
 │   ├── userStats/            # UserStatsScreen + userComponents/ (MyUploads, ProgressCircleCard)
 │   ├── profile/              # ProfileScreen + helpers/
 │   ├── setting/              # SettingsScreen, QuickTagsSettingsScreen + settingComponents/
-│   ├── permission/           # GalleryPermissionScreen (camera priming lives in onboarding/)
 │   ├── onboarding/           # OnboardingStack screens (post-signup priming + tutorial)
 │   ├── components/           # Shared: theme/, typography/, Button, Header, CustomTextInput, etc.
 │   └── NewUpdateScreen.js
@@ -195,9 +191,10 @@ i18next with `react-i18next`. Translation keys are **full British English string
 - `@shopify/flash-list` — performant lists
 - `formik` + `yup` — form handling/validation
 - `react-native-gesture-handler` v2 + `react-native-reanimated` v4 — image viewer gestures
-- `react-native-permissions` — camera/location/photo library (iOS permissions in `reactNativePermissionsIOS` in package.json)
+- `react-native-image-picker` v8 — system photo picker (Android Photo Picker / iOS PHPicker); fills the "Your Photos" queue, permission-free
+- `react-native-permissions` — camera/location only (iOS permissions in `reactNativePermissionsIOS` in package.json; no photo-library permission)
 - `@sentry/react-native` — error tracking (production only)
-- `@lodev09/react-native-exify` — Android EXIF GPS fallback
+- `@lodev09/react-native-exify` — reads GPS EXIF from picked photos (RNIP doesn't return location)
 - `dayjs` — date formatting
 - `lottie-react-native` — onboarding animations
 
@@ -241,7 +238,7 @@ hang) without rebuilding:
 tracking itself is already on by default in `@sentry/react-native`.
 
 **Coverage (verified):** three sources, all uploaded on release builds:
-- **App binary** (+ statically-linked pods like camera-roll, Reanimated): the
+- **App binary** (+ statically-linked pods like Reanimated): the
   archive `dSYMs/` folder contains only `openlittermap.app.dSYM`, uploaded by the
   build phase above.
 - **React & Hermes frames**: these are **prebuilt vendored frameworks** in RN
@@ -263,7 +260,7 @@ Detailed documentation for each feature area lives in `readme/`:
 | `Navigation.md` | **Navigation (authoritative)** — navigator tree, presentation rules, patterns |
 | `MobileUpload.md` | Upload flow, two-step process, GPS validation, error classification, retry behavior |
 | `MobileTagging.md` | CLO tagging system, search index, tag pills, detail sheet, category colors, XP estimate |
-| `MobileGallery.md` | Camera-roll "Your Photos" inbox, GPS detection, EXIF fallback, pagination |
+| `MobileGallery.md` | "Your Photos" picker-fed to-tag queue, geotagged-only invariant, no-GPS card |
 | `MobileAuth.md` | Sanctum auth, boot flow, password strength, language picker |
 | `MobileTeams.md` | Team CRUD, members, leaderboard |
 | `MobileSettings.md` | Settings, privacy toggles, account deletion |

@@ -46,8 +46,6 @@
 			</dict>
 		</dict>
 	</dict>
-	<key>NSAppleMusicUsageDescription</key>
-	<string>OpenLitterMap needs permission to your photos if you would like to upload geotagged photos taken outside of the app.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Giving permission to the camera and location services will enable you to take geotagged photos of litter with the app. Please take photos of litter only.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
@@ -57,7 +55,7 @@
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>OpenLitterMap needs permission to your location services to geotag the location of the photos you take with the app.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>OpenLitterMap needs permission to your photos if you would like to upload geotagged photos taken outside of the app.</string>
+	<string>OpenLitterMap lets you choose existing geotagged photos of litter from your library to tag and upload to the map. Only the photos you specifically select are accessed.</string>
 	<key>RCTNewArchEnabled</key>
 	<true/>
 	<key>UIAppFonts</key>

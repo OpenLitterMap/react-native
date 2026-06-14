@@ -1,14 +1,14 @@
 # Mobile Upload
-> The two-step auto-upload flow: GPS filter, photo binary, then the idempotent tag write.
+> The two-step upload flow: GPS filter, photo binary, then the idempotent tag write.
 
 ## Overview
-Geotagged camera-roll photos surface in the HomeScreen inbox. Tapping one opens the tagging screen; on returning to HomeScreen the upload is auto-triggered. Uploads run one photo at a time. A pre-upload step filters out photos without valid GPS. Tagged photos use a two-step upload: photo binary first, then tags via a separate idempotent call.
+Photos enter the HomeScreen "Your Photos" inbox via the **system photo picker** ("Add Photos", multi-select) and in-app camera captures — there is no camera-roll scan. The inbox is a persistent, geotagged-only queue backed by `photos.imagesArray`. Tapping a photo opens the tagging screen; back on HomeScreen, tagged photos surface an "Upload (N)" bar — tapping it starts the upload (there is no auto-upload-on-focus). Uploads run one photo at a time. A pre-upload step still filters out any photo without valid GPS as defence. Tagged photos use a two-step upload: photo binary first, then tags via a separate idempotent call.
 
 ## Files
-- `screens/home/HomeScreen.js` — Dashboard + upload orchestration (auto-uploads on focus after tagging)
+- `screens/home/HomeScreen.js` — Dashboard + upload orchestration (runs the upload loop when the user taps the "Upload (N)" bar)
 - `screens/home/useUploadPhotos.js` — Upload loop hook (sequential upload, GPS filter, cancel, retry)
-- `screens/home/homeComponents/InboxSection.js` — "Your Photos" inbox grid (tap to tag, Select More, delete)
-- `screens/home/homeComponents/useInbox.js` — inbox state hook (visible count, selection, load-more)
+- `screens/home/homeComponents/InboxSection.js` — "Your Photos" inbox grid (tap to tag, Add Photos, delete)
+- `screens/home/homeComponents/useInbox.js` — inbox state hook (selection + delete mode; the queue is the local `imagesArray`, no paging)
 - `screens/home/homeComponents/UploadModal.js` — upload progress modal
 - `reducers/photos_reducer.js` — Local image state (imagesArray, tagging, swiperIndex)
 - `reducers/upload_flow_reducer.js` — Upload phase, counters, modal state, `uploadImage`/`addTagsToPhoto` thunks
@@ -28,8 +28,18 @@ Geotagged camera-roll photos surface in the HomeScreen inbox. Tapping one opens 
 
 Photo deletion lives in `uploads_reducer` (`deleteUploadPhoto`) — see `MobileMyUploads.md`.
 
+**Photo format / MIME (v7.10.0).** The `photo` part is sent with a hardcoded
+`type: 'image/jpeg'` (`useUploadPhotos.js`) regardless of the actual bytes. On iOS the
+bytes are frequently **HEIC** — the picker passes HEIC through (mislabeled `.jpg`) and
+the in-app camera (vision-camera) captures HEVC/HEIC by default; on Android an
+exotic/undecodable HEIC can also pass through raw. The backend sniffs the bytes (not the
+MIME) and converts HEIC server-side (backend 5.12.3). `lat`/`lon`/`date` ride as explicit
+form fields, so the upload does not depend on the file's EXIF. MIME-honesty and an
+optional client-side transcode are scoped post-release in
+`docs/superpowers/photo-picker-followups.md`.
+
 ## Upload Flow (Two-Step)
-Orchestrated by `useUploadPhotos.js`, auto-triggered from HomeScreen on focus after tagging.
+Orchestrated by `useUploadPhotos.js`, started by tapping the **"Upload (N)" bar** on HomeScreen (there is no auto-upload-on-focus; see `docs/superpowers/photo-picker-followups.md` F1).
 
 1. **Filter** — Only images that are both geotagged (`isGeotagged`) and tagged (`isTagged`) are uploadable. If any tagged photos lack GPS, an Alert reports the skip count with Cancel/Continue.
 2. **Per photo** — for a not-yet-uploaded photo: **(a)** POST the binary via `uploadImage` → server returns `photo_id`; **(b)** PUT the resolved tags via `addTagsToPhoto`. For an already-uploaded photo (retry path), the binary step is skipped and only the tag write runs.
@@ -59,11 +69,12 @@ After a gallery image uploads, `type` stays `'gallery'` but `uploaded` becomes `
 Upload failures are classified by `classifyError()` (`utils/classifyError.js`) into: `photo-already-uploaded`, `invalid-photo-id`, `invalid-coordinates`, `timeout`, `network`, `server`, `unauthorized`, `unknown`.
 
 - **`photo-already-uploaded`** — duplicate detected server-side; the stranded photo is dropped from the inbox (it's already on the server and can't be tagged without a live photo id).
-- **`invalid-photo-id`** — the id can never be tagged: either `addTagsToPhoto` refused a non-integer id locally (no network call) or the backend rejected a valid-integer id with no live row. Permanent + non-reportable; the photo is dropped so the loop stops retrying it.
+- **`invalid-photo-id`** — the id can never be tagged: either `addTagsToPhoto` refused a non-integer id locally (no network call), or the backend's `Rule::exists` failed for a deleted/soft-deleted photo (returned as a `422` validation error). Permanent + non-reportable; the photo is dropped so the loop stops retrying it.
+- **Forbidden / not-found (`403` / `404`)** — `403` means the photo belongs to another user (ownership — permanent per backend); `404` is defensive (the tags endpoint doesn't 404). Both drop the photo from the inbox so the loop stops re-hitting the gate. Status-based (the `errorType` is `unknown`), surfaced via a `status` field on the rejection.
 - **`unauthorized` (401)** — the axios interceptor signals the loop to stop via `setUploadAbortReason('token-expired')`. After re-login, a recovery flow lets the user retry with photos preserved.
 
 ## Cancel Behaviour
 Cancel uses an `AbortController` to abort the in-flight axios request, resets `uploadPhase` to `idle`, and closes the modal. The loop checks `isUploadCancelled` before each iteration and early-returns after a cancel so the result modal can't re-appear.
 
 ## Retry Behaviour
-If a tag write fails after a successful binary upload, the image stays in `imagesArray` with `uploaded: true` and `tags` intact. On the next attempt the loop routes it straight to the tag-only path. Because `PUT /api/v3/tags` is **replace** semantics, re-running the loop is idempotent — a lost-response retry can't double-tag or double-count XP. **Exception:** an `invalid-photo-id` rejection drops the photo instead of retrying; only transient errors (timeout/network/server) are retried.
+If a tag write fails after a successful binary upload, the image stays in `imagesArray` with `uploaded: true` and `tags` intact. On the next attempt the loop routes it straight to the tag-only path. Because `PUT /api/v3/tags` is **replace** semantics, re-running the loop is idempotent — a lost-response retry can't double-tag or double-count XP. **Exception:** an `invalid-photo-id` rejection, or a permanent **`403` (ownership) / `404`**, drops the photo instead of retrying; only transient errors (timeout/network/5xx) are retried.

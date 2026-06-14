@@ -1,73 +1,83 @@
 # Mobile Gallery (the "Your Photos" inbox)
 
-> The camera-roll inbox on the HomeScreen dashboard: GPS detection, pagination, and tap-to-tag.
+> The to-tag queue on the HomeScreen dashboard: fed by the system photo picker, geotagged-only, tap-to-tag.
 
 ## Overview
-There is no separate gallery screen. Camera-roll photos surface in the **"Your
-Photos"** inbox, a section of the HomeScreen dashboard. The inbox shows **all**
-camera-roll photos newest-first: **non-geotagged photos are greyed out** and
-**geotagged photos get a 📍 pin top-right** (only geotagged photos can be
-mapped/uploaded). The whole dashboard is one virtualized `FlashList`: the fixed
-sections (stats, untagged, banners) sit in `ListHeaderComponent`, and the inbox
-photos are the list `data` (flex-sized square tiles, even gutters, inset 16px).
+There is no separate gallery screen and **no camera-roll scan**. The **"Your
+Photos"** inbox is a section of the HomeScreen dashboard that renders the
+local, **not-yet-uploaded** photos already held in `photos.imagesArray` — the
+same persisted array the tagger and uploader use. Photos enter the queue two
+ways: **in-app camera captures** and **system photo-picker imports** (no media
+permission required). The whole dashboard is one virtualized `FlashList`: the
+fixed sections (stats, untagged, the no-GPS card, inbox controls) sit in
+`ListHeaderComponent`, and the queue photos are the list `data` (flex-sized
+square tiles, even gutters, inset 16px).
+
+## Geotagged-only invariant
+`imagesArray` is **geotagged-only**. Every photo in the queue has valid GPS, so
+every tile is mappable/uploadable and the tagger can never dead-end on an
+un-uploadable photo. Non-geotagged picks **never enter the queue** — they are
+surfaced separately in the dismissible no-GPS card (see below). This invariant
+is enforced at the import boundary in `HomeScreen.handleSelectMore` and assumed
+by `selectInboxPhotos`.
 
 ## Files
-- `screens/home/HomeScreen.js` — hosts the dashboard FlashList; `handleTapInboxPhoto` (import + tag) and `handleSelectMore` (picker import)
-- `screens/home/homeComponents/useInbox.js` — inbox state hook (visible count, selection, load-more)
-- `screens/home/homeComponents/InboxSection.js` — presentational pieces: `InboxThumbnail`, `InboxControls`, `InboxEmpty`, `InboxFooter`
-- `reducers/gallery_reducer.js` — CameraRoll fetching (cursor pagination), GPS detection, `selectInboxPhotos`
-- `utils/isGeotagged.js` — valid-GPS check (rejects null, 0,0)
-- `utils/readGpsFromExif.js` — EXIF GPS fallback (Android camera-roll; picker imports)
-- `utils/permissions/cameraRollPermission.js` — photo-library + `ACCESS_MEDIA_LOCATION` permission handling
+- `screens/home/HomeScreen.js` — hosts the dashboard FlashList; `handleSelectMore` ("Add Photos" picker import), `handleTapInboxPhoto` (jump the swiper to the tapped photo), `noGpsPicks` state + `NoGpsPicksCard`
+- `screens/home/homeComponents/useInbox.js` — inbox state hook (selection set, delete mode); reads `selectInboxPhotos`
+- `screens/home/homeComponents/InboxSection.js` — presentational pieces: `InboxThumbnail`, `InboxControls`, `InboxEmpty`, `NoGpsPicksCard`
+- `reducers/photos_reducer.js` — `selectInboxPhotos` selector; `addImages` (import), `deleteImage` (remove)
+- `utils/gps.js` — `isValidGpsCoords` (rejects null, 0,0)
+- `utils/readGpsFromExif.js` — EXIF GPS read for picker imports
 
 ## Flow
-1. `useHomeBootstrap` checks gallery permission on mount/focus; if granted, `getPhotosFromCameraroll('INITIAL')` fetches.
-2. Each photo gets a `hasGps` boolean from its location metadata (or EXIF on Android).
-3. `selectInboxPhotos` returns **all** photos (geotagged or not, minus dismissed), newest-first — **no date window**.
-4. `useInbox` shows the first **6** (`INITIAL_VISIBLE`); the grid renders them in a 3-column FlashList — geotagged tiles pinned, non-geotagged greyed.
-5. **Load more** reveals **+50** (`LOAD_MORE_STEP`) and pages the camera roll (`LOAD`, 50/page) when more are needed.
-6. **Tap a geotagged photo** → `addImages` (the **geotagged** photos only, for swiping) → navigate to `ADD_TAGS`. Non-geotagged tiles are **inert** in tag mode (the thumbnail `Pressable` is `disabled` — tap does nothing) so the tagger never dead-ends on an un-uploadable photo. Non-geotagged tiles stay selectable in **delete mode** (so they can be dismissed).
-7. **Select More** (header, right of Delete) → `launchImageLibrary` multi-select → read GPS via EXIF → import geotagged picks via `addImages` → `ADD_TAGS`. Non-geotagged picks are skipped with a "Missing GPS Data" alert. **Dedupe:** the OS picker returns a temp-file uri that differs from the CameraRoll `ph://` uri for the same physical photo, so `addImages` dedupes on `filename` (the stable cross-source key) in addition to uri/id — the same photo can't be imported twice.
-8. **Delete mode** → select photos → dismiss (`dismissPhotos` → `dismissedUris`); camera captures are removed via `deleteImage`.
+1. The queue shows `selectInboxPhotos(state)`: local photos with a `uri`, `uploaded === false`, and non-null `lat`, **newest-first**. There is no permission check, no scan, and no date window — it's just the persisted array filtered + sorted.
+2. **Add Photos** (inbox header, primary CTA on the empty state) → `launchImageLibrary` (`react-native-image-picker`, multi-select) opens the OS photo picker. No permission prompt — the picker hands back only the photos the user picks.
+3. For each picked asset, `handleSelectMore` reads GPS via `readGpsFromExif(asset.uri)` (RNIP doesn't return GPS). Picks with valid coordinates are imported via `addImages` (`type: 'gallery'`, `uploaded: false`); picks without GPS go to `skipped`.
+4. Imported picks land in `imagesArray` and **persist** across restarts (redux-persist). They appear in the queue immediately.
+5. **Non-geotagged picks** populate `noGpsPicks` → rendered by `NoGpsPicksCard` (one dismissible row per pick: thumbnail + filename + "No location data"). They are **not** added to the queue. Dismiss clears the card.
+6. **Tap a queue tile** (not in delete mode) → `handleTapInboxPhoto` jumps the swiper to that photo's index in `imagesArray` (it's already there) and navigates to `ADD_TAGS`. Tapping does **not** auto-navigate on import — the user taps a tile to tag.
+7. After tagging, the upload flow runs on HomeScreen focus; an uploaded photo (`uploaded: true`) drops out of `selectInboxPhotos` automatically — tagging → upload clears the queue.
+8. **Delete mode** (inbox header) → select tiles → `handleDeleteSelected` removes each via `deleteImage(photo.id)`.
 
 ## Visual indicators
-- **📍 pin**: top-right of every geotagged (mappable) photo.
-- **Greyed out**: non-geotagged photos get a soft grey wash (can't be mapped) and are inert to taps in tag mode.
-- **Tag badge**: top-left, when the photo was tagged this session.
-- **Camera badge**: bottom-left, for in-app camera captures.
+- **Tag badge**: top-left, when the photo was tagged this session (`taggedUris`).
+- **Camera badge**: bottom-left, for in-app camera captures (`fromCamera`, i.e. `type !== 'gallery'`).
 - **Selection**: checkmark badge + overlay in delete mode.
 
+(No "greyed out / no pin" non-geotagged state any more — the queue is geotagged-only, so every tile is mappable.)
+
 ## Empty / states
-- No photo permission → grant/settings prompts.
-- No camera-roll photos at all → "No photos available yet" + manage-access.
-- Photos loaded but none geotagged → "Select Photos To Tag & Upload" + a **Load more photos** button (page further back) when more pages exist.
+- **Empty queue** → the primary first-run call to action (`InboxEmpty`): an images icon, "Add your litter photos to start tagging", a one-line explainer ("Choose litter photos from your gallery — only the photos you pick are uploaded."), and the **Add Photos** button. This is the main entry point, not a fallback.
+- **Non-geotagged pick(s)** → `NoGpsPicksCard` above the inbox controls ("Couldn't add — no location data", per-photo rows). Dismissible.
 
-## Redux state (`state.gallery`)
+## Inbox photo shape (`selectInboxPhotos`)
+Each entry is a projection of an `imagesArray` item:
 ```
-{
-    fetchStatus: 'idle' | 'loading' | 'succeeded' | 'failed',
-    galleryImages: array,            // CameraRoll photos, each with hasGps
-    nextGalleryId: number,           // local id counter (NOT a server id)
-    camerarollImageFetched: boolean,
-    lastFetchTime: number | null,    // for TIME-based "new since last fetch"
-    hasMorePages: boolean,           // more camera-roll pages exist
-    nextPageCursor: string | null,   // cursor for the next LOAD page
-    dismissedUris: array,            // user-dismissed inbox photos (capped 500, persisted)
-    error: string | null
-}
+{ id, uri, date, lat, lon, hasGps: true, fromCamera: boolean }
 ```
-Selector: `selectInboxPhotos(state)` — all photos, not-dismissed, newest-first.
+- `hasGps` is always `true` (the queue is geotagged-only).
+- `fromCamera` is `img.type !== 'gallery'` (camera capture vs. picker import).
 
-## GPS detection
-- `node.location` must have non-null, non-zero `latitude`/`longitude` → `hasGps: true`.
-- **Android EXIF fallback**: when CameraRoll returns no GPS, `readGpsFromExif()` reads EXIF in batches of 10.
-- **Picker imports**: `react-native-image-picker` doesn't return GPS, so `handleSelectMore` reads each pick's EXIF; only valid-GPS picks are imported.
+## GPS detection (picker imports)
+`react-native-image-picker` does not return GPS, so `handleSelectMore` reads each
+pick's EXIF via `readGpsFromExif()` and validates with `isValidGpsCoords`. Only
+valid-GPS picks are imported; the rest go to the no-GPS card. On Android,
+`ACCESS_MEDIA_LOCATION` (not a flagged permission) lets the EXIF read return
+unredacted coordinates.
 
-## Fetch strategies (`getPhotosFromCameraroll`)
-- `INITIAL`: first load — 40 photos
-- `TIME`: photos added since `lastFetchTime` — up to 1000 (the App-Hang suspect; see GPS audit)
-- `LOAD`: cursor pagination — **50 photos/page** (backs "Load more")
-- `REFRESH`: full re-fetch (after iOS limited-permission changes)
+**Known issue — Android HEIC picks lose GPS (v7.10.0, unreleased).** On Android a
+*decodable* HEIC/HEIF pick is re-encoded to JPEG by `react-native-image-picker`
+*before* the app sees it, and that transcode **strips EXIF** (GPS + capture date).
+`readGpsFromExif` then reads the stripped file → no GPS → the photo lands in the
+no-GPS card with a misleading "no location data" message even though it had a
+location. `ACCESS_MEDIA_LOCATION` doesn't help (the read targets the stripped
+transcode, not the original). iOS picks pass HEIC through untouched, so GPS survives
+there; an exotic/undecodable Android HEIC also keeps GPS (no transcode runs). Tracked,
+with the `assetRepresentationMode: 'current'` fast-follow, in
+`docs/superpowers/photo-picker-followups.md`.
 
 ## Permissions
-Camera-roll access + `ACCESS_MEDIA_LOCATION` (iOS, Android 13+/12-) is documented in `MobilePermissions.md`; the inbox uses `utils/permissions/cameraRollPermission.js`.
+The photo picker needs **no** media/library permission on either platform
+(Android Photo Picker / iOS PHPicker). See `MobilePermissions.md`. The only
+photo-adjacent permission is Android `ACCESS_MEDIA_LOCATION`, kept for reading
+GPS EXIF from picked photos.

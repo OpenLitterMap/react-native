@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {
     Alert,
     Modal,
@@ -17,13 +17,8 @@ import {
     clearEditingPhoto,
     loadPhotoForEditing
 } from '../../reducers/photos_reducer';
-import {
-    fetchAllUntaggedPhotos,
-    fetchUntaggedCount
-} from '../../reducers/server_photos_reducer';
+import {fetchAllUntaggedPhotos} from '../../reducers/server_photos_reducer';
 import {closeThankYouMessages, selectUploadFlow, setUploadAbortReason} from '../../reducers/upload_flow_reducer';
-import {getStats} from '../../reducers/stats_reducer';
-import {selectInboxPhotos} from '../../reducers/gallery_reducer';
 import {launchImageLibrary} from 'react-native-image-picker';
 import {isTagged} from '../../utils/isTagged';
 import {isValidGpsCoords} from '../../utils/gps';
@@ -41,9 +36,9 @@ import {
     InboxThumbnail,
     InboxControls,
     InboxEmpty,
-    InboxFooter,
+    NoGpsPicksCard,
+    ImportProgressModal,
     useInbox,
-    LimitedAccessBanner,
     UntaggedSection,
     UploadModal,
     YourImpactSection
@@ -53,13 +48,23 @@ import CommunityStats from '../components/CommunityStats';
 // Hooks
 import useUploadPhotos from './useUploadPhotos';
 import useHomeBootstrap from './useHomeBootstrap';
+import {useRepeatTutorial} from '../../hooks/useRepeatTutorial';
+
+// EXIF reads run with bounded concurrency so a large multi-select import doesn't read
+// one-photo-at-a-time (each read has a 5s timeout). The progress modal shows only for
+// larger batches; small picks finish before it'd matter.
+const EXIF_CONCURRENCY = 6;
+const PROGRESS_THRESHOLD = 6;
 
 const HomeScreen = ({navigation}) => {
     const dispatch = useDispatch();
     const {t} = useTranslation();
 
-    // Boot: device model, stats, camera roll, version check, untagged count
-    const {permissionStatus, refreshCameraRoll, requestPermission} = useHomeBootstrap(navigation);
+    // Boot: device model, stats, version check, untagged count
+    const {refreshAll} = useHomeBootstrap(navigation);
+
+    // Restart the onboarding tutorial from the beginning (empty-state CTA)
+    const repeatTutorial = useRepeatTutorial();
 
     // Upload orchestration
     const {
@@ -94,15 +99,17 @@ const HomeScreen = ({navigation}) => {
     const isUploading = uploadPhase !== 'idle';
 
     // Count tagged photos ready to upload (for the upload button)
-    const dismissedUris = useSelector(state => state.gallery.dismissedUris);
-    const pendingUploadCount = useMemo(() => {
-        const dismissed = new Set(dismissedUris || []);
-        return images.filter(img => isTagged(img) && !dismissed.has(img.uri)).length;
-    }, [images, dismissedUris]);
+    const pendingUploadCount = useMemo(
+        () => images.filter(img => isTagged(img)).length,
+        [images]
+    );
 
     // Local UI state
     const [refreshing, setRefreshing] = useState(false);
     const [showCamera, setShowCamera] = useState(false);
+    const [noGpsPicks, setNoGpsPicks] = useState([]);
+    const [importProgress, setImportProgress] = useState(null); // {done,total} while reading EXIF
+    const importCancelRef = useRef(false);
 
     // Camera FAB: check permissions, then open camera modal
     const handleCameraFab = useCallback(async () => {
@@ -188,60 +195,35 @@ const HomeScreen = ({navigation}) => {
         }
     }, [dispatch, navigation, t]);
 
-    /** Section 4: Tap a camera roll photo — load all inbox photos, swipe to tapped one */
-    const recentPhotos = useSelector(selectInboxPhotos);
+    /** Section 4: Tap a queued photo — jump the swiper to it (already in imagesArray) */
     const handleTapInboxPhoto = useCallback((photo) => {
-        // Only geotagged photos are mappable — keep non-geotagged out of the
-        // swipe queue so the tagger can't dead-end on an un-uploadable photo.
-        if (!photo.hasGps) return;
+        if (!photo.hasGps) return; // only geotagged photos are mappable
         dispatch(clearEditingPhoto());
-        // Add only the geotagged photos so the user swipes through mappable ones
-        const geotagged = recentPhotos.filter(p => p.hasGps);
-        dispatch(addImages({images: geotagged, picked_up: null}));
-        // addImages deduplicates — photo may already be in images from a prior tap.
-        // Search existing array first, then fall back to appended position.
-        const existingIdx = images.findIndex(img => img.uri === photo.uri);
-        if (existingIdx >= 0) {
-            dispatch(changeSwiperIndex(existingIdx));
-        } else {
-            // Newly appended — its index is past the existing queue, offset by how
-            // many photos before it are *genuinely new* (addImages dropped the
-            // dupes by uri/filename, so a raw offset would overshoot the index).
-            const existingUris = new Set(images.map(i => i.uri));
-            const existingNames = new Set(images.map(i => i.filename).filter(Boolean));
-            const isNew = p => !existingUris.has(p.uri) &&
-                !(p.filename && existingNames.has(p.filename));
-            const tappedPos = geotagged.findIndex(p => p.uri === photo.uri);
-            const newBefore = geotagged.slice(0, Math.max(0, tappedPos)).filter(isNew).length;
-            dispatch(changeSwiperIndex(images.length + newBefore));
-        }
+        const idx = images.findIndex(img => img.uri === photo.uri);
+        dispatch(changeSwiperIndex(idx >= 0 ? idx : 0));
         navigation.navigate('ADD_TAGS');
-    }, [dispatch, navigation, recentPhotos, images]);
+    }, [dispatch, navigation, images]);
 
     /** Pull-to-refresh — refresh all dashboard data */
-    const user = useSelector(state => state.auth.user);
     const handleRefresh = useCallback(async () => {
         setRefreshing(true);
-        const fetches = [
-            dispatch(getStats()),
-            refreshCameraRoll()
-        ];
-        if (!user?.enable_admin_tagging) {
-            fetches.push(dispatch(fetchUntaggedCount()));
-        }
-        await Promise.allSettled(fetches);
+        await refreshAll();
         setRefreshing(false);
-    }, [dispatch, refreshCameraRoll, user?.enable_admin_tagging]);
+    }, [refreshAll]);
 
-    /** "Select More" — open the system gallery, import geotagged picks into the tag queue */
+    /** "Add Photos" — system picker; geotagged picks enter the queue,
+        non-geotagged surface in the dismissible no-GPS card (§3b). */
     const handleSelectMore = useCallback(async () => {
         let result;
         try {
             result = await launchImageLibrary({
                 mediaType: 'photo',
-                selectionLimit: 0,
-                includeExtra: true,
+                selectionLimit: 0, // 0 = multi-select (PickMultipleVisualMedia)
                 quality: 1
+                // No includeExtra: RNIP ties it to library permissions. We read GPS
+                // *and* capture time from EXIF via readGpsFromExif (meta.takenAt
+                // below); only `id` goes unused (falls back to the uri). Keeps the
+                // picker truly permission-free.
             });
         } catch {
             Alert.alert(t('Error!'), t('Something went wrong. Please try again.'));
@@ -253,60 +235,69 @@ const HomeScreen = ({navigation}) => {
             return;
         }
 
+        const assets = result.assets || [];
         const imported = [];
-        let skipped = 0;
-        for (const asset of result.assets || []) {
-            // react-native-image-picker doesn't return GPS — read from EXIF
-            const gps = await readGpsFromExif(asset.uri);
-            if (gps && isValidGpsCoords(gps.latitude, gps.longitude)) {
-                imported.push({
-                    id: asset.id || `picked_${asset.uri}`,
-                    uri: asset.uri,
-                    filename: asset.fileName || `picked_${Date.now()}.jpg`,
-                    lat: gps.latitude,
-                    lon: gps.longitude,
-                    date: asset.timestamp
-                        ? Math.floor(new Date(asset.timestamp).getTime() / 1000)
-                        : Math.floor(Date.now() / 1000),
-                    type: 'gallery',
-                    platform: 'mobile',
-                    customTags: [],
-                    uploaded: false
+        const skipped = [];
+
+        // Read EXIF with bounded concurrency (not one-at-a-time). Show progress +
+        // allow cancel only for larger batches.
+        const showProgress = assets.length > PROGRESS_THRESHOLD;
+        importCancelRef.current = false;
+        if (showProgress) setImportProgress({done: 0, total: assets.length});
+
+        try {
+            for (let i = 0; i < assets.length; i += EXIF_CONCURRENCY) {
+                if (importCancelRef.current) break;
+                const chunk = assets.slice(i, i + EXIF_CONCURRENCY);
+                // RNIP returns no GPS/capture time — read both from EXIF in one pass
+                // (avoids includeExtra, which ties to library permissions)
+                const metas = await Promise.all(
+                    chunk.map(a => readGpsFromExif(a.uri).catch(() => null))
+                );
+                chunk.forEach((asset, j) => {
+                    const meta = metas[j];
+                    if (meta && isValidGpsCoords(meta.latitude, meta.longitude)) {
+                        imported.push({
+                            id: asset.id || `picked_${asset.uri}`,
+                            uri: asset.uri,
+                            // i + j is the asset's global index in this import, so the
+                            // fallback name is unique per pick — without it, picks that
+                            // share a millisecond (or the same generated name) would
+                            // collide and could be dropped/overwritten downstream.
+                            filename: asset.fileName || `picked_${Date.now()}_${i + j}.jpg`,
+                            lat: meta.latitude,
+                            lon: meta.longitude,
+                            // EXIF capture time (epoch s); fall back to import time
+                            // only when the photo carries no EXIF date
+                            date: meta.takenAt ?? Math.floor(Date.now() / 1000),
+                            type: 'gallery',
+                            platform: 'mobile',
+                            customTags: [],
+                            uploaded: false
+                        });
+                    } else {
+                        skipped.push({uri: asset.uri, filename: asset.fileName});
+                    }
                 });
-            } else {
-                skipped += 1;
+                if (showProgress) {
+                    setImportProgress({
+                        done: Math.min(i + chunk.length, assets.length),
+                        total: assets.length
+                    });
+                }
             }
+        } finally {
+            setImportProgress(null);
         }
 
-        if (imported.length === 0) {
-            Alert.alert(t('Missing GPS Data'), t('None of the selected photos have location data.'));
-            return;
-        }
+        // Non-geotagged → summary card (not the queue; queue stays geotagged-only).
+        // On cancel, keep whatever was already read.
+        setNoGpsPicks(skipped);
 
-        // The reducer dedupes by uri/filename, but we need the fresh count here
-        // so we don't navigate into the tagger onto a stale photo when every
-        // pick was already in the queue.
-        const queuedUris = new Set(images.map(i => i.uri));
-        const queuedNames = new Set(images.map(i => i.filename).filter(Boolean));
-        const freshCount = imported.filter(
-            p => !queuedUris.has(p.uri) && !(p.filename && queuedNames.has(p.filename))
-        ).length;
-        if (freshCount === 0) {
-            Alert.alert(t('Already Added'), t('Those photos are already in your list.'));
-            return;
+        if (imported.length > 0) {
+            dispatch(addImages({images: imported, picked_up: null}));
         }
-
-        dispatch(clearEditingPhoto());
-        dispatch(addImages({images: imported, picked_up: null}));
-        dispatch(changeSwiperIndex(images.length));
-        if (skipped > 0) {
-            Alert.alert(
-                t('Missing GPS Data'),
-                `${skipped} ${skipped === 1 ? t('photo') : t('photos')} ${t('skipped (no GPS data).')}`
-            );
-        }
-        navigation.navigate('ADD_TAGS');
-    }, [dispatch, navigation, images, t]);
+    }, [dispatch, t]);
 
     // --- Inbox grid (the dashboard's virtualized list data) ---
     const inbox = useInbox(handleTapInboxPhoto);
@@ -335,48 +326,27 @@ const HomeScreen = ({navigation}) => {
                 onTagPhoto={handleTagUntaggedPhoto}
                 onTagAll={handleTagAllUntagged}
             />
-            <LimitedAccessBanner
-                permissionStatus={permissionStatus}
-                onRefresh={refreshCameraRoll}
-            />
+            <NoGpsPicksCard picks={noGpsPicks} onDismiss={() => setNoGpsPicks([])} />
             <InboxControls
                 count={inbox.visiblePhotos.length}
                 isSelecting={inbox.isSelecting}
                 selectedCount={inbox.selectedUris.size}
                 onToggleDelete={inbox.handleToggleDelete}
                 onDeleteSelected={inbox.handleDeleteSelected}
-                onSelectMore={handleSelectMore}
+                onAddPhotos={handleSelectMore}
             />
         </View>
     ), [
-        handleTagUntaggedPhoto, handleTagAllUntagged, permissionStatus, refreshCameraRoll,
+        handleTagUntaggedPhoto, handleTagAllUntagged, noGpsPicks,
         inbox.visiblePhotos.length, inbox.isSelecting, inbox.selectedUris.size,
         inbox.handleToggleDelete, inbox.handleDeleteSelected, handleSelectMore
     ]);
 
     const listEmpty = useMemo(() => (
         <View style={styles.gridBleed}>
-            <InboxEmpty
-                permissionStatus={permissionStatus}
-                requestPermission={requestPermission}
-                totalGalleryPhotos={inbox.totalGalleryPhotos}
-                hasMorePages={inbox.hasMorePages}
-                isLoading={inbox.isLoading}
-                onLoadMore={inbox.handleLoadMore}
-            />
+            <InboxEmpty onAddPhotos={handleSelectMore} onRepeatTutorial={repeatTutorial} />
         </View>
-    ), [permissionStatus, requestPermission, inbox.totalGalleryPhotos, inbox.hasMorePages, inbox.isLoading, inbox.handleLoadMore]);
-
-    const listFooter = useMemo(() => (
-        <View style={styles.gridBleed}>
-            <InboxFooter
-                count={inbox.visiblePhotos.length}
-                hasMoreToShow={inbox.hasMoreToShow}
-                isLoading={inbox.isLoading}
-                onLoadMore={inbox.handleLoadMore}
-            />
-        </View>
-    ), [inbox.visiblePhotos.length, inbox.hasMoreToShow, inbox.isLoading, inbox.handleLoadMore]);
+    ), [handleSelectMore, repeatTutorial]);
 
     // --- Render ---
 
@@ -402,7 +372,6 @@ const HomeScreen = ({navigation}) => {
                     }
                     ListHeaderComponent={listHeader}
                     ListEmptyComponent={listEmpty}
-                    ListFooterComponent={listFooter}
                 />
             </View>
 
@@ -425,6 +394,11 @@ const HomeScreen = ({navigation}) => {
                 ]}>
                 <Icon name="camera" size={26} color={Colors.white} />
             </Pressable>
+
+            <ImportProgressModal
+                progress={importProgress}
+                onCancel={() => { importCancelRef.current = true; }}
+            />
 
             {/* Camera Modal */}
             <Modal visible={showCamera} animationType="slide">

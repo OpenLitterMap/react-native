@@ -388,6 +388,16 @@ const authSlice = createSlice({
          */
         setOnboardingComplete(state) {
             state.onboardingComplete = true;
+        },
+
+        /**
+         * Restart onboarding — flips the gate so MainRoutes swaps to the
+         * OnboardingStack (which mounts at ONBOARDING_WELCOME). Used by
+         * "Repeat Tutorial". The per-user AsyncStorage completion flag is
+         * cleared separately by the caller (clearOnboardingState).
+         */
+        resetOnboarding(state) {
+            state.onboardingComplete = false;
         }
     },
 
@@ -491,6 +501,7 @@ export const {
     logout,
     loginOrSignupReset,
     updateUserObject,
+    resetOnboarding,
     setOnboardingComplete: markOnboardingComplete
 } = authSlice.actions;
 

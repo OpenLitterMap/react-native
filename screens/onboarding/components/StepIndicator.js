@@ -5,7 +5,7 @@ import {useTranslation} from 'react-i18next';
 import {Caption, Colors} from '../../components';
 
 const DEFAULT_STEPS = [
-    {label: 'Import image', number: 1},
+    {label: 'Select Image', number: 1},
     {label: 'Add tags', number: 2},
     {label: 'Upload your data', number: 3}
 ];
@@ -13,6 +13,11 @@ const DEFAULT_STEPS = [
 /**
  * 3-step progress indicator for onboarding with checkmark states.
  * Compact layout — dots + labels grouped tightly in the center.
+ *
+ * The ACTIVE step is the only solid-accent dot ("you are here"); COMPLETED
+ * steps are a lighter outlined check, so the active marker visibly moves
+ * forward as the user advances. LOCKED steps are grey. `currentStep={0}`
+ * renders the pre-step state (1-2-3 visible but none active).
  *
  * @param {string} [step1Label] — Override label for step 1 (e.g. 'Take photo' for camera path)
  */
@@ -47,7 +52,7 @@ const StepIndicator = ({currentStep, completedSteps = [], step1Label}) => {
                                     isLocked && styles.dotLocked
                                 ]}>
                                 {isComplete ? (
-                                    <Icon name="checkmark" size={12} color={Colors.white} />
+                                    <Icon name="checkmark" size={12} color={Colors.accent} />
                                 ) : (
                                     <Caption
                                         color={isActive ? 'white' : 'muted'}
@@ -105,14 +110,18 @@ const styles = StyleSheet.create({
         backgroundColor: Colors.accent
     },
     dotComplete: {
-        backgroundColor: Colors.accent
+        backgroundColor: Colors.accentLight,
+        borderWidth: 1.5,
+        borderColor: Colors.accent
     },
     dotLocked: {
         backgroundColor: '#e0e0e0'
     },
     dotText: {
         fontSize: 10,
-        lineHeight: 12
+        lineHeight: 12,
+        letterSpacing: 0,
+        textAlign: 'center'
     },
     label: {
         fontSize: 10,

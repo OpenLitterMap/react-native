@@ -55,4 +55,15 @@ describe('addTagsToPhoto thunk', () => {
         expect(api.put).toHaveBeenCalled();
         expect(addTagsToPhoto.fulfilled.match(result)).toBe(true);
     });
+
+    it('surfaces the HTTP status on a forbidden (403) tag write', async () => {
+        api.put.mockRejectedValue({response: {status: 403, data: {}}});
+
+        const result = await addTagsToPhoto({photoId: 5, tags: []})(
+            dispatch, getState, undefined
+        );
+
+        expect(addTagsToPhoto.rejected.match(result)).toBe(true);
+        expect(result.payload.status).toBe(403);
+    });
 });

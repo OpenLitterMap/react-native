@@ -3,7 +3,6 @@ import { persistReducer, persistStore, createTransform } from 'redux-persist';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { rootReducer } from '../reducers';
 import { logout } from '../reducers/auth_reducer';
-import { initialState as galleryInitialState } from '../reducers/gallery_reducer';
 
 // AsyncStorage caches that live outside redux — redux slices reset on logout, but
 // these standalone keys don't, so a new account would inherit them. Clear on every
@@ -68,27 +67,18 @@ const migrations = {
         return state;
     },
     // v2: Add quickTags slice (auto-initializes, no-op migration)
-    2: (state) => state
+    2: (state) => state,
+    // v3: Remove the retired gallery slice (photo picker replaced the scan)
+    3: (state) => {
+        if (state?.gallery !== undefined) {
+            const { gallery, ...rest } = state;
+            return rest;
+        }
+        return state;
+    }
 };
 
 // Configuration for Redux Persist
-/**
- * Transform for the gallery reducer: only persist dismissedUris.
- * Camera roll photos and pagination state reload fresh on each launch.
- */
-const galleryTransform = createTransform(
-    // On PERSIST: save only dismissedUris
-    (inboundState) => ({
-        dismissedUris: inboundState.dismissedUris
-    }),
-    // On REHYDRATE: merge dismissedUris into fresh default state
-    (outboundState) => ({
-        ...galleryInitialState,
-        dismissedUris: outboundState?.dismissedUris || []
-    }),
-    {whitelist: ['gallery']}
-);
-
 /**
  * Transform for the stats reducer: persist only numeric stat values.
  * fetchStatus and error reset fresh on each launch so getStats() always runs clean.
@@ -131,10 +121,10 @@ const statsTransform = createTransform(
 
 const persistConfig = {
     key: 'root',
-    version: 2,
+    version: 3,
     storage: AsyncStorage,
-    whitelist: ['auth', 'photos', 'quickTags', 'gallery', 'stats'],
-    transforms: [imagesTransform, galleryTransform, statsTransform],
+    whitelist: ['auth', 'photos', 'quickTags', 'stats'],
+    transforms: [imagesTransform, statsTransform],
     migrate: (state, currentVersion) => {
         if (!state) return Promise.resolve(state);
         let migrated = state;

@@ -13,6 +13,7 @@ import {useDispatch, useSelector} from 'react-redux';
 import {useTranslation} from 'react-i18next';
 import {Body, Caption, Colors, Title} from '../components';
 import StepIndicator from './components/StepIndicator';
+import OnboardingBackButton from './components/OnboardingBackButton';
 import {addOnboardingPhoto} from '../../reducers/photos_reducer';
 import {markOnboardingComplete} from '../../reducers/auth_reducer';
 import {readGpsFromExif} from '../../utils/readGpsFromExif';
@@ -47,8 +48,9 @@ const OnboardingPhotoScreen = ({navigation}) => {
             const result = await launchImageLibrary({
                 mediaType: 'photo',
                 selectionLimit: 1,
-                includeExtra: true,
                 quality: 1
+                // No includeExtra (ties to library permissions; we only need the
+                // base asset fields + GPS via readGpsFromExif).
             });
 
             if (result.didCancel) return; // User cancelled — stay on this screen
@@ -104,7 +106,7 @@ const OnboardingPhotoScreen = ({navigation}) => {
                 colors={['#f0faf4', '#e8f5ec', '#dcffeb']}
                 locations={[0, 0.5, 1]}
                 style={styles.gradient}>
-                <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
+                <SafeAreaView style={styles.safe} edges={['top', 'left', 'right', 'bottom']}>
                     <StepIndicator currentStep={1} />
                     <View style={styles.body}>
                         <ActivityIndicator size="large" color={Colors.accent} />
@@ -112,6 +114,7 @@ const OnboardingPhotoScreen = ({navigation}) => {
                             {t('Reading photo location...')}
                         </Caption>
                     </View>
+                    <OnboardingBackButton onPress={() => navigation.goBack()} />
                 </SafeAreaView>
             </LinearGradient>
         );
@@ -124,7 +127,7 @@ const OnboardingPhotoScreen = ({navigation}) => {
                 colors={['#f0faf4', '#e8f5ec', '#dcffeb']}
                 locations={[0, 0.5, 1]}
                 style={styles.gradient}>
-                <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
+                <SafeAreaView style={styles.safe} edges={['top', 'left', 'right', 'bottom']}>
                     <StepIndicator currentStep={1} />
                     <View style={styles.body}>
                         <View style={styles.iconCircle}>
@@ -155,6 +158,7 @@ const OnboardingPhotoScreen = ({navigation}) => {
                             </Caption>
                         </Pressable>
                     </View>
+                    <OnboardingBackButton onPress={() => navigation.goBack()} />
                 </SafeAreaView>
             </LinearGradient>
         );
@@ -167,7 +171,7 @@ const OnboardingPhotoScreen = ({navigation}) => {
                 colors={['#f0faf4', '#e8f5ec', '#dcffeb']}
                 locations={[0, 0.5, 1]}
                 style={styles.gradient}>
-                <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
+                <SafeAreaView style={styles.safe} edges={['top', 'left', 'right', 'bottom']}>
                     <StepIndicator currentStep={1} />
                     <View style={styles.body}>
                         <View style={styles.iconCircle}>
@@ -182,6 +186,7 @@ const OnboardingPhotoScreen = ({navigation}) => {
                             </Body>
                         </Pressable>
                     </View>
+                    <OnboardingBackButton onPress={() => navigation.goBack()} />
                 </SafeAreaView>
             </LinearGradient>
         );
@@ -193,17 +198,17 @@ const OnboardingPhotoScreen = ({navigation}) => {
             colors={['#f0faf4', '#e8f5ec', '#dcffeb', '#d4f7e2']}
             locations={[0, 0.3, 0.7, 1]}
             style={styles.gradient}>
-            <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
+            <SafeAreaView style={styles.safe} edges={['top', 'left', 'right', 'bottom']}>
                 <StepIndicator currentStep={1} />
                 <View style={styles.body}>
                     <View style={styles.iconCircle}>
                         <Icon name="images-outline" size={56} color={Colors.accent} />
                     </View>
                     <Title style={styles.title}>
-                        {t('Select a photo of litter')}
+                        {t('Select a Geotagged Photo')}
                     </Title>
                     <Body color="muted" style={styles.bodyText}>
-                        {t('Choose a photo from your library. Photos with GPS location data work best.')}
+                        {t('Photos are required to be geotagged so we can map them')}
                     </Body>
                     <Pressable
                         style={({pressed}) => [styles.buttonStyle, pressed && styles.buttonPressed]}
@@ -214,6 +219,7 @@ const OnboardingPhotoScreen = ({navigation}) => {
                         </Body>
                     </Pressable>
                 </View>
+                <OnboardingBackButton onPress={() => navigation.goBack()} />
             </SafeAreaView>
         </LinearGradient>
     );

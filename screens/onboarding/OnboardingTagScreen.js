@@ -17,6 +17,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import {useTranslation} from 'react-i18next';
 import {Body, Caption, Colors} from '../components';
 import StepIndicator from './components/StepIndicator';
+import OnboardingBackButton from './components/OnboardingBackButton';
 import OnboardingChips from './components/OnboardingChips';
 import TooltipOverlay from './components/TooltipOverlay';
 import TagSearchBar from '../addTag/components/TagSearchBar';
@@ -477,6 +478,7 @@ const OnboardingTagScreen = ({navigation}) => {
                             </Body>
                         </Pressable>
 
+                        <OnboardingBackButton onPress={() => navigation.goBack()} />
                     </>
                 )}
             </KeyboardAvoidingView>
@@ -619,11 +621,6 @@ const styles = StyleSheet.create({
     },
     doneText: {
         fontSize: 16
-    },
-    reassurance: {
-        textAlign: 'center',
-        marginTop: 8,
-        fontSize: 12
     },
     pickedUpRow: {
         flexDirection: 'row',

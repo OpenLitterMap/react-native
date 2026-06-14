@@ -1,26 +1,35 @@
 # Onboarding
 
-7-screen post-signup flow that walks new users through their first litter contribution: take or select a photo, tag it, upload it to the server, and see it on the global map.
+8-screen post-signup flow. It opens with a deliberately minimal welcome that states the first challenge ("Begin Tutorial" / "Skip"); the tutorial then walks the user through their first litter contribution: take or select a photo, tag it, upload it to the server, and see it on the global map.
 
 ## Screen Flow
 
 ```
-OnboardingWelcomeScreen → ChoosePathScreen → OnboardingPermissionScreen
-                                                    │
-                                      ┌─────────────┴─────────────┐
-                                 Camera path                 Gallery path
-                                      │                           │
-                             OnboardingCameraScreen      OnboardingPhotoScreen
-                                      │                           │
-                                      └───────────┬──────────────┘
-                                                   │
-                                          OnboardingTagScreen
-                                          (upload + tag write)
-                                                   │
-                                          CelebrationScreen
-                                          (geolink + XP + sharing)
-                                                   │
-                                               HomeScreen
+OnboardingWelcomeScreen        (Welcome! + first challenge; Begin Tutorial / Skip)
+        │ Begin Tutorial                         └ Skip → marks complete → HomeScreen
+        ▼
+OnboardingInstructionsScreen   (Enable Location — pre-step / step 0; Continue Tutorial)
+        │
+        ▼
+ChoosePathScreen
+        │
+  ┌─────┴───────────────────────┐
+Camera path                  Gallery path
+        │                            │
+OnboardingPermissionScreen   (no permission — system picker)
+(location → camera)                  │
+        │                            │
+OnboardingCameraScreen        OnboardingPhotoScreen
+        │                            │
+        └─────────────┬──────────────┘
+                      │
+             OnboardingTagScreen
+             (upload + tag write)
+                      │
+             CelebrationScreen
+             (geolink + XP + sharing)
+                      │
+                  HomeScreen
 ```
 
 ## Files
@@ -28,14 +37,16 @@ OnboardingWelcomeScreen → ChoosePathScreen → OnboardingPermissionScreen
 | File | Purpose |
 |------|---------|
 | `routes/OnboardingStack.js` | Navigation stack (gestures disabled, slide_from_right) |
-| `screens/onboarding/OnboardingWelcomeScreen.js` | Welcome, GPS setup instructions (platform-detected) |
+| `screens/onboarding/OnboardingWelcomeScreen.js` | Minimal welcome: first challenge, "Begin Tutorial" / "Skip" |
+| `screens/onboarding/OnboardingInstructionsScreen.js` | GPS setup instructions (platform-detected) as a pre-step, "Continue Tutorial" → choose path |
 | `screens/onboarding/ChoosePathScreen.js` | Camera vs gallery path cards, "Skip for now" |
-| `screens/onboarding/OnboardingPermissionScreen.js` | Permission state machine (7 states) |
+| `screens/onboarding/OnboardingPermissionScreen.js` | Camera-path permission state machine (location → camera) |
 | `screens/onboarding/OnboardingCameraScreen.js` | CameraCapture wrapper, GPS validation |
-| `screens/onboarding/OnboardingPhotoScreen.js` | Gallery picker, EXIF GPS read with spinner |
+| `screens/onboarding/OnboardingPhotoScreen.js` | System photo picker (no permission), EXIF GPS read with spinner |
 | `screens/onboarding/OnboardingTagScreen.js` | Guided tagging + inline upload + tag submission |
 | `screens/onboarding/CelebrationScreen.js` | "You did it!", geolink, XP, sharing tip |
-| `screens/onboarding/components/StepIndicator.js` | 3-step progress, `step1Label` prop for camera path |
+| `screens/onboarding/components/StepIndicator.js` | 3-step progress — Select Image (1) · Add tags (2) · Upload your data (3); active = solid dot, done = outlined check. `currentStep={0}` = pre-step (none active). `step1Label` override (camera path) |
+| `screens/onboarding/components/OnboardingBackButton.js` | Subtle "Go Back" affordance at the **bottom** of each screen (chevron + label); replaced the easily-missed top-nav chevron |
 | `screens/onboarding/components/OnboardingChips.js` | 6 quick-select litter chips |
 | `screens/onboarding/components/TooltipOverlay.js` | Non-blocking floating tooltip |
 | `utils/onboarding.js` | AsyncStorage persistence, user-scoped keys |
@@ -61,25 +72,36 @@ When web onboarding is detected, the mobile AsyncStorage flag is synced so subse
 
 ## Welcome Screen
 
-Intro + illustration + a **GPS setup instructions card** that auto-detects `Platform.OS` and shows only the relevant steps. iOS walks the user to Settings → Privacy → Location Services → Camera = "While Using" (the first step deep-links via `Linking.openURL('app-settings:')`), plus a recommended Camera → Formats → "Most Compatible" tip (saves JPG instead of HEIC). Android points at the Camera app's location-tags toggle. The card notes that enabling location geotags every photo (and how to turn it back off).
+Deliberately minimal — the first screen a new user sees. An illustration, a "Welcome!" heading, and the first challenge: *"Your first challenge is to upload your first data point. Can you record 1 piece of picked-up litter, or make 1 community observation, and upload it?"* Two choices:
+
+- **Begin Tutorial** → `ONBOARDING_INSTRUCTIONS`
+- **Skip** → marks onboarding complete (`setOnboardingComplete` + `markOnboardingComplete`) and drops into the app — same effect as ChoosePathScreen's "Skip for now".
+
+No step indicator (it's the pre-tutorial intro). The heavy GPS-setup content moved to the Instructions Screen so the first impression stays light. The "community observation" wording is framing only — the tag screen's existing picked-up toggle already produces an observation (`picked_up: false`); no separate path exists.
+
+## Instructions Screen
+
+Reached via "Begin Tutorial". Focused on a single job: a **GPS setup instructions card** that auto-detects `Platform.OS` and shows only the relevant steps. iOS walks the user to Settings → Privacy → Location Services → Camera = "While Using" (the first step deep-links via `Linking.openURL('app-settings:')`), plus a recommended Camera → Formats → "Most Compatible" tip (saves JPG instead of HEIC). Android points at the Camera app's location-tags toggle. This is a **pre-step (step 0)**: the screen title is "Enable Location…", and the step indicator renders with `currentStep={0}` so the 1-2-3 roadmap (Select Image · Add tags · Upload your data) is visible but inactive. One CTA: **Continue Tutorial** → `CHOOSE_PATH`, where step 1 (**Select Image**) becomes active.
 
 ## Permission Screen
 
-State machine with 7 states:
+**Camera path only.** The gallery path needs no permission (system photo picker),
+so `ChoosePathScreen`'s "Choose from photos" button routes straight to
+`ONBOARDING_PHOTO` and never reaches this screen.
+
+State machine with 5 states:
 
 | State | Condition | UI |
 |-------|-----------|-----|
 | `checking` | Mount | Spinner |
 | `request` | Not yet asked | Illustration + rationale + "Allow" button |
-| `location_denied` | Camera path, location denied | Recovery + "Choose from photos instead" |
-| `camera_denied` | Camera path, camera denied | Recovery + "Choose from photos instead" |
-| `gallery_denied` | Gallery path, denied | Recovery + "Take a photo instead" |
-| `gallery_no_gps` | Android: photos OK but GPS redacted | "Enable Media location in Settings" + camera fallback |
-| `blocked` | Permission blocked by OS | "Open Settings" + alternative path |
+| `location_denied` | Location denied | Recovery + "Choose from photos instead" |
+| `camera_denied` | Location OK, camera denied | Recovery + "Choose from photos instead" |
+| `blocked` | Permission blocked by OS | "Open Settings" + "Choose from photos instead" |
 
-**Camera path** requests location first (GPS required for scientifically useful data), then camera. **Gallery path** requests photo library access. Both offer cross-path fallback (camera ↔ gallery).
-
-**Android `limited` handling:** On Android 10+, `limited` means `READ_MEDIA_IMAGES` granted but `ACCESS_MEDIA_LOCATION` denied (GPS EXIF is redacted by the OS). The `isGalleryUsable()` helper routes this to `gallery_no_gps` with a Settings link and camera fallback. On iOS, `limited` means user-selected photos with GPS intact — treated as usable.
+The camera path requests **location first** (GPS required for scientifically
+useful data), then camera. Every recovery state offers a fallback to the
+permission-free picker (`navigation.replace('ONBOARDING_PHOTO', {path: 'gallery'})`).
 
 AppState listener rechecks permissions when user returns from Settings.
 
@@ -94,8 +116,8 @@ GPS is a **non-negotiable requirement** — photos without coordinates cannot be
 4. `OnboardingCameraScreen` validates via `isValidGpsCoords()` before accepting. If null/invalid → "Photo captured without GPS" recovery.
 
 ### Gallery Path
-1. `OnboardingPermissionScreen` requests `PHOTO_LIBRARY` (iOS) / `READ_MEDIA_IMAGES` + `ACCESS_MEDIA_LOCATION` (Android).
-2. `readGpsFromExif()` reads GPS from selected photo's EXIF data (5s timeout, spinner shown).
+1. `OnboardingPhotoScreen` opens the **system photo picker** (`launchImageLibrary`) directly — no permission request (iOS PHPicker, Android system picker).
+2. `readGpsFromExif()` reads GPS from the selected photo's EXIF data (5s timeout, spinner shown).
 3. If EXIF GPS is null → "This photo doesn't have location data" recovery.
 
 ### Coordinate Precision
@@ -107,7 +129,7 @@ Reusable camera component shared by onboarding and HomeScreen. Uses `react-nativ
 
 ## Camera Screen (Onboarding)
 
-Wraps `CameraCapture`. Step indicator shows **"Take photo"** (not "Import image") via `step1Label` prop. Light background (`#f0faf4`) on the step indicator bar for readability over the dark camera viewfinder.
+Wraps `CameraCapture`. Step indicator shows **"Take photo"** (not the default "Select Image") via `step1Label` prop. Light background (`#f0faf4`) on the step indicator bar for readability over the dark camera viewfinder.
 
 Hint text: "Get close to some litter and capture the object in full view"
 
@@ -171,6 +193,19 @@ Done button disabled during upload.
 - OnboardingPhotoScreen (no-GPS recovery state)
 
 Skipping marks onboarding complete and navigates directly to the main app.
+
+## Re-entry — "Repeat Tutorial"
+
+Users can restart the tutorial from the beginning via the `useRepeatTutorial()` hook
+(`hooks/useRepeatTutorial.js`), surfaced in two places:
+- **HomeScreen** — a colourless outline pill below "Add Photos" in the empty inbox state (`InboxEmpty`).
+- **SettingsScreen** — a colourless outline pill in the list footer (above the version).
+
+The hook clears the per-user AsyncStorage flag (`clearOnboardingState`) and dispatches
+`resetOnboarding()` (`onboardingComplete = false`), so `MainRoutes` swaps the app stack for
+the OnboardingStack, which mounts at `ONBOARDING_WELCOME`. Completing or skipping the
+repeated run re-marks onboarding complete. (Because `onboarding_completed_at` is set
+server-side, a relaunch mid-repeat returns the user to the app rather than stranding them.)
 
 ## HomeScreen Integration
 

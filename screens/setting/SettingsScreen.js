@@ -25,6 +25,7 @@ import {
 import {
     fetchAllUntaggedPhotos
 } from '../../reducers/server_photos_reducer';
+import {useRepeatTutorial} from '../../hooks/useRepeatTutorial';
 
 const SETTINGS_SECTIONS = [
     {
@@ -72,6 +73,7 @@ const SettingsScreen = ({navigation}) => {
     const dispatch = useDispatch();
     const {t} = useTranslation();
     const {height: SCREEN_HEIGHT} = useWindowDimensions();
+    const handleRepeatTutorial = useRepeatTutorial();
 
     const user = useSelector(state => state.auth.user);
     const editModalVisible = useSelector(
@@ -341,13 +343,22 @@ const SettingsScreen = ({navigation}) => {
                         keyExtractor={item => item.key}
                         showsVerticalScrollIndicator={false}
                         ListFooterComponent={
-                            <Caption
-                                style={{
-                                    textAlign: 'center',
-                                    marginVertical: 20
-                                }}>
-                                Version {DeviceInfo.getVersion()}
-                            </Caption>
+                            <View style={styles.footer}>
+                                <Pressable
+                                    onPress={handleRepeatTutorial}
+                                    style={({pressed}) => [
+                                        styles.repeatTutorialButton,
+                                        pressed && styles.repeatTutorialPressed
+                                    ]}>
+                                    <Icon name="school-outline" size={18} color={Colors.muted} />
+                                    <Body style={styles.repeatTutorialText}>
+                                        {t('Repeat Tutorial')}
+                                    </Body>
+                                </Pressable>
+                                <Caption style={styles.versionText}>
+                                    Version {DeviceInfo.getVersion()}
+                                </Caption>
+                            </View>
                         }
                     />
                 </View>
@@ -389,6 +400,35 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(0,0,0,0.6)',
         alignItems: 'center',
         justifyContent: 'center'
+    },
+    footer: {
+        alignItems: 'center',
+        marginTop: 24,
+        marginBottom: 20
+    },
+    repeatTutorialButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 8,
+        paddingHorizontal: 24,
+        paddingVertical: 12,
+        borderRadius: 100,
+        borderWidth: 1,
+        borderColor: '#d8d8d8',
+        backgroundColor: 'transparent'
+    },
+    repeatTutorialPressed: {
+        backgroundColor: '#f0f0f0'
+    },
+    repeatTutorialText: {
+        color: Colors.muted,
+        fontSize: 15,
+        fontWeight: '600'
+    },
+    versionText: {
+        textAlign: 'center',
+        marginTop: 16
     }
 });
 

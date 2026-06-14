@@ -32,7 +32,6 @@ target 'openlittermap' do
   # Uncomment the permissions you need
   setup_permissions([
     'Camera',
-    'PhotoLibrary',
     'LocationAlways',
     'LocationWhenInUse',
   ])

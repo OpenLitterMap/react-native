@@ -10,9 +10,6 @@ jest.mock('../../utils/apiClient', () => ({
 }));
 jest.mock('@sentry/react-native', () => ({captureException: jest.fn()}));
 jest.mock('../../utils/config', () => ({IS_PRODUCTION: false, URL: 'http://localhost:8000'}));
-// Native modules pulled in transitively via gallery_reducer — not needed here.
-jest.mock('@react-native-camera-roll/camera-roll', () => ({CameraRoll: {}}));
-jest.mock('@lodev09/react-native-exify', () => ({}));
 
 import photosReducer, {removeTaggedPhoto, addImages} from '../../reducers/photos_reducer';
 import {uploadImage, addTagsToPhoto} from '../../reducers/upload_flow_reducer';
@@ -90,42 +87,86 @@ describe('photos inbox cleanup', () => {
 
         expect(next.imagesArray).toHaveLength(1);
     });
+
+    it('drops the photo when the tag write is forbidden (403 — ownership, permanent)', () => {
+        const state = baseState([
+            {id: 5, uri: 'file://forbidden.jpg', uploaded: true, tags: [{cloId: 1}]}
+        ]);
+
+        const next = photosReducer(state, {
+            type: addTagsToPhoto.rejected.type,
+            payload: {errorType: 'unknown', status: 403},
+            meta: {arg: {photoId: 5}}
+        });
+
+        expect(next.imagesArray).toHaveLength(0);
+    });
+
+    it('drops the photo when the tag write returns 404', () => {
+        const state = baseState([
+            {id: 5, uri: 'file://gone.jpg', uploaded: true, tags: [{cloId: 1}]}
+        ]);
+
+        const next = photosReducer(state, {
+            type: addTagsToPhoto.rejected.type,
+            payload: {errorType: 'unknown', status: 404},
+            meta: {arg: {photoId: 5}}
+        });
+
+        expect(next.imagesArray).toHaveLength(0);
+    });
+
+    it('keeps the photo on a 5xx tag-write rejection (transient server error)', () => {
+        const state = baseState([
+            {id: 5, uri: 'file://x.jpg', uploaded: true, tags: [{cloId: 1}]}
+        ]);
+
+        const next = photosReducer(state, {
+            type: addTagsToPhoto.rejected.type,
+            payload: {errorType: 'server', status: 503},
+            meta: {arg: {photoId: 5}}
+        });
+
+        expect(next.imagesArray).toHaveLength(1);
+    });
 });
 
 describe('addImages import dedupe', () => {
-    it('drops a re-imported photo matching by filename when the uri differs', () => {
-        // Same physical photo: CameraRoll ph:// uri already in the queue, OS
-        // picker hands back a temp-file uri — filename is the shared key.
+    it('keeps two different photos that share a filename (dedup is by uri/id, not name)', () => {
+        // Distinct physical photos commonly share a filename (screenshots,
+        // multi-device libraries, WhatsApp exports). The picker hands back a
+        // unique temp-file uri for each, so both must be kept — deduping on the
+        // shared name silently dropped the second.
         const state = baseState([
-            {id: 1, uri: 'ph://abc', filename: 'IMG_1.HEIC', uploaded: false, tags: []}
+            {id: 1, uri: 'file://1', filename: 'IMG_1.jpg', uploaded: false, tags: []}
         ]);
 
         const next = photosReducer(state, addImages({
             images: [{
                 id: 'picked_x',
-                uri: 'file:///tmp/IMG_1.HEIC',
-                filename: 'IMG_1.HEIC',
+                uri: 'file://2',
+                filename: 'IMG_1.jpg',
                 uploaded: false
             }],
             picked_up: null
         }));
 
-        expect(next.imagesArray).toHaveLength(1);
+        expect(next.imagesArray).toHaveLength(2);
     });
 
-    it('dedupes duplicates within a single batch (by filename)', () => {
+    it('dedupes a genuinely re-picked photo by uri within a single batch', () => {
         const state = baseState([]);
 
         const next = photosReducer(state, addImages({
             images: [
                 {id: 'a', uri: 'file://1', filename: 'IMG_1.jpg', uploaded: false},
                 {id: 'b', uri: 'file://2', filename: 'IMG_2.jpg', uploaded: false},
-                {id: 'c', uri: 'file://3', filename: 'IMG_1.jpg', uploaded: false}
+                {id: 'c', uri: 'file://1', filename: 'IMG_1.jpg', uploaded: false} // same uri as a
             ],
             picked_up: null
         }));
 
         expect(next.imagesArray).toHaveLength(2);
-        expect(next.imagesArray.map(i => i.filename)).toEqual(['IMG_1.jpg', 'IMG_2.jpg']);
+        expect(next.imagesArray.map(i => i.uri)).toEqual(['file://1', 'file://2']);
     });
 });

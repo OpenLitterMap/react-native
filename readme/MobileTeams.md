@@ -30,6 +30,7 @@ Users can create, join, and leave teams. Teams have leaderboards and member list
     topTeams: array,
     topTeamsStatus: 'idle' | 'loading' | 'succeeded' | 'failed',
     userTeams: array,
+    userTeamsStatus: 'idle' | 'loading' | 'succeeded' | 'failed',
     teamMembers: array,
     selectedTeam: object,
     teamsFormError: string,

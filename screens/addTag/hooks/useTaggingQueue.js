@@ -12,6 +12,7 @@ import {editTagsOnPhoto, fetchAndLoadUntagged} from '../../../reducers/server_ph
 import {deleteUploadPhoto} from '../../../reducers/uploads_reducer';
 import {fetchAllTags} from '../../../reducers/tags_reducer';
 import {isTagged} from '../../../utils/isTagged';
+import {isValidGpsCoords} from '../../../utils/gps';
 import buildTagsPayload from '../../../utils/buildTagsPayload';
 
 const EMPTY_ARRAY = [];
@@ -34,19 +35,37 @@ export default function useTaggingQueue(navigation) {
     const objectEntriesLength = useSelector(state => state.tags.objectEntries?.length ?? 0);
 
     const isEditMode = editingPhotos.length > 0;
-    const photos = useMemo(
-        () => isEditMode ? editingPhotos : galleryImages,
-        [isEditMode, editingPhotos, galleryImages]
+
+    // Gallery mode shows exactly what the HomeScreen "Your Photos" grid shows:
+    // local, non-uploaded, geotagged photos, newest-first. Keeping the tagger's
+    // swipe order identical to the grid (and excluding already-uploaded retry
+    // photos the grid hides) means tapping a photo then swiping never reorders
+    // unexpectedly or dead-ends on a photo that isn't in the grid.
+    const galleryView = useMemo(
+        () =>
+            galleryImages
+                .filter(p => p && !p.uploaded && isValidGpsCoords(p.lat, p.lon))
+                .sort((a, b) => (b.date ?? 0) - (a.date ?? 0)),
+        [galleryImages]
     );
 
-    const swiperIndex = isEditMode
-        ? Math.min(rawSwiperIndex, Math.max(0, photos.length - 1))
-        : rawSwiperIndex;
+    const photos = isEditMode ? editingPhotos : galleryView;
 
-    const activeIndex = photos.length > 0
-        ? Math.max(0, Math.min(swiperIndex, photos.length - 1))
+    // swiperIndex is a REAL index into the source list — editingPhotos in edit
+    // mode, the raw imagesArray in gallery mode. That's what the inbox tap and
+    // camera capture set, and what tag writes (commitDraftToPhoto) index into.
+    // We translate between it and the display position so navigation follows the
+    // sorted view while commits still hit the right imagesArray entry.
+    const sourceList = isEditMode ? editingPhotos : galleryImages;
+    const realIndex = sourceList.length > 0
+        ? Math.max(0, Math.min(rawSwiperIndex, sourceList.length - 1))
         : 0;
-    const activePhoto = photos[activeIndex];
+    const activePhoto = sourceList[realIndex];
+
+    // Display position of the active photo (drives the pager + progress dots).
+    const activeIndex = isEditMode
+        ? realIndex
+        : Math.max(0, photos.findIndex(p => p && activePhoto && p.id === activePhoto.id));
 
     // Fetch tags on mount if not loaded
     useEffect(() => {
@@ -77,14 +96,22 @@ export default function useTaggingQueue(navigation) {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [activeIndex, isEditMode]);
 
-    // Navigation — index update only
+    // Navigation — index update only. newIndex is a DISPLAY position; in gallery
+    // mode the display list is sorted/filtered, so translate it back to the real
+    // imagesArray index before storing it as swiperIndex.
     const goToIndex = useCallback(
         newIndex => {
             const clamped = Math.max(0, Math.min(newIndex, photos.length - 1));
-            if (__DEV__) console.log('[Queue] goToIndex:', newIndex, '→ clamped:', clamped, 'of', photos.length);
-            dispatch(changeSwiperIndex(clamped));
+            let realTarget = clamped;
+            if (!isEditMode) {
+                const target = photos[clamped];
+                const found = target ? galleryImages.findIndex(p => p.id === target.id) : -1;
+                realTarget = found >= 0 ? found : clamped;
+            }
+            if (__DEV__) console.log('[Queue] goToIndex display:', clamped, '→ real:', realTarget, 'of', photos.length);
+            dispatch(changeSwiperIndex(realTarget));
         },
-        [dispatch, photos.length]
+        [dispatch, isEditMode, photos, galleryImages]
     );
 
     const goNext = useCallback(
@@ -120,10 +147,10 @@ export default function useTaggingQueue(navigation) {
     // Declared after safeGoBack so the dependency array doesn't read it in the
     // temporal dead zone (a ReferenceError under Hermes' native `const`).
     useEffect(() => {
-        if (!activePhoto && photos.length === 0) {
+        if (photos.length === 0) {
             safeGoBack();
         }
-    }, [activePhoto, photos.length, safeGoBack]);
+    }, [photos.length, safeGoBack]);
 
     // Advance queue or close screen
     const advanceOrClose = useCallback(() => {
@@ -159,12 +186,14 @@ export default function useTaggingQueue(navigation) {
             'custom:',
             currentCustomTags?.length
         );
+        // Commit by the REAL source-list index (the display position diverges in
+        // gallery mode); realIndex === activeIndex in edit mode.
         dispatch(commitDraftToPhoto({
-            imageIndex: activeIndex,
+            imageIndex: realIndex,
             tags: currentTags,
             customTags: currentCustomTags
         }));
-    }, [dispatch, activeIndex, isEditMode]);
+    }, [dispatch, realIndex, activeIndex, isEditMode]);
 
     /**
      * Save tags to server (edit mode).

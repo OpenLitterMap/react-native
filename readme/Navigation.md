@@ -23,17 +23,18 @@ MainRoutes (NativeStack)
     ├── SETTING → SettingScreen                       (stack push)
     ├── QUICK_TAGS_SETTINGS → QuickTagsSettingsScreen (stack push)
     ├── MY_UPLOADS → MyUploads                        (stack push)
-    ├── PERMISSION → PermissionStack                  (fullScreenModal, gestures off)
-    │   └── GALLERY_PERMISSION → GalleryPermissionScreen
     └── UPDATE → NewUpdateScreen                      (fullScreenModal, gestures off)
 ```
 
-Onboarding state is per-user (`utils/onboarding.js`); camera/gallery priming lives
+Onboarding state is per-user (`utils/onboarding.js`); camera priming lives
 in `OnboardingStack`, not a standalone permission screen (see `Onboarding.md`).
+The gallery path needs no permission (system photo picker), so there is no
+gallery-permission screen or `PERMISSION` route any more (removed in the
+v7.10.0 picker migration).
 
 ## Presentation
 
-Only **`PERMISSION`** and **`UPDATE`** use `presentation: 'fullScreenModal'` (with
+Only **`UPDATE`** uses `presentation: 'fullScreenModal'` (with
 `gestureEnabled: false`). `ADD_TAGS`, `SETTING`, `QUICK_TAGS_SETTINGS` and
 `MY_UPLOADS` are **plain stack pushes** (changed from fullScreenModal in v7.3.x — see
 `Architecture.md`). All app screens set `headerShown: false`.
@@ -54,8 +55,8 @@ navigation.navigate('SETTING');
 navigation.navigate('TEAM_DETAILS');
 navigation.goBack();
 
-// A specific screen inside a nested stack
-navigation.navigate('PERMISSION', { screen: 'GALLERY_PERMISSION' });
+// A specific screen inside a nested stack — name the parent navigator:
+navigation.navigate('TEAM', { screen: 'TEAM_LEADERBOARD' });
 ```
 
 ## Conventions

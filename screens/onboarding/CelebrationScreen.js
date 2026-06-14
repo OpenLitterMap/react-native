@@ -52,7 +52,7 @@ const CelebrationScreen = ({navigation, route}) => {
 
                     {/* Header */}
                     <View style={styles.celebrationBadge}>
-                        <Icon name="checkmark-circle" size={48} color={Colors.accent} />
+                        <Icon name="checkmark" size={44} color={Colors.accent} />
                     </View>
 
                     <Title style={styles.heading}>
@@ -141,10 +141,18 @@ const styles = StyleSheet.create({
         flexGrow: 1,
         alignItems: 'center',
         paddingHorizontal: 24,
-        paddingTop: 8
+        paddingTop: 8,
+        paddingBottom: 16
     },
     celebrationBadge: {
-        marginBottom: 12
+        width: 96,
+        height: 96,
+        borderRadius: 48,
+        backgroundColor: Colors.accentLight,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginTop: 8,
+        marginBottom: 16
     },
     heading: {
         textAlign: 'center',

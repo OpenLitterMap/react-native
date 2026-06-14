@@ -1,9 +1,9 @@
 import {createSlice, createSelector} from '@reduxjs/toolkit';
 import {getTagsFromBackend} from '../utils/getTagsFromBackend';
 import {isTagged} from '../utils/isTagged';
+import {isValidGpsCoords} from '../utils/gps';
 import {logout} from './auth_reducer';
 import {uploadImage, addTagsToPhoto} from './upload_flow_reducer';
-import {dismissPhotos} from './gallery_reducer';
 
 /** Find a tag in tags by (cloId, typeId). */
 const findTag = (tags, cloId, typeId) =>
@@ -47,7 +47,6 @@ const initialState = {
 const buildDedupSets = state => {
     const uris = new Set();
     const ids = new Set();
-    const filenames = new Set();
     for (const img of state.imagesArray) {
         if (img.uri) {
             uris.add(img.uri);
@@ -55,32 +54,29 @@ const buildDedupSets = state => {
         if (img.id != null) {
             ids.add(img.id);
         }
-        if (img.filename) {
-            filenames.add(img.filename);
-        }
     }
-    return {uris, ids, filenames};
+    return {uris, ids};
 };
 
 /** Record an added image's keys so a single batch can't add it twice. */
 const trackInDedupSets = (dedupSets, image) => {
     if (image.uri) dedupSets.uris.add(image.uri);
     if (image.id != null) dedupSets.ids.add(image.id);
-    if (image.filename) dedupSets.filenames.add(image.filename);
 };
 
-/** Check if image already exists using pre-built dedup sets. */
+/**
+ * Check if image already exists using pre-built dedup sets. Dedup is by the
+ * unique uri/id only — NOT filename. Different photos routinely share a filename
+ * (screenshots, multi-device libraries, WhatsApp exports), so deduping on name
+ * silently dropped distinct picks. (The old filename match existed to reconcile a
+ * CameraRoll `ph://` uri with the picker's temp-file uri for the same photo; the
+ * camera-roll scan is gone, so that cross-source case no longer arises.)
+ */
 const isDuplicate = (dedupSets, image) => {
     if (image.uri && !image.uploaded) {
-        if (dedupSets.uris.has(image.uri)) return true;
-    } else if (dedupSets.ids.has(image.id)) {
-        return true;
+        return dedupSets.uris.has(image.uri);
     }
-    // Cross-source match: the OS picker returns a temp-file uri that differs
-    // from the CameraRoll ph:// uri for the same physical photo, but the
-    // filename is stable across both — dedup on it so the same photo can't be
-    // imported twice (re-picked across launches, or already in the queue).
-    return !!(image.filename && dedupSets.filenames.has(image.filename));
+    return image.id != null && dedupSets.ids.has(image.id);
 };
 
 /**
@@ -673,19 +669,22 @@ const photosSlice = createSlice({
                 dropInboxPhoto(state, action.payload.photoId);
             })
             .addCase(addTagsToPhoto.rejected, (state, action) => {
-                // The id can never be tagged — either the client guard refused a
-                // non-integer id, or the server rejected it (no such non-deleted
-                // photo). Drop it so the upload loop stops retrying every focus.
-                // Transient errors (timeout/network/server) keep the photo.
-                if (action.payload?.errorType === 'invalid-photo-id') {
+                // The id can never be tagged — drop it so the upload loop stops
+                // retrying it every focus. Permanent failures:
+                //   - invalid-photo-id: the client guard refused a non-integer id,
+                //     or the server's Rule::exists failed (deleted/soft-deleted
+                //     photo → 422 validation error).
+                //   - 403: ownership — the photo belongs to another user.
+                //   - 404: defensive (backend doesn't 404 tags, but harmless).
+                // Transient errors (timeout/network/5xx) keep the photo for retry.
+                const status = action.payload?.status;
+                if (
+                    action.payload?.errorType === 'invalid-photo-id' ||
+                    status === 403 ||
+                    status === 404
+                ) {
                     dropInboxPhoto(state, action.meta.arg.photoId);
                 }
-            })
-
-            // Remove dismissed photos from imagesArray too
-            .addCase(dismissPhotos, (state, action) => {
-                const uris = new Set(action.payload);
-                state.imagesArray = state.imagesArray.filter(img => !uris.has(img.uri));
             })
 
             // Clear all images on logout
@@ -742,12 +741,16 @@ export const selectTaggedUris = createSelector(
     }
 );
 
-/** Camera-captured photos not yet uploaded (for inbox prepend). */
-export const selectCameraPhotos = createSelector(
+/**
+ * Local photos awaiting tagging/upload (camera captures + picker imports),
+ * newest-first. imagesArray is geotagged-only — non-geotagged picks never enter
+ * it (see HomeScreen handleSelectMore) — so every inbox photo is mappable.
+ */
+export const selectInboxPhotos = createSelector(
     [selectImagesArray],
     images =>
         images
-            .filter(img => img.uri && !img.uploaded && img.lat != null)
+            .filter(img => img.uri && !img.uploaded && isValidGpsCoords(img.lat, img.lon))
             .map(img => ({
                 id: img.id,
                 uri: img.uri,
@@ -755,8 +758,9 @@ export const selectCameraPhotos = createSelector(
                 lat: img.lat,
                 lon: img.lon,
                 hasGps: true,
-                fromCamera: true
+                fromCamera: img.type !== 'gallery'
             }))
+            .sort((a, b) => (b.date ?? 0) - (a.date ?? 0))
 );
 
 export default photosSlice.reducer;

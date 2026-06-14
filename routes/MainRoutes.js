@@ -8,7 +8,6 @@ import {isOnboardingComplete, setOnboardingComplete as setOnboardingCompleteStor
 import AuthStack from './AuthStack';
 import OnboardingStack from './OnboardingStack';
 import TabRoutes from './TabRoutes';
-import PermissionStack from './PermissionStack';
 import {NewUpdateScreen, SettingScreen} from '../screens';
 import AddTagScreen from '../screens/addTag/AddTagScreen';
 import MyUploads from '../screens/userStats/userComponents/MyUploads';
@@ -90,7 +89,6 @@ const MainRoutes = () => {
                     <Stack.Screen name="SETTING" component={SettingScreen} options={{headerShown: false}} />
                     <Stack.Screen name="QUICK_TAGS_SETTINGS" component={QuickTagsSettingsScreen} options={{headerShown: false}} />
                     <Stack.Screen name="MY_UPLOADS" component={MyUploads} options={{headerShown: false}} />
-                    <Stack.Screen name="PERMISSION" component={PermissionStack} options={{presentation: 'fullScreenModal', gestureEnabled: false}} />
                     <Stack.Screen name="UPDATE" component={NewUpdateScreen} options={{presentation: 'fullScreenModal', gestureEnabled: false}} />
                 </>
             )}

@@ -16,10 +16,9 @@ The onboarding flow uses a nature-inspired gradient design system with smooth an
 - `screens/auth/authComponents/ForgotPasswordForm.js` — Password reset form
 - `screens/auth/authComponents/LanguageFlags.js` — Language picker with animated dropdown panel
 - `screens/components/textInput/CustomTextInput.tsx` — Shared text input with `variant` prop (`light`/`dark`)
-- `screens/permission/GalleryPermissionScreen.js` — Gallery access permission with gradient background (the only screen left in `screens/permission/`)
 - `utils/config.js` — Exports `URL` (API base URL), `WEB_URL`, and `IS_PRODUCTION`
 
-Camera (and the rest of permission priming) now lives in the onboarding flow — see `screens/onboarding/OnboardingPermissionScreen.js` and `OnboardingCameraScreen.js`, covered in `Onboarding.md`.
+Permission priming now lives in the onboarding flow — see `screens/onboarding/OnboardingPermissionScreen.js` and `OnboardingCameraScreen.js`, covered in `Onboarding.md`. (The standalone `screens/permission/` directory was removed in the v7.10.0 picker migration: camera/location are primed in onboarding, and the gallery path uses the permission-free system photo picker.)
 
 ## Visual Design
 
