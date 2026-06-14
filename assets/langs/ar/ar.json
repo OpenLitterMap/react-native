@@ -1,4 +1,11 @@
 {
+    "All Objects": "كل العناصر",
+    "Brands matching \"{{query}}\"": "العلامات التجارية المطابقة لـ \"{{query}}\"",
+    "By Category": "حسب الفئة",
+    "Choose a category": "اختر فئة",
+    "Most Tagged": "الأكثر وسمًا",
+    "Skip / Not sure": "تخطٍ / غير متأكد",
+    "Type": "النوع",
     "{{count}} brand": "{{count}} علامة تجارية",
     "{{count}} brand_other": "{{count}} علامات تجارية",
     "{{count}} material": "{{count}} مادة",

@@ -168,6 +168,29 @@ function draftReducer(state, action) {
         tags[idx] = {...tags[idx], picked_up: value};
         return {...state, tags};
     }
+    case 'SET_TYPE': {
+        // Re-key a tag's identity from (cloId, fromTypeId) to (cloId, toTypeId),
+        // preserving all metadata. Client-only — typeId serializes to
+        // litter_object_type_id, so the payload shape is unchanged.
+        const {cloId, fromTypeId, toTypeId} = action;
+        if ((fromTypeId ?? null) === (toTypeId ?? null)) return state;
+        const idx = findTag(state.tags, cloId, fromTypeId);
+        if (idx === -1) return state;
+        const targetIdx = findTag(state.tags, cloId, toTypeId);
+        // Target identity already exists — drop the source to avoid a duplicate.
+        if (targetIdx !== -1 && targetIdx !== idx) {
+            return {...state, tags: state.tags.filter((_, i) => i !== idx)};
+        }
+        const tags = [...state.tags];
+        const moved = {...tags[idx]};
+        if (toTypeId != null) {
+            moved.typeId = toTypeId;
+        } else {
+            delete moved.typeId;
+        }
+        tags[idx] = moved;
+        return {...state, tags};
+    }
     case 'TOGGLE_MATERIAL': {
         const {cloId, typeId, materialId} = action;
         const idx = findTag(state.tags, cloId, typeId);
@@ -361,6 +384,10 @@ export default function useTagDraft(activePhoto, defaultPickedUp, maxQuantity) {
         dispatchDraft({type: 'SET_PICKED_UP', cloId, typeId, value, brandId});
     }, []);
 
+    const setType = useCallback((cloId, fromTypeId, toTypeId) => {
+        dispatchDraft({type: 'SET_TYPE', cloId, fromTypeId, toTypeId});
+    }, []);
+
     const toggleMaterial = useCallback((cloId, typeId, materialId) => {
         dispatchDraft({type: 'TOGGLE_MATERIAL', cloId, typeId, materialId});
     }, []);
@@ -424,6 +451,7 @@ export default function useTagDraft(activePhoto, defaultPickedUp, maxQuantity) {
         removeTag,
         updateQuantity,
         setPickedUp,
+        setType,
         toggleMaterial,
         addBrand,
         removeBrand,

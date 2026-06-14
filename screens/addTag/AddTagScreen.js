@@ -44,6 +44,8 @@ import {makeTagKey, parseTagKey, resolveTagEntry, MAX_QUANTITY_TRUSTED, MAX_QUAN
 import {clearEditingPhoto} from '../../reducers/photos_reducer';
 import {addQuickTag, removeQuickTagByCloId} from '../../reducers/quick_tags_reducer';
 
+const EMPTY_TYPES = [];
+
 const AddTagScreen = ({navigation}) => {
     const dispatch = useDispatch();
     const {t} = useTranslation();
@@ -80,7 +82,6 @@ const AddTagScreen = ({navigation}) => {
     // --- Tags catalogue ---
     const {
         objectEntries,
-        categoriesById,
         entriesByCloId,
         typeEntriesByKey,
         materialsById,
@@ -90,6 +91,23 @@ const AddTagScreen = ({navigation}) => {
     const [pendingCustomTag, setPendingCustomTag] = useState(null);
     const searchBarRef = useRef(null);
     const [detailTag, setDetailTag] = useState(null);
+    // Incomplete browse candidate awaiting category resolution (multi-category
+    // object from "All Objects"). The sheet renders a category chooser for it.
+    const [detailCandidate, setDetailCandidate] = useState(null);
+    const [keyboardVisible, setKeyboardVisible] = useState(false);
+
+    // Hide the top bar while the keyboard is open so its dark overlay + XP badge
+    // can't cover the search input when the editor rises above the keyboard.
+    useEffect(() => {
+        const showEvt = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+        const hideEvt = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+        const showSub = Keyboard.addListener(showEvt, () => setKeyboardVisible(true));
+        const hideSub = Keyboard.addListener(hideEvt, () => setKeyboardVisible(false));
+        return () => {
+            showSub.remove();
+            hideSub.remove();
+        };
+    }, []);
 
     // Set status bar style when screen is focused
     useFocusEffect(
@@ -109,6 +127,7 @@ const AddTagScreen = ({navigation}) => {
     // Close overlays when navigating to a different image
     useEffect(() => {
         setDetailTag(null);
+        setDetailCandidate(null);
         setPendingCustomTag(null);
         setShowBrowser(false);
     }, [activeIndex]);
@@ -253,7 +272,68 @@ const AddTagScreen = ({navigation}) => {
 
     const handleCloseDetail = useCallback(() => {
         setDetailTag(null);
+        setDetailCandidate(null);
     }, []);
+
+    // Browse selection → route through the detail sheet for precision (type,
+    // and category when the object spans several). Simple single-category,
+    // type-less objects are added directly (fast path).
+    const handleBrowseCandidate = useCallback(candidate => {
+        if (candidate.cloId != null) {
+            const hasTypes = objectEntries.some(
+                e => e.isType && e.cloId === candidate.cloId
+            );
+            handleAddTag(candidate.cloId, candidate.typeId ?? null);
+            if (hasTypes) {
+                setDetailTag(makeTagKey(candidate.cloId, candidate.typeId ?? null));
+            }
+            return;
+        }
+        // "All Objects" — resolve the object's categories.
+        const cats = objectEntries.filter(
+            e => !e.isType && e.objectId === candidate.objectId
+        );
+        if (cats.length === 1) {
+            const cloId = cats[0].cloId;
+            const hasTypes = objectEntries.some(e => e.isType && e.cloId === cloId);
+            handleAddTag(cloId, null);
+            if (hasTypes) {
+                setDetailTag(makeTagKey(cloId, null));
+            }
+        } else if (cats.length > 1) {
+            setDetailCandidate(candidate);
+        }
+    }, [objectEntries, handleAddTag]);
+
+    // User picked a category in the sheet's chooser — create the tag and, if it
+    // has types, keep the sheet open bound to the new tag for type selection.
+    const handleResolveCandidate = useCallback(cloId => {
+        setDetailCandidate(null);
+        const hasTypes = objectEntries.some(e => e.isType && e.cloId === cloId);
+        handleAddTag(cloId, null);
+        if (hasTypes) {
+            setDetailTag(makeTagKey(cloId, null));
+        }
+    }, [objectEntries, handleAddTag]);
+
+    // Re-key the tag's type and re-bind the sheet to the new identity.
+    const handleSetType = useCallback((cloId, fromTypeId, toTypeId) => {
+        draft.setType(cloId, fromTypeId, toTypeId);
+        setDetailTag(makeTagKey(cloId, toTypeId));
+    }, [draft.setType]);
+
+    // Search adds the tag directly. Type rows were removed from search results,
+    // so when a simple noun has types available but none was chosen, open the
+    // sheet on it — that's where the type gets set ("accept Type if not set").
+    const handleSearchAddTag = useCallback((cloId, typeId) => {
+        handleAddTag(cloId, typeId);
+        if ((typeId ?? null) === null) {
+            const hasTypes = objectEntries.some(e => e.isType && e.cloId === cloId);
+            if (hasTypes) {
+                setDetailTag(makeTagKey(cloId, null));
+            }
+        }
+    }, [handleAddTag, objectEntries]);
 
     const [detailCloId, detailTypeId] = useMemo(() => {
         if (!detailTag) return [null, null];
@@ -271,6 +351,27 @@ const AddTagScreen = ({navigation}) => {
         if (!detailTag) return null;
         return resolveTagEntry(detailCloId, detailTypeId, entriesByCloId, typeEntriesByKey);
     }, [detailTag, detailCloId, detailTypeId, typeEntriesByKey, entriesByCloId]);
+
+    // Categories an object belongs to (for the candidate chooser).
+    const candidateCategories = useMemo(() => {
+        if (!detailCandidate) return null;
+        return objectEntries
+            .filter(e => !e.isType && e.objectId === detailCandidate.objectId)
+            .map(e => ({
+                cloId: e.cloId,
+                categoryId: e.categoryId,
+                categoryKey: e.categoryKey,
+                categoryDisplayName: e.categoryDisplayName
+            }));
+    }, [detailCandidate, objectEntries]);
+
+    // Valid types for the (object, category) pair currently in the sheet.
+    const availableTypes = useMemo(() => {
+        if (detailCloId == null) return EMPTY_TYPES;
+        return objectEntries
+            .filter(e => e.isType && e.cloId === detailCloId)
+            .map(e => ({typeId: e.typeId, typeName: e.typeName}));
+    }, [detailCloId, objectEntries]);
 
     // Detail sheet actions — delegate to draft with cloId/typeId from detail
     const handleDetailToggleMaterial = useCallback(
@@ -352,8 +453,15 @@ const AddTagScreen = ({navigation}) => {
                 onSingleTap={handleImageTap}
             />
 
-            {/* Layer 2: Top bar — absolute, floats over image */}
-            <View style={[styles.topBarOverlay, {paddingTop: insets.top}]} pointerEvents="box-none">
+            {/* Layer 2: Top bar — absolute, floats over image.
+                Hidden while the keyboard is up so it never overlaps the search/editor. */}
+            <View
+                style={[
+                    styles.topBarOverlay,
+                    {paddingTop: insets.top},
+                    keyboardVisible && styles.hidden
+                ]}
+                pointerEvents="box-none">
                 <View style={styles.topBar}>
                     <RNPressable
                         onPress={() => {
@@ -451,7 +559,7 @@ const AddTagScreen = ({navigation}) => {
                     customTags={currentCustomTags}
                     brands={brandsArray}
                     quickTagCloIds={quickTagCloIds}
-                    onAddTag={handleAddTag}
+                    onAddTag={handleSearchAddTag}
                     onAddBrandOnly={handleAddBrandOnly}
                     onAddCustomTag={handleAddImageCustomTag}
                     onPendingCustomTag={setPendingCustomTag}
@@ -462,10 +570,9 @@ const AddTagScreen = ({navigation}) => {
 
                 {showBrowser && (
                     <CategoryBrowser
-                        categoriesById={categoriesById}
                         objectEntries={objectEntries}
                         currentTags={currentTags}
-                        onAddTag={handleAddTag}
+                        onSelectCandidate={handleBrowseCandidate}
                         onClose={handleCloseBrowser}
                     />
                 )}
@@ -511,9 +618,12 @@ const AddTagScreen = ({navigation}) => {
             </KeyboardAvoidingView>
 
             <TagDetailSheet
-                visible={detailTagCurrent != null}
+                visible={detailTagCurrent != null || detailCandidate != null}
                 tag={detailTagCurrent}
                 tagEntry={detailTagEntry}
+                candidate={detailCandidate}
+                candidateCategories={candidateCategories}
+                availableTypes={availableTypes}
                 maxQuantity={maxQuantity}
                 materials={materialsArray}
                 brands={brandsArray}
@@ -525,6 +635,8 @@ const AddTagScreen = ({navigation}) => {
                 onRemoveCustomTag={handleDetailRemoveCustomTag}
                 onUpdateQuantity={handleUpdateQuantity}
                 onSetPickedUp={handleDetailSetPickedUp}
+                onResolveCandidate={handleResolveCandidate}
+                onSetType={handleSetType}
                 onClose={handleCloseDetail}
             />
         </View>
@@ -543,6 +655,9 @@ const styles = StyleSheet.create({
         right: 0,
         zIndex: 10,
         backgroundColor: 'rgba(0,0,0,0.4)'
+    },
+    hidden: {
+        display: 'none'
     },
     editorPanel: {
         position: 'absolute',
