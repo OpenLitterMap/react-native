@@ -15,6 +15,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import {useTranslation} from 'react-i18next';
 import {Body, Caption, Colors, Title} from '../components';
 import StepIndicator from './components/StepIndicator';
+import OnboardingBackButton from './components/OnboardingBackButton';
 import {
     checkCameraWithLocation,
     requestCameraWithLocation
@@ -112,11 +113,12 @@ const OnboardingPermissionScreen = ({navigation, route}) => {
                 colors={['#f0faf4', '#e8f5ec', '#dcffeb']}
                 locations={[0, 0.5, 1]}
                 style={styles.gradient}>
-                <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+                <SafeAreaView style={styles.container} edges={['top', 'left', 'right', 'bottom']}>
                     <StepIndicator currentStep={1} completedSteps={[]} />
                     <View style={styles.body}>
                         <ActivityIndicator size="large" color={Colors.accent} />
                     </View>
+                    <OnboardingBackButton onPress={() => navigation.goBack()} />
                 </SafeAreaView>
             </LinearGradient>
         );
@@ -129,7 +131,7 @@ const OnboardingPermissionScreen = ({navigation, route}) => {
                 colors={['#f0faf4', '#e8f5ec', '#dcffeb']}
                 locations={[0, 0.5, 1]}
                 style={styles.gradient}>
-                <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+                <SafeAreaView style={styles.container} edges={['top', 'left', 'right', 'bottom']}>
                     <StepIndicator currentStep={1} completedSteps={[]} />
                     <View style={styles.body}>
                         <View style={styles.iconCircle}>
@@ -157,6 +159,7 @@ const OnboardingPermissionScreen = ({navigation, route}) => {
                             </Caption>
                         </Pressable>
                     </View>
+                    <OnboardingBackButton onPress={() => navigation.goBack()} />
                 </SafeAreaView>
             </LinearGradient>
         );
@@ -168,7 +171,7 @@ const OnboardingPermissionScreen = ({navigation, route}) => {
                 colors={['#f0faf4', '#e8f5ec', '#dcffeb']}
                 locations={[0, 0.5, 1]}
                 style={styles.gradient}>
-                <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+                <SafeAreaView style={styles.container} edges={['top', 'left', 'right', 'bottom']}>
                     <StepIndicator currentStep={1} completedSteps={[]} />
                     <View style={styles.body}>
                         <View style={styles.iconCircle}>
@@ -193,6 +196,7 @@ const OnboardingPermissionScreen = ({navigation, route}) => {
                             </Caption>
                         </Pressable>
                     </View>
+                    <OnboardingBackButton onPress={() => navigation.goBack()} />
                 </SafeAreaView>
             </LinearGradient>
         );
@@ -204,7 +208,7 @@ const OnboardingPermissionScreen = ({navigation, route}) => {
                 colors={['#f0faf4', '#e8f5ec', '#dcffeb']}
                 locations={[0, 0.5, 1]}
                 style={styles.gradient}>
-                <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+                <SafeAreaView style={styles.container} edges={['top', 'left', 'right', 'bottom']}>
                     <StepIndicator currentStep={1} completedSteps={[]} />
                     <View style={styles.body}>
                         <View style={styles.iconCircle}>
@@ -229,6 +233,7 @@ const OnboardingPermissionScreen = ({navigation, route}) => {
                             </Caption>
                         </Pressable>
                     </View>
+                    <OnboardingBackButton onPress={() => navigation.goBack()} />
                 </SafeAreaView>
             </LinearGradient>
         );
@@ -240,7 +245,7 @@ const OnboardingPermissionScreen = ({navigation, route}) => {
             colors={['#f0faf4', '#e8f5ec', '#dcffeb']}
             locations={[0, 0.5, 1]}
             style={styles.gradient}>
-            <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
+            <SafeAreaView style={styles.container} edges={['top', 'left', 'right', 'bottom']}>
                 <StepIndicator currentStep={1} completedSteps={[]} />
                 <View style={styles.body}>
                     <View style={styles.iconCircle}>
@@ -274,6 +279,7 @@ const OnboardingPermissionScreen = ({navigation, route}) => {
                         </Body>
                     </Pressable>
                 </View>
+                <OnboardingBackButton onPress={() => navigation.goBack()} />
             </SafeAreaView>
         </LinearGradient>
     );

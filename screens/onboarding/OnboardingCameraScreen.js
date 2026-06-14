@@ -8,6 +8,7 @@ import CameraCapture from '../camera/CameraCapture';
 import {useTranslation} from 'react-i18next';
 import {Body, Caption, Colors, Title} from '../components';
 import StepIndicator from './components/StepIndicator';
+import OnboardingBackButton from './components/OnboardingBackButton';
 import {isValidGpsCoords} from '../../utils/gps';
 import {addOnboardingPhoto} from '../../reducers/photos_reducer';
 import {markOnboardingComplete} from '../../reducers/auth_reducer';
@@ -65,7 +66,7 @@ const OnboardingCameraScreen = ({navigation}) => {
                 colors={['#f0faf4', '#e8f5ec', '#dcffeb']}
                 locations={[0, 0.5, 1]}
                 style={styles.gradient}>
-                <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
+                <SafeAreaView style={styles.safe} edges={['top', 'left', 'right', 'bottom']}>
                     <StepIndicator currentStep={1} step1Label="Take photo" />
                     <View style={styles.body}>
                         <View style={styles.iconCircle}>
@@ -96,6 +97,7 @@ const OnboardingCameraScreen = ({navigation}) => {
                             </Caption>
                         </Pressable>
                     </View>
+                    <OnboardingBackButton onPress={() => navigation.goBack()} />
                 </SafeAreaView>
             </LinearGradient>
         );

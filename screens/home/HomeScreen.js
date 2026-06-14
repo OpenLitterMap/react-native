@@ -48,6 +48,7 @@ import CommunityStats from '../components/CommunityStats';
 // Hooks
 import useUploadPhotos from './useUploadPhotos';
 import useHomeBootstrap from './useHomeBootstrap';
+import {useRepeatTutorial} from '../../hooks/useRepeatTutorial';
 
 // EXIF reads run with bounded concurrency so a large multi-select import doesn't read
 // one-photo-at-a-time (each read has a 5s timeout). The progress modal shows only for
@@ -61,6 +62,9 @@ const HomeScreen = ({navigation}) => {
 
     // Boot: device model, stats, version check, untagged count
     const {refreshAll} = useHomeBootstrap(navigation);
+
+    // Restart the onboarding tutorial from the beginning (empty-state CTA)
+    const repeatTutorial = useRepeatTutorial();
 
     // Upload orchestration
     const {
@@ -340,9 +344,9 @@ const HomeScreen = ({navigation}) => {
 
     const listEmpty = useMemo(() => (
         <View style={styles.gridBleed}>
-            <InboxEmpty onAddPhotos={handleSelectMore} />
+            <InboxEmpty onAddPhotos={handleSelectMore} onRepeatTutorial={repeatTutorial} />
         </View>
-    ), [handleSelectMore]);
+    ), [handleSelectMore, repeatTutorial]);
 
     // --- Render ---
 

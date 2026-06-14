@@ -7,6 +7,7 @@ import {useDispatch, useSelector} from 'react-redux';
 import {useTranslation} from 'react-i18next';
 import {Body, Caption, Colors, Title} from '../components';
 import StepIndicator from './components/StepIndicator';
+import OnboardingBackButton from './components/OnboardingBackButton';
 import {markOnboardingComplete} from '../../reducers/auth_reducer';
 import {setOnboardingComplete} from '../../utils/onboarding';
 
@@ -31,7 +32,7 @@ const ChoosePathScreen = ({navigation}) => {
                 colors={['#f0faf4', '#e8f5ec', '#dcffeb', '#d4f7e2']}
                 locations={[0, 0.3, 0.7, 1]}
                 style={styles.gradient}>
-                <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
+                <SafeAreaView style={styles.safe} edges={['top', 'left', 'right', 'bottom']}>
                     <StepIndicator currentStep={1} />
 
                     <View style={styles.content}>
@@ -75,6 +76,7 @@ const ChoosePathScreen = ({navigation}) => {
                             </Caption>
                         </Pressable>
                     </View>
+                    <OnboardingBackButton onPress={() => navigation.goBack()} />
                 </SafeAreaView>
             </LinearGradient>
         </>

@@ -99,7 +99,7 @@ export const InboxControls = ({count, isSelecting, selectedCount, onToggleDelete
 };
 
 /** Inbox empty state — the primary first-run call to action. */
-export const InboxEmpty = ({onAddPhotos}) => {
+export const InboxEmpty = ({onAddPhotos, onRepeatTutorial}) => {
     const {t} = useTranslation();
     return (
         <View style={styles.emptyContainer}>
@@ -116,6 +116,12 @@ export const InboxEmpty = ({onAddPhotos}) => {
                 <Icon name="add" size={18} color={Colors.white} />
                 <Body style={styles.addPhotosPrimaryText}>{t('Add Photos')}</Body>
             </Pressable>
+            {onRepeatTutorial && (
+                <Pressable onPress={onRepeatTutorial} style={styles.repeatTutorial}>
+                    <Icon name="school-outline" size={16} color={Colors.muted} />
+                    <Body style={styles.repeatTutorialText}>{t('Repeat Tutorial')}</Body>
+                </Pressable>
+            )}
         </View>
     );
 };
@@ -360,6 +366,12 @@ const styles = StyleSheet.create({
         borderRadius: 24, marginTop: 18
     },
     addPhotosPrimaryText: {color: Colors.white, fontSize: 15, fontWeight: '600'},
+    repeatTutorial: {
+        flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 12,
+        paddingHorizontal: 20, paddingVertical: 10, borderRadius: 24,
+        borderWidth: 1, borderColor: '#d8d8d8'
+    },
+    repeatTutorialText: {color: Colors.muted, fontSize: 14, fontWeight: '600'},
     noGpsCard: {
         marginHorizontal: 16, marginBottom: 12, padding: 12,
         borderRadius: 12, borderWidth: 1, borderColor: Colors.error,
