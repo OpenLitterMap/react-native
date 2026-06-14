@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {
     Pressable,
     StyleSheet,
@@ -23,6 +23,28 @@ const TagPills = ({
     onToggleQuickTag
 }) => {
     const [expandedKey, setExpandedKey] = useState(null);
+
+    // Auto-expand a newly added tag so its options (quantity, details, remove)
+    // are visible by default. Only fires on an incremental add — not on first
+    // render, and not when switching photos (which replaces the whole set).
+    const prevKeysRef = useRef(null);
+    useEffect(() => {
+        const currentKeys = (Array.isArray(tags) ? tags : []).map(makePrimaryTagKey);
+        const prev = prevKeysRef.current;
+        prevKeysRef.current = currentKeys;
+        if (prev === null) {
+            return;
+        }
+        if (
+            currentKeys.length > prev.length &&
+            prev.every(k => currentKeys.includes(k))
+        ) {
+            const added = currentKeys.find(k => !prev.includes(k));
+            if (added) {
+                setExpandedKey(added);
+            }
+        }
+    }, [tags]);
 
     useEffect(() => {
         if (!expandedKey) {

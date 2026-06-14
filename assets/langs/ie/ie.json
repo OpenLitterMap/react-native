@@ -1,4 +1,11 @@
 {
+    "All Objects": "Gach Réad",
+    "Brands matching \"{{query}}\"": "Brandaí a mheaitseálann \"{{query}}\"",
+    "By Category": "De réir Catagóire",
+    "Choose a category": "Roghnaigh catagóir",
+    "Most Tagged": "Is mó Clibeáil",
+    "Skip / Not sure": "Scipeáil / Nílim cinnte",
+    "Type": "Cineál",
     "{{count}} brand": "{{count}} branda",
     "{{count}} brand_other": "{{count}} brandaí",
     "{{count}} material": "{{count}} ábhar",

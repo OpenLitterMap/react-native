@@ -1,6 +1,5 @@
 import React, {useCallback, useMemo, useState} from 'react';
-import {ScrollView, StyleSheet, View} from 'react-native';
-import {FlashList} from '@shopify/flash-list';
+import {FlatList, SectionList, StyleSheet, View} from 'react-native';
 import {Pressable} from 'react-native';
 import {Gesture, GestureDetector} from 'react-native-gesture-handler';
 import {runOnJS} from 'react-native-reanimated';
@@ -8,164 +7,216 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import {useTranslation} from 'react-i18next';
 import {Body, Caption, Colors} from '../../components';
 import {getCategoryColor} from './categoryColors';
-import {makeTagKey} from './tagUtils';
+
+const ALL_KEY = 'all';
 
 const CategoryBrowser = ({
-    categoriesById,
     objectEntries,
     currentTags,
-    onAddTag,
+    onSelectCandidate,
     onClose
 }) => {
     const {t} = useTranslation();
-    const [selectedCategoryId, setSelectedCategoryId] = useState(null);
+    const [activeTab, setActiveTab] = useState('category');
+    // Accordion: every section collapsed by default ({} = none expanded).
+    const [expandedSections, setExpandedSections] = useState({});
 
-    const taggedKeys = useMemo(() => {
-        const set = new Set();
-        if (currentTags) {
-            for (const t of currentTags) {
-                set.add(makeTagKey(t.cloId, t.typeId));
-            }
-        }
-        return set;
-    }, [currentTags]);
-
-    const categoriesList = useMemo(() => {
-        const countMap = {};
-        for (const entry of objectEntries) {
-            countMap[entry.categoryId] = (countMap[entry.categoryId] || 0) + 1;
-        }
-        return Object.values(categoriesById)
-            .map(cat => ({
-                ...cat,
-                count: countMap[cat.id] || 0
-            }))
-            .sort((a, b) => b.count - a.count);
-    }, [categoriesById, objectEntries]);
-
-    const filteredEntries = useMemo(() => {
-        if (!selectedCategoryId) {
-            return objectEntries;
-        }
-        return objectEntries.filter(e => e.categoryId === selectedCategoryId);
-    }, [selectedCategoryId, objectEntries]);
-
-    // Deduplicate: for type entries sharing a cloId with their base object,
-    // show both but visually distinguish them
-    const deduped = useMemo(() => {
-        const seen = new Set();
-        const result = [];
-        // Base entries first, then types
-        const sorted = [...filteredEntries].sort((a, b) => {
-            if (a.isType && !b.isType) {
-                return 1;
-            }
-            if (!a.isType && b.isType) {
-                return -1;
-            }
-            return a.displayName.localeCompare(b.displayName);
-        });
-        for (const entry of sorted) {
-            const key = entry.isType
-                ? `${entry.cloId}-type-${entry.typeId}`
-                : `${entry.cloId}`;
-            if (!seen.has(key)) {
-                seen.add(key);
-                result.push(entry);
-            }
-        }
-        return result;
-    }, [filteredEntries]);
-
-    const handleSelect = useCallback(
-        (cloId, typeId) => {
-            if (__DEV__) console.log('[Browser] select cloId:', cloId, 'typeId:', typeId);
-            onAddTag(cloId, typeId);
-        },
-        [onAddTag]
+    // Browse lists show simple nouns only — base objects, never type/compound
+    // rows (Soda Can, Beer Can…). Type precision is handled in TagDetailSheet.
+    const baseEntries = useMemo(
+        () => objectEntries.filter(e => !e.isType),
+        [objectEntries]
     );
 
-    const handleCategoryPress = useCallback(catId => {
-        setSelectedCategoryId(prev => (prev === catId ? null : catId));
+    // "All Objects": each base object once. Representative = first entry per
+    // objectId (preserves i18n). Divergent names across categories ⇒ flag it.
+    const allObjects = useMemo(() => {
+        const byId = new Map();
+        for (const e of baseEntries) {
+            const existing = byId.get(e.objectId);
+            if (!existing) {
+                byId.set(e.objectId, {
+                    kind: 'object',
+                    objectId: e.objectId,
+                    objectKey: e.objectKey,
+                    displayName: e.displayName
+                });
+            } else if (__DEV__ && existing.displayName !== e.displayName) {
+                console.warn(
+                    `[Browser] objectId ${e.objectId} has divergent displayNames ` +
+                    `across categories: "${existing.displayName}" vs "${e.displayName}" ` +
+                    '— possible data issue.'
+                );
+            }
+        }
+        return [...byId.values()].sort((a, b) =>
+            a.displayName.localeCompare(b.displayName)
+        );
+    }, [baseEntries]);
+
+    const categoryGroups = useMemo(() => {
+        const groups = {};
+        for (const e of baseEntries) {
+            if (!groups[e.categoryId]) {
+                groups[e.categoryId] = {
+                    categoryId: e.categoryId,
+                    categoryKey: e.categoryKey,
+                    title: e.categoryDisplayName,
+                    items: []
+                };
+            }
+            groups[e.categoryId].items.push(e);
+        }
+        const list = Object.values(groups);
+        for (const g of list) {
+            g.items.sort((a, b) => a.displayName.localeCompare(b.displayName));
+        }
+        // Heaviest categories first (matches the prior chip order), then A–Z.
+        list.sort((a, b) =>
+            b.items.length - a.items.length || a.title.localeCompare(b.title)
+        );
+        return list;
+    }, [baseEntries]);
+
+    const {taggedCloIds, taggedObjectIds} = useMemo(() => {
+        const cloIds = new Set();
+        for (const tag of currentTags || []) {
+            if (!tag.brandOnly && tag.cloId != null) {
+                cloIds.add(tag.cloId);
+            }
+        }
+        const objIds = new Set();
+        for (const e of baseEntries) {
+            if (cloIds.has(e.cloId)) {
+                objIds.add(e.objectId);
+            }
+        }
+        return {taggedCloIds: cloIds, taggedObjectIds: objIds};
+    }, [currentTags, baseEntries]);
+
+    const sections = useMemo(() => {
+        const out = [{
+            key: ALL_KEY,
+            title: t('All Objects'),
+            count: allObjects.length,
+            data: expandedSections[ALL_KEY] ? allObjects : []
+        }];
+        for (const g of categoryGroups) {
+            const key = `cat-${g.categoryId}`;
+            out.push({
+                key,
+                title: g.title,
+                categoryKey: g.categoryKey,
+                count: g.items.length,
+                data: expandedSections[key] ? g.items : []
+            });
+        }
+        return out;
+    }, [allObjects, categoryGroups, expandedSections, t]);
+
+    // TODO(Pass 2): replace this hardcoded alphabetical fallback with real
+    // most-tagged ordering once the data source lands. No data this pass.
+    const mostTagged = allObjects;
+
+    const toggleSection = useCallback(key => {
+        setExpandedSections(prev => ({...prev, [key]: !prev[key]}));
     }, []);
+
+    const handleSelectObject = useCallback(item => {
+        onSelectCandidate({
+            objectId: item.objectId,
+            categoryId: null,
+            cloId: null,
+            typeId: null,
+            displayName: item.displayName
+        });
+    }, [onSelectCandidate]);
+
+    const handleSelectCategoryEntry = useCallback(entry => {
+        onSelectCandidate({
+            objectId: entry.objectId,
+            categoryId: entry.categoryId,
+            categoryKey: entry.categoryKey,
+            cloId: entry.cloId,
+            typeId: null,
+            displayName: entry.displayName
+        });
+    }, [onSelectCandidate]);
+
+    const renderRow = useCallback((item, isObjectRow) => {
+        const isAdded = isObjectRow
+            ? taggedObjectIds.has(item.objectId)
+            : taggedCloIds.has(item.cloId);
+        const barColor = isObjectRow
+            ? Colors.muted
+            : getCategoryColor(item.categoryKey);
+        return (
+            <Pressable
+                style={({pressed}) => [
+                    styles.resultRow,
+                    isAdded && styles.resultRowAdded,
+                    pressed && styles.resultRowPressed
+                ]}
+                onPress={() =>
+                    isObjectRow
+                        ? handleSelectObject(item)
+                        : handleSelectCategoryEntry(item)
+                }>
+                <View style={[styles.colorBar, {backgroundColor: barColor}]} />
+                <View style={styles.resultTextWrap}>
+                    <Body
+                        color={isAdded ? 'accent' : 'text'}
+                        family="medium"
+                        style={styles.resultName}>
+                        {item.displayName}
+                    </Body>
+                </View>
+                <Icon
+                    name={isAdded ? 'checkmark-circle' : 'add-circle-outline'}
+                    size={20}
+                    color={isAdded ? Colors.accent : Colors.muted}
+                />
+            </Pressable>
+        );
+    }, [taggedObjectIds, taggedCloIds, handleSelectObject, handleSelectCategoryEntry]);
 
     const renderItem = useCallback(
-        ({item}) => {
-            const isAdded = taggedKeys.has(makeTagKey(item.cloId, item.typeId));
-            const categoryColor = getCategoryColor(item.categoryKey);
-
-            return (
-                <Pressable
-                    style={({pressed}) => [
-                        styles.resultRow,
-                        isAdded && styles.resultRowAdded,
-                        pressed && styles.resultRowPressed
-                    ]}
-                    onPress={() => handleSelect(item.cloId, item.typeId)}>
-                    <View
-                        style={[
-                            styles.colorBar,
-                            {backgroundColor: categoryColor}
-                        ]}
-                    />
-                    <View style={styles.resultTextWrap}>
-                        <Body
-                            color={isAdded ? 'accent' : 'text'}
-                            family="medium"
-                            style={styles.resultName}>
-                            {item.displayName}
-                        </Body>
-                        <View style={styles.badgeRow}>
-                            {item.isType && (
-                                <View style={styles.typeBadge}>
-                                    <Caption
-                                        color="muted"
-                                        style={styles.typeBadgeText}>
-                                        {t('type')}
-                                    </Caption>
-                                </View>
-                            )}
-                            <View
-                                style={[
-                                    styles.categoryBadge,
-                                    {backgroundColor: categoryColor + '18'}
-                                ]}>
-                                <Caption
-                                    color="muted"
-                                    family="medium"
-                                    style={[
-                                        styles.categoryBadgeText,
-                                        {color: categoryColor}
-                                    ]}>
-                                    {item.categoryDisplayName}
-                                </Caption>
-                            </View>
-                        </View>
-                    </View>
-                    {isAdded ? (
-                        <Icon
-                            name="checkmark-circle"
-                            size={20}
-                            color={Colors.accent}
-                        />
-                    ) : (
-                        <Icon
-                            name="add-circle-outline"
-                            size={20}
-                            color={Colors.muted}
-                        />
-                    )}
-                </Pressable>
-            );
-        },
-        [taggedKeys, handleSelect, t]
+        ({item}) => renderRow(item, item.kind === 'object'),
+        [renderRow]
     );
 
-    const keyExtractor = useCallback((item) => {
-        return item.isType
-            ? `type-${item.cloId}-${item.typeId}`
-            : `obj-${item.cloId}`;
-    }, []);
+    const renderSectionHeader = useCallback(({section}) => {
+        const expanded = !!expandedSections[section.key];
+        const dotColor = section.categoryKey
+            ? getCategoryColor(section.categoryKey)
+            : Colors.accent;
+        return (
+            <Pressable
+                style={styles.sectionHeader}
+                onPress={() => toggleSection(section.key)}>
+                <View style={[styles.sectionDot, {backgroundColor: dotColor}]} />
+                <Caption
+                    color="text"
+                    family="semiBold"
+                    style={styles.sectionTitle}>
+                    {section.title}
+                </Caption>
+                <Caption color="muted" style={styles.sectionCount}>
+                    {section.count}
+                </Caption>
+                <Icon
+                    name={expanded ? 'chevron-up' : 'chevron-down'}
+                    size={16}
+                    color={Colors.muted}
+                />
+            </Pressable>
+        );
+    }, [expandedSections, toggleSection]);
+
+    const sectionKeyExtractor = useCallback(
+        item => (item.kind === 'object' ? `obj-${item.objectId}` : `clo-${item.cloId}`),
+        []
+    );
 
     const swipeDownGesture = Gesture.Pan()
         .activeOffsetY(12)
@@ -174,10 +225,7 @@ const CategoryBrowser = ({
             const isMostlyVertical =
                 Math.abs(e.translationY) > Math.abs(e.translationX) * 1.2;
             const shouldClose =
-                isMostlyVertical &&
-                e.translationY > 60 &&
-                e.velocityY > 250;
-
+                isMostlyVertical && e.translationY > 60 && e.velocityY > 250;
             if (shouldClose) {
                 runOnJS(onClose)();
             }
@@ -188,66 +236,58 @@ const CategoryBrowser = ({
             <View style={styles.container}>
                 {/* Header */}
                 <View style={styles.header}>
-                    <Caption
-                        color="text"
-                        family="semiBold"
-                        style={styles.headerTitle}>
-                        {t('Browse Categories')}
-                    </Caption>
-                    <Pressable onPress={onClose} hitSlop={8}>
+                    <View style={styles.tabs}>
+                        <Pressable
+                            style={[
+                                styles.tab,
+                                activeTab === 'category' && styles.tabActive
+                            ]}
+                            onPress={() => setActiveTab('category')}>
+                            <Caption
+                                color={activeTab === 'category' ? 'accent' : 'muted'}
+                                family="semiBold"
+                                style={styles.tabText}>
+                                {t('By Category')}
+                            </Caption>
+                        </Pressable>
+                        <Pressable
+                            style={[
+                                styles.tab,
+                                activeTab === 'mostTagged' && styles.tabActive
+                            ]}
+                            onPress={() => setActiveTab('mostTagged')}>
+                            <Caption
+                                color={activeTab === 'mostTagged' ? 'accent' : 'muted'}
+                                family="semiBold"
+                                style={styles.tabText}>
+                                {t('Most Tagged')}
+                            </Caption>
+                        </Pressable>
+                    </View>
+                    <Pressable onPress={onClose} hitSlop={8} style={styles.closeBtn}>
                         <Icon name="close" size={18} color={Colors.muted} />
                     </Pressable>
                 </View>
 
-                {/* Category chips */}
-                <ScrollView
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={styles.chipsRow}>
-                    <Pressable
-                        style={[
-                            styles.chip,
-                            !selectedCategoryId && styles.chipActive
-                        ]}
-                        onPress={() => setSelectedCategoryId(null)}>
-                        <Caption
-                            color={!selectedCategoryId ? 'white' : 'text'}
-                            family="medium"
-                            style={styles.chipText}>
-                            All ({objectEntries.length})
-                        </Caption>
-                    </Pressable>
-                    {categoriesList.map(cat => {
-                        const isSelected = selectedCategoryId === cat.id;
-                        const catColor = getCategoryColor(cat.key);
-                        return (
-                            <Pressable
-                                key={cat.id}
-                                style={[
-                                    styles.chip,
-                                    isSelected && {backgroundColor: catColor}
-                                ]}
-                                onPress={() => handleCategoryPress(cat.id)}>
-                                <Caption
-                                    color={isSelected ? 'white' : 'text'}
-                                    family="medium"
-                                    style={styles.chipText}>
-                                    {cat.displayName} ({cat.count})
-                                </Caption>
-                            </Pressable>
-                        );
-                    })}
-                </ScrollView>
-
-                {/* Results list */}
-                <FlashList
-                    data={deduped}
-                    renderItem={renderItem}
-                    keyExtractor={keyExtractor}
-                    estimatedItemSize={50}
-                    keyboardShouldPersistTaps="handled"
-                    contentContainerStyle={styles.listContent}
-                />
+                {activeTab === 'category' ? (
+                    <SectionList
+                        sections={sections}
+                        renderItem={renderItem}
+                        renderSectionHeader={renderSectionHeader}
+                        keyExtractor={sectionKeyExtractor}
+                        keyboardShouldPersistTaps="handled"
+                        stickySectionHeadersEnabled={false}
+                        contentContainerStyle={styles.listContent}
+                    />
+                ) : (
+                    <FlatList
+                        data={mostTagged}
+                        renderItem={renderItem}
+                        keyExtractor={sectionKeyExtractor}
+                        keyboardShouldPersistTaps="handled"
+                        contentContainerStyle={styles.listContent}
+                    />
+                )}
             </View>
         </GestureDetector>
     );
@@ -267,43 +307,58 @@ const styles = StyleSheet.create({
     header: {
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'space-between',
-        paddingHorizontal: 14,
-        paddingVertical: 10,
+        paddingHorizontal: 10,
+        paddingVertical: 8,
         borderBottomWidth: StyleSheet.hairlineWidth,
         borderBottomColor: '#e8e8e8',
-        backgroundColor: '#fafafa'
+        backgroundColor: '#fafafa',
+        gap: 8
     },
-    headerTitle: {
-        fontSize: 13
+    tabs: {
+        flexDirection: 'row',
+        flex: 1,
+        gap: 6
     },
-    chipsRow: {
-        paddingHorizontal: 10,
-        paddingTop: 10,
-        paddingBottom: 18,
-        gap: 6,
-        borderBottomWidth: StyleSheet.hairlineWidth,
-        borderBottomColor: '#f0f0f0'
-    },
-    chip: {
-        paddingHorizontal: 12,
-        height: 39,
-        justifyContent: 'center',
+    tab: {
+        paddingHorizontal: 14,
+        paddingVertical: 7,
         borderRadius: 100,
         backgroundColor: '#f0f0f0'
     },
-    chipActive: {
-        backgroundColor: Colors.accent
+    tabActive: {
+        backgroundColor: Colors.accentLight
     },
-    chipText: {
-        fontSize: 13,
-        lineHeight: 18
+    tabText: {
+        fontSize: 13
     },
-    list: {
-        flexGrow: 0
+    closeBtn: {
+        padding: 4
     },
     listContent: {
         paddingBottom: 4
+    },
+    sectionHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 14,
+        paddingVertical: 11,
+        backgroundColor: '#fff',
+        borderBottomWidth: StyleSheet.hairlineWidth,
+        borderBottomColor: '#f0f0f0',
+        gap: 8
+    },
+    sectionDot: {
+        width: 8,
+        height: 8,
+        borderRadius: 4
+    },
+    sectionTitle: {
+        flex: 1,
+        fontSize: 13
+    },
+    sectionCount: {
+        fontSize: 12,
+        marginRight: 2
     },
     resultRow: {
         flexDirection: 'row',
@@ -311,7 +366,7 @@ const styles = StyleSheet.create({
         paddingRight: 14,
         paddingVertical: 10,
         borderBottomWidth: StyleSheet.hairlineWidth,
-        borderBottomColor: '#f0f0f0'
+        borderBottomColor: '#f5f5f5'
     },
     resultRowAdded: {
         backgroundColor: Colors.accentLight
@@ -327,37 +382,10 @@ const styles = StyleSheet.create({
         marginRight: 11
     },
     resultTextWrap: {
-        flex: 1,
-        gap: 2
+        flex: 1
     },
     resultName: {
         fontSize: 15
-    },
-    badgeRow: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 6
-    },
-    typeBadge: {
-        paddingHorizontal: 5,
-        paddingVertical: 1,
-        borderRadius: 4,
-        backgroundColor: '#f0f0f0',
-        borderWidth: StyleSheet.hairlineWidth,
-        borderColor: '#ddd'
-    },
-    typeBadgeText: {
-        fontSize: 9,
-        textTransform: 'uppercase',
-        letterSpacing: 0.5
-    },
-    categoryBadge: {
-        paddingHorizontal: 6,
-        paddingVertical: 1,
-        borderRadius: 6
-    },
-    categoryBadgeText: {
-        fontSize: 11
     }
 });
 

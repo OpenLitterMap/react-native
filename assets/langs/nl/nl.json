@@ -1,4 +1,11 @@
 {
+    "All Objects": "Alle objecten",
+    "Brands matching \"{{query}}\"": "Merken die overeenkomen met \"{{query}}\"",
+    "By Category": "Op categorie",
+    "Choose a category": "Kies een categorie",
+    "Most Tagged": "Meest getagd",
+    "Skip / Not sure": "Overslaan / Niet zeker",
+    "Type": "Type",
     "{{count}} brand": "{{count}} merk",
     "{{count}} brand_other": "{{count}} merken",
     "{{count}} material": "{{count}} materiaal",

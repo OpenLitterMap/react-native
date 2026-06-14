@@ -6,12 +6,11 @@ import {
     Modal,
     Platform,
     Pressable,
-    ScrollView,
     StyleSheet,
     TextInput,
     View
 } from 'react-native';
-import {Gesture, GestureDetector} from 'react-native-gesture-handler';
+import {Gesture, GestureDetector, ScrollView} from 'react-native-gesture-handler';
 import Animated, {
     runOnJS,
     useAnimatedStyle,
@@ -30,6 +29,9 @@ const TagDetailSheet = ({
     visible,
     tag,
     tagEntry,
+    candidate,
+    candidateCategories,
+    availableTypes,
     materials,
     brands,
     brandsById,
@@ -40,6 +42,8 @@ const TagDetailSheet = ({
     onRemoveCustomTag,
     onUpdateQuantity,
     onSetPickedUp,
+    onResolveCandidate,
+    onSetType,
     onClose,
     maxQuantity = MAX_QUANTITY_DEFAULT
 }) => {
@@ -187,7 +191,13 @@ const TagDetailSheet = ({
 
     // Swipe-down-to-close gesture
     const translateY = useSharedValue(0);
-    const scrollAtTop = useRef(true);
+    // Shared value (not a ref) so the gesture worklet reads the live scroll
+    // position from the UI thread.
+    const scrollAtTop = useSharedValue(true);
+    // Whether the scroll was at the top when THIS gesture began. The sheet only
+    // drags/closes for swipes that start at the top — a swipe that starts mid
+    // scroll just scrolls (e.g. swiping up-from-bottom to reach the top).
+    const startedAtTop = useSharedValue(false);
 
     const dismissSheet = useCallback(() => {
         Keyboard.dismiss();
@@ -199,17 +209,31 @@ const TagDetailSheet = ({
         if (visible) translateY.value = 0;
     }, [visible, translateY]);
 
+    // simultaneousWithExternalGesture(scrollRef) lets the Pan run alongside the
+    // (RNGH) ScrollView's native scroll instead of losing the touch to it —
+    // without this the drag-to-close never activates.
     const swipeGesture = Gesture.Pan()
         .activeOffsetY(12)
         .failOffsetX([-20, 20])
+        .simultaneousWithExternalGesture(scrollRef)
+        .onBegin(() => {
+            // Snapshot scroll position at touch-down — drives the whole gesture.
+            startedAtTop.value = scrollAtTop.value;
+        })
         .onUpdate(e => {
-            // Only allow dragging down, and only when scroll is at top
-            if (e.translationY > 0 && scrollAtTop.current) {
+            // Drag the sheet only on a downward swipe that began at the top.
+            if (e.translationY > 0 && startedAtTop.value) {
                 translateY.value = e.translationY;
             }
         })
         .onEnd(e => {
-            if (e.translationY > 80 || (e.translationY > 30 && e.velocityY > 500)) {
+            // Close only if the sheet was actually dragged (translateY reflects
+            // real sheet movement, which is non-zero only when startedAtTop).
+            const close =
+                startedAtTop.value &&
+                (translateY.value > 80 ||
+                    (translateY.value > 30 && e.velocityY > 500));
+            if (close) {
                 translateY.value = withTiming(600, {duration: 200});
                 runOnJS(dismissSheet)();
             } else {
@@ -225,7 +249,7 @@ const TagDetailSheet = ({
         <Modal
             animationType="slide"
             transparent
-            visible={visible && tag != null}
+            visible={visible && (tag != null || candidate != null)}
             onRequestClose={dismissSheet}>
             <View style={styles.overlay}>
                 <KeyboardAvoidingView
@@ -240,7 +264,7 @@ const TagDetailSheet = ({
                                 bounces={false}
                                 keyboardShouldPersistTaps="handled"
                                 contentContainerStyle={styles.scrollContent}
-                                onScroll={e => { scrollAtTop.current = e.nativeEvent.contentOffset.y <= 1; }}
+                                onScroll={e => { scrollAtTop.value = e.nativeEvent.contentOffset.y <= 1; }}
                                 scrollEventThrottle={16}
                                 onContentSizeChange={() => {
                                     if (isMaterialFocused) {
@@ -252,9 +276,56 @@ const TagDetailSheet = ({
                                 }}>
                                 <View style={styles.handle} />
 
-                                {/* Content guard: tag can be null during Modal close animation.
+                                {/* Content guard: tag can be null during Modal close animation,
+                                or while an incomplete candidate awaits category resolution.
                                 Sheet/ScrollView/handle stay mounted; only content is gated. */}
-                                {!tag ? <View style={styles.bottomSpacer} /> : <>
+                                {(!tag && !candidate) ? (
+                                    <View style={styles.bottomSpacer} />
+                                ) : (candidate && !tag) ? (
+                                    /* Candidate resolution: object chosen from "All Objects"
+                                       belongs to >1 category — let the user pick one. */
+                                    <>
+                                        <View style={styles.header}>
+                                            <View
+                                                style={[
+                                                    styles.headerColorBar,
+                                                    {backgroundColor: Colors.muted}
+                                                ]}
+                                            />
+                                            <View>
+                                                <Body style={styles.headerName}>
+                                                    {candidate.displayName}
+                                                </Body>
+                                                <Caption>
+                                                    {t('Choose a category')}
+                                                </Caption>
+                                            </View>
+                                        </View>
+                                        <View style={styles.section}>
+                                            <View style={styles.typeChipsWrap}>
+                                                {(candidateCategories || []).map(c => (
+                                                    <Pressable
+                                                        key={c.cloId}
+                                                        style={styles.typeChip}
+                                                        onPress={() =>
+                                                            onResolveCandidate?.(c.cloId)
+                                                        }>
+                                                        <View
+                                                            style={[
+                                                                styles.typeChipDot,
+                                                                {backgroundColor: getCategoryColor(c.categoryKey)}
+                                                            ]}
+                                                        />
+                                                        <Caption style={styles.typeChipText}>
+                                                            {c.categoryDisplayName}
+                                                        </Caption>
+                                                    </Pressable>
+                                                ))}
+                                            </View>
+                                        </View>
+                                        <View style={styles.bottomSpacer} />
+                                    </>
+                                ) : <>
 
                                     {/* Header */}
                                     <View style={styles.header}>
@@ -385,133 +456,67 @@ const TagDetailSheet = ({
                                         </View>
                                     </View>
 
-                                    {/* Materials */}
-                                    <View
-                                        style={styles.section}
-                                        onLayout={event => {
-                                            materialsSectionYRef.current = event.nativeEvent.layout.y;
-                                        }}>
-                                        <View style={styles.sectionHeader}>
+                                    {/* Type (optional) — valid types for this (object, category)
+                                       pair. "Skip / Not sure" clears it (typeId = null); type is
+                                       never a fabricated value. */}
+                                    {availableTypes && availableTypes.length > 0 && (
+                                        <View style={styles.section}>
                                             <Caption style={styles.sectionLabel}>
-                                                {t('Materials')}
+                                                {t('Type')}
                                             </Caption>
-                                            <Caption
-                                                style={styles.xpHint}
-                                                color="accent">
-                                                +2 XP
-                                            </Caption>
-                                        </View>
-
-                                        {/* Selected materials */}
-                                        {selectedMaterials.length > 0 && (
-                                            <View style={styles.selectedChipsWrap}>
-                                                {selectedMaterials.map(m => (
-                                                    <View
-                                                        key={m.id}
-                                                        style={styles.selectedChip}>
-                                                        <Caption
-                                                            style={
-                                                                styles.selectedChipText
-                                                            }>
-                                                            {m.name}
-                                                        </Caption>
+                                            <View style={styles.typeChipsWrap}>
+                                                {availableTypes.map(ty => {
+                                                    const selected =
+                                                        (tag.typeId ?? null) === ty.typeId;
+                                                    return (
                                                         <Pressable
+                                                            key={ty.typeId}
+                                                            style={[
+                                                                styles.typeChip,
+                                                                selected && styles.typeChipActive
+                                                            ]}
                                                             onPress={() =>
-                                                                onToggleMaterial(m.id)
-                                                            }
-                                                            hitSlop={4}>
-                                                            <Icon
-                                                                name="close"
-                                                                size={14}
-                                                                color="#888"
-                                                            />
+                                                                onSetType?.(
+                                                                    tag.cloId,
+                                                                    tag.typeId ?? null,
+                                                                    ty.typeId
+                                                                )
+                                                            }>
+                                                            <Caption
+                                                                style={[
+                                                                    styles.typeChipText,
+                                                                    selected && styles.typeChipTextActive
+                                                                ]}>
+                                                                {ty.typeName}
+                                                            </Caption>
                                                         </Pressable>
-                                                    </View>
-                                                ))}
-                                            </View>
-                                        )}
-
-                                        {/* Material search */}
-                                        <View style={styles.searchRow}>
-                                            <Icon
-                                                name="search"
-                                                size={16}
-                                                color="#aaa"
-                                                style={styles.searchIcon}
-                                            />
-                                            <TextInput
-                                                style={styles.searchInput}
-                                                placeholder={t('Search materials')}
-                                                placeholderTextColor="#aaa"
-                                                value={materialQuery}
-                                                onChangeText={setMaterialQuery}
-                                                onFocus={handleMaterialFocus}
-                                                onBlur={handleMaterialBlur}
-                                                autoCapitalize="none"
-                                                autoCorrect={false}
-                                            />
-                                            <Pressable
-                                                onPress={() => setMaterialQuery('')}
-                                                hitSlop={4}
-                                                style={{opacity: materialQuery.length > 0 ? 1 : 0}}
-                                                disabled={materialQuery.length === 0}>
-                                                <Icon
-                                                    name="close-circle"
-                                                    size={16}
-                                                    color="#ccc"
-                                                />
-                                            </Pressable>
-                                        </View>
-
-                                        {/* Material results — container always mounted to avoid
-                                    Fabric churn while typing with active keyboard session */}
-                                        <View style={materialResults.length > 0 ? styles.brandResults : undefined}>
-                                            {materialResults.map(m => (
+                                                    );
+                                                })}
                                                 <Pressable
-                                                    key={m.id}
-                                                    style={styles.brandRow}
-                                                    onPress={() => {
-                                                        onToggleMaterial(m.id);
-                                                        setMaterialQuery('');
-                                                    }}>
+                                                    style={[
+                                                        styles.typeChip,
+                                                        (tag.typeId ?? null) === null &&
+                                                            styles.typeChipActive
+                                                    ]}
+                                                    onPress={() =>
+                                                        onSetType?.(
+                                                            tag.cloId,
+                                                            tag.typeId ?? null,
+                                                            null
+                                                        )
+                                                    }>
                                                     <Caption
-                                                        style={styles.brandName}>
-                                                        {m.name}
+                                                        style={[
+                                                            styles.typeChipText,
+                                                            (tag.typeId ?? null) === null &&
+                                                                styles.typeChipTextActive
+                                                        ]}>
+                                                        {t('Skip / Not sure')}
                                                     </Caption>
-                                                    <Icon
-                                                        name="add-circle-outline"
-                                                        size={18}
-                                                        color={Colors.accent}
-                                                    />
                                                 </Pressable>
-                                            ))}
-                                        </View>
-
-                                        {/* Create custom tag from material search — always mounted */}
-                                        <Pressable
-                                            style={[styles.createCustomRow, {display: showMaterialCreateOption ? 'flex' : 'none'}]}
-                                            onPress={handleCreateMaterialAsCustomTag}
-                                            disabled={!showMaterialCreateOption}>
-                                            <View style={styles.createCustomLeft}>
-                                                <Icon
-                                                    name="pricetag-outline"
-                                                    size={16}
-                                                    color="#6366f1"
-                                                />
-                                                <Caption style={styles.createCustomText}>
-                                                    {t('Create')}{' '}
-                                                    <Caption style={styles.createCustomTag}>
-                                                        material:{materialQuery.trim()}
-                                                    </Caption>
-                                                </Caption>
                                             </View>
-                                            <Icon
-                                                name="add-circle-outline"
-                                                size={18}
-                                                color="#6366f1"
-                                            />
-                                        </Pressable>
-                                    </View>
+                                        </View>
+                                    )}
 
                                     {/* Brands */}
                                     <View
@@ -637,6 +642,134 @@ const TagDetailSheet = ({
                                                     {t('Create')}{' '}
                                                     <Caption style={styles.createCustomTag}>
                                                         brand:{brandQuery.trim()}
+                                                    </Caption>
+                                                </Caption>
+                                            </View>
+                                            <Icon
+                                                name="add-circle-outline"
+                                                size={18}
+                                                color="#6366f1"
+                                            />
+                                        </Pressable>
+                                    </View>
+
+                                    {/* Materials */}
+                                    <View
+                                        style={styles.section}
+                                        onLayout={event => {
+                                            materialsSectionYRef.current = event.nativeEvent.layout.y;
+                                        }}>
+                                        <View style={styles.sectionHeader}>
+                                            <Caption style={styles.sectionLabel}>
+                                                {t('Materials')}
+                                            </Caption>
+                                            <Caption
+                                                style={styles.xpHint}
+                                                color="accent">
+                                                +2 XP
+                                            </Caption>
+                                        </View>
+
+                                        {/* Selected materials */}
+                                        {selectedMaterials.length > 0 && (
+                                            <View style={styles.selectedChipsWrap}>
+                                                {selectedMaterials.map(m => (
+                                                    <View
+                                                        key={m.id}
+                                                        style={styles.selectedChip}>
+                                                        <Caption
+                                                            style={
+                                                                styles.selectedChipText
+                                                            }>
+                                                            {m.name}
+                                                        </Caption>
+                                                        <Pressable
+                                                            onPress={() =>
+                                                                onToggleMaterial(m.id)
+                                                            }
+                                                            hitSlop={4}>
+                                                            <Icon
+                                                                name="close"
+                                                                size={14}
+                                                                color="#888"
+                                                            />
+                                                        </Pressable>
+                                                    </View>
+                                                ))}
+                                            </View>
+                                        )}
+
+                                        {/* Material search */}
+                                        <View style={styles.searchRow}>
+                                            <Icon
+                                                name="search"
+                                                size={16}
+                                                color="#aaa"
+                                                style={styles.searchIcon}
+                                            />
+                                            <TextInput
+                                                style={styles.searchInput}
+                                                placeholder={t('Search materials')}
+                                                placeholderTextColor="#aaa"
+                                                value={materialQuery}
+                                                onChangeText={setMaterialQuery}
+                                                onFocus={handleMaterialFocus}
+                                                onBlur={handleMaterialBlur}
+                                                autoCapitalize="none"
+                                                autoCorrect={false}
+                                            />
+                                            <Pressable
+                                                onPress={() => setMaterialQuery('')}
+                                                hitSlop={4}
+                                                style={{opacity: materialQuery.length > 0 ? 1 : 0}}
+                                                disabled={materialQuery.length === 0}>
+                                                <Icon
+                                                    name="close-circle"
+                                                    size={16}
+                                                    color="#ccc"
+                                                />
+                                            </Pressable>
+                                        </View>
+
+                                        {/* Material results — container always mounted to avoid
+                                    Fabric churn while typing with active keyboard session */}
+                                        <View style={materialResults.length > 0 ? styles.brandResults : undefined}>
+                                            {materialResults.map(m => (
+                                                <Pressable
+                                                    key={m.id}
+                                                    style={styles.brandRow}
+                                                    onPress={() => {
+                                                        onToggleMaterial(m.id);
+                                                        setMaterialQuery('');
+                                                    }}>
+                                                    <Caption
+                                                        style={styles.brandName}>
+                                                        {m.name}
+                                                    </Caption>
+                                                    <Icon
+                                                        name="add-circle-outline"
+                                                        size={18}
+                                                        color={Colors.accent}
+                                                    />
+                                                </Pressable>
+                                            ))}
+                                        </View>
+
+                                        {/* Create custom tag from material search — always mounted */}
+                                        <Pressable
+                                            style={[styles.createCustomRow, {display: showMaterialCreateOption ? 'flex' : 'none'}]}
+                                            onPress={handleCreateMaterialAsCustomTag}
+                                            disabled={!showMaterialCreateOption}>
+                                            <View style={styles.createCustomLeft}>
+                                                <Icon
+                                                    name="pricetag-outline"
+                                                    size={16}
+                                                    color="#6366f1"
+                                                />
+                                                <Caption style={styles.createCustomText}>
+                                                    {t('Create')}{' '}
+                                                    <Caption style={styles.createCustomTag}>
+                                                        material:{materialQuery.trim()}
                                                     </Caption>
                                                 </Caption>
                                             </View>
@@ -936,6 +1069,35 @@ const styles = StyleSheet.create({
         fontSize: 13,
         color: '#6366f1',
         fontWeight: '600'
+    },
+    typeChipsWrap: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 8
+    },
+    typeChip: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+        paddingHorizontal: 14,
+        paddingVertical: 9,
+        borderRadius: 100,
+        backgroundColor: '#f0f0f0'
+    },
+    typeChipActive: {
+        backgroundColor: Colors.accent
+    },
+    typeChipText: {
+        fontSize: 13,
+        color: '#333'
+    },
+    typeChipTextActive: {
+        color: Colors.white
+    },
+    typeChipDot: {
+        width: 8,
+        height: 8,
+        borderRadius: 4
     },
     pickedUpRow: {
         flexDirection: 'row',

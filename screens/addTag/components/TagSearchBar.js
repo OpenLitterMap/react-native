@@ -15,24 +15,34 @@ import {makePrimaryTagKey, makeTagKey} from './tagUtils';
 
 const MAX_RESULTS = 100;
 
-const brandResultComparator = (a, b) => {
-    const aName = a.displayName.toLowerCase();
-    const bName = b.displayName.toLowerCase();
-    return aName.localeCompare(bName);
+// Tiered relevance ladder (no composite score). Lower = more relevant.
+// Objects/compounds rank above brands by design — the browse/search principle
+// is "simple nouns first, brands are the noise we suppress".
+const TIER = {
+    EXACT_OBJECT: 0,
+    EXACT_COMPOUND: 1,
+    STARTSWITH_OBJECT: 2,
+    OTHER_OBJECT: 3, // residual object/compound substring — kept above brands
+    MATERIAL: 4, // reserved slot — material search is not wired this pass (own ticket)
+    BRAND_EXACT: 5,
+    BRAND_PREFIX: 6,
+    BRAND_CONTAINS: 7
 };
+// An object match at or above this tier counts as "strong" (suppresses brands).
+const STRONG_OBJECT_TIER = TIER.STARTSWITH_OBJECT;
 
-const getMatchScore = (entry, query) => {
-    const text = (entry.displayName || '').toLowerCase();
-    if (text === query) {
-        return 0;
+const objectTier = (entry, q) => {
+    const dn = (entry.displayName || '').toLowerCase();
+    if (entry.isType) {
+        return dn === q ? TIER.EXACT_COMPOUND : TIER.OTHER_OBJECT;
     }
-    if (text.startsWith(query)) {
-        return 1;
+    if (dn === q) {
+        return TIER.EXACT_OBJECT;
     }
-    if (text.includes(query)) {
-        return 2;
+    if (dn.startsWith(q)) {
+        return TIER.STARTSWITH_OBJECT;
     }
-    return 3;
+    return TIER.OTHER_OBJECT;
 };
 
 const TagSearchBar = React.forwardRef(({
@@ -75,73 +85,132 @@ const TagSearchBar = React.forwardRef(({
         return set;
     }, [currentTags]);
 
-    const results = useMemo(() => {
+    const {objectSections, brandResults, hasStrongObjectMatch, totalCount} = useMemo(() => {
         if (!query.trim()) {
-            return [];
+            return {objectSections: [], brandResults: [], hasStrongObjectMatch: false, totalCount: 0};
         }
         const q = query.trim().toLowerCase();
         const terms = q.split(/\s+/);
-        const objectMatches = [];
-        for (const entry of objectEntries) {
-            const hit = terms.every(term => entry.searchText.includes(term));
-            if (hit) {
-                objectMatches.push(entry);
-            }
-        }
-        const brandMatches = [];
-        for (const brand of brands || []) {
-            const brandText = brand.name.toLowerCase();
-            const hit = terms.every(term => brandText.includes(term));
-            if (hit) {
-                brandMatches.push({
-                    isBrandOnly: true,
-                    brandId: brand.id,
-                    brandKey: brand.key,
-                    displayName: brand.name,
-                    categoryId: 'brand-only',
-                    categoryKey: 'brand-only',
-                    categoryDisplayName: t('Brands'),
-                    searchText: brandText
-                });
-            }
-        }
-        brandMatches.sort(brandResultComparator);
-        const combined = [...brandMatches, ...objectMatches];
-        combined.sort((a, b) => {
-            const scoreDiff = getMatchScore(a, q) - getMatchScore(b, q);
-            if (scoreDiff !== 0) {
-                return scoreDiff;
-            }
-            if (!!a.isBrandOnly !== !!b.isBrandOnly) {
-                return a.isBrandOnly ? -1 : 1;
-            }
-            return (a.displayName || '').localeCompare(b.displayName || '');
-        });
-        return combined.slice(0, MAX_RESULTS);
-    }, [brands, objectEntries, query, t]);
 
-    // Group results by category for section display
-    const sections = useMemo(() => {
-        if (results.length === 0) {
-            return [];
+        // --- Objects (+ compounds/types) ---
+        const objectMatches = [];
+        let strong = false;
+        for (const entry of objectEntries) {
+            if (!terms.every(term => entry.searchText.includes(term))) {
+                continue;
+            }
+            if (entry.isType) {
+                // Include a type/compound row only when a query term matches the
+                // type's OWN name — not merely the inherited object text. So
+                // "can" shows the base Can (type chosen in the sheet), while
+                // "beer can" surfaces Beer Can directly.
+                const typeText = (entry.typeName || '').toLowerCase();
+                if (!terms.some(term => typeText.includes(term))) {
+                    continue;
+                }
+            }
+            const tier = objectTier(entry, q);
+            if (tier <= STRONG_OBJECT_TIER) {
+                strong = true;
+            }
+            objectMatches.push({entry, tier});
         }
+        objectMatches.sort((a, b) =>
+            a.tier - b.tier ||
+            (a.entry.displayName || '').localeCompare(b.entry.displayName || '')
+        );
+        const capped = objectMatches.slice(0, MAX_RESULTS);
+
+        // Group objects into category sections; order sections by best tier.
         const groups = {};
-        for (const entry of results) {
+        for (const {entry, tier} of capped) {
             const catId = entry.categoryId;
             if (!groups[catId]) {
                 groups[catId] = {
                     categoryId: catId,
                     categoryKey: entry.categoryKey,
                     title: entry.categoryDisplayName,
+                    bestTier: tier,
                     data: []
                 };
             }
+            groups[catId].bestTier = Math.min(groups[catId].bestTier, tier);
             groups[catId].data.push(entry);
         }
-        return Object.values(groups).sort((a, b) =>
-            a.title.localeCompare(b.title)
+        const sectionsOut = Object.values(groups).sort((a, b) =>
+            a.bestTier - b.bestTier || a.title.localeCompare(b.title)
         );
-    }, [results]);
+
+        // --- Brands (query-length-gated) ---
+        // 1–3 chars: exact/prefix only. 4+ chars: allow contains.
+        const allowContains = q.length >= 4;
+        const brandMatches = [];
+        for (const brand of brands || []) {
+            const name = brand.name.toLowerCase();
+            let tier;
+            if (name === q) {
+                tier = TIER.BRAND_EXACT;
+            } else if (name.startsWith(q)) {
+                tier = TIER.BRAND_PREFIX;
+            } else if (allowContains && terms.every(term => name.includes(term))) {
+                tier = TIER.BRAND_CONTAINS;
+            } else {
+                continue;
+            }
+            brandMatches.push({
+                isBrandOnly: true,
+                brandId: brand.id,
+                brandKey: brand.key,
+                displayName: brand.name,
+                categoryId: 'brand-only',
+                categoryKey: 'brand-only',
+                categoryDisplayName: t('Brands'),
+                searchText: name,
+                _tier: tier
+            });
+        }
+        brandMatches.sort((a, b) =>
+            a._tier - b._tier || a.displayName.localeCompare(b.displayName)
+        );
+        const brandsOut = brandMatches.slice(0, MAX_RESULTS);
+
+        return {
+            objectSections: sectionsOut,
+            brandResults: brandsOut,
+            hasStrongObjectMatch: strong,
+            totalCount: capped.length + brandsOut.length
+        };
+    }, [brands, objectEntries, query, t]);
+
+    // Brands collapse: default open ONLY when there's no strong object match.
+    // null = follow the default; true/false = user override for this query.
+    const [brandsManual, setBrandsManual] = useState(null);
+    useEffect(() => {
+        setBrandsManual(null);
+    }, [query]);
+    const brandsExpanded = brandsManual != null ? brandsManual : !hasStrongObjectMatch;
+    const toggleBrands = useCallback(() => {
+        setBrandsManual(prev => {
+            const current = prev != null ? prev : !hasStrongObjectMatch;
+            return !current;
+        });
+    }, [hasStrongObjectMatch]);
+
+    // Object category sections + a collapsible Brands section appended last.
+    const sections = useMemo(() => {
+        const secs = objectSections.map(s => ({...s}));
+        if (brandResults.length > 0) {
+            secs.push({
+                categoryId: 'brand-only',
+                categoryKey: 'brand-only',
+                title: t('Brands'),
+                isBrandSection: true,
+                brandCount: brandResults.length,
+                data: brandsExpanded ? brandResults : []
+            });
+        }
+        return secs;
+    }, [objectSections, brandResults, brandsExpanded, t]);
 
     useImperativeHandle(ref, () => ({
         clearQuery: () => setQuery(''),
@@ -157,7 +226,7 @@ const TagSearchBar = React.forwardRef(({
 
     const hasQuery = query.trim().length > 0;
     const showDropdown = isFocused && hasQuery && !showBrowser;
-    const showNoResults = showDropdown && results.length === 0;
+    const showNoResults = showDropdown && totalCount === 0;
     const showResults = showDropdown && sections.length > 0;
 
     // Notify parent when there's a pending custom tag (no results for query)
@@ -194,10 +263,10 @@ const TagSearchBar = React.forwardRef(({
     }, [query, onAddCustomTag]);
 
     const handleSubmitEditing = useCallback(() => {
-        if (results.length === 0) {
+        if (totalCount === 0) {
             handleCreateCustomTag();
         }
-    }, [results, handleCreateCustomTag]);
+    }, [totalCount, handleCreateCustomTag]);
 
     const handleClear = useCallback(() => {
         setQuery('');
@@ -226,6 +295,33 @@ const TagSearchBar = React.forwardRef(({
     }, [onBrowsePress]);
 
     const renderSectionHeader = useCallback(({section}) => {
+        if (section.isBrandSection) {
+            return (
+                <Pressable
+                    style={styles.brandSectionHeader}
+                    onPress={toggleBrands}>
+                    <Icon
+                        name="pricetag-outline"
+                        size={13}
+                        color={Colors.muted}
+                    />
+                    <Caption
+                        color="muted"
+                        family="semiBold"
+                        style={[styles.sectionTitle, styles.brandSectionTitle]}>
+                        {t('Brands matching "{{query}}"', {query: query.trim()})}
+                    </Caption>
+                    <Caption color="muted" style={styles.sectionCount}>
+                        {section.brandCount}
+                    </Caption>
+                    <Icon
+                        name={brandsExpanded ? 'chevron-up' : 'chevron-down'}
+                        size={16}
+                        color={Colors.muted}
+                    />
+                </Pressable>
+            );
+        }
         const catColor = getCategoryColor(section.categoryKey);
         return (
             <View style={styles.sectionHeader}>
@@ -243,7 +339,7 @@ const TagSearchBar = React.forwardRef(({
                 </Caption>
             </View>
         );
-    }, []);
+    }, [toggleBrands, brandsExpanded, query, t]);
 
     const handleToggleStar = useCallback(
         (item) => {
@@ -424,8 +520,8 @@ const TagSearchBar = React.forwardRef(({
                 <View style={styles.dropdown}>
                     <View style={styles.resultsHeader}>
                         <Caption color="muted" family="medium">
-                            {results.length} result
-                            {results.length !== 1 ? 's' : ''}
+                            {totalCount} result
+                            {totalCount !== 1 ? 's' : ''}
                         </Caption>
                     </View>
                     <SectionList
@@ -511,6 +607,19 @@ const styles = StyleSheet.create({
         paddingVertical: 6,
         backgroundColor: '#fafafa',
         gap: 6
+    },
+    brandSectionHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 14,
+        paddingVertical: 9,
+        backgroundColor: '#fafafa',
+        gap: 6,
+        borderTopWidth: StyleSheet.hairlineWidth,
+        borderTopColor: '#eee'
+    },
+    brandSectionTitle: {
+        flex: 1
     },
     sectionDot: {
         width: 8,

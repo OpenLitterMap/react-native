@@ -1,4 +1,11 @@
 {
+    "All Objects": "Todos os objetos",
+    "Brands matching \"{{query}}\"": "Marcas correspondentes a \"{{query}}\"",
+    "By Category": "Por categoria",
+    "Choose a category": "Escolha uma categoria",
+    "Most Tagged": "Mais etiquetados",
+    "Skip / Not sure": "Ignorar / Não tenho certeza",
+    "Type": "Tipo",
     "{{count}} brand": "{{count}} marca",
     "{{count}} brand_other": "{{count}} marcas",
     "{{count}} material": "{{count}} material",

@@ -92,8 +92,8 @@ android {
         applicationId "com.geotech.openlittermap"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 65
-        versionName "7.10.0"
+        versionCode 67
+        versionName "7.11.1"
     }
     signingConfigs {
         release {
