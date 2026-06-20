@@ -128,7 +128,7 @@ export const InboxEmpty = ({onAddPhotos, onRepeatTutorial}) => {
 
 /** Summary notice for picks with no GPS (can't be mapped): count + up to three
  *  thumbnails, the rest collapsing into a "+N" tile. Dismissible. */
-export const NoGpsPicksCard = ({picks, onDismiss}) => {
+export const NoGpsPicksCard = ({picks, onDismiss, onUseCamera}) => {
     const {t} = useTranslation();
     if (!picks || picks.length === 0) return null;
     const preview = picks.slice(0, 3);
@@ -138,7 +138,7 @@ export const NoGpsPicksCard = ({picks, onDismiss}) => {
             <View style={styles.noGpsHeader}>
                 <Icon name="location-outline" size={16} color={Colors.error} />
                 <Body style={styles.noGpsTitle}>
-                    {t("Couldn't add — no location data")} ({picks.length})
+                    {t('No location found')} ({picks.length})
                 </Body>
                 <Pressable onPress={onDismiss} hitSlop={8} style={styles.noGpsDismiss}>
                     <Icon name="close" size={18} color={Colors.muted} />
@@ -154,6 +154,17 @@ export const NoGpsPicksCard = ({picks, onDismiss}) => {
                     </View>
                 )}
             </View>
+            <Caption color="muted" style={styles.noGpsBody}>
+                {t("These photos have no GPS, so they can't be placed on the map. Try another photo, or take a new one with the OLM Camera.")}
+            </Caption>
+            {onUseCamera && (
+                <Pressable
+                    onPress={() => { onDismiss(); onUseCamera(); }}
+                    style={styles.noGpsCameraBtn}>
+                    <Icon name="camera-outline" size={16} color={Colors.white} />
+                    <Body color="white" style={styles.noGpsCameraText}>{t('Use OLM Camera')}</Body>
+                </Pressable>
+            )}
         </View>
     );
 };
@@ -384,6 +395,9 @@ const styles = StyleSheet.create({
     noGpsThumb: {width: 36, height: 36, borderRadius: 6, backgroundColor: Colors.accentLight},
     noGpsMore: {alignItems: 'center', justifyContent: 'center', backgroundColor: Colors.error},
     noGpsMoreText: {color: Colors.white, fontSize: 12, fontWeight: '700'},
+    noGpsBody: {marginTop: 10, lineHeight: 18},
+    noGpsCameraBtn: {flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 12, height: 40, borderRadius: 20, backgroundColor: Colors.accent},
+    noGpsCameraText: {fontSize: 14, fontWeight: '600'},
     importBackdrop: {flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', alignItems: 'center'},
     importCard: {backgroundColor: Colors.white, borderRadius: 16, paddingVertical: 24, paddingHorizontal: 32, alignItems: 'center', minWidth: 220},
     importTitle: {marginTop: 14, fontSize: 15, fontWeight: '600', textAlign: 'center'},

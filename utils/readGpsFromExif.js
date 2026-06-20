@@ -61,10 +61,10 @@ export const readGpsFromExif = async uri => {
         }
     } catch (e) {
         clearTimeout(timeoutId);
-        if (__DEV__) {
-            console.warn(`[GPS Debug] EXIF read failed for ${uri}:`, e.message);
-        } else if (
-            // Expected failures — don't report to Sentry
+        // Expected failures (timeout, media-location redaction) aren't reported.
+        // Sentry runs in production only.
+        if (
+            !__DEV__ &&
             !/timed out/i.test(e.message) &&
             !/ACCESS_MEDIA_LOCATION/i.test(e.message)
         ) {
