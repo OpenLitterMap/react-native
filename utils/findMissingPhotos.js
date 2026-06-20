@@ -23,6 +23,10 @@ export const findMissingPhotos = async images => {
     const results = await Promise.all(
         images.map(async img => {
             if (!img?.uri || !img.uri.startsWith('file://')) return null;
+            // Uploaded items keep their file:// uri but no longer need the local file —
+            // their retry path PUTs tags by server id. Pruning one would destroy that
+            // recoverable tag state, so never treat an uploaded entry as missing.
+            if (img.uploaded) return null;
             try {
                 const exists = await NativeModules.OlmGallery.fileExists(img.uri);
                 return exists ? null : img;

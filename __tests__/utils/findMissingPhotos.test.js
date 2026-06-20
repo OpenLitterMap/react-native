@@ -41,6 +41,18 @@ describe('findMissingPhotos (Android)', () => {
         expect(NativeModules.OlmGallery.fileExists).not.toHaveBeenCalled();
     });
 
+    it('never prunes an uploaded item, even if its local file is gone (tag-only retry state)', async () => {
+        // After a binary upload the item keeps its file:// uri but is uploaded:true with
+        // the server id; the retry path only PUTs tags by id and needs no local file.
+        const uploaded = img('file:///cache/uploaded.jpg', {uploaded: true, id: 4321});
+        NativeModules.OlmGallery.fileExists.mockResolvedValue(false);
+
+        const missing = await findMissingPhotos([uploaded]);
+
+        expect(missing).toEqual([]);
+        expect(NativeModules.OlmGallery.fileExists).not.toHaveBeenCalled();
+    });
+
     it('is conservative: a fileExists error does NOT prune the entry', async () => {
         const item = img('file:///cache/x.jpg');
         NativeModules.OlmGallery.fileExists.mockRejectedValue(new Error('boom'));
