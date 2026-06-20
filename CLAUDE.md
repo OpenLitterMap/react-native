@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 OpenLitterMap is a React Native mobile app (iOS & Android) for crowdsourced litter mapping. Users photograph litter, tag it by category, and upload geotagged data to the OpenLitterMap Laravel backend API.
 
-**App Version:** 7.11.1 | **React Native:** 0.84.1 | **Branch:** `openlittermap/v7` (main: `main5`)
+**App Version:** 7.11.2 | **React Native:** 0.84.1 | **Branch:** `openlittermap/v7` (main: `main5`)
 
 ## Quick Start
 
@@ -28,7 +28,7 @@ Runtime: **Node v22.22.1**, **npm 10.9.4** (prefer npm over yarn) — RN 0.84 re
 HomeScreen Dashboard → Tap photo → Tag → Tap "Upload (N)" bar
 ```
 
-1. **Home** (`HomeScreen`) — dashboard as a single virtualized `FlashList` (fixed sections in `ListHeaderComponent`, inbox photos as data): Global Impact stats, Your Impact stats, Uploaded (untagged server photos), "Your Photos" (a **persistent geotagged-only to-tag queue** sourced from `photos.imagesArray` — local camera captures + system-photo-picker imports; no camera-roll scan). "Add Photos" opens the OS picker; non-geotagged picks surface in a dismissible no-GPS card instead of entering the queue.
+1. **Home** (`HomeScreen`) — dashboard as a single virtualized `FlashList` (fixed sections in `ListHeaderComponent`, inbox photos as data): Global Impact stats, Your Impact stats, Uploaded (untagged server photos), "Your Photos" (a **persistent geotagged-only to-tag queue** sourced from `photos.imagesArray` — local camera captures + gallery imports; no camera-roll scan). "Add Photos" imports from the gallery — **Android** via a native MediaStore picker (`ACTION_PICK`, preserves GPS), **iOS** via the system photo picker; non-geotagged picks surface in a dismissible no-GPS card instead of entering the queue.
 2. **Tag** (`AddTagScreen`) — Full-screen image viewer with search/browse for litter tags, materials, brands
 3. **Upload** — Tagged photos surface an **"Upload (N)" bar** on HomeScreen; tapping it runs the upload (orchestrated by `useUploadPhotos`, with a retry path). There is **no** auto-upload-on-focus — tracked as a future enhancement (`docs/superpowers/photo-picker-followups.md` F1). Two-step: upload photo binary → PUT tags (replace/idempotent).
 
@@ -191,8 +191,8 @@ i18next with `react-i18next`. Translation keys are **full British English string
 - `@shopify/flash-list` — performant lists
 - `formik` + `yup` — form handling/validation
 - `react-native-gesture-handler` v2 + `react-native-reanimated` v4 — image viewer gestures
-- `react-native-image-picker` v8 — system photo picker (Android Photo Picker / iOS PHPicker); fills the "Your Photos" queue, permission-free
-- `react-native-permissions` — camera/location only (iOS permissions in `reactNativePermissionsIOS` in package.json; no photo-library permission)
+- `react-native-image-picker` v8 — **iOS** gallery import (PHPicker, permission-free). **Android** uses a native MediaStore module instead (`OlmGallery`, `ACTION_PICK` → `MediaCopier` → `GpsExifReader`): the system Photo Picker redacts GPS, so RNIP isn't used on Android. Seam: `utils/pickGeotaggedPhotos.js` (platform dispatch) + `utils/partitionByGps.js`
+- `react-native-permissions` — camera + location, plus **Android media permissions** for gallery import (`READ_MEDIA_IMAGES`/`ACCESS_MEDIA_LOCATION`, scaled by API level — `utils/permissions/photoPermission.js`). iOS gallery import stays permission-free (PHPicker)
 - `@sentry/react-native` — error tracking (production only)
 - `@lodev09/react-native-exify` — reads GPS EXIF from picked photos (RNIP doesn't return location)
 - `dayjs` — date formatting

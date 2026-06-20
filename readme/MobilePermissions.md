@@ -1,36 +1,46 @@
 # Mobile Permissions
-> Camera and location permission handling across iOS and Android. The app no longer requests broad photo/media access — the system photo picker needs none.
+> Camera, location, and (Android) media permission handling across iOS and Android. iOS gallery import stays permission-free (PHPicker); Android requests media access so it can read unredacted GPS from picked photos.
 
 ## Overview
 The app requests **camera** and **location** permissions via
-`react-native-permissions`. It does **not** request photo-library / media-read
-permissions: photos enter via the **system photo picker** (Android Photo Picker
-/ iOS PHPicker), which is permission-free — the user picks specific photos and
-the OS hands back only those. The only photo-adjacent permission is Android
-`ACCESS_MEDIA_LOCATION` (not a Play-policy-flagged permission), kept so the app
-can read GPS EXIF from picked photos.
+`react-native-permissions` on both platforms, plus **Android media permissions**
+for gallery import:
 
-This was a deliberate migration (v7.10.0): the broad Android media permissions
-(`READ_MEDIA_IMAGES` / `READ_EXTERNAL_STORAGE` / `WRITE_EXTERNAL_STORAGE`) were
-rejected under Google Play's Photo & Video Permissions policy, so the
-whole-library auto-scan was replaced with the picker. See `MobileGallery.md`.
+- **iOS gallery import** uses the system photo picker (PHPicker), which is
+  **permission-free at runtime** — the user picks specific photos and the OS
+  hands back only those.
+- **Android gallery import** uses a native **MediaStore** picker (`ACTION_PICK`),
+  because the Android system Photo Picker redacts GPS EXIF. Reading the original,
+  unredacted file requires holding a media-read permission, so the app requests
+  one (`ensurePhotoPermission`, `utils/permissions/photoPermission.js`) before
+  importing. See `MobileGallery.md`.
+
+**Policy history:** the broad Android media permissions were *removed* in v7.10.0
+after Google Play rejected them under the Photo & Video Permissions policy (the
+whole-library auto-scan was replaced with the system picker). In **v7.11.2 (June
+2026)** `READ_MEDIA_IMAGES` was **re-added** — the product owner decided broad
+media access is acceptable to make GPS import work, with Play review handled
+separately. This reopens the compliance question v7.10.0 closed (the declared use
+case is repeated photo selection for upload).
 
 ## Files
 - `utils/permissions/index.js` — barrel exports
 - `utils/permissions/cameraPermission.js` — camera **and location** permission check/request
-- `screens/onboarding/OnboardingPermissionScreen.js` — onboarding **camera** priming screen (camera path only; the gallery path goes straight to the picker, no permission step)
+- `utils/permissions/photoPermission.js` — `ensurePhotoPermission` (Android media permission, scaled by API level; iOS no-op)
+- `screens/onboarding/OnboardingPermissionScreen.js` — onboarding **camera** priming screen (camera path only; the gallery path goes straight to the picker)
 
-(There is no gallery-permission utility or screen any more — `cameraRollPermission.js`, `screens/permission/GalleryPermissionScreen.js`, and the `PERMISSION` route were removed in the v7.10.0 migration.)
+(There is no gallery *priming screen* — on Android the media prompt fires directly
+when the user taps **Add Photos**, which is compliant. The old
+`cameraRollPermission.js` / `GalleryPermissionScreen.js` / `PERMISSION` route are
+still gone.)
 
 ## App Store Compliance — Guideline 5.1.1(iv)
 Apple rejects any pre-permission priming screen that lets the user dismiss the
 screen *without* triggering the OS permission prompt. The only forward action on
 a priming screen MUST call `request()`. Do not add "Not Now", "Skip", "Maybe
 later", "Take a photo instead", or close (X) buttons to a screen that precedes
-the OS dialog. If the user has already blocked permission, it is fine to show a
-separate "Open Settings" screen — that screen runs *after* the OS prompt has
-been shown and is not subject to the rule. (This now applies only to the
-**camera** priming screen; there is no gallery priming screen.)
+the OS dialog. (This applies only to the **camera** priming screen; there is no
+gallery priming screen — and iOS gallery import is permission-free anyway.)
 
 ## Declared Permissions
 
@@ -45,30 +55,30 @@ normal pick flow), but Apple's *static binary scan* still mandates the purpose
 string: `react-native-image-picker` and `@lodev09/react-native-exify` link
 PhotoKit symbols (`PHPhotoLibrary`, `PHAsset`), so the App Store rejects the
 binary with **ITMS-90683** if the key is absent — regardless of whether those
-APIs are ever called. It was wrongly dropped in the v7.10.0 migration (assuming
-"PHPicker = permission-free = no string needed") and re-added in the build-89
-resubmission after Apple rejected build 88 with ITMS-90683.
+APIs are ever called. It was wrongly dropped in the v7.10.0 migration and re-added
+in the build-89 resubmission after Apple rejected build 88 with ITMS-90683.
 `NSCameraUsageDescription` and the location usage strings also remain.
 
 ### Android (`AndroidManifest.xml`)
 - `INTERNET`
 - `ACCESS_FINE_LOCATION`, `ACCESS_COARSE_LOCATION`
 - `CAMERA`
-- `ACCESS_MEDIA_LOCATION` — **kept** (reads GPS EXIF from picked photos; not Play-policy-flagged)
-
-The flagged media permissions (`READ_MEDIA_IMAGES`, `READ_EXTERNAL_STORAGE`,
-`WRITE_EXTERNAL_STORAGE`) are **gone**. The Photo Picker requires none of them.
+- `ACCESS_MEDIA_LOCATION` — un-redacts GPS EXIF on the MediaStore read
+- `READ_MEDIA_IMAGES` — media read (API 33+); lets the app read the original geotagged file
+- `READ_MEDIA_VISUAL_USER_SELECTED` — Android 14 "Select photos" partial access
+- `READ_EXTERNAL_STORAGE` (`maxSdkVersion="32"`) — media read on API ≤32
 
 ## Platform Handling
 
-### Photos (picker)
+### Photos (gallery import)
 | Platform | Permission | Notes |
 |----------|-----------|-------|
-| iOS | none at runtime | PHPicker returns only picked photos (no prompt), but `NSPhotoLibraryUsageDescription` **must** be in `Info.plist` — Apple static-scan requirement (ITMS-90683), see below |
-| Android | none | Android Photo Picker; `ACCESS_MEDIA_LOCATION` only, for EXIF GPS |
+| iOS | none at runtime | PHPicker returns only picked photos (no prompt), but `NSPhotoLibraryUsageDescription` **must** be in `Info.plist` — Apple static-scan requirement (ITMS-90683) |
+| Android | media read, by API level | `ensurePhotoPermission` requests `READ_MEDIA_IMAGES` (33+) or `READ_EXTERNAL_STORAGE` (≤32) + `ACCESS_MEDIA_LOCATION`, before the native MediaStore picker. Android 14 partial access (`READ_MEDIA_VISUAL_USER_SELECTED`) degrades gracefully |
 
-GPS for picked photos is read from EXIF via `utils/readGpsFromExif.js` (RNIP
-doesn't return location). See `MobileGallery.md`.
+The Android permission matrix lives in `utils/permissions/photoPermission.js`
+(unit-tested). iOS GPS is read from EXIF via `utils/readGpsFromExif.js`; Android
+GPS is read natively by the MediaStore module. See `MobileGallery.md`.
 
 ### Camera
 | Platform | Permission |
@@ -83,8 +93,9 @@ doesn't return location). See `MobileGallery.md`.
 | Android | `PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION` |
 
 ## Permission Flow
-There is no longer a runtime gallery-permission flow. The only priming screen is
-the onboarding **camera** screen (`OnboardingPermissionScreen`), which explains
-why camera + location are needed and calls `request()`. The gallery onboarding
-path navigates straight to the picker screen (`ONBOARDING_PHOTO`) with no
-permission step.
+- **Camera** priming screen (`OnboardingPermissionScreen`) explains why camera +
+  location are needed and calls `request()`.
+- **Gallery (Android)**: tapping **Add Photos** calls `ensurePhotoPermission`,
+  which fires the OS media prompt directly (no priming screen). If refused, the
+  import surfaces an error / the no-GPS path; full denial means GPS can't be read.
+- **Gallery (iOS)**: navigates straight to the picker — no permission step.
