@@ -8,7 +8,6 @@ import {
 import {SafeAreaView} from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
-import {launchImageLibrary} from 'react-native-image-picker';
 import {useDispatch, useSelector} from 'react-redux';
 import {useTranslation} from 'react-i18next';
 import {Body, Caption, Colors, Title} from '../components';
@@ -16,7 +15,8 @@ import StepIndicator from './components/StepIndicator';
 import OnboardingBackButton from './components/OnboardingBackButton';
 import {addOnboardingPhoto} from '../../reducers/photos_reducer';
 import {markOnboardingComplete} from '../../reducers/auth_reducer';
-import {readGpsFromExif} from '../../utils/readGpsFromExif';
+import {pickGeotaggedPhotos} from '../../utils/pickGeotaggedPhotos';
+import {partitionByGps} from '../../utils/partitionByGps';
 import {setOnboardingComplete} from '../../utils/onboarding';
 
 /**
@@ -45,42 +45,30 @@ const OnboardingPhotoScreen = ({navigation}) => {
         setNoGps(false);
 
         try {
-            const result = await launchImageLibrary({
-                mediaType: 'photo',
-                selectionLimit: 1,
-                quality: 1
-                // No includeExtra (ties to library permissions; we only need the
-                // base asset fields + GPS via readGpsFromExif).
-            });
-
-            if (result.didCancel) return; // User cancelled — stay on this screen
-
-            if (result.errorCode) {
-                setError(result.errorMessage || 'Something went wrong. Please try again.');
-                return;
-            }
-
-            const asset = result.assets?.[0];
-            if (!asset) {
-                setError('No photo selected. Please try again.');
-                return;
-            }
-
-            // react-native-image-picker doesn't return GPS — read from EXIF
+            // Android reads unredacted GPS natively via MediaStore; iOS reads EXIF after
+            // the picker. The spinner covers the post-pick processing on both.
             setReadingExif(true);
-            const gps = await readGpsFromExif(asset.uri);
-            setReadingExif(false);
+            let assets;
+            try {
+                assets = await pickGeotaggedPhotos({selectionLimit: 1});
+            } finally {
+                setReadingExif(false);
+            }
 
-            if (!gps) {
+            if (!assets.length) return; // User cancelled — stay on this screen
+
+            const {imported} = partitionByGps(assets);
+            if (!imported.length) {
                 setNoGps(true);
                 return;
             }
 
+            const asset = imported[0];
             dispatch(addOnboardingPhoto({
                 uri: asset.uri,
                 filename: asset.fileName || `onboarding_${Date.now()}.jpg`,
-                lat: gps.latitude,
-                lon: gps.longitude,
+                lat: asset.latitude,
+                lon: asset.longitude,
                 width: asset.width,
                 height: asset.height,
                 type: asset.type || 'image/jpeg',
@@ -89,9 +77,13 @@ const OnboardingPhotoScreen = ({navigation}) => {
 
             navigation.replace('ONBOARDING_TAG');
         } catch (err) {
-            if (__DEV__) console.error('[Photo] picker error:', err);
             setReadingExif(false);
-            setError('Something went wrong. Please try again.');
+            if (err?.message === 'PHOTO_PERMISSION_DENIED') {
+                setError('OpenLitterMap needs photo access to import geotagged photos.');
+            } else {
+                if (__DEV__) console.error('[Photo] picker error:', err);
+                setError('Something went wrong. Please try again.');
+            }
         }
     }, [dispatch, navigation]);
 
@@ -134,17 +126,17 @@ const OnboardingPhotoScreen = ({navigation}) => {
                             <Icon name="location-outline" size={56} color={Colors.warn} />
                         </View>
                         <Title style={styles.title}>
-                            {t("This photo doesn't have location data")}
+                            {t('No location found')}
                         </Title>
                         <Body color="muted" style={styles.bodyText}>
-                            {t("Photos taken with your phone's camera include GPS automatically. Take a fresh photo or select a different one.")}
+                            {t("This photo has no GPS, so it can't be placed on the map. Try another photo, or take a new one with the OLM Camera.")}
                         </Body>
                         <Pressable
                             style={({pressed}) => [styles.buttonStyle, pressed && styles.buttonPressed]}
                             onPress={switchToCamera}>
                             <Icon name="camera-outline" size={20} color={Colors.white} />
                             <Body color="white" family="semiBold" style={styles.buttonText}>
-                                {t('Open camera')}
+                                {t('Use OLM Camera')}
                             </Body>
                         </Pressable>
                         <Pressable onPress={openPicker} style={styles.secondaryLink}>
