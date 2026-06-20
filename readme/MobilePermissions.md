@@ -26,7 +26,7 @@ case is repeated photo selection for upload).
 ## Files
 - `utils/permissions/index.js` — barrel exports
 - `utils/permissions/cameraPermission.js` — camera **and location** permission check/request
-- `utils/permissions/photoPermission.js` — `ensurePhotoPermission` (Android media permission, scaled by API level; iOS no-op)
+- `utils/permissions/photoPermission.js` — `ensurePhotoPermission` (Android media permissions via one `requestMultiple`, scaled by API level; iOS no-op). Returns an **AML-aware 3-state status**: `granted` / `location-denied` (media readable but `ACCESS_MEDIA_LOCATION` denied) / `denied`
 - `screens/onboarding/OnboardingPermissionScreen.js` — onboarding **camera** priming screen (camera path only; the gallery path goes straight to the picker)
 
 (There is no gallery *priming screen* — on Android the media prompt fires directly
@@ -96,6 +96,11 @@ GPS is read natively by the MediaStore module. See `MobileGallery.md`.
 - **Camera** priming screen (`OnboardingPermissionScreen`) explains why camera +
   location are needed and calls `request()`.
 - **Gallery (Android)**: tapping **Add Photos** calls `ensurePhotoPermission`,
-  which fires the OS media prompt directly (no priming screen). If refused, the
-  import surfaces an error / the no-GPS path; full denial means GPS can't be read.
+  which requests the media read + `READ_MEDIA_VISUAL_USER_SELECTED` +
+  `ACCESS_MEDIA_LOCATION` together (no priming screen) and returns a 3-state status.
+  **Media denied** → error; **media granted but `ACCESS_MEDIA_LOCATION` denied** →
+  "enable photo location" guidance (the photo has GPS the app can't read — *not* the
+  no-GPS card); **granted** → the native picker opens. On Android 14 the OS
+  auto-grants media location once media read is held, so the denied state is mostly
+  an API 29–32 / partial-access / manual-revoke concern.
 - **Gallery (iOS)**: navigates straight to the picker — no permission step.

@@ -25,7 +25,8 @@ is enforced at the import boundary (`partitionByGps`) and assumed by
 ## Files
 - `utils/pickGeotaggedPhotos.js` — **platform-dispatch seam**: Android → native `OlmGallery.pick` (after a permission gate); iOS → `launchImageLibrary` + per-asset `readGpsFromExif`. Returns the same normalized `Asset[]` shape on both.
 - `utils/partitionByGps.js` — splits picked assets into `{imported, skipped}` via `isValidGpsCoords` (the geotagged-only boundary).
-- `utils/permissions/photoPermission.js` — `ensurePhotoPermission` (Android media permission, scaled by API level; iOS no-op).
+- `utils/permissions/photoPermission.js` — `ensurePhotoPermission` (Android media permissions, scaled by API level; iOS no-op). AML-aware status: `granted` / `location-denied` / `denied`.
+- `utils/findMissingPhotos.js` — guards the persisted queue against cache eviction: prunes phantom `file://` entries whose cached file the OS deleted (Android, via native `OlmGallery.fileExists`). Skips already-uploaded items (their retry is server-side).
 - `android/app/src/main/java/com/openlittermap/OlmGallery*.kt` — native MediaStore module (`OlmGalleryModule` fires `ACTION_PICK`; `MediaCopier` copies the original bytes to app cache; `GpsExifReader` reads GPS + capture time).
 - `screens/home/HomeScreen.js` — `handleSelectMore` ("Add Photos" import), `handleTapInboxPhoto` (jump the swiper to the tapped photo), `noGpsPicks` state + `NoGpsPicksCard`.
 - `screens/home/homeComponents/useInbox.js` — inbox state hook (selection set, delete mode); reads `selectInboxPhotos`.
