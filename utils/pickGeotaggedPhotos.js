@@ -1,7 +1,7 @@
 import {Platform, NativeModules} from 'react-native';
 import {launchImageLibrary} from 'react-native-image-picker';
 import {readGpsFromExif} from './readGpsFromExif';
-import {ensurePhotoPermission} from './permissions/photoPermission';
+import {ensurePhotoPermission, PHOTO_PERMISSION} from './permissions/photoPermission';
 
 // Read EXIF for up to this many iOS picks at once (bounded so a large multi-select
 // doesn't open hundreds of streams). Android reads GPS natively in one round-trip.
@@ -40,8 +40,16 @@ const normalize = (asset, meta) => ({
  */
 export const pickGeotaggedPhotos = async ({selectionLimit = 1, onProgress, isCancelled} = {}) => {
     if (Platform.OS === 'android') {
-        const granted = await ensurePhotoPermission();
-        if (!granted) throw new Error('PHOTO_PERMISSION_DENIED');
+        const status = await ensurePhotoPermission();
+        // Media-location denied is distinct from media denied: the photos DO have GPS,
+        // we just can't read it. Surface it separately so the caller can guide the user
+        // to enable photo location, instead of the misleading "No location found" card.
+        if (status === PHOTO_PERMISSION.LOCATION_DENIED) {
+            throw new Error('MEDIA_LOCATION_DENIED');
+        }
+        if (status !== PHOTO_PERMISSION.GRANTED) {
+            throw new Error('PHOTO_PERMISSION_DENIED');
+        }
         const assets = await NativeModules.OlmGallery.pick({selectionLimit});
         return assets || [];
     }

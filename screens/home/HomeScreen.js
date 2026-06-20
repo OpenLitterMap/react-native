@@ -15,6 +15,7 @@ import {
     addOnboardingPhoto,
     changeSwiperIndex,
     clearEditingPhoto,
+    deleteImage,
     loadPhotoForEditing
 } from '../../reducers/photos_reducer';
 import {fetchAllUntaggedPhotos} from '../../reducers/server_photos_reducer';
@@ -23,6 +24,7 @@ import {isTagged} from '../../utils/isTagged';
 import {isValidGpsCoords} from '../../utils/gps';
 import {pickGeotaggedPhotos} from '../../utils/pickGeotaggedPhotos';
 import {partitionByGps} from '../../utils/partitionByGps';
+import {findMissingPhotos} from '../../utils/findMissingPhotos';
 import {checkCameraWithLocation, requestCameraWithLocation} from '../../utils/permissions/cameraPermission';
 import CameraCapture from '../camera/CameraCapture';
 
@@ -80,6 +82,17 @@ const HomeScreen = ({navigation}) => {
     // Redux state
     const token = useSelector(state => state.auth.token);
     const images = useSelector(state => state.photos.imagesArray);
+
+    // Prune phantom queue entries whose cached file the OS evicted (Android). Runs
+    // once after rehydrate so a broken tile can't linger or fail an upload cryptically.
+    const prunedMissingRef = useRef(false);
+    useEffect(() => {
+        if (prunedMissingRef.current || images.length === 0) return;
+        prunedMissingRef.current = true;
+        findMissingPhotos(images).then(missing => {
+            missing.forEach(img => dispatch(deleteImage(img.id)));
+        });
+    }, [images, dispatch]);
 
     // Upload flow state (single memoized selector)
     const {
@@ -228,9 +241,11 @@ const HomeScreen = ({navigation}) => {
             });
         } catch (e) {
             setImportProgress(null);
-            const msg = e?.message === 'PHOTO_PERMISSION_DENIED'
-                ? t('OpenLitterMap needs photo access to import geotagged photos.')
-                : t('Something went wrong. Please try again.');
+            const msg = e?.message === 'MEDIA_LOCATION_DENIED'
+                ? t('OpenLitterMap needs photo-location access to read GPS from your photos. Enable it in Settings.')
+                : e?.message === 'PHOTO_PERMISSION_DENIED'
+                    ? t('OpenLitterMap needs photo access to import geotagged photos.')
+                    : t('Something went wrong. Please try again.');
             Alert.alert(t('Error!'), msg);
             return;
         }

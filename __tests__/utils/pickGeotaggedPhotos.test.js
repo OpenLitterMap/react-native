@@ -12,12 +12,15 @@ jest.mock('react-native', () => ({
 }));
 jest.mock('react-native-image-picker', () => ({launchImageLibrary: jest.fn()}));
 jest.mock('../../utils/readGpsFromExif', () => ({readGpsFromExif: jest.fn()}));
-jest.mock('../../utils/permissions/photoPermission', () => ({ensurePhotoPermission: jest.fn()}));
+jest.mock('../../utils/permissions/photoPermission', () => ({
+    ensurePhotoPermission: jest.fn(),
+    PHOTO_PERMISSION: {GRANTED: 'granted', LOCATION_DENIED: 'location-denied', DENIED: 'denied'}
+}));
 
 import {Platform, NativeModules} from 'react-native';
 import {launchImageLibrary} from 'react-native-image-picker';
 import {readGpsFromExif} from '../../utils/readGpsFromExif';
-import {ensurePhotoPermission} from '../../utils/permissions/photoPermission';
+import {ensurePhotoPermission, PHOTO_PERMISSION} from '../../utils/permissions/photoPermission';
 import {pickGeotaggedPhotos} from '../../utils/pickGeotaggedPhotos';
 
 beforeEach(() => {
@@ -31,7 +34,7 @@ beforeEach(() => {
 describe('pickGeotaggedPhotos — Android', () => {
     it('gates on permission, then returns the native module assets verbatim', async () => {
         Platform.OS = 'android';
-        ensurePhotoPermission.mockResolvedValue(true);
+        ensurePhotoPermission.mockResolvedValue(PHOTO_PERMISSION.GRANTED);
         const nativeAssets = [
             {uri: 'file://cache/1.jpg', latitude: 51.88, longitude: -8.48, takenAt: 1, source: 'mediastore'}
         ];
@@ -44,11 +47,19 @@ describe('pickGeotaggedPhotos — Android', () => {
         expect(launchImageLibrary).not.toHaveBeenCalled();
     });
 
-    it('throws when photo permission is refused (does not open the picker)', async () => {
+    it('throws PHOTO_PERMISSION_DENIED when media access is refused (does not open the picker)', async () => {
         Platform.OS = 'android';
-        ensurePhotoPermission.mockResolvedValue(false);
+        ensurePhotoPermission.mockResolvedValue(PHOTO_PERMISSION.DENIED);
 
-        await expect(pickGeotaggedPhotos({selectionLimit: 1})).rejects.toThrow(/PERMISSION/);
+        await expect(pickGeotaggedPhotos({selectionLimit: 1})).rejects.toThrow('PHOTO_PERMISSION_DENIED');
+        expect(NativeModules.OlmGallery.pick).not.toHaveBeenCalled();
+    });
+
+    it('throws MEDIA_LOCATION_DENIED when media is readable but AML is denied (P1: no silent no-GPS)', async () => {
+        Platform.OS = 'android';
+        ensurePhotoPermission.mockResolvedValue(PHOTO_PERMISSION.LOCATION_DENIED);
+
+        await expect(pickGeotaggedPhotos({selectionLimit: 1})).rejects.toThrow('MEDIA_LOCATION_DENIED');
         expect(NativeModules.OlmGallery.pick).not.toHaveBeenCalled();
     });
 });

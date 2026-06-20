@@ -13,6 +13,7 @@ import com.facebook.react.bridge.ReactMethod
 import com.facebook.react.bridge.ReadableMap
 import com.facebook.react.bridge.WritableArray
 import com.facebook.react.bridge.WritableMap
+import java.io.File
 import java.util.concurrent.Executors
 
 /**
@@ -67,6 +68,26 @@ class OlmGalleryModule(reactContext: ReactApplicationContext) :
         } catch (e: Exception) {
             pendingPromise = null
             promise.reject("LAUNCH_FAILED", e.message, e)
+        }
+    }
+
+    /**
+     * Does the file behind a `file://` URI still exist? Used to prune phantom queue
+     * entries after the OS evicts app cache. Conservative: resolves `false` only when
+     * the file is definitively absent; keeps the entry (resolve true / reject) on any
+     * uncertainty so a check failure can never delete a real photo.
+     */
+    @ReactMethod
+    fun fileExists(uri: String, promise: Promise) {
+        try {
+            val path = if (uri.startsWith("file://")) Uri.parse(uri).path else uri
+            if (path == null) {
+                promise.resolve(true) // can't determine -> keep
+                return
+            }
+            promise.resolve(File(path).exists())
+        } catch (e: Exception) {
+            promise.reject("FILE_CHECK_FAILED", e.message, e)
         }
     }
 

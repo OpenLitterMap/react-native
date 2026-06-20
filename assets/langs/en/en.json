@@ -222,6 +222,7 @@
     "OpenLitterMap needs camera and location access to take GPS-tagged photos. Please enable them in Settings.": "OpenLitterMap needs camera and location access to take GPS-tagged photos. Please enable them in Settings.",
     "OpenLitterMap needs full photo access to read GPS data from your photos.": "OpenLitterMap needs full photo access to read GPS data from your photos.",
     "OpenLitterMap needs photo access to import geotagged photos.": "OpenLitterMap needs photo access to import geotagged photos.",
+    "OpenLitterMap needs photo-location access to read GPS from your photos. Enable it in Settings.": "OpenLitterMap needs photo-location access to read GPS from your photos. Enable it in Settings.",
     "OpenLitterMap needs the \"Media location\" permission to read GPS data from your photos.": "OpenLitterMap needs the \"Media location\" permission to read GPS data from your photos.",
     "Our volunteers will tag your uploads": "Our volunteers will tag your uploads",
     "PRIVACY": "PRIVACY",

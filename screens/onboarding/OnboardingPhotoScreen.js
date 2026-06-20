@@ -78,14 +78,16 @@ const OnboardingPhotoScreen = ({navigation}) => {
             navigation.replace('ONBOARDING_TAG');
         } catch (err) {
             setReadingExif(false);
-            if (err?.message === 'PHOTO_PERMISSION_DENIED') {
-                setError('OpenLitterMap needs photo access to import geotagged photos.');
+            if (err?.message === 'MEDIA_LOCATION_DENIED') {
+                setError(t('OpenLitterMap needs photo-location access to read GPS from your photos. Enable it in Settings.'));
+            } else if (err?.message === 'PHOTO_PERMISSION_DENIED') {
+                setError(t('OpenLitterMap needs photo access to import geotagged photos.'));
             } else {
                 if (__DEV__) console.error('[Photo] picker error:', err);
-                setError('Something went wrong. Please try again.');
+                setError(t('Something went wrong. Please try again.'));
             }
         }
-    }, [dispatch, navigation]);
+    }, [dispatch, navigation, t]);
 
     const switchToCamera = () => {
         navigation.replace('ONBOARDING_PERMISSION', {path: 'camera'});
